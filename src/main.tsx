@@ -4,7 +4,7 @@ import { ThemeProvider, CssBaseline } from '@mui/material'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './lib/supabase/auth-context'
-import { theme } from './theme'
+import { theme } from './shared/theme'
 import App from './App'
 
 const queryClient = new QueryClient()
