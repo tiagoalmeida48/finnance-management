@@ -36,17 +36,17 @@ export function Sidebar() {
             sx={{
                 width: open ? drawerWidth : collapsedWidth,
                 flexShrink: 0,
-                transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: 'width 0.3s ease-in-out',
                 [`& .MuiDrawer-paper`]: {
                     width: open ? drawerWidth : collapsedWidth,
                     overflowX: 'hidden',
                     boxSizing: 'border-box',
-                    bgcolor: '#080808', // Darker background
-                    borderRight: '1px solid #1F1F1F',
+                    bgcolor: '#1C1C1C',
+                    borderRight: '1px solid rgba(255, 255, 255, 0.08)',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transition: 'width 0.3s ease-in-out',
                 },
             }}
         >
@@ -57,22 +57,24 @@ export function Sidebar() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: open ? 'space-between' : 'center',
-                    minHeight: 80
+                    minHeight: 80,
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
                 }}>
                     {open && (
-                        <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 900, letterSpacing: '-1px' }}>
+                        <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 800, letterSpacing: '-0.5px' }}>
                             FINNANCE
                         </Typography>
                     )}
                     <IconButton
                         onClick={() => setOpen(!open)}
-                        sx={{ color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
+                        size="small"
+                        sx={{ color: 'text.secondary', '&:hover': { color: 'primary.main', bgcolor: 'rgba(255, 255, 255, 0.04)' } }}
                     >
                         {open ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
                     </IconButton>
                 </Box>
 
-                <List sx={{ px: 2 }}>
+                <List sx={{ px: 1.5, py: 2 }}>
                     {menuItems.map((item) => {
                         const isActive = location.pathname === item.path;
                         return (
@@ -81,15 +83,18 @@ export function Sidebar() {
                                     <ListItemButton
                                         onClick={() => navigate(item.path)}
                                         sx={{
-                                            borderRadius: 1,
+                                            borderRadius: 2,
                                             px: open ? 2 : 1.5,
+                                            py: 1.25,
                                             justifyContent: open ? 'initial' : 'center',
-                                            color: isActive ? '#D4AF37' : 'text.secondary',
-                                            bgcolor: isActive ? 'rgba(212, 175, 55, 0.05)' : 'transparent',
-                                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            color: isActive ? 'primary.main' : 'text.secondary',
+                                            bgcolor: isActive ? 'rgba(212, 175, 55, 0.08)' : 'transparent',
+                                            borderLeft: isActive ? '3px solid' : '3px solid transparent',
+                                            borderColor: isActive ? 'primary.main' : 'transparent',
+                                            transition: 'all 0.2s ease-in-out',
                                             '&:hover': {
-                                                bgcolor: 'rgba(255,255,255,0.03)',
-                                                color: 'primary.main'
+                                                bgcolor: 'rgba(255, 255, 255, 0.04)',
+                                                color: isActive ? 'primary.main' : 'text.primary',
                                             },
                                         }}
                                     >
@@ -97,14 +102,13 @@ export function Sidebar() {
                                             color: 'inherit',
                                             minWidth: open ? 40 : 0,
                                             justifyContent: 'center',
-                                            transition: 'inherit'
                                         }}>
                                             {item.icon}
                                         </ListItemIcon>
                                         {open && (
                                             <ListItemText
                                                 primary={item.label}
-                                                primaryTypographyProps={{ fontSize: '0.85rem', fontWeight: isActive ? 700 : 500 }}
+                                                primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: isActive ? 600 : 500 }}
                                             />
                                         )}
                                     </ListItemButton>
@@ -115,32 +119,33 @@ export function Sidebar() {
                 </List>
             </Box>
 
+
             {/* User Profile & Logout Section */}
-            <Box sx={{ p: 2, borderTop: '1px solid #1F1F1F', bgcolor: 'rgba(255,255,255,0.01)' }}>
+            <Box sx={{ p: 2, borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
                 <Stack spacing={2} alignItems={open ? 'stretch' : 'center'}>
                     <Box
                         onClick={() => navigate('/profile')}
                         sx={{
                             p: open ? 1.5 : 0.5,
-                            borderRadius: 1,
+                            borderRadius: 2,
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: open ? 'flex-start' : 'center',
                             gap: open ? 2 : 0,
-                            transition: 'hover 0.2s',
-                            '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' }
+                            transition: 'all 0.2s ease-in-out',
+                            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.04)' }
                         }}
                     >
                         <Tooltip title={!open ? (profile?.full_name || 'Perfil') : ""} placement="right">
                             <Avatar
                                 src={profile?.avatar_url || undefined}
                                 sx={{
-                                    width: 36,
-                                    height: 36,
+                                    width: 38,
+                                    height: 38,
                                     bgcolor: 'primary.main',
-                                    color: 'background.default',
-                                    fontSize: '0.8rem',
+                                    color: '#000',
+                                    fontSize: '0.9rem',
                                     fontWeight: 700
                                 }}
                             >
@@ -149,7 +154,7 @@ export function Sidebar() {
                         </Tooltip>
                         {open && (
                             <Box sx={{ overflow: 'hidden' }}>
-                                <Typography variant="body2" noWrap sx={{ fontWeight: 700, color: 'text.primary' }}>
+                                <Typography variant="body2" noWrap sx={{ fontWeight: 600, color: 'text.primary' }}>
                                     {profile?.full_name || 'Usuário'}
                                 </Typography>
                                 <Typography variant="caption" noWrap sx={{ color: 'text.secondary', display: 'block' }}>
@@ -168,14 +173,12 @@ export function Sidebar() {
                             onClick={handleLogout}
                             sx={{
                                 py: 1,
-                                borderRadius: 1.5,
-                                textTransform: 'none',
+                                borderRadius: 2,
                                 fontWeight: 600,
                                 fontSize: '0.85rem',
-                                borderColor: 'rgba(211, 47, 47, 0.2)',
-                                bgcolor: 'rgba(211, 47, 47, 0.02)',
+                                borderColor: 'rgba(239, 83, 80, 0.3)',
                                 '&:hover': {
-                                    bgcolor: 'rgba(211, 47, 47, 0.1)',
+                                    bgcolor: 'rgba(239, 83, 80, 0.08)',
                                     borderColor: 'error.main',
                                 }
                             }}
@@ -187,7 +190,7 @@ export function Sidebar() {
                             <IconButton
                                 size="small"
                                 onClick={handleLogout}
-                                sx={{ color: 'error.main', '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.1)' } }}
+                                sx={{ color: 'error.main', '&:hover': { bgcolor: 'rgba(239, 83, 80, 0.08)' } }}
                             >
                                 <LogOut size={20} />
                             </IconButton>
@@ -198,3 +201,4 @@ export function Sidebar() {
         </Drawer>
     );
 }
+
