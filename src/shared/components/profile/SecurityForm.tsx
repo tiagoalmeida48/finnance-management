@@ -1,5 +1,5 @@
-import { Stack, Typography, TextField, IconButton, Button } from '@mui/material';
-import { Lock, Eye, EyeOff } from 'lucide-react';
+import { Stack, Typography, TextField, IconButton, Button, InputAdornment, Box } from '@mui/material';
+import { Lock, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 
 interface SecurityFormProps {
     password: string;
@@ -19,21 +19,31 @@ export function SecurityForm({
     pwdLoading, handlePasswordUpdate
 }: SecurityFormProps) {
     return (
-        <Stack spacing={3}>
-            <Typography variant="subtitle2" color="primary" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
-                Segurança
-            </Typography>
+        <Stack spacing={2.2}>
+            <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 0.35 }}>
+                    Protecao da conta
+                </Typography>
+            </Box>
 
             <TextField
-                label="Nova Senha"
+                label="Nova senha"
                 type={showPassword ? 'text' : 'password'}
                 fullWidth
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 InputProps={{
-                    startAdornment: <Lock size={18} style={{ marginRight: 12, opacity: 0.5 }} />,
+                    startAdornment: (
+                        <InputAdornment position="start">
+                            <Lock size={17} style={{ opacity: 0.65 }} />
+                        </InputAdornment>
+                    ),
                     endAdornment: (
-                        <IconButton size="small" onClick={() => setShowPassword(!showPassword)}>
+                        <IconButton
+                            size="small"
+                            onClick={() => setShowPassword(!showPassword)}
+                            sx={{ color: 'text.secondary' }}
+                        >
                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </IconButton>
                     )
@@ -41,32 +51,36 @@ export function SecurityForm({
             />
 
             <TextField
-                label="Confirmar Nova Senha"
+                label="Confirmar nova senha"
                 type={showPassword ? 'text' : 'password'}
                 fullWidth
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 InputProps={{
-                    startAdornment: <Lock size={18} style={{ marginRight: 12, opacity: 0.5 }} />
+                    startAdornment: (
+                        <InputAdornment position="start">
+                            <Lock size={17} style={{ opacity: 0.65 }} />
+                        </InputAdornment>
+                    )
                 }}
             />
 
             <Button
                 fullWidth
-                variant="outlined"
+                variant="contained"
                 size="large"
                 onClick={handlePasswordUpdate}
                 disabled={pwdLoading}
+                startIcon={<ShieldCheck size={18} />}
                 sx={{
-                    borderColor: 'primary.main',
-                    color: 'primary.main',
-                    '&:hover': {
-                        borderColor: 'primary.dark',
-                        bgcolor: 'rgba(212, 175, 55, 0.05)'
-                    }
+                    mt: 0.5,
+                    borderRadius: 2,
+                    fontWeight: 800,
+                    textTransform: 'none',
+                    py: 1.2
                 }}
             >
-                {pwdLoading ? 'Atualizando...' : 'Alterar Senha'}
+                {pwdLoading ? 'Atualizando...' : 'Atualizar senha'}
             </Button>
         </Stack>
     );

@@ -3,64 +3,121 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
-    Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Stack, MenuItem,
-    FormControl, InputLabel, Select, Box, Grid, Typography, IconButton,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Button,
+    TextField,
+    Stack,
+    Box,
+    Typography,
+    ToggleButton,
+    ToggleButtonGroup,
+    CircularProgress,
+    useTheme,
+    useMediaQuery,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    ListItemIcon,
+    ListItemText,
 } from '@mui/material';
 import {
-    ShoppingCart, Coffee, Home, Car, Utensils, Heart, Tag, Gift, Briefcase, Zap, Plane, Activity,
-    Dumbbell, Book, Music, Film, Gamepad2, Camera, Palette, Languages, Dog, GraduationCap, Pill,
-    Stethoscope, Baby, Users, HeartPulse, Smartphone, Laptop, Tv, Ghost, Rocket, Wallet, DollarSign,
-    PiggyBank, Store, Trash2, Brush
+    ShoppingCart,
+    Coffee,
+    Home,
+    Car,
+    Utensils,
+    Heart,
+    Tag,
+    Gift,
+    Briefcase,
+    Zap,
+    Plane,
+    Activity,
+    Dumbbell,
+    Book,
+    Music,
+    Film,
+    Gamepad2,
+    Camera,
+    Palette,
+    Languages,
+    Dog,
+    GraduationCap,
+    Pill,
+    Stethoscope,
+    Baby,
+    Users,
+    HeartPulse,
+    Smartphone,
+    Laptop,
+    Tv,
+    Ghost,
+    Rocket,
+    Wallet,
+    DollarSign,
+    PiggyBank,
+    Store,
+    Trash2,
+    Brush,
+    Coins,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useCreateCategory, useUpdateCategory } from '../../hooks/useCategories';
 import { Category } from '../../interfaces/category.interface';
+import { colors } from '@/shared/theme';
+
+const iconLookup: Record<string, LucideIcon> = {
+    'shopping-cart': ShoppingCart,
+    'coffee': Coffee,
+    'home': Home,
+    'car': Car,
+    'utensils': Utensils,
+    'heart': Heart,
+    'tag': Tag,
+    'gift': Gift,
+    'briefcase': Briefcase,
+    'zap': Zap,
+    'plane': Plane,
+    'activity': Activity,
+    'dumbbell': Dumbbell,
+    'book': Book,
+    'music': Music,
+    'film': Film,
+    'gamepad': Gamepad2,
+    'camera': Camera,
+    'palette': Palette,
+    'languages': Languages,
+    'dog': Dog,
+    'graduation': GraduationCap,
+    'pill': Pill,
+    'stethoscope': Stethoscope,
+    'baby': Baby,
+    'users': Users,
+    'heart-pulse': HeartPulse,
+    'smartphone': Smartphone,
+    'laptop': Laptop,
+    'tv': Tv,
+    'ghost': Ghost,
+    'rocket': Rocket,
+    'wallet': Wallet,
+    'dollar': DollarSign,
+    'piggy': PiggyBank,
+    'store': Store,
+    'trash': Trash2,
+    'brush': Brush,
+};
 
 const iconOptions = [
-    { value: 'shopping-cart', icon: <ShoppingCart size={20} /> },
-    { value: 'coffee', icon: <Coffee size={20} /> },
-    { value: 'home', icon: <Home size={20} /> },
-    { value: 'car', icon: <Car size={20} /> },
-    { value: 'utensils', icon: <Utensils size={20} /> },
-    { value: 'heart', icon: <Heart size={20} /> },
-    { value: 'tag', icon: <Tag size={20} /> },
-    { value: 'gift', icon: <Gift size={20} /> },
-    { value: 'briefcase', icon: <Briefcase size={20} /> },
-    { value: 'zap', icon: <Zap size={20} /> },
-    { value: 'plane', icon: <Plane size={20} /> },
-    { value: 'activity', icon: <Activity size={20} /> },
-    { value: 'dumbbell', icon: <Dumbbell size={20} /> },
-    { value: 'book', icon: <Book size={20} /> },
-    { value: 'music', icon: <Music size={20} /> },
-    { value: 'film', icon: <Film size={20} /> },
-    { value: 'gamepad', icon: <Gamepad2 size={20} /> },
-    { value: 'camera', icon: <Camera size={20} /> },
-    { value: 'palette', icon: <Palette size={20} /> },
-    { value: 'languages', icon: <Languages size={20} /> },
-    { value: 'dog', icon: <Dog size={20} /> },
-    { value: 'graduation', icon: <GraduationCap size={20} /> },
-    { value: 'pill', icon: <Pill size={20} /> },
-    { value: 'stethoscope', icon: <Stethoscope size={20} /> },
-    { value: 'baby', icon: <Baby size={20} /> },
-    { value: 'users', icon: <Users size={20} /> },
-    { value: 'heart-pulse', icon: <HeartPulse size={20} /> },
-    { value: 'smartphone', icon: <Smartphone size={20} /> },
-    { value: 'laptop', icon: <Laptop size={20} /> },
-    { value: 'tv', icon: <Tv size={20} /> },
-    { value: 'ghost', icon: <Ghost size={20} /> },
-    { value: 'rocket', icon: <Rocket size={20} /> },
-    { value: 'wallet', icon: <Wallet size={20} /> },
-    { value: 'dollar', icon: <DollarSign size={20} /> },
-    { value: 'piggy', icon: <PiggyBank size={20} /> },
-    { value: 'store', icon: <Store size={20} /> },
-    { value: 'trash', icon: <Trash2 size={20} /> },
-    { value: 'brush', icon: <Brush size={20} /> },
-];
-
-const colorOptions = [
-    '#D32F2F', '#C2185B', '#7B1FA2', '#512DA8', '#303F9F', '#1976D2', '#0288D1', '#0097A7',
-    '#00796B', '#388E3C', '#689F38', '#AFB42B', '#FBC02D', '#FFA000', '#F57C00', '#E64A19',
-    '#D4AF37', '#5D4037', '#616161', '#455A64'
-];
+    'shopping-cart', 'coffee', 'home', 'car', 'utensils', 'heart', 'tag', 'gift',
+    'briefcase', 'zap', 'plane', 'activity', 'dumbbell', 'book', 'music', 'film',
+    'gamepad', 'camera', 'palette', 'languages', 'dog', 'graduation', 'pill',
+    'stethoscope', 'baby', 'users', 'heart-pulse', 'smartphone', 'laptop', 'tv',
+    'ghost', 'rocket', 'wallet', 'dollar', 'piggy', 'store', 'trash', 'brush'
+] as const;
 
 const categorySchema = z.object({
     name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
@@ -81,21 +138,26 @@ interface CategoryFormModalProps {
 export function CategoryFormModal({ open, onClose, category, defaultType = 'expense' }: CategoryFormModalProps) {
     const createCategory = useCreateCategory();
     const updateCategory = useUpdateCategory();
+    const theme = useTheme();
+    const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
     const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<CategoryFormValues>({
-        resolver: zodResolver(categorySchema) as any,
+        resolver: zodResolver(categorySchema),
     });
 
     const selectedColor = watch('color');
     const selectedIcon = watch('icon');
+    const selectedType = watch('type');
+
+    const PreviewIcon = iconLookup[selectedIcon || 'tag'] || Tag;
 
     useEffect(() => {
         if (open) {
             reset({
                 name: category?.name || '',
-                type: (category?.type as any) || defaultType,
+                type: category?.type || defaultType,
                 icon: category?.icon || 'tag',
-                color: category?.color || '#D4AF37',
+                color: category?.color || colors.accent,
             });
         }
     }, [category, open, reset, defaultType]);
@@ -105,7 +167,7 @@ export function CategoryFormModal({ open, onClose, category, defaultType = 'expe
             if (category) {
                 await updateCategory.mutateAsync({ id: category.id, updates: values });
             } else {
-                await createCategory.mutateAsync(values as any);
+                await createCategory.mutateAsync(values);
             }
             onClose();
         } catch (error) {
@@ -113,47 +175,199 @@ export function CategoryFormModal({ open, onClose, category, defaultType = 'expe
         }
     };
 
+    const isSaving = createCategory.isPending || updateCategory.isPending;
+
     return (
-        <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
-            <DialogTitle sx={{ fontWeight: 700 }}>{category ? 'Editar Categoria' : 'Nova Categoria'}</DialogTitle>
+        <Dialog
+            open={open}
+            onClose={onClose}
+            fullWidth
+            fullScreen={fullScreen}
+            maxWidth="sm"
+            PaperProps={{
+                sx: {
+                    borderRadius: fullScreen ? 0 : '20px',
+                    border: fullScreen ? 'none' : `1px solid ${colors.border}`,
+                    bgcolor: colors.bgSecondary,
+                }
+            }}
+        >
+            <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>{category ? 'Editar Categoria' : 'Nova Categoria'}</DialogTitle>
+
             <form onSubmit={handleSubmit(onSubmit)}>
-                <DialogContent>
-                    <Stack spacing={3} sx={{ mt: 1 }}>
-                        <TextField fullWidth label="Nome da Categoria" {...register('name')} error={!!errors.name} helperText={errors.name?.message} />
+                <DialogContent sx={{ pt: 1.5 }}>
+                    <Stack spacing={3}>
+                        <Box
+                            sx={{
+                                p: 2,
+                                borderRadius: '14px',
+                                border: `1px solid ${colors.border}`,
+                                bgcolor: 'rgba(255,255,255,0.02)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1.5,
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    width: 42,
+                                    height: 42,
+                                    borderRadius: '12px',
+                                    display: 'grid',
+                                    placeItems: 'center',
+                                    color: selectedColor || colors.accent,
+                                    bgcolor: 'rgba(255,255,255,0.03)',
+                                    border: `1px solid ${colors.border}`,
+                                }}
+                            >
+                                <PreviewIcon size={19} />
+                            </Box>
+                            <Box>
+                                <Typography sx={{ fontWeight: 700, color: colors.textPrimary }}>
+                                    {watch('name')?.trim() || 'Nome da categoria'}
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: colors.textSecondary }}>
+                                    {selectedType === 'expense' ? 'Categoria de despesa' : 'Categoria de receita'}
+                                </Typography>
+                            </Box>
+                        </Box>
+
+                        <TextField
+                            fullWidth
+                            label="Nome da categoria"
+                            placeholder="Ex: Academia, Mercado, Freelancer"
+                            {...register('name')}
+                            error={!!errors.name}
+                            helperText={errors.name?.message}
+                        />
+
+                        <Box>
+                            <Typography sx={{ fontSize: '12px', fontWeight: 600, color: colors.textMuted, mb: 1, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                Tipo
+                            </Typography>
+                            <ToggleButtonGroup
+                                value={selectedType}
+                                exclusive
+                                onChange={(_, value) => value && setValue('type', value, { shouldDirty: true })}
+                                sx={{
+                                    bgcolor: 'rgba(255,255,255,0.03)',
+                                    borderRadius: '12px',
+                                    p: 0.5,
+                                    width: '100%',
+                                    '& .MuiToggleButton-root': {
+                                        flex: 1,
+                                        border: 'none',
+                                        borderRadius: '9px !important',
+                                        py: 1,
+                                        fontWeight: 600,
+                                        color: colors.textSecondary,
+                                        '&.Mui-selected': {
+                                            color: colors.textPrimary,
+                                            bgcolor: 'rgba(255,255,255,0.09)',
+                                        },
+                                    },
+                                }}
+                            >
+                                <ToggleButton value="expense">Despesa</ToggleButton>
+                                <ToggleButton value="income">Receita</ToggleButton>
+                            </ToggleButtonGroup>
+                        </Box>
+
                         <FormControl fullWidth>
-                            <InputLabel>Tipo</InputLabel>
-                            <Select label="Tipo" {...register('type')} defaultValue={category?.type || defaultType}>
-                                <MenuItem value="expense">Despesa</MenuItem>
-                                <MenuItem value="income">Receita</MenuItem>
+                            <InputLabel id="category-icon-label">Icone</InputLabel>
+                            <Select
+                                labelId="category-icon-label"
+                                label="Icone"
+                                value={selectedIcon || 'tag'}
+                                onChange={(e) => setValue('icon', e.target.value, { shouldDirty: true })}
+                                renderValue={(value) => {
+                                    const Icon = iconLookup[value as string] || Tag;
+                                    return (
+                                        <Stack direction="row" spacing={1} alignItems="center">
+                                            <Icon size={16} />
+                                            <Typography sx={{ textTransform: 'capitalize' }}>{String(value).replace('-', ' ')}</Typography>
+                                        </Stack>
+                                    );
+                                }}
+                            >
+                                {iconOptions.map((iconName) => {
+                                    const Icon = iconLookup[iconName] || Tag;
+                                    return (
+                                        <MenuItem key={iconName} value={iconName}>
+                                            <ListItemIcon sx={{ minWidth: 30 }}>
+                                                <Icon size={16} />
+                                            </ListItemIcon>
+                                            <ListItemText primary={iconName.replace('-', ' ')} sx={{ textTransform: 'capitalize' }} />
+                                        </MenuItem>
+                                    );
+                                })}
                             </Select>
                         </FormControl>
-                        <Box>
-                            <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>Ícone</Typography>
-                            <Grid container spacing={1}>
-                                {iconOptions.map((opt) => (
-                                    <Grid key={opt.value}>
-                                        <IconButton onClick={() => setValue('icon', opt.value)} sx={{ border: '1px solid', borderColor: selectedIcon === opt.value ? 'primary.main' : 'rgba(255,255,255,0.1)', bgcolor: selectedIcon === opt.value ? 'rgba(212, 175, 55, 0.1)' : 'transparent', color: selectedIcon === opt.value ? 'primary.main' : 'text.secondary', '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' } }}>
-                                            {opt.icon}
-                                        </IconButton>
-                                    </Grid>
-                                ))}
-                            </Grid>
-                        </Box>
-                        <Box>
-                            <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>Cor</Typography>
-                            <Grid container spacing={1}>
-                                {colorOptions.map((color) => (
-                                    <Grid key={color}>
-                                        <Box onClick={() => setValue('color', color)} sx={{ width: 32, height: 32, borderRadius: '50%', bgcolor: color, cursor: 'pointer', border: '2px solid', borderColor: selectedColor === color ? '#fff' : 'transparent', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.1)' } }} />
-                                    </Grid>
-                                ))}
-                            </Grid>
-                        </Box>
+
+                        <Stack direction="row" alignItems="center" spacing={2}>
+                            <Box
+                                sx={{
+                                    width: 42,
+                                    height: 42,
+                                    borderRadius: 1.5,
+                                    bgcolor: 'rgba(255,255,255,0.03)',
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    overflow: 'hidden',
+                                    position: 'relative'
+                                }}
+                            >
+                                <input
+                                    type="color"
+                                    value={selectedColor || colors.accent}
+                                    onChange={(e) => setValue('color', e.target.value, { shouldDirty: true })}
+                                    style={{
+                                        position: 'absolute',
+                                        width: '150%',
+                                        height: '150%',
+                                        cursor: 'pointer',
+                                        border: 'none',
+                                        background: 'none',
+                                        padding: 0,
+                                    }}
+                                />
+                            </Box>
+                            <Box>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Cor da Categoria</Typography>
+                                <Typography variant="caption" color="text.secondary">Identidade visual na listagem</Typography>
+                            </Box>
+                        </Stack>
+
+                        <input type="hidden" {...register('type')} />
+                        <input type="hidden" {...register('icon')} />
+                        <input type="hidden" {...register('color')} />
                     </Stack>
                 </DialogContent>
-                <DialogActions sx={{ p: 3, pt: 0 }}>
-                    <Button onClick={onClose} color="inherit">Cancelar</Button>
-                    <Button variant="contained" type="submit" disabled={createCategory.isPending || updateCategory.isPending}>Salvar</Button>
+
+                <DialogActions sx={{ p: 3, pt: 2, gap: 1.25 }}>
+                    <Button
+                        onClick={onClose}
+                        color="inherit"
+                        sx={{
+                            px: 2.5,
+                            color: colors.textSecondary,
+                            fontWeight: 600,
+                            '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' },
+                        }}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        variant="contained"
+                        type="submit"
+                        disabled={isSaving}
+                        startIcon={isSaving ? <CircularProgress size={16} color="inherit" /> : <Coins size={16} />}
+                        sx={{ px: 2.75, fontWeight: 700 }}
+                    >
+                        {isSaving ? 'Salvando...' : 'Salvar'}
+                    </Button>
                 </DialogActions>
             </form>
         </Dialog>

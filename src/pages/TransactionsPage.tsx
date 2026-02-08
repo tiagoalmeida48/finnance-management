@@ -1,5 +1,5 @@
-import { Box, Container, Stack, Typography, Button, Menu, MenuItem } from '@mui/material';
-import { Plus, Pencil, Trash2, CheckCircle2 } from 'lucide-react';
+import { Box, Container, Stack, Typography, Button, Menu, MenuItem, Slide } from '@mui/material';
+import { Plus, Pencil, Trash2, CheckCircle2, Upload, Tag } from 'lucide-react';
 import { useTransactionsPageLogic } from '../shared/hooks/useTransactionsPageLogic';
 import { TransactionsSummary } from '../shared/components/transactions/TransactionsSummary';
 import { TransactionsFilter } from '../shared/components/transactions/TransactionsFilter';
@@ -7,6 +7,7 @@ import { TransactionsTable } from '../shared/components/transactions/Transaction
 import { TransactionFormModal } from '../shared/components/transactions/TransactionFormModal';
 import { DeleteTransactionModal } from '../shared/components/transactions/DeleteTransactionModal';
 import { ImportTransactionsModal } from '../shared/components/transactions/ImportTransactionsModal';
+import { colors } from '@/shared/theme';
 
 export function TransactionsPage() {
     const {
@@ -33,17 +34,76 @@ export function TransactionsPage() {
         togglePaymentStatus
     } = useTransactionsPageLogic();
 
+    const hasSelection = selectedIds.length > 0;
+
     return (
-        <Box sx={{ pt: 4, pb: 6 }}>
+        <Box sx={{ pt: 4, pb: hasSelection ? 12 : 6 }}>
             <Container maxWidth={false} sx={{ px: { xs: 2, sm: 4, md: 6 } }}>
+                {/* Page Header */}
                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
                     <Box>
-                        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>Transações</Typography>
-                        <Typography color="text.secondary">Controle suas receitas e despesas.</Typography>
+                        <Typography sx={{
+                            fontSize: '28px',
+                            fontFamily: '"Plus Jakarta Sans"',
+                            fontWeight: 700,
+                            color: colors.textPrimary,
+                            mb: 0.5,
+                        }}>
+                            Transações
+                        </Typography>
+                        <Typography sx={{
+                            fontSize: '14px',
+                            color: colors.textSecondary,
+                        }}>
+                            Controle suas receitas e despesas.
+                        </Typography>
                     </Box>
                     <Stack direction="row" spacing={2}>
-                        <Button variant="outlined" onClick={handleImport}>Importar</Button>
-                        <Button variant="contained" startIcon={<Plus />} onClick={handleAdd}>Nova Transação</Button>
+                        {/* Import Button (Secondary) */}
+                        <Button
+                            variant="outlined"
+                            startIcon={<Upload size={16} />}
+                            onClick={handleImport}
+                            sx={{
+                                borderRadius: '10px',
+                                px: 2.5,
+                                py: 1.25,
+                                fontSize: '13px',
+                                fontWeight: 500,
+                                borderColor: 'rgba(255,255,255,0.1)',
+                                color: colors.textSecondary,
+                                '&:hover': {
+                                    borderColor: 'rgba(255,255,255,0.2)',
+                                    color: colors.textPrimary,
+                                    bgcolor: 'transparent',
+                                },
+                            }}
+                        >
+                            Importar
+                        </Button>
+                        {/* New Transaction Button (CTA) */}
+                        <Button
+                            variant="contained"
+                            startIcon={<Plus size={16} />}
+                            onClick={handleAdd}
+                            sx={{
+                                borderRadius: '10px',
+                                px: 2.5,
+                                py: 1.25,
+                                fontSize: '13px',
+                                fontWeight: 600,
+                                bgcolor: colors.accent,
+                                color: colors.bgPrimary,
+                                boxShadow: '0 2px 8px rgba(201, 168, 76, 0.25)',
+                                '&:hover': {
+                                    bgcolor: '#D4B85C',
+                                    transform: 'translateY(-1px)',
+                                    boxShadow: '0 4px 16px rgba(201, 168, 76, 0.3)',
+                                },
+                            }}
+                        >
+                            Nova Transação
+                        </Button>
                     </Stack>
                 </Stack>
 
@@ -58,15 +118,8 @@ export function TransactionsPage() {
                     setShowAllTime={setShowAllTime}
                     currentMonth={currentMonth}
                     setCurrentMonth={setCurrentMonth}
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
                     hideCreditCards={hideCreditCards}
                     setHideCreditCards={setHideCreditCards}
-                    categoryFilter={categoryFilter}
-                    setCategoryFilter={setCategoryFilter}
-                    paymentMethodFilter={paymentMethodFilter}
-                    setPaymentMethodFilter={setPaymentMethodFilter}
-                    categories={categories}
                     handlePrevMonth={handlePrevMonth}
                     handleNextMonth={handleNextMonth}
                 />
@@ -83,25 +136,133 @@ export function TransactionsPage() {
                     expandedGroups={expandedGroups}
                     toggleGroup={toggleGroup}
                     isPendingToggle={(id) => togglePaymentStatus.isPending && selectedTransaction?.id === id}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    categoryFilter={categoryFilter}
+                    setCategoryFilter={setCategoryFilter}
+                    paymentMethodFilter={paymentMethodFilter}
+                    setPaymentMethodFilter={setPaymentMethodFilter}
+                    categories={categories}
                 />
 
+                {/* Context Menu */}
                 <Menu
                     anchorEl={anchorEl}
                     open={Boolean(anchorEl)}
                     onClose={handleCloseMenu}
-                    PaperProps={{ sx: { minWidth: 150, mt: 1, bgcolor: '#121212', border: '1px solid #1F1F1F' } }}
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                minWidth: 150,
+                                mt: 1,
+                                bgcolor: colors.bgCard,
+                                border: `1px solid ${colors.border}`,
+                                borderRadius: '10px',
+                            }
+                        }
+                    }}
                 >
-                    <MenuItem onClick={handleEdit}>
-                        <Pencil size={16} style={{ marginRight: 8 }} /> Editar
+                    <MenuItem onClick={handleEdit} sx={{ fontSize: '13px', py: 1.5 }}>
+                        <Pencil size={16} style={{ marginRight: 10 }} /> Editar
                     </MenuItem>
-                    <MenuItem onClick={() => menuTransaction && handleTogglePaid(menuTransaction)}>
-                        <CheckCircle2 size={16} style={{ marginRight: 8 }} /> {menuTransaction?.is_paid ? 'Marcar como Pendente' : 'Marcar como Pago'}
+                    <MenuItem
+                        onClick={() => menuTransaction && handleTogglePaid(menuTransaction)}
+                        sx={{ fontSize: '13px', py: 1.5 }}
+                    >
+                        <CheckCircle2 size={16} style={{ marginRight: 10 }} />
+                        {menuTransaction?.is_paid ? 'Marcar como Pendente' : 'Marcar como Pago'}
                     </MenuItem>
-                    <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-                        <Trash2 size={16} style={{ marginRight: 8 }} /> Excluir
+                    <MenuItem onClick={handleDelete} sx={{ fontSize: '13px', py: 1.5, color: colors.red }}>
+                        <Trash2 size={16} style={{ marginRight: 10 }} /> Excluir
                     </MenuItem>
                 </Menu>
 
+                {/* Batch Actions Bar */}
+                <Slide direction="up" in={hasSelection} mountOnEnter unmountOnExit>
+                    <Box sx={{
+                        position: 'fixed',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        bgcolor: colors.bgCardHover,
+                        borderTop: `1px solid rgba(255,255,255,0.08)`,
+                        borderRadius: '16px 16px 0 0',
+                        px: 3,
+                        py: 1.5,
+                        boxShadow: '0 -4px 24px rgba(0,0,0,0.3)',
+                        zIndex: 1000,
+                    }}>
+                        <Stack direction="row" alignItems="center" justifyContent="center" spacing={3}>
+                            <Typography sx={{
+                                fontSize: '14px',
+                                fontWeight: 500,
+                                color: colors.textPrimary,
+                            }}>
+                                {selectedIds.length} selecionado{selectedIds.length !== 1 ? 's' : ''}
+                            </Typography>
+                            <Stack direction="row" spacing={1.5}>
+                                <Button
+                                    size="small"
+                                    startIcon={<Tag size={14} />}
+                                    sx={{
+                                        borderRadius: '8px',
+                                        px: 2,
+                                        py: 1,
+                                        fontSize: '12px',
+                                        fontWeight: 500,
+                                        borderColor: 'rgba(255,255,255,0.1)',
+                                        color: colors.textSecondary,
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        '&:hover': {
+                                            borderColor: 'rgba(255,255,255,0.2)',
+                                            bgcolor: 'rgba(255,255,255,0.04)',
+                                        },
+                                    }}
+                                >
+                                    Categorizar
+                                </Button>
+                                <Button
+                                    size="small"
+                                    startIcon={<CheckCircle2 size={14} />}
+                                    sx={{
+                                        borderRadius: '8px',
+                                        px: 2,
+                                        py: 1,
+                                        fontSize: '12px',
+                                        fontWeight: 600,
+                                        bgcolor: colors.greenBg,
+                                        color: colors.green,
+                                        '&:hover': {
+                                            bgcolor: 'rgba(16, 185, 129, 0.2)',
+                                        },
+                                    }}
+                                >
+                                    Marcar Pago
+                                </Button>
+                                <Button
+                                    size="small"
+                                    startIcon={<Trash2 size={14} />}
+                                    sx={{
+                                        borderRadius: '8px',
+                                        px: 2,
+                                        py: 1,
+                                        fontSize: '12px',
+                                        fontWeight: 500,
+                                        border: `1px solid ${colors.red}`,
+                                        color: colors.red,
+                                        '&:hover': {
+                                            bgcolor: colors.redBg,
+                                        },
+                                    }}
+                                >
+                                    Excluir
+                                </Button>
+                            </Stack>
+                        </Stack>
+                    </Box>
+                </Slide>
+
+                {/* Modals */}
                 <TransactionFormModal
                     open={modalOpen}
                     onClose={() => {

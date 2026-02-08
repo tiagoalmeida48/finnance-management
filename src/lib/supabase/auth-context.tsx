@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from './client';
@@ -5,6 +6,7 @@ import { supabase } from './client';
 export interface Profile {
     full_name: string | null;
     avatar_url: string | null;
+    is_admin: boolean | null;
 }
 
 interface AuthContextType {
@@ -28,7 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('full_name, avatar_url')
+                .select('full_name, avatar_url, is_admin')
                 .eq('id', userId)
                 .single();
 

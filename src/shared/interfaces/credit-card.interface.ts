@@ -16,5 +16,6 @@ export interface CreditCard {
         name: string;
     };
     usage?: number;
+    current_invoice?: number;
     available_limit?: number;
 }

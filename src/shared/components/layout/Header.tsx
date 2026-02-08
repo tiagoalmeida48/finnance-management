@@ -1,11 +1,13 @@
 import { AppBar, Avatar, Box, IconButton, Toolbar, Typography, Menu, MenuItem } from '@mui/material';
 import { useAuth } from '@/lib/supabase/auth-context';
+import { useSiteBranding } from '@/shared/hooks/useSiteBranding';
 import { LogOut, User as UserIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export function Header() {
     const { user, profile, signOut } = useAuth();
+    const { siteTitle } = useSiteBranding();
     const navigate = useNavigate();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -27,7 +29,7 @@ export function Header() {
         <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
             <Toolbar>
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: '#D4AF37', fontWeight: 700 }}>
-                    FINNANCE
+                    {siteTitle}
                 </Typography>
 
                 {user && (

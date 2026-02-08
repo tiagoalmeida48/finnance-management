@@ -1,8 +1,9 @@
-import { Card, CardContent, Typography, Stack, Box, Button, Table, TableBody, TableCell, TableContainer, TableRow, Chip, Skeleton } from '@mui/material';
+import { Card, CardContent, Typography, Stack, Box, Button, Skeleton } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { ArrowUpRight, ArrowDownLeft, ArrowRightLeft } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowRightLeft, ArrowRight } from 'lucide-react';
 import { Transaction } from '../../interfaces';
+import { colors } from '@/shared/theme';
 
 interface DashboardRecentTransactionsProps {
     transactions: Transaction[] | undefined;
@@ -12,89 +13,157 @@ interface DashboardRecentTransactionsProps {
 export function DashboardRecentTransactions({ transactions, isLoading }: DashboardRecentTransactionsProps) {
     const navigate = useNavigate();
 
-    const formatBRL = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+    const formatBRL = (val: number) => new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2,
+    }).format(val);
+
+    const getTypeConfig = (type: string) => {
+        switch (type) {
+            case 'income':
+                return {
+                    icon: TrendingUp,
+                    color: colors.green,
+                    bgColor: colors.greenBg,
+                    prefix: '+'
+                };
+            case 'expense':
+                return {
+                    icon: TrendingDown,
+                    color: colors.red,
+                    bgColor: colors.redBg,
+                    prefix: '-'
+                };
+            default:
+                return {
+                    icon: ArrowRightLeft,
+                    color: colors.accent,
+                    bgColor: colors.accentGlow,
+                    prefix: ''
+                };
+        }
+    };
 
     return (
         <Card>
             <CardContent sx={{ p: 3 }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                    <Typography variant="h6">Últimas Transações</Typography>
-                    <Button size="small" onClick={() => navigate('/transactions')}>Ver Todas</Button>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                    <Typography sx={{ fontSize: '16px', fontFamily: '"Plus Jakarta Sans"', fontWeight: 600 }}>
+                        Últimas Transações
+                    </Typography>
+                    <Button
+                        size="small"
+                        endIcon={<ArrowRight size={14} />}
+                        onClick={() => navigate('/transactions')}
+                        sx={{
+                            color: colors.textSecondary,
+                            fontSize: '12px',
+                            '&:hover': { color: colors.accent, bgcolor: 'transparent' }
+                        }}
+                    >
+                        Ver Todas
+                    </Button>
                 </Stack>
 
-                <TableContainer>
-                    <Table>
-                        <TableBody>
-                            {isLoading ? (
-                                Array.from({ length: 5 }).map((_, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell sx={{ pl: 0, py: 2 }}>
-                                            <Stack direction="row" spacing={2} alignItems="center">
-                                                <Skeleton variant="rounded" width={40} height={40} />
-                                                <Box>
-                                                    <Skeleton variant="text" width={150} />
-                                                    <Skeleton variant="text" width={100} />
-                                                </Box>
-                                            </Stack>
-                                        </TableCell>
-                                        <TableCell align="right" sx={{ pr: 0 }}>
-                                            <Skeleton variant="text" width={80} />
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : transactions?.slice(0, 6).map((t) => (
-                                <TableRow key={t.id} sx={{
-                                    '&:hover': { bgcolor: 'rgba(255,255,255,0.02)' },
-                                    '&:last-child td': { borderBottom: 0 }
-                                }}>
-                                    <TableCell sx={{ pl: 0, py: 2 }}>
-                                        <Stack direction="row" spacing={2} alignItems="center">
-                                            <Box sx={{
-                                                width: 40,
-                                                height: 40,
-                                                borderRadius: 2,
-                                                bgcolor: t.type === 'income' ? 'rgba(76, 175, 80, 0.12)' : t.type === 'expense' ? 'rgba(239, 83, 80, 0.12)' : 'rgba(212, 175, 55, 0.12)',
-                                                color: t.type === 'income' ? '#4CAF50' : t.type === 'expense' ? '#EF5350' : '#D4AF37',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}>
-                                                {t.type === 'income' ? <ArrowUpRight size={18} /> : t.type === 'expense' ? <ArrowDownLeft size={18} /> : <ArrowRightLeft size={18} />}
-                                            </Box>
-                                            <Box>
-                                                <Typography variant="body2" sx={{ fontWeight: 600 }}>{t.description}</Typography>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    {format(new Date(t.payment_date + 'T12:00:00'), 'dd/MM/yyyy')} • {t.category?.name || 'Sem categoria'}
-                                                </Typography>
-                                            </Box>
-                                        </Stack>
-                                    </TableCell>
-                                    <TableCell align="right" sx={{ pr: 0 }}>
-                                        <Typography variant="body2" sx={{
-                                            fontWeight: 700,
-                                            color: t.type === 'income' ? '#4CAF50' : t.type === 'expense' ? '#EF5350' : '#D4AF37'
+                <Stack spacing={0}>
+                    {isLoading ? (
+                        Array.from({ length: 5 }).map((_, i) => (
+                            <Box
+                                key={i}
+                                sx={{
+                                    py: 1.5,
+                                    borderBottom: i < 4 ? `1px solid ${colors.border}` : 'none'
+                                }}
+                            >
+                                <Stack direction="row" spacing={2} alignItems="center">
+                                    <Skeleton
+                                        variant="rounded"
+                                        width={36}
+                                        height={36}
+                                        sx={{ borderRadius: '10px', bgcolor: 'rgba(255,255,255,0.05)' }}
+                                    />
+                                    <Box sx={{ flex: 1 }}>
+                                        <Skeleton variant="text" width="60%" sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
+                                        <Skeleton variant="text" width="40%" sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
+                                    </Box>
+                                    <Skeleton variant="text" width={80} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
+                                </Stack>
+                            </Box>
+                        ))
+                    ) : transactions?.slice(0, 6).map((t, idx) => {
+                        const config = getTypeConfig(t.type);
+                        const Icon = config.icon;
+                        return (
+                            <Box
+                                key={t.id}
+                                sx={{
+                                    py: 1.5,
+                                    borderBottom: idx < 5 ? `1px solid ${colors.border}` : 'none',
+                                    transition: 'all 200ms ease',
+                                    '&:hover': {
+                                        pl: 0.5,
+                                        bgcolor: 'rgba(255,255,255,0.02)',
+                                    },
+                                }}
+                            >
+                                <Stack direction="row" spacing={2} alignItems="center">
+                                    <Box sx={{
+                                        width: 36,
+                                        height: 36,
+                                        borderRadius: '10px',
+                                        bgcolor: config.bgColor,
+                                        color: config.color,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        flexShrink: 0,
+                                    }}>
+                                        <Icon size={18} />
+                                    </Box>
+                                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                                        <Typography sx={{
+                                            fontSize: '13.5px',
+                                            fontWeight: 500,
+                                            color: colors.textPrimary,
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
                                         }}>
-                                            {t.type === 'expense' ? '-' : '+'}{formatBRL(t.amount)}
+                                            {t.description}
                                         </Typography>
-                                        <Chip
-                                            label={t.is_paid ? 'Pago' : 'Pendente'}
-                                            size="small"
-                                            sx={{
-                                                height: 20,
-                                                fontSize: '0.7rem',
-                                                mt: 0.5,
-                                                bgcolor: t.is_paid ? 'rgba(76, 175, 80, 0.12)' : 'rgba(212, 175, 55, 0.12)',
-                                                color: t.is_paid ? '#4CAF50' : '#D4AF37',
-                                            }}
-                                        />
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                                        <Typography sx={{ fontSize: '12px', color: colors.textMuted }}>
+                                            {format(new Date(t.payment_date + 'T12:00:00'), 'dd/MM/yyyy')}
+                                            {t.category?.name && ` • ${t.category.name}`}
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
+                                        <Typography sx={{
+                                            fontSize: '14px',
+                                            fontFamily: '"Plus Jakarta Sans"',
+                                            fontWeight: 600,
+                                            color: config.color,
+                                        }}>
+                                            {config.prefix}{formatBRL(t.amount)}
+                                        </Typography>
+                                        {!t.is_paid && (
+                                            <Typography sx={{
+                                                fontSize: '10px',
+                                                color: colors.yellow,
+                                                fontWeight: 500,
+                                            }}>
+                                                Pendente
+                                            </Typography>
+                                        )}
+                                    </Box>
+                                </Stack>
+                            </Box>
+                        );
+                    })}
+                </Stack>
             </CardContent>
         </Card>
     );
 }
+
 

@@ -31,7 +31,6 @@ export function useCreditCardDetailsLogic() {
         const closingDay = Number(card.closing_day);
         const dueDay = Number(card.due_day);
         const isNextMonthPayment = closingDay >= dueDay;
-        const groups: Record<string, any[]> = {};
 
         const cardTransactions = card.transactions.filter((t: any) => t.card_id === id);
 
@@ -69,31 +68,35 @@ export function useCreditCardDetailsLogic() {
             }
         }
 
+        // Group by real month key (yyyy-MM) to avoid mixing values across years.
+        const groups: Record<string, { date: Date; trans: any[] }> = {};
+
         filteredTransactions.forEach((t: any) => {
-            const key = format(t.statementDate, 'MMM/yyyy', { locale: ptBR });
-            if (!groups[key]) groups[key] = [];
-            groups[key].push(t);
+            const key = t.statementMonthKey;
+            if (!groups[key]) groups[key] = { date: t.statementDate, trans: [] };
+            groups[key].trans.push(t);
         });
 
         const statements = Object.entries(groups)
-            .map(([month, trans]) => {
-                const total = trans.reduce((sum, t) => {
+            .map(([monthKey, group]) => {
+                const total = group.trans.reduce((sum, t) => {
                     return t.type === 'income' ? sum - Number(t.amount) : sum + Number(t.amount);
                 }, 0);
 
-                const unpaidTotal = trans
+                const unpaidTotal = group.trans
                     .filter(t => !t.is_paid)
                     .reduce((sum, t) => {
                         return t.type === 'income' ? sum - Number(t.amount) : sum + Number(t.amount);
                     }, 0);
 
                 return {
-                    month,
+                    month: format(group.date, 'MMM/yyyy', { locale: ptBR }),
+                    monthKey,
                     total,
                     unpaidTotal,
-                    unpaidIds: trans.filter(t => !t.is_paid).map(t => t.id),
-                    transactions: trans,
-                    date: trans[0].statementDate
+                    unpaidIds: group.trans.filter(t => !t.is_paid).map(t => t.id),
+                    transactions: group.trans,
+                    date: group.date
                 };
             })
             .sort((a, b) => b.date.getTime() - a.date.getTime());
@@ -101,7 +104,7 @@ export function useCreditCardDetailsLogic() {
         const chartData = [...statements]
             .reverse()
             .map(s => ({
-                name: s.month.split('/')[0],
+                name: format(s.date, 'MMM/yy', { locale: ptBR }),
                 total: s.total
             }));
 

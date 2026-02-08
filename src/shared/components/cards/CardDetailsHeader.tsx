@@ -1,5 +1,5 @@
 import { Stack, Box, Typography, Button, IconButton, ToggleButtonGroup, ToggleButton, TextField } from '@mui/material';
-import { ChevronLeft, ChevronRight, CreditCard as CardIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CreditCard as CardIcon, Wallet, TrendingDown, Percent } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -19,6 +19,21 @@ interface CardDetailsHeaderProps {
     setCustomEnd: (val: string) => void;
 }
 
+const colors = {
+    bgCard: '#14141E',
+    border: 'rgba(255,255,255,0.06)',
+    textPrimary: '#F0F0F5',
+    textSecondary: '#8B8B9E',
+    textMuted: '#5A5A6E',
+    accent: '#C9A84C',
+    green: '#10B981',
+    yellow: '#F5A623',
+    red: '#EF4444',
+};
+
+const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+
 export function CardDetailsHeader({
     card, navigate,
     isAllTime, setIsAllTime,
@@ -27,18 +42,29 @@ export function CardDetailsHeader({
     customStart, setCustomStart,
     customEnd, setCustomEnd
 }: CardDetailsHeaderProps) {
+    const usagePercent = card.credit_limit > 0
+        ? Math.min(((card.usage || 0) / card.credit_limit) * 100, 100)
+        : 0;
+
+    const getUsageColor = () => {
+        if (usagePercent >= 80) return colors.red;
+        if (usagePercent >= 50) return colors.yellow;
+        return colors.green;
+    };
+
     return (
         <>
-            <Stack direction={{ xs: 'column', lg: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', lg: 'center' }} sx={{ mb: 4, gap: 2 }}>
+            {/* Back Button + Filters */}
+            <Stack direction={{ xs: 'column', lg: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', lg: 'center' }} sx={{ mb: 3, gap: 2 }}>
                 <Button
-                    startIcon={<ChevronLeft />}
+                    startIcon={<ChevronLeft size={16} />}
                     onClick={() => navigate('/cards')}
-                    sx={{ color: 'text.secondary', alignSelf: 'flex-start' }}
+                    sx={{ color: colors.textMuted, fontSize: '13px', fontWeight: 500, alignSelf: 'flex-start', textTransform: 'none' }}
                 >
-                    Voltar para Cartões
+                    Cartões
                 </Button>
 
-                <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="center" spacing={2}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="center" spacing={1.5}>
                     <ToggleButtonGroup
                         size="small"
                         value={isAllTime ? 'all' : isCustom ? 'custom' : 'monthly'}
@@ -49,38 +75,49 @@ export function CardDetailsHeader({
                                 setIsCustom(value === 'custom');
                             }
                         }}
-                        sx={{ borderColor: '#2A2A2A' }}
+                        sx={{
+                            '& .MuiToggleButton-root': {
+                                border: `1px solid ${colors.border}`,
+                                color: colors.textMuted,
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                textTransform: 'none',
+                                px: 2,
+                                '&.Mui-selected': {
+                                    bgcolor: colors.accent,
+                                    color: '#0A0A0F',
+                                    '&:hover': { bgcolor: colors.accent },
+                                },
+                            },
+                        }}
                     >
-                        <ToggleButton value="monthly" sx={{ px: 2, textTransform: 'none', fontWeight: 600 }}>Mensal</ToggleButton>
-                        <ToggleButton value="custom" sx={{ px: 2, textTransform: 'none', fontWeight: 600 }}>Personalizado</ToggleButton>
-                        <ToggleButton value="all" sx={{ px: 2, textTransform: 'none', fontWeight: 600 }}>Geral</ToggleButton>
+                        <ToggleButton value="monthly">Mensal</ToggleButton>
+                        <ToggleButton value="custom">Personalizado</ToggleButton>
+                        <ToggleButton value="all">Geral</ToggleButton>
                     </ToggleButtonGroup>
 
                     {!isCustom ? (
                         <Stack
                             direction="row"
                             alignItems="center"
-                            spacing={1}
+                            spacing={0.5}
                             sx={{
-                                bgcolor: 'rgba(255,255,255,0.03)',
+                                bgcolor: colors.bgCard,
                                 p: 0.5,
-                                borderRadius: 2,
-                                border: '1px solid #2A2A2A',
+                                borderRadius: '10px',
+                                border: `1px solid ${colors.border}`,
                                 opacity: isAllTime ? 0.5 : 1,
                                 pointerEvents: isAllTime ? 'none' : 'auto',
-                                transition: 'all 0.2s ease',
-                                width: { xs: '100%', sm: 'auto' },
-                                justifyContent: 'center'
                             }}
                         >
-                            <IconButton size="small" onClick={handlePrevMonth} sx={{ color: 'text.secondary' }}>
-                                <ChevronLeft size={18} />
+                            <IconButton size="small" onClick={handlePrevMonth} sx={{ color: colors.textMuted }}>
+                                <ChevronLeft size={16} />
                             </IconButton>
-                            <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 120, textAlign: 'center', textTransform: 'capitalize' }}>
+                            <Typography sx={{ fontSize: '13px', fontWeight: 600, minWidth: 100, textAlign: 'center', textTransform: 'capitalize', color: colors.textPrimary }}>
                                 {format(selectedDate, 'MMM yyyy', { locale: ptBR })}
                             </Typography>
-                            <IconButton size="small" onClick={handleNextMonth} sx={{ color: 'text.secondary' }}>
-                                <ChevronRight size={18} />
+                            <IconButton size="small" onClick={handleNextMonth} sx={{ color: colors.textMuted }}>
+                                <ChevronRight size={16} />
                             </IconButton>
                         </Stack>
                     ) : (
@@ -90,41 +127,99 @@ export function CardDetailsHeader({
                                 type="date"
                                 value={customStart}
                                 onChange={(e) => setCustomStart(e.target.value)}
-                                sx={{ width: 140, '& .MuiInputBase-root': { fontSize: '0.8rem', height: 38 } }}
+                                sx={{ width: 130, '& .MuiInputBase-root': { fontSize: '12px', height: 32, bgcolor: colors.bgCard, borderRadius: '8px' } }}
                             />
-                            <Typography variant="caption" sx={{ opacity: 0.5 }}>até</Typography>
+                            <Typography sx={{ fontSize: '11px', color: colors.textMuted }}>até</Typography>
                             <TextField
                                 size="small"
                                 type="date"
                                 value={customEnd}
                                 onChange={(e) => setCustomEnd(e.target.value)}
-                                sx={{ width: 140, '& .MuiInputBase-root': { fontSize: '0.8rem', height: 38 } }}
+                                sx={{ width: 130, '& .MuiInputBase-root': { fontSize: '12px', height: 32, bgcolor: colors.bgCard, borderRadius: '8px' } }}
                             />
                         </Stack>
                     )}
                 </Stack>
             </Stack>
 
-            <Stack direction="row" spacing={3} alignItems="flex-start" sx={{ mb: 6 }}>
+            {/* Card Header with Icon */}
+            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
                 <Box sx={{
-                    p: 2,
-                    borderRadius: 2,
-                    bgcolor: card.color || 'primary.main',
-                    color: '#000',
+                    width: 48,
+                    height: 48,
+                    borderRadius: '12px',
+                    bgcolor: card.color || colors.accent,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+                    boxShadow: `0 4px 16px ${card.color || colors.accent}40`,
                 }}>
-                    <CardIcon size={32} />
+                    <CardIcon size={24} color="#0A0A0F" />
                 </Box>
                 <Box>
-                    <Typography variant="h4" sx={{ fontWeight: 700 }}>{card.name}</Typography>
-                    <Typography color="text.secondary">
+                    <Typography sx={{ fontSize: '22px', fontWeight: 700, color: colors.textPrimary, fontFamily: 'Plus Jakarta Sans' }}>
+                        {card.name}
+                    </Typography>
+                    <Typography sx={{ fontSize: '13px', color: colors.textMuted }}>
                         Final {card.id.slice(-4)} • Vencimento dia {card.due_day}
                     </Typography>
                 </Box>
             </Stack>
+
+            {/* 4 Mini Summary Cards */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2, mb: 4 }}>
+                {/* Fatura Atual */}
+                <Box sx={{ bgcolor: colors.bgCard, border: `1px solid ${colors.border}`, borderRadius: '12px', p: 2 }}>
+                    <Stack direction="row" alignItems="center" gap={1} sx={{ mb: 1 }}>
+                        <TrendingDown size={14} color={colors.red} />
+                        <Typography sx={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', color: colors.textMuted }}>
+                            Limite Utilizado
+                        </Typography>
+                    </Stack>
+                    <Typography sx={{ fontSize: '20px', fontWeight: 700, color: colors.red, fontFamily: 'Plus Jakarta Sans' }}>
+                        {formatCurrency(card.usage || 0)}
+                    </Typography>
+                </Box>
+
+                {/* Limite Total */}
+                <Box sx={{ bgcolor: colors.bgCard, border: `1px solid ${colors.border}`, borderRadius: '12px', p: 2 }}>
+                    <Stack direction="row" alignItems="center" gap={1} sx={{ mb: 1 }}>
+                        <CardIcon size={14} color={colors.accent} />
+                        <Typography sx={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', color: colors.textMuted }}>
+                            Limite Total
+                        </Typography>
+                    </Stack>
+                    <Typography sx={{ fontSize: '20px', fontWeight: 700, color: colors.textPrimary, fontFamily: 'Plus Jakarta Sans' }}>
+                        {formatCurrency(card.credit_limit || 0)}
+                    </Typography>
+                </Box>
+
+                {/* Disponível */}
+                <Box sx={{ bgcolor: colors.bgCard, border: `1px solid ${colors.border}`, borderRadius: '12px', p: 2 }}>
+                    <Stack direction="row" alignItems="center" gap={1} sx={{ mb: 1 }}>
+                        <Wallet size={14} color={colors.green} />
+                        <Typography sx={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', color: colors.textMuted }}>
+                            Disponível
+                        </Typography>
+                    </Stack>
+                    <Typography sx={{ fontSize: '20px', fontWeight: 700, color: colors.green, fontFamily: 'Plus Jakarta Sans' }}>
+                        {formatCurrency(card.available_limit || 0)}
+                    </Typography>
+                </Box>
+
+                {/* Utilização */}
+                <Box sx={{ bgcolor: colors.bgCard, border: `1px solid ${colors.border}`, borderRadius: '12px', p: 2 }}>
+                    <Stack direction="row" alignItems="center" gap={1} sx={{ mb: 1 }}>
+                        <Percent size={14} color={getUsageColor()} />
+                        <Typography sx={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', color: colors.textMuted }}>
+                            Utilização
+                        </Typography>
+                    </Stack>
+                    <Typography sx={{ fontSize: '20px', fontWeight: 700, color: getUsageColor(), fontFamily: 'Plus Jakarta Sans' }}>
+                        {usagePercent.toFixed(1)}%
+                    </Typography>
+                </Box>
+            </Box>
         </>
     );
 }

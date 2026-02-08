@@ -1,66 +1,66 @@
 import { useState } from 'react';
-import { Box, Button, Card, CardContent, Container, TextField, Typography, Stack, Alert, Divider } from '@mui/material';
+import { Box, Button, Card, CardContent, Container, TextField, Typography, Stack, Alert } from '@mui/material';
 import { supabase } from '@/lib/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useSiteBranding } from '@/shared/hooks/useSiteBranding';
 
 export function LoginPage() {
-    const [isRegister, setIsRegister] = useState(false);
+    const { siteTitle } = useSiteBranding();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [fullName, setFullName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
-        setSuccess(null);
 
-        if (isRegister) {
-            const { error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: { full_name: fullName },
-                },
-            });
-            if (error) {
-                setError(error.message);
-                setLoading(false);
-            } else {
-                setSuccess('Verifique seu e-mail para confirmar o cadastro!');
-                setLoading(false);
-            }
+        const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+        if (error) {
+            setError(error.message);
+            setLoading(false);
         } else {
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
-            if (error) {
-                setError(error.message);
-                setLoading(false);
-            } else {
-                navigate('/dashboard');
-            }
+            navigate('/dashboard');
         }
     };
 
-    const handleGoogleLogin = async () => {
-        const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: window.location.origin + '/dashboard',
-            }
-        });
-        if (error) setError(error.message);
-    };
-
     return (
-        <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', bgcolor: 'background.default' }}>
+        <Box
+            sx={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                position: 'relative',
+                overflow: 'hidden',
+                isolation: 'isolate',
+                backgroundColor: '#090B12',
+                backgroundImage: `
+                    radial-gradient(circle at 18% 12%, rgba(201, 168, 76, 0.12), transparent 38%),
+                    radial-gradient(circle at 78% 82%, rgba(59, 130, 246, 0.09), transparent 32%)
+                `,
+                '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    inset: 0,
+                    zIndex: -1,
+                    pointerEvents: 'none',
+                    backgroundImage: `
+                        linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px)
+                    `,
+                    backgroundSize: '34px 34px',
+                    transform: 'perspective(1200px) rotateX(20deg) scale(1.25)',
+                    transformOrigin: 'center top',
+                    opacity: 0.52,
+                },
+            }}
+        >
             <Container maxWidth="sm">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -71,28 +71,17 @@ export function LoginPage() {
                         <CardContent sx={{ p: 4 }}>
                             <Box sx={{ mb: 4, textAlign: 'center' }}>
                                 <Typography variant="h4" sx={{ color: '#D4AF37', fontWeight: 700, mb: 1 }}>
-                                    Finnance Management
+                                    {siteTitle}
                                 </Typography>
                                 <Typography color="text.secondary">
-                                    {isRegister ? 'Crie sua conta gratuita' : 'Acesse sua conta para gerenciar seu patrimônio'}
+                                    Acesse sua conta para gerenciar seu patrimônio
                                 </Typography>
                             </Box>
 
                             {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-                            {success && <Alert severity="success" sx={{ mb: 3 }}>{success}</Alert>}
 
                             <form onSubmit={handleSubmit}>
                                 <Stack spacing={2}>
-                                    {isRegister && (
-                                        <TextField
-                                            fullWidth
-                                            label="Nome Completo"
-                                            variant="outlined"
-                                            value={fullName}
-                                            onChange={(e) => setFullName(e.target.value)}
-                                            required
-                                        />
-                                    )}
                                     <TextField
                                         fullWidth
                                         label="E-mail"
@@ -119,39 +108,10 @@ export function LoginPage() {
                                         disabled={loading}
                                         sx={{ mt: 2 }}
                                     >
-                                        {loading ? 'Processando...' : isRegister ? 'Cadastrar' : 'Entrar'}
+                                        {loading ? 'Processando...' : 'Entrar'}
                                     </Button>
                                 </Stack>
                             </form>
-
-                            <Box sx={{ my: 3 }}>
-                                <Divider>
-                                    <Typography variant="body2" color="text.secondary">OU</Typography>
-                                </Divider>
-                            </Box>
-
-                            <Button
-                                fullWidth
-                                variant="outlined"
-                                size="large"
-                                onClick={handleGoogleLogin}
-                                sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }}
-                            >
-                                Continuar com Google
-                            </Button>
-
-                            <Box sx={{ mt: 3, textAlign: 'center' }}>
-                                <Typography variant="body2" color="text.secondary">
-                                    {isRegister ? 'Já tem uma conta?' : 'Não tem uma conta?'}
-                                    {' '}
-                                    <Button
-                                        onClick={() => setIsRegister(!isRegister)}
-                                        sx={{ color: '#D4AF37', textTransform: 'none', fontWeight: 700, p: 0, minWidth: 'auto' }}
-                                    >
-                                        {isRegister ? 'Faça Login' : 'Cadastre-se'}
-                                    </Button>
-                                </Typography>
-                            </Box>
                         </CardContent>
                     </Card>
                 </motion.div>

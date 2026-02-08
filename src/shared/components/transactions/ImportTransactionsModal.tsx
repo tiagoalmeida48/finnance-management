@@ -52,41 +52,70 @@ export function ImportTransactionsModal({ open, onClose }: ImportTransactionsMod
     const [file, setFile] = useState<File | null>(null);
     const [previewData, setPreviewData] = useState<FileData[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [isDragOver, setIsDragOver] = useState(false);
 
     const { data: accounts } = useAccounts();
     const { data: categories } = useCategories();
     const { data: cards } = useCreditCards();
     const batchCreate = useBatchCreateTransactions();
 
+    const parseCsvFile = (selectedFile: File) => {
+        setFile(selectedFile);
+        setError(null);
+
+        Papa.parse(selectedFile, {
+            header: true,
+            skipEmptyLines: true,
+            delimiter: '',
+            delimitersToGuess: [';', ',', '\t', '|'],
+            complete: (results) => {
+                const data = results.data as FileData[];
+                const requiredColumns = ['Data', 'Descrição', 'Valor', 'Conta'];
+                const hasAllColumns = requiredColumns.every(col => col in (data[0] || {}));
+
+                if (!hasAllColumns) {
+                    setError(`O arquivo CSV deve conter as colunas: ${requiredColumns.join(', ')}`);
+                    setPreviewData([]);
+                    return;
+                }
+
+                setPreviewData(data);
+            },
+            error: (err) => {
+                setError('Erro ao processar o arquivo CSV: ' + err.message);
+                setPreviewData([]);
+            }
+        });
+    };
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0];
-        if (selectedFile) {
-            setFile(selectedFile);
-            setError(null);
+        if (selectedFile) parseCsvFile(selectedFile);
+    };
 
-            Papa.parse(selectedFile, {
-                header: true,
-                skipEmptyLines: true,
-                delimiter: "", // Auto-detect delimiter
-                delimitersToGuess: [';', ',', '\t', '|'], // Prioritize semicolon for regional compatibility
-                complete: (results) => {
-                    const data = results.data as FileData[];
-                    // Basic validation of columns
-                    const requiredColumns = ['Data', 'Descrição', 'Valor', 'Conta'];
-                    const hasAllColumns = requiredColumns.every(col => col in (data[0] || {}));
+    const handleDrop = (e: React.DragEvent<HTMLElement>) => {
+        e.preventDefault();
+        setIsDragOver(false);
 
-                    if (!hasAllColumns) {
-                        setError(`O arquivo CSV deve conter as colunas: ${requiredColumns.join(', ')}`);
-                        setPreviewData([]);
-                    } else {
-                        setPreviewData(data);
-                    }
-                },
-                error: (err) => {
-                    setError('Erro ao processar o arquivo CSV: ' + err.message);
-                }
-            });
+        const droppedFile = e.dataTransfer.files?.[0];
+        if (!droppedFile) return;
+
+        if (!droppedFile.name.toLowerCase().endsWith('.csv')) {
+            setError('Selecione um arquivo no formato CSV (.csv).');
+            return;
         }
+
+        parseCsvFile(droppedFile);
+    };
+
+    const handleDragOver = (e: React.DragEvent<HTMLElement>) => {
+        e.preventDefault();
+        setIsDragOver(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent<HTMLElement>) => {
+        e.preventDefault();
+        setIsDragOver(false);
     };
 
     const updateRow = (index: number, field: keyof FileData, value: string) => {
@@ -103,7 +132,7 @@ export function ImportTransactionsModal({ open, onClose }: ImportTransactionsMod
         // Try DD/MM/YYYY
         const brFormat = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
         if (brFormat) {
-            const [_, day, month, year] = brFormat;
+            const [, day, month, year] = brFormat;
             return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
         }
 
@@ -186,9 +215,9 @@ export function ImportTransactionsModal({ open, onClose }: ImportTransactionsMod
         if (validTransactions.length === 0) return;
 
         try {
-            await batchCreate.mutateAsync(validTransactions as any);
+            await batchCreate.mutateAsync(validTransactions);
             handleClose();
-        } catch (err) {
+        } catch {
             setError('Erro ao importar transações. Verifique os dados e tente novamente.');
         }
     };
@@ -231,16 +260,19 @@ export function ImportTransactionsModal({ open, onClose }: ImportTransactionsMod
                     <Stack spacing={2}>
                         <Box
                             component="label"
+                            onDrop={handleDrop}
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
                             sx={{
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 py: 8,
-                                border: '2px dashed #2A2A2A',
+                                border: isDragOver ? '2px dashed #D4AF37' : '2px dashed #2A2A2A',
                                 borderRadius: 2,
                                 textAlign: 'center',
-                                bgcolor: 'rgba(255,255,255,0.01)',
+                                bgcolor: isDragOver ? 'rgba(212, 175, 55, 0.08)' : 'rgba(255,255,255,0.01)',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s',
                                 '&:hover': {

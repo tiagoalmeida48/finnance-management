@@ -2,8 +2,8 @@ import { Stack, ToggleButtonGroup, ToggleButton, FormControl, Select, MenuItem, 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface DashboardFiltersProps {
-    filterType: 'monthly' | 'general' | 'custom';
-    setFilterType: (val: 'monthly' | 'general' | 'custom') => void;
+    filterType: 'monthly' | 'general';
+    setFilterType: (val: 'monthly' | 'general') => void;
     currentDate: Date;
     setCurrentDate: (date: Date) => void;
     handlePrevMonth: () => void;
@@ -26,7 +26,6 @@ export function DashboardFilters({
             >
                 <ToggleButton value="monthly">Mês</ToggleButton>
                 <ToggleButton value="general">Geral</ToggleButton>
-                <ToggleButton value="custom">Histórico</ToggleButton>
             </ToggleButtonGroup>
 
             {filterType === 'monthly' && (

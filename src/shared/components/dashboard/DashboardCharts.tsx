@@ -1,5 +1,6 @@
-import { Grid, Card, CardContent, Typography, Box, useTheme, Stack } from '@mui/material';
-import { ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Area, AreaChart, Cell } from 'recharts';
+import { Grid, Card, CardContent, Typography, Box, Stack } from '@mui/material';
+import { ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { colors } from '@/shared/theme';
 
 interface DashboardChartsProps {
     chartData: any[] | undefined;
@@ -13,132 +14,228 @@ const formatBRL = (val: number) => new Intl.NumberFormat('pt-BR', {
     maximumFractionDigits: 2
 }).format(val);
 
+const formatCompact = (val: number) => {
+    if (val >= 1000) return `R$ ${(val / 1000).toFixed(0)}k`;
+    return `R$ ${val}`;
+};
+
+const formatPercent = (value: number) => `${value.toFixed(1).replace('.', ',')}%`;
+
 export function DashboardCharts({ chartData, categories }: DashboardChartsProps) {
-    const theme = useTheme();
+    const CATEGORY_COLORS = [colors.yellow, colors.purple, colors.green, colors.red, colors.blue];
 
-    const COLORS = ['#D4AF37', '#9575CD', '#4CAF50', '#EF5350', '#42A5F5'];
+    const totalCategoryValue = categories?.reduce((sum, cat) => sum + cat.value, 0) || 1;
 
-    const tooltipStyle = {
-        backgroundColor: '#1C1C1C',
-        border: '1px solid rgba(255, 255, 255, 0.15)',
-        borderRadius: '10px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
+    const CustomPieTooltip = ({ active, payload }: any) => {
+        if (!active || !payload || !payload.length) return null;
+
+        const item = payload[0].payload;
+        const color = item.fill;
+        const percentage = totalCategoryValue > 0 ? (Number(item.value || 0) / totalCategoryValue) * 100 : 0;
+
+        return (
+            <Box sx={{
+                minWidth: 170,
+                bgcolor: 'rgba(20, 20, 30, 0.96)',
+                border: '1px solid rgba(255,255,255,0.16)',
+                borderRadius: '12px',
+                backdropFilter: 'blur(16px)',
+                boxShadow: '0 14px 34px rgba(0, 0, 0, 0.5)',
+                p: '10px 12px',
+            }}>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.6 }}>
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: color }} />
+                    <Typography sx={{ fontSize: '12px', color: colors.textSecondary, fontWeight: 600 }}>
+                        {item.name}
+                    </Typography>
+                </Stack>
+
+                <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1.5}>
+                    <Typography sx={{ fontSize: '14px', fontWeight: 700, color: colors.textPrimary }}>
+                        {formatBRL(item.value)}
+                    </Typography>
+                    <Box sx={{
+                        px: 1,
+                        py: 0.2,
+                        borderRadius: '999px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        color,
+                        bgcolor: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.14)',
+                    }}>
+                        {formatPercent(percentage)}
+                    </Box>
+                </Stack>
+            </Box>
+        );
     };
 
     return (
-        <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+            {/* Cash Flow Chart */}
             <Grid size={{ xs: 12, md: 8 }}>
                 <Card sx={{ height: '100%' }}>
                     <CardContent sx={{ p: 3 }}>
-                        <Typography variant="h6" sx={{ mb: 3 }}>Fluxo de Caixa</Typography>
-                        <Box sx={{ height: 350, width: '100%' }}>
+                        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+                            <Typography sx={{ fontSize: '16px', fontFamily: '"Plus Jakarta Sans"', fontWeight: 600 }}>
+                                Fluxo de Caixa
+                            </Typography>
+                            <Stack direction="row" spacing={2}>
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: colors.green }} />
+                                    <Typography sx={{ fontSize: '12px', color: colors.textSecondary }}>Receitas</Typography>
+                                </Stack>
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: colors.red }} />
+                                    <Typography sx={{ fontSize: '12px', color: colors.textSecondary }}>Despesas</Typography>
+                                </Stack>
+                            </Stack>
+                        </Stack>
+                        <Box sx={{ height: 280, width: '100%' }}>
                             <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                                    <defs>
-                                        <linearGradient id="colorReceita" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#4CAF50" stopOpacity={0.3} />
-                                            <stop offset="95%" stopColor="#4CAF50" stopOpacity={0} />
-                                        </linearGradient>
-                                        <linearGradient id="colorDespesa" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#EF5350" stopOpacity={0.3} />
-                                            <stop offset="95%" stopColor="#EF5350" stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.06)" />
+                                <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.04)" />
                                     <XAxis
                                         dataKey="name"
-                                        axisLine={false}
+                                        axisLine={{ stroke: colors.border }}
                                         tickLine={false}
-                                        tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
+                                        tick={{ fill: colors.textMuted, fontSize: 11 }}
                                         dy={10}
                                     />
                                     <YAxis
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
-                                        tickFormatter={(val) => `R$ ${val.toLocaleString('pt-BR')}`}
+                                        tick={{ fill: colors.textMuted, fontSize: 11 }}
+                                        tickFormatter={formatCompact}
                                     />
                                     <Tooltip
-                                        cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 2 }}
-                                        contentStyle={tooltipStyle}
-                                        labelStyle={{ color: '#FFF', fontWeight: 600, marginBottom: 8 }}
-                                        itemStyle={{ color: '#FFF', padding: '2px 0' }}
-                                        formatter={(value: any, name: any) => [formatBRL(value ?? 0), name ?? '']}
+                                        cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
+                                        contentStyle={{
+                                            backgroundColor: '#1E1E2A',
+                                            border: '1px solid rgba(255,255,255,0.12)',
+                                            borderRadius: '12px',
+                                            backdropFilter: 'blur(20px)',
+                                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+                                            padding: '12px 16px',
+                                        }}
+                                        labelStyle={{ color: colors.textSecondary, fontSize: '12px', marginBottom: 8 }}
+                                        formatter={(value: any, name: any) => [formatBRL(value ?? 0), name]}
                                     />
-                                    <Legend
-                                        verticalAlign="top"
-                                        align="right"
-                                        iconType="circle"
-                                        wrapperStyle={{ paddingBottom: '20px' }}
-                                    />
-                                    <Area
+                                    <Line
                                         type="monotone"
                                         dataKey="receita"
                                         name="Receitas"
-                                        stroke="#4CAF50"
-                                        strokeWidth={3}
-                                        fill="url(#colorReceita)"
-                                        dot={{ fill: '#4CAF50', strokeWidth: 2, r: 4 }}
-                                        activeDot={{ r: 6, stroke: '#4CAF50', strokeWidth: 2, fill: '#fff' }}
+                                        stroke={colors.green}
+                                        strokeWidth={2.5}
+                                        dot={{ fill: colors.green, r: 3, strokeWidth: 0 }}
+                                        activeDot={{ r: 5, stroke: colors.bgPrimary, strokeWidth: 2 }}
                                     />
-                                    <Area
+                                    <Line
                                         type="monotone"
                                         dataKey="despesa"
                                         name="Despesas"
-                                        stroke="#EF5350"
-                                        strokeWidth={3}
-                                        fill="url(#colorDespesa)"
-                                        dot={{ fill: '#EF5350', strokeWidth: 2, r: 4 }}
-                                        activeDot={{ r: 6, stroke: '#EF5350', strokeWidth: 2, fill: '#fff' }}
+                                        stroke={colors.red}
+                                        strokeWidth={2}
+                                        strokeDasharray="6 3"
+                                        dot={{ fill: colors.red, r: 3, strokeWidth: 0 }}
+                                        activeDot={{ r: 5, stroke: colors.bgPrimary, strokeWidth: 2 }}
                                     />
-                                </AreaChart>
+                                </LineChart>
                             </ResponsiveContainer>
                         </Box>
                     </CardContent>
                 </Card>
             </Grid>
 
+            {/* Categories Donut Chart */}
             <Grid size={{ xs: 12, md: 4 }}>
                 <Card sx={{ height: '100%' }}>
                     <CardContent sx={{ p: 3 }}>
-                        <Typography variant="h6" sx={{ mb: 3 }}>Categorias</Typography>
-                        <Box sx={{ height: 280, width: '100%' }}>
+                        <Typography sx={{ fontSize: '16px', fontFamily: '"Plus Jakarta Sans"', fontWeight: 600, mb: 2 }}>
+                            Categorias
+                        </Typography>
+                        <Box sx={{ height: 180, width: '100%', display: 'flex', justifyContent: 'center' }}>
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
                                         data={categories}
                                         cx="50%"
                                         cy="50%"
-                                        innerRadius={70}
-                                        outerRadius={100}
-                                        paddingAngle={4}
+                                        innerRadius={55}
+                                        outerRadius={80}
+                                        paddingAngle={3}
+                                        cornerRadius={4}
                                         dataKey="value"
+                                        stroke="none"
                                     >
                                         {categories?.map((_, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <Tooltip
-                                        contentStyle={tooltipStyle}
-                                        labelStyle={{ color: '#FFF' }}
-                                        itemStyle={{ color: '#FFF' }}
-                                        formatter={(value: any, name: any) => [formatBRL(value ?? 0), name ?? '']}
-                                    />
+                                    <Tooltip content={<CustomPieTooltip />} cursor={false} offset={16} wrapperStyle={{ zIndex: 10 }} />
                                 </PieChart>
                             </ResponsiveContainer>
                         </Box>
-                        <Stack spacing={1.5} sx={{ mt: 2 }}>
-                            {categories?.slice(0, 5).map((cat, idx) => (
-                                <Stack key={idx} direction="row" justifyContent="space-between" alignItems="center">
-                                    <Stack direction="row" spacing={1.5} alignItems="center">
-                                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: COLORS[idx % COLORS.length] }} />
-                                        <Typography variant="body2" color="text.secondary">{cat.name}</Typography>
-                                    </Stack>
-                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                        {formatBRL(cat.value)}
-                                    </Typography>
-                                </Stack>
-                            ))}
+
+                        {/* Category List with Progress Bars */}
+                        <Stack spacing={0} sx={{ mt: 1 }}>
+                            {categories?.slice(0, 5).map((cat, idx) => {
+                                const percentage = (cat.value / totalCategoryValue) * 100;
+                                const color = CATEGORY_COLORS[idx % CATEGORY_COLORS.length];
+                                return (
+                                    <Box
+                                        key={idx}
+                                        sx={{
+                                            py: 1.5,
+                                            borderBottom: idx < 4 ? `1px solid ${colors.border}` : 'none',
+                                            transition: 'padding-left 200ms ease',
+                                            '&:hover': { pl: 0.5 },
+                                        }}
+                                    >
+                                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                            <Stack direction="row" spacing={1.5} alignItems="center">
+                                                <Box sx={{
+                                                    width: 10,
+                                                    height: 10,
+                                                    borderRadius: '3px',
+                                                    bgcolor: color
+                                                }} />
+                                                <Typography sx={{ fontSize: '13.5px', color: colors.textSecondary }}>
+                                                    {cat.name}
+                                                </Typography>
+                                            </Stack>
+                                            <Stack direction="row" spacing={1.5} alignItems="center">
+                                                <Box sx={{
+                                                    width: 60,
+                                                    height: 4,
+                                                    borderRadius: 2,
+                                                    bgcolor: 'rgba(255,255,255,0.06)',
+                                                    overflow: 'hidden',
+                                                }}>
+                                                    <Box sx={{
+                                                        width: `${percentage}%`,
+                                                        height: '100%',
+                                                        bgcolor: color,
+                                                        transition: 'width 1s ease',
+                                                        transitionDelay: `${idx * 100}ms`,
+                                                    }} />
+                                                </Box>
+                                                <Typography sx={{
+                                                    fontSize: '13.5px',
+                                                    fontWeight: 600,
+                                                    fontFamily: '"Plus Jakarta Sans"',
+                                                    color: color,
+                                                    minWidth: 80,
+                                                    textAlign: 'right',
+                                                }}>
+                                                    {formatBRL(cat.value)}
+                                                </Typography>
+                                            </Stack>
+                                        </Stack>
+                                    </Box>
+                                );
+                            })}
                         </Stack>
                     </CardContent>
                 </Card>
@@ -146,5 +243,3 @@ export function DashboardCharts({ chartData, categories }: DashboardChartsProps)
         </Grid>
     );
 }
-
-
