@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Stack, Typography, Chip, Button, Box, Collapse, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
 import { Calendar, ChevronRight, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
+import type { CardStatement } from '../../interfaces/card-details.interface';
 
 interface CardStatementListProps {
-    statements: any[];
-    handleOpenPayModal: (s: any) => void;
+    statements: CardStatement[];
+    handleOpenPayModal: (s: CardStatement) => void;
 }
 
 const colors = {
@@ -27,7 +28,7 @@ const formatCurrency = (value: number) =>
 export function CardStatementList({ statements, handleOpenPayModal }: CardStatementListProps) {
     const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
 
-    const getStatusBadge = (statement: any) => {
+    const getStatusBadge = (statement: CardStatement) => {
         if (statement.unpaidTotal > 0) {
             return { label: 'Aberta', color: colors.yellow, bgColor: 'rgba(245, 166, 35, 0.1)' };
         }
@@ -135,7 +136,7 @@ export function CardStatementList({ statements, handleOpenPayModal }: CardStatem
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {s.transactions?.map((t: any) => (
+                                            {s.transactions?.map((t) => (
                                                 <TableRow key={t.id} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.02)' } }}>
                                                     <TableCell sx={{ borderBottom: `1px solid rgba(255,255,255,0.03)`, color: colors.textSecondary, fontSize: '13px', py: 1.5 }}>
                                                         {format(new Date(t.payment_date + 'T12:00:00'), 'dd/MM')}

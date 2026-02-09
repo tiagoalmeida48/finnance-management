@@ -10,12 +10,9 @@ export function CreditCardDetailsPage() {
         navigate, card, isLoading,
         selectedDate,
         isAllTime, setIsAllTime,
-        isCustom, setIsCustom,
-        customStart, setCustomStart,
-        customEnd, setCustomEnd,
         payModalOpen, setPayModalOpen,
         selectedStatement, setSelectedStatement,
-        handlePrevMonth, handleNextMonth,
+        handlePrevYear, handleNextYear,
         handleOpenPayModal, historyData
     } = useCreditCardDetailsLogic();
 
@@ -37,15 +34,9 @@ export function CreditCardDetailsPage() {
                     navigate={navigate}
                     isAllTime={isAllTime}
                     setIsAllTime={setIsAllTime}
-                    isCustom={isCustom}
-                    setIsCustom={setIsCustom}
                     selectedDate={selectedDate}
-                    handlePrevMonth={handlePrevMonth}
-                    handleNextMonth={handleNextMonth}
-                    customStart={customStart}
-                    setCustomStart={setCustomStart}
-                    customEnd={customEnd}
-                    setCustomEnd={setCustomEnd}
+                    handlePrevYear={handlePrevYear}
+                    handleNextYear={handleNextYear}
                 />
                 <CardDetailsCharts chartData={historyData.chartData} categoryData={historyData.categoryData} />
                 <CardStatementList statements={historyData.statements} handleOpenPayModal={handleOpenPayModal} />

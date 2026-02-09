@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Performance Optimizer"
+  short_description: "Profile and optimize bottlenecks safely"
+  default_prompt: "Use $code-performance-optimizer to profile this codepath, optimize the top bottlenecks, and report before/after metrics."

@@ -9,7 +9,7 @@ import { SiteBrandingForm } from '../shared/components/profile/SiteBrandingForm'
 
 export function ProfilePage() {
     const {
-        user, loading, fetching, message, fullName, setFullName, avatarUrl, uploading,
+        user, profile, loading, fetching, message, fullName, setFullName, avatarUrl, uploading,
         password, setPassword, confirmPassword, setConfirmPassword, showPassword, setShowPassword, pwdLoading,
         handleUpdate, uploadAvatar, handlePasswordUpdate
     } = useProfilePageLogic();
@@ -101,20 +101,22 @@ export function ProfilePage() {
                             </Card>
                         </Grid>
 
-                        <Grid size={{ xs: 12, lg: 4 }}>
-                            <Card
-                                sx={{
-                                    height: '100%',
-                                    borderRadius: '14px',
-                                }}
-                            >
-                                <CardContent sx={{ p: { xs: 2.25, md: 2.75 } }}>
-                                    <Stack spacing={3}>
-                                        <SiteBrandingForm />
-                                    </Stack>
-                                </CardContent>
-                            </Card>
-                        </Grid>
+                        {profile?.is_admin && (
+                            <Grid size={{ xs: 12, lg: 4 }}>
+                                <Card
+                                    sx={{
+                                        height: '100%',
+                                        borderRadius: '14px',
+                                    }}
+                                >
+                                    <CardContent sx={{ p: { xs: 2.25, md: 2.75 } }}>
+                                        <Stack spacing={3}>
+                                            <SiteBrandingForm />
+                                        </Stack>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                        )}
                     </Grid>
                 </Stack>
             </Container>

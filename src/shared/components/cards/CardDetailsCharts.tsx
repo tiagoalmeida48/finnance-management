@@ -1,10 +1,11 @@
 import { Box, Typography, Stack, Card, CardContent } from '@mui/material';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ReferenceLine } from 'recharts';
 import { colors } from '@/shared/theme';
+import type { CardCategoryPoint, CardHistoryChartPoint } from '../../interfaces/card-details.interface';
 
 interface CardDetailsChartsProps {
-    chartData: any[];
-    categoryData: any[];
+    chartData: CardHistoryChartPoint[];
+    categoryData: CardCategoryPoint[];
 }
 
 const CATEGORY_COLORS = [colors.yellow, colors.purple, colors.green, colors.red, colors.blue];
@@ -19,11 +20,16 @@ const formatCompact = (value: number) => {
 
 const formatPercent = (value: number) => `${value.toFixed(1).replace('.', ',')}%`;
 
-const CustomPieTooltip = ({ active, payload }: any) => {
+interface PieTooltipProps {
+    active?: boolean;
+    payload?: Array<{ payload: CardCategoryPoint }>;
+}
+
+const CustomPieTooltip = ({ active, payload }: PieTooltipProps) => {
     if (!active || !payload || !payload.length) return null;
 
     const item = payload[0].payload;
-    const color = item.fill;
+    const color = item.fill || colors.accent;
 
     return (
         <Box sx={{
@@ -124,7 +130,7 @@ export function CardDetailsCharts({ chartData, categoryData }: CardDetailsCharts
                                         padding: '12px 16px',
                                     }}
                                     labelStyle={{ color: colors.textSecondary, fontSize: '12px', marginBottom: 8 }}
-                                    formatter={(value: any) => [formatCurrency(value ?? 0), 'Total']}
+                                    formatter={(value: number | string | undefined) => [formatCurrency(Number(value) || 0), 'Total' as const]}
                                 />
                                 {average > 0 && (
                                     <ReferenceLine

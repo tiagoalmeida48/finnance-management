@@ -6,7 +6,9 @@ export interface SiteBranding {
 }
 
 export interface SiteBrandingContextValue extends SiteBranding {
-    updateBranding: (updates: Partial<SiteBranding>) => void;
+    loading: boolean;
+    saving: boolean;
+    updateBranding: (updates: Partial<SiteBranding>) => Promise<void>;
 }
 
 export const SiteBrandingContext = createContext<SiteBrandingContextValue | null>(null);

@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import {
     Box,
     Button,
@@ -12,6 +13,7 @@ import {
     TableCell,
     TableContainer,
     TableHead,
+    TablePagination,
     TableRow,
     Typography,
 } from '@mui/material';
@@ -35,6 +37,20 @@ export function SalarySettingsTab({
     onOpenDeleteDialog,
     deletePending,
 }: SalarySettingsTabProps) {
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(100);
+    const showingAllRows = rowsPerPage === -1;
+    const maxPage = showingAllRows ? 0 : Math.max(0, Math.ceil(history.length / rowsPerPage) - 1);
+    const safePage = Math.min(page, maxPage);
+
+    const paginatedHistory = useMemo(() => {
+        if (showingAllRows) {
+            return history;
+        }
+        const startIndex = safePage * rowsPerPage;
+        return history.slice(startIndex, startIndex + rowsPerPage);
+    }, [history, safePage, rowsPerPage, showingAllRows]);
+
     return (
         <Grid size={{ xs: 12 }}>
             <Card sx={{ borderRadius: '14px' }}>
@@ -66,7 +82,7 @@ export function SalarySettingsTab({
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {history.map((setting) => {
+                                        {paginatedHistory.map((setting) => {
                                             const isCurrent = setting.date_end === '9999-12-31';
                                             return (
                                                 <TableRow
@@ -123,9 +139,44 @@ export function SalarySettingsTab({
                                                 </TableRow>
                                             );
                                         })}
+                                        {paginatedHistory.length === 0 && (
+                                            <TableRow>
+                                                <TableCell colSpan={7} align="center" sx={{ py: 3, color: colors.textMuted }}>
+                                                    Nenhuma configuração encontrada.
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
                                     </TableBody>
                                 </Table>
                             </TableContainer>
+                        )}
+                        {!loadingHistory && (
+                            <TablePagination
+                                component="div"
+                                count={history.length}
+                                page={safePage}
+                                onPageChange={(_, newPage) => setPage(newPage)}
+                                rowsPerPage={rowsPerPage}
+                                onRowsPerPageChange={(event) => {
+                                    setRowsPerPage(Number(event.target.value));
+                                    setPage(0);
+                                }}
+                                rowsPerPageOptions={[50, 100, 200, 300, { label: 'Tudo', value: -1 }]}
+                                labelRowsPerPage="Itens por página"
+                                labelDisplayedRows={({ count, page: currentPage }) => {
+                                    const totalPages = rowsPerPage === -1 ? 1 : Math.max(1, Math.ceil(count / rowsPerPage));
+                                    const safeCurrentPage = Math.min(currentPage + 1, totalPages);
+                                    return `Página ${safeCurrentPage} de ${totalPages}`;
+                                }}
+                                sx={{
+                                    color: colors.textSecondary,
+                                    '& .MuiTablePagination-selectIcon': { color: colors.textMuted },
+                                    '& .MuiIconButton-root': {
+                                        color: colors.textSecondary,
+                                        '&.Mui-disabled': { color: 'rgba(255,255,255,0.24)' },
+                                    },
+                                }}
+                            />
                         )}
                     </Stack>
                 </CardContent>

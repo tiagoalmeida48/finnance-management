@@ -3,6 +3,17 @@ import { format, startOfMonth, addMonths, startOfYear, endOfYear, eachMonthOfInt
 import { ptBR } from 'date-fns/locale';
 import { useTransactions } from './useTransactions';
 import { useCreditCards } from './useCreditCards';
+import { calculateTrackingSummary } from './billTracking.utils';
+
+interface TrackingItem {
+    id: string;
+    name: string;
+    total: number;
+    isPaid: boolean;
+    itemType: 'card' | 'fixed';
+}
+
+type CardTrackingItem = Omit<TrackingItem, 'itemType'> & { itemType: 'card' };
 
 export function useBillTrackingPageLogic() {
     const [currentYear, setCurrentYear] = useState(new Date());
@@ -62,25 +73,22 @@ export function useBillTrackingPageLogic() {
                     name: card.name,
                     total,
                     isPaid,
-                    itemType: 'card'
+                    itemType: 'card' as const
                 };
-            }).filter(Boolean);
+            }).filter((item): item is CardTrackingItem => item !== null);
 
-            const allItems = [
+            const allItems: TrackingItem[] = [
                 ...fixedExpenses.map(t => ({
                     id: t.id,
                     name: t.description,
                     total: t.amount,
                     isPaid: t.is_paid,
-                    itemType: 'fixed'
+                    itemType: 'fixed' as const
                 })),
                 ...cardBills
             ];
 
-            const totalItems = allItems.length;
-            const paidItems = allItems.filter(i => i && i.isPaid).length;
-            const progress = totalItems > 0 ? (paidItems / totalItems) * 100 : 0;
-            const totalAmount = allItems.reduce((sum, item: any) => sum + (Number(item?.total) || 0), 0);
+            const { totalItems, paidItems, progress, totalAmount } = calculateTrackingSummary(allItems);
 
             return {
                 month,

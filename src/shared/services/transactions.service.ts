@@ -2,15 +2,36 @@ import { supabase } from '@/lib/supabase/client';
 import { addMonths, format } from 'date-fns';
 import { accountsService } from './accounts.service';
 import { Transaction, CreateTransactionData } from '../interfaces';
+import {
+    batchDeleteTransactions,
+    batchPayTransactions,
+    batchUnpayTransactions,
+    deleteTransactionById,
+    deleteTransactionGroup,
+    getFirstTransactionDate as fetchFirstTransactionDate,
+    payCardBill,
+    updateTransactionGroup,
+} from './transactions-operations.service';
 
-const sanitizePayload = (data: any) => {
-    const uuidFields = ['category_id', 'account_id', 'to_account_id', 'card_id', 'installment_group_id', 'recurring_group_id'];
+type TransactionMutationData = Partial<Transaction> & {
+    installment_amounts?: number[];
+    repeat_count?: number;
+    is_installment?: boolean;
+};
+
+type TransactionInsertPayload = TransactionMutationData & { user_id: string };
+
+const sanitizePayload = <T extends Record<string, unknown>>(data: T): T => {
+    const uuidFields = ['category_id', 'account_id', 'to_account_id', 'card_id', 'installment_group_id', 'recurring_group_id'] as const;
     const sanitized = { ...data };
+    const sanitizedRecord = sanitized as Record<string, unknown>;
+
     uuidFields.forEach(field => {
-        if (sanitized[field] === '') {
-            sanitized[field] = null;
+        if (sanitizedRecord[field] === '') {
+            sanitizedRecord[field] = null;
         }
     });
+
     return sanitized;
 };
 
@@ -72,7 +93,7 @@ export const transactionsService = {
 
         if (isInstallment && totalInstallments > 1) {
             const installmentGroupId = crypto.randomUUID();
-            const transactionsToCreate = [];
+            const transactionsToCreate: TransactionInsertPayload[] = [];
             const baseDate = new Date(transaction.payment_date + 'T12:00:00');
 
             for (let i = 1; i <= totalInstallments; i++) {
@@ -94,9 +115,9 @@ export const transactionsService = {
             }
 
             transactionsToCreate.forEach(t => {
-                delete (t as any).installment_amounts;
-                delete (t as any).repeat_count;
-                delete (t as any).is_installment;
+                delete t.installment_amounts;
+                delete t.repeat_count;
+                delete t.is_installment;
             });
 
             const { data, error } = await supabase.from('transactions').insert(transactionsToCreate).select();
@@ -108,12 +129,12 @@ export const transactionsService = {
                 }
             }
 
-            return (data as any[])[0] as Transaction;
+            return (data as Transaction[])[0];
         }
 
         if (transaction.is_fixed && repeatCount > 1) {
             const recurringGroupId = crypto.randomUUID();
-            const transactionsToCreate = [];
+            const transactionsToCreate: TransactionInsertPayload[] = [];
             const baseDate = new Date(transaction.payment_date + 'T12:00:00');
 
             for (let i = 0; i < repeatCount; i++) {
@@ -128,9 +149,9 @@ export const transactionsService = {
             }
 
             transactionsToCreate.forEach(t => {
-                delete (t as any).installment_amounts;
-                delete (t as any).repeat_count;
-                delete (t as any).is_installment;
+                delete t.installment_amounts;
+                delete t.repeat_count;
+                delete t.is_installment;
             });
 
             const { data, error } = await supabase.from('transactions').insert(transactionsToCreate).select();
@@ -145,10 +166,10 @@ export const transactionsService = {
             return data[0] as Transaction;
         }
 
-        const payload = sanitizePayload({ ...transaction, user_id: user.id });
-        delete (payload as any).installment_amounts;
-        delete (payload as any).repeat_count;
-        delete (payload as any).is_installment;
+        const payload: TransactionInsertPayload = sanitizePayload({ ...transaction, user_id: user.id });
+        delete payload.installment_amounts;
+        delete payload.repeat_count;
+        delete payload.is_installment;
 
         const { data, error } = await supabase
             .from('transactions')
@@ -166,7 +187,7 @@ export const transactionsService = {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Not authenticated');
 
-        const payloads = transactions.map(t => sanitizePayload({ ...t, user_id: user.id }));
+        const payloads: TransactionInsertPayload[] = transactions.map(t => sanitizePayload({ ...t, user_id: user.id }));
 
         const { data, error } = await supabase
             .from('transactions')
@@ -224,191 +245,36 @@ export const transactionsService = {
     },
 
     async batchPay(ids: string[], accountId: string, paymentDate: string) {
-        const { data, error } = await supabase
-            .from('transactions')
-            .update({
-                is_paid: true,
-                account_id: accountId,
-                payment_date: paymentDate,
-                updated_at: new Date().toISOString()
-            })
-            .in('id', ids)
-            .select();
-
-        if (error) throw error;
-        const updated = data as Transaction[];
-        for (const t of updated) {
-            await syncBalance(t, 'add');
-        }
-        return updated;
+        return batchPayTransactions(ids, accountId, paymentDate, syncBalance);
     },
 
     async batchUnpay(ids: string[]) {
-        const { data: oldTransactions } = await supabase
-            .from('transactions')
-            .select('*')
-            .in('id', ids);
-
-        if (oldTransactions) {
-            for (const t of oldTransactions) {
-                await syncBalance(t as Transaction, 'remove');
-            }
-        }
-
-        const { data, error } = await supabase
-            .from('transactions')
-            .update({
-                is_paid: false,
-                updated_at: new Date().toISOString()
-            })
-            .in('id', ids)
-            .select();
-
-        if (error) throw error;
-        return data as Transaction[];
+        return batchUnpayTransactions(ids, syncBalance);
     },
 
     async batchDelete(ids: string[]) {
-        const { data: transactions } = await supabase
-            .from('transactions')
-            .select('*')
-            .in('id', ids);
-
-        if (transactions) {
-            for (const t of transactions) {
-                await syncBalance(t as Transaction, 'remove');
-            }
-        }
-
-        const { error } = await supabase
-            .from('transactions')
-            .delete()
-            .in('id', ids);
-
-        if (error) throw error;
+        return batchDeleteTransactions(ids, syncBalance);
     },
 
     async delete(id: string) {
-        const transaction = await transactionsService.getById(id);
-        await syncBalance(transaction, 'remove');
-
-        const { error } = await supabase
-            .from('transactions')
-            .delete()
-            .eq('id', id);
-
-        if (error) throw error;
+        return deleteTransactionById(id, syncBalance);
     },
 
     async deleteGroup(groupId: string, type: 'installment' | 'recurring') {
-        const { data: transactions, error: fetchError } = await supabase
-            .from('transactions')
-            .select('*')
-            .eq(type === 'installment' ? 'installment_group_id' : 'recurring_group_id', groupId);
-
-        if (fetchError) throw fetchError;
-
-        if (transactions) {
-            for (const t of transactions) {
-                await syncBalance(t as Transaction, 'remove');
-            }
-        }
-
-        const { error } = await supabase
-            .from('transactions')
-            .update({ deleted_at: new Date().toISOString() })
-            .eq(type === 'installment' ? 'installment_group_id' : 'recurring_group_id', groupId);
-
-        if (error) throw error;
+        return deleteTransactionGroup(groupId, type, syncBalance);
     },
 
     async payBill(cardId: string, transactionIds: string[], accountId: string, paymentDate: string, amount: number, description: string) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Not authenticated');
-
-        const paymentPayload = sanitizePayload({
-            user_id: user.id,
-            description: `Pgto Fatura: ${description}`,
-            amount: Math.abs(amount),
-            type: 'expense',
-            payment_date: paymentDate,
-            account_id: accountId,
-            is_paid: true,
-            notes: `Pagamento de fatura do cartão ID: ${cardId}`
-        });
-
-        const { data: paymentTransaction, error: paymentError } = await supabase
-            .from('transactions')
-            .insert(paymentPayload)
-            .select()
-            .single();
-
-        if (paymentError) throw paymentError;
-
-        const { error: updateError } = await supabase
-            .from('transactions')
-            .update({ is_paid: true, updated_at: new Date().toISOString() })
-            .in('id', transactionIds);
-
-        if (updateError) throw updateError;
-
-        await syncBalance(paymentTransaction as Transaction, 'add');
-
-        return paymentTransaction as Transaction;
+        return payCardBill(cardId, transactionIds, accountId, paymentDate, amount, description, syncBalance);
     },
 
     async updateGroup(groupId: string, type: 'installment' | 'recurring', updates: Partial<Transaction>) {
-        const column = type === 'installment' ? 'installment_group_id' : 'recurring_group_id';
-
-        const { data: oldTransactions } = await supabase
-            .from('transactions')
-            .select('*')
-            .eq(column, groupId);
-
-        if (oldTransactions) {
-            for (const t of oldTransactions) {
-                await syncBalance(t as Transaction, 'remove');
-            }
-        }
-
-        const {
-            id,
-            payment_date,
-            installment_number,
-            installment_group_id,
-            recurring_group_id,
-            created_at,
-            user_id,
-            ...allowedUpdates
-        } = updates as any;
-
-        const { data, error } = await supabase
-            .from('transactions')
-            .update({ ...allowedUpdates, updated_at: new Date().toISOString() })
-            .eq(column, groupId)
-            .select();
-
-        if (error) throw error;
-        const updatedTransactions = data as Transaction[];
-
-        for (const t of updatedTransactions) {
-            await syncBalance(t, 'add');
-        }
-
-        return updatedTransactions;
+        return updateTransactionGroup(groupId, type, updates, syncBalance);
     },
 
     async getFirstTransactionDate() {
-        const { data, error } = await supabase
-            .from('transactions')
-            .select('payment_date')
-            .order('payment_date', { ascending: true })
-            .limit(1)
-            .single();
-
-        if (error && error.code !== 'PGRST116') throw error;
-        return data?.payment_date || null;
-    }
+        return fetchFirstTransactionDate();
+    },
 };
 export type { Transaction };
 

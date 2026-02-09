@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { ImagePlus, Palette } from 'lucide-react';
 import { useSiteBranding } from '@/shared/hooks/useSiteBranding';
 
 export function SiteBrandingForm() {
-    const { siteTitle, logoImage, updateBranding } = useSiteBranding();
+    const { siteTitle, logoImage, updateBranding, saving } = useSiteBranding();
     const [titleInput, setTitleInput] = useState(siteTitle);
     const [logoImageInput, setLogoImageInput] = useState<string | null>(logoImage);
+    const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
     useEffect(() => {
         setTitleInput(siteTitle);
@@ -29,11 +30,18 @@ export function SiteBrandingForm() {
         reader.readAsDataURL(file);
     };
 
-    const handleSaveBranding = () => {
-        updateBranding({
-            siteTitle: titleInput,
-            logoImage: logoImageInput,
-        });
+    const handleSaveBranding = async () => {
+        setMessage(null);
+        try {
+            await updateBranding({
+                siteTitle: titleInput,
+                logoImage: logoImageInput,
+            });
+            setMessage({ type: 'success', text: 'Identidade salva no Supabase.' });
+        } catch (error: unknown) {
+            const text = error instanceof Error ? error.message : 'Erro ao salvar identidade.';
+            setMessage({ type: 'error', text });
+        }
     };
 
     return (
@@ -53,6 +61,11 @@ export function SiteBrandingForm() {
             </Stack>
 
             <Stack spacing={1.5}>
+                {message && (
+                    <Alert severity={message.type}>
+                        {message.text}
+                    </Alert>
+                )}
                 <TextField
                     label="Título do Site"
                     fullWidth
@@ -83,7 +96,7 @@ export function SiteBrandingForm() {
                                 <Typography sx={{ fontWeight: 700, color: 'text.secondary' }}>LOGO</Typography>
                             )}
                         </Box>
-                        <Button component="label" variant="outlined" startIcon={<ImagePlus size={16} />}>
+                        <Button component="label" variant="outlined" startIcon={<ImagePlus size={16} />} disabled={saving}>
                             Escolher Imagem
                             <input hidden type="file" accept="image/*" onChange={handleLogoFileChange} />
                         </Button>
@@ -91,14 +104,15 @@ export function SiteBrandingForm() {
                             variant="text"
                             color="inherit"
                             onClick={() => setLogoImageInput(null)}
+                            disabled={saving}
                             sx={{ color: 'text.secondary' }}
                         >
                             Remover
                         </Button>
                     </Stack>
                 </Stack>
-                <Button variant="contained" onClick={handleSaveBranding}>
-                    Salvar Identidade
+                <Button variant="contained" onClick={handleSaveBranding} disabled={saving}>
+                    {saving ? 'Salvando...' : 'Salvar Identidade'}
                 </Button>
             </Stack>
         </Box>

@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAccounts } from './useAccounts';
 import { useCategories } from './useCategories';
 import { useCreditCards } from './useCreditCards';
 import { useCreateTransaction, useUpdateTransaction, useUpdateTransactionGroup } from './useTransactions';
-import { Transaction } from '../interfaces/transaction.interface';
+import { Transaction, type CreateTransactionData } from '../interfaces/transaction.interface';
 
 const transactionSchema = z.object({
     description: z.string().min(3, 'Descrição deve ter pelo menos 3 caracteres'),
@@ -29,6 +29,13 @@ const transactionSchema = z.object({
 
 export type TransactionFormValues = z.infer<typeof transactionSchema>;
 
+type TransactionMutationPayload = Partial<Transaction> & {
+    installment_amounts?: number[];
+    repeat_count?: number;
+    is_installment?: boolean;
+    installments?: { amount: number }[];
+};
+
 export function useTransactionFormLogic(open: boolean, onClose: () => void, transaction?: Transaction) {
     const { data: accounts } = useAccounts();
     const { data: categories } = useCategories();
@@ -42,7 +49,7 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
     const updateTransactionGroup = useUpdateTransactionGroup();
 
     const form = useForm<TransactionFormValues>({
-        resolver: zodResolver(transactionSchema) as any,
+        resolver: zodResolver(transactionSchema) as Resolver<TransactionFormValues>,
         defaultValues: {
             description: '',
             amount: 0,
@@ -64,13 +71,13 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
         name: "installments"
     });
 
-    const transactionType = form.watch('type');
-    const paymentMethod = form.watch('payment_method');
-    const isInstallment = form.watch('is_installment');
-    const isFixed = form.watch('is_fixed');
-    const totalInstallments = form.watch('total_installments') || 1;
-    const baseAmount = form.watch('amount') || 0;
-    const selectedAccountId = form.watch('account_id');
+    const transactionType = useWatch({ control: form.control, name: 'type', defaultValue: 'expense' });
+    const paymentMethod = useWatch({ control: form.control, name: 'payment_method' });
+    const isInstallment = useWatch({ control: form.control, name: 'is_installment', defaultValue: false });
+    const isFixed = useWatch({ control: form.control, name: 'is_fixed', defaultValue: false });
+    const totalInstallments = useWatch({ control: form.control, name: 'total_installments', defaultValue: 1 }) || 1;
+    const baseAmount = useWatch({ control: form.control, name: 'amount', defaultValue: 0 }) || 0;
+    const selectedAccountId = useWatch({ control: form.control, name: 'account_id' });
 
     const filteredCards = useMemo(() => {
         if (!cards) return [];
@@ -96,9 +103,11 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
         }
     }, [isInstallment, totalInstallments, baseAmount, replace]);
 
+    const { reset } = form;
+
     useEffect(() => {
         if (open) {
-            form.reset({
+            reset({
                 description: transaction?.description || '',
                 amount: transaction?.amount || 0,
                 type: transaction?.type || 'expense',
@@ -116,32 +125,35 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
                 notes: transaction?.notes || '',
                 installments: [],
             });
-            setShowInstallmentGrid(false);
-        } else {
-            setApplyToGroup(false);
         }
-    }, [transaction, open, form.reset]);
+    }, [transaction, open, reset]);
+
+    const resetUiState = () => {
+        setShowInstallmentGrid(false);
+        setApplyToGroup(false);
+    };
 
     const onSubmit = async (values: TransactionFormValues) => {
         try {
-            const payload: any = { ...values };
+            const payload: TransactionMutationPayload = { ...values };
             if (values.type !== 'transfer') delete payload.to_account_id;
             if (values.payment_method !== 'credit') delete payload.card_id;
 
             if (!values.is_installment) {
                 delete payload.total_installments;
                 delete payload.installments;
-                payload.installment_group_id = null;
+                payload.installment_group_id = undefined;
             } else if (!transaction) {
                 payload.installment_amounts = values.installments?.map(i => i.amount);
                 delete payload.installments;
             }
 
-            if (!values.is_fixed) payload.recurring_group_id = null;
+            if (!values.is_fixed) payload.recurring_group_id = undefined;
 
-            ['category_id', 'account_id', 'card_id', 'to_account_id'].forEach(key => {
-                if (payload[key] === '') payload[key] = null;
-            });
+            if (payload.category_id === '') payload.category_id = undefined;
+            if (payload.account_id === '') payload.account_id = undefined;
+            if (payload.card_id === '') payload.card_id = undefined;
+            if (payload.to_account_id === '') payload.to_account_id = undefined;
 
             if (transaction) {
                 delete payload.repeat_count;
@@ -156,8 +168,9 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
                     await updateTransaction.mutateAsync({ id: transaction.id, updates: payload });
                 }
             } else {
-                await createTransaction.mutateAsync(payload);
+                await createTransaction.mutateAsync(payload as CreateTransactionData);
             }
+            resetUiState();
             onClose();
         } catch (error) {
             console.error('Error saving transaction:', error);
@@ -168,6 +181,7 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
         form, accounts, categories, cards: filteredCards,
         showInstallmentGrid, setShowInstallmentGrid,
         applyToGroup, setApplyToGroup,
+        resetUiState,
         transactionType, paymentMethod, isInstallment, isFixed,
         totalInstallments, baseAmount, selectedAccountId,
         onSubmit: form.handleSubmit(onSubmit)

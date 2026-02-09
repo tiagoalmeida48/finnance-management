@@ -7,44 +7,21 @@ import {
     CardContent,
     CircularProgress,
     Container,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Grid,
     Stack,
-    Switch,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableHead,
     TableRow,
-    TextField,
     Typography
 } from '@mui/material';
 import { Edit2, KeyRound, Plus, Trash2, Users } from 'lucide-react';
 import { colors } from '@/shared/theme';
 import { supabase } from '@/lib/supabase/client';
-
-interface ManagedUser {
-    id: string;
-    email: string;
-    full_name: string | null;
-    is_admin: boolean;
-    created_at?: string | null;
-}
-
-const normalizeRpcError = (error: unknown) => {
-    if (typeof error === 'object' && error && 'message' in error) {
-        const message = (error as { message?: string }).message ?? '';
-        if (message.toLowerCase().includes('could not find the function')) {
-            return 'Função RPC de administração não encontrada no Supabase. Crie as funções admin_list_users/admin_create_user/admin_update_user/admin_update_user_password/admin_delete_user.';
-        }
-        return message || 'Não foi possível executar a operação.';
-    }
-    return 'Não foi possível executar a operação.';
-};
+import type { ManagedUser } from '@/shared/interfaces/user-management.interface';
+import { UsersManagementDialogs } from '@/shared/components/users/UsersManagementDialogs';
+import { normalizeRpcError } from '@/shared/utils/rpcErrors';
 
 export function UsersManagementPage() {
     const [users, setUsers] = useState<ManagedUser[]>([]);
@@ -56,10 +33,8 @@ export function UsersManagementPage() {
     const [passwordTarget, setPasswordTarget] = useState<ManagedUser | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<ManagedUser | null>(null);
 
-    const [fullName, setFullName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [isAdmin, setIsAdmin] = useState(false);
+    const [fullName, setFullName] = useState(''); const [email, setEmail] = useState('');
+    const [password, setPassword] = useState(''); const [isAdmin, setIsAdmin] = useState(false);
     const [saving, setSaving] = useState(false);
 
     const loadUsers = useCallback(async () => {
@@ -297,95 +272,29 @@ export function UsersManagementPage() {
                 </Stack>
             </Container>
 
-            <Dialog open={createOpen} onClose={() => !saving && setCreateOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle>Novo Usuário</DialogTitle>
-                <DialogContent>
-                    <Grid container spacing={1.5} sx={{ mt: 0.25 }}>
-                        <Grid size={{ xs: 12 }}>
-                            <TextField label="Nome completo" fullWidth value={fullName} onChange={(e) => setFullName(e.target.value)} />
-                        </Grid>
-                        <Grid size={{ xs: 12 }}>
-                            <TextField label="E-mail" type="email" fullWidth value={email} onChange={(e) => setEmail(e.target.value)} />
-                        </Grid>
-                        <Grid size={{ xs: 12 }}>
-                            <TextField label="Senha inicial" type="password" fullWidth value={password} onChange={(e) => setPassword(e.target.value)} />
-                        </Grid>
-                        <Grid size={{ xs: 12 }}>
-                            <Stack direction="row" spacing={1} alignItems="center">
-                                <Typography>Usuário administrador</Typography>
-                                <Switch checked={isAdmin} onChange={(e) => setIsAdmin(e.target.checked)} />
-                            </Stack>
-                        </Grid>
-                    </Grid>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setCreateOpen(false)} disabled={saving}>Cancelar</Button>
-                    <Button onClick={handleCreate} variant="contained" disabled={saving || !email || !password}>
-                        Criar
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            <Dialog open={Boolean(editTarget)} onClose={() => !saving && setEditTarget(null)} maxWidth="sm" fullWidth>
-                <DialogTitle>Editar Usuário</DialogTitle>
-                <DialogContent>
-                    <Grid container spacing={1.5} sx={{ mt: 0.25 }}>
-                        <Grid size={{ xs: 12 }}>
-                            <TextField label="Nome completo" fullWidth value={fullName} onChange={(e) => setFullName(e.target.value)} />
-                        </Grid>
-                        <Grid size={{ xs: 12 }}>
-                            <TextField label="E-mail" type="email" fullWidth value={email} onChange={(e) => setEmail(e.target.value)} />
-                        </Grid>
-                        <Grid size={{ xs: 12 }}>
-                            <Stack direction="row" spacing={1} alignItems="center">
-                                <Typography>Usuário administrador</Typography>
-                                <Switch checked={isAdmin} onChange={(e) => setIsAdmin(e.target.checked)} />
-                            </Stack>
-                        </Grid>
-                    </Grid>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setEditTarget(null)} disabled={saving}>Cancelar</Button>
-                    <Button onClick={handleUpdate} variant="contained" disabled={saving || !email}>
-                        Salvar
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            <Dialog open={Boolean(passwordTarget)} onClose={() => !saving && setPasswordTarget(null)} maxWidth="xs" fullWidth>
-                <DialogTitle>Alterar Senha</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        sx={{ mt: 0.5 }}
-                        label="Nova senha"
-                        type="password"
-                        fullWidth
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setPasswordTarget(null)} disabled={saving}>Cancelar</Button>
-                    <Button onClick={handleUpdatePassword} variant="contained" disabled={saving || !password}>
-                        Atualizar
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            <Dialog open={Boolean(deleteTarget)} onClose={() => !saving && setDeleteTarget(null)}>
-                <DialogTitle>Excluir Usuário</DialogTitle>
-                <DialogContent>
-                    <Typography>
-                        Confirma remover o usuário <strong>{deleteTarget?.email}</strong>?
-                    </Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setDeleteTarget(null)} disabled={saving}>Cancelar</Button>
-                    <Button onClick={handleDelete} color="error" variant="contained" disabled={saving}>
-                        Excluir
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            <UsersManagementDialogs
+                createOpen={createOpen}
+                setCreateOpen={setCreateOpen}
+                editTarget={editTarget}
+                setEditTarget={setEditTarget}
+                passwordTarget={passwordTarget}
+                setPasswordTarget={setPasswordTarget}
+                deleteTarget={deleteTarget}
+                setDeleteTarget={setDeleteTarget}
+                fullName={fullName}
+                setFullName={setFullName}
+                email={email}
+                setEmail={setEmail}
+                password={password}
+                setPassword={setPassword}
+                isAdmin={isAdmin}
+                setIsAdmin={setIsAdmin}
+                saving={saving}
+                handleCreate={handleCreate}
+                handleUpdate={handleUpdate}
+                handleUpdatePassword={handleUpdatePassword}
+                handleDelete={handleDelete}
+            />
         </Box>
     );
 }

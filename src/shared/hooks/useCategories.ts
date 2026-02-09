@@ -1,12 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { categoriesService } from '../services/categories.service';
 import { Category } from '../interfaces';
-
-const CATEGORIES_QUERY_KEY = ['categories'];
+import { queryKeys } from '../constants/queryKeys';
 
 export function useCategories() {
     return useQuery({
-        queryKey: CATEGORIES_QUERY_KEY,
+        queryKey: queryKeys.categories.all,
         queryFn: categoriesService.getAll,
     });
 }
@@ -17,7 +16,7 @@ export function useCreateCategory() {
     return useMutation({
         mutationFn: categoriesService.create,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
         },
     });
 }
@@ -29,7 +28,7 @@ export function useUpdateCategory() {
         mutationFn: ({ id, updates }: { id: string; updates: Partial<Category> }) =>
             categoriesService.update(id, updates),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
         },
     });
 }
@@ -40,7 +39,7 @@ export function useDeleteCategory() {
     return useMutation({
         mutationFn: categoriesService.delete,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
         },
     });
 }

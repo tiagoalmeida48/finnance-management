@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useEffect } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Typography, Stack,
-    MenuItem, FormControl, Select, FormHelperText, Box, InputAdornment
+    Box, InputAdornment
 } from '@mui/material';
-import { Landmark, Wallet, CreditCard as CardIcon, Briefcase, PiggyBank } from 'lucide-react';
 import { useCreateCreditCard, useUpdateCreditCard } from '../../hooks/useCreditCards';
 import { useAccounts } from '../../hooks/useAccounts';
 import { CreditCard } from '../../interfaces/credit-card.interface';
 import { colors } from '@/shared/theme';
+import { CardLinkedAccountSelect } from './cardFormFields';
+import { inputStyles, labelStyles } from './cardFormStyles';
 
 const cardSchema = z.object({
     name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
@@ -30,53 +31,12 @@ interface CardFormModalProps {
     card?: CreditCard;
 }
 
-const inputStyles = {
-    '& .MuiOutlinedInput-root': {
-        height: 44,
-        borderRadius: '10px',
-        bgcolor: 'rgba(255,255,255,0.03)',
-        fontSize: '14px',
-        fontFamily: '"DM Sans"',
-        '& fieldset': { borderColor: 'rgba(255,255,255,0.06)' },
-        '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.12)' },
-        '&.Mui-focused fieldset': {
-            borderColor: colors.accent,
-            borderWidth: '1px',
-        },
-    },
-    '& .MuiInputBase-input': {
-        color: colors.textPrimary,
-        '&::placeholder': { color: colors.textMuted, opacity: 1 },
-    },
-};
-
-const labelStyles = {
-    fontSize: '11px',
-    fontFamily: '"DM Sans"',
-    fontWeight: 500,
-    color: colors.textMuted,
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.04em',
-    mb: 0.75,
-};
-
-const getAccountIcon = (type: string, iconColor: string) => {
-    switch (type) {
-        case 'checking': return <Landmark size={16} color={iconColor} />;
-        case 'savings': return <PiggyBank size={16} color={iconColor} />;
-        case 'investment': return <Briefcase size={16} color={iconColor} />;
-        case 'wallet': return <Wallet size={16} color={iconColor} />;
-        default: return <CardIcon size={16} color={iconColor} />;
-    }
-};
-
 export function CardFormModal({ open, onClose, card }: CardFormModalProps) {
     const createCard = useCreateCreditCard();
     const updateCard = useUpdateCreditCard();
     const { data: accounts } = useAccounts();
-    const [rawValue, setRawValue] = useState('0');
 
-    const { register, handleSubmit, reset, control, watch, setValue, formState: { errors } } = useForm<CardFormValues>({
+    const { register, handleSubmit, reset, control, setValue, formState: { errors } } = useForm<CardFormValues>({
         resolver: zodResolver(cardSchema),
         defaultValues: {
             name: '',
@@ -89,7 +49,21 @@ export function CardFormModal({ open, onClose, card }: CardFormModalProps) {
         }
     });
 
-    const currentColor = watch('color');
+    const currentColor = useWatch({
+        control,
+        name: 'color',
+        defaultValue: '#C9A84C',
+    });
+    const creditLimit = useWatch({
+        control,
+        name: 'credit_limit',
+        defaultValue: 0,
+    });
+    const selectedAccountId = useWatch({
+        control,
+        name: 'bank_account_id',
+        defaultValue: '',
+    });
 
     useEffect(() => {
         if (open) {
@@ -104,13 +78,11 @@ export function CardFormModal({ open, onClose, card }: CardFormModalProps) {
                 color: cardColor,
                 notes: card?.notes || '',
             });
-            setRawValue(String(Math.round(limitValue * 100)));
         }
     }, [card, open, reset]);
 
     const handleMoneyInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const digits = e.target.value.replace(/\D/g, '');
-        setRawValue(digits || '0');
         const numericValue = parseInt(digits || '0', 10) / 100;
         setValue('credit_limit', numericValue);
     };
@@ -128,7 +100,10 @@ export function CardFormModal({ open, onClose, card }: CardFormModalProps) {
             if (card) {
                 await updateCard.mutateAsync({ id: card.id, updates: values });
             } else {
-                await createCard.mutateAsync(values as any);
+                await createCard.mutateAsync({
+                    ...values,
+                    is_active: true,
+                });
             }
             onClose();
         } catch (error) {
@@ -172,48 +147,12 @@ export function CardFormModal({ open, onClose, card }: CardFormModalProps) {
                             </Box>
                             <Box sx={{ flex: 1 }}>
                                 <Typography sx={labelStyles}>Conta Vinculada</Typography>
-                                <FormControl fullWidth error={!!errors.bank_account_id}>
-                                    <Controller
-                                        name="bank_account_id"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Select
-                                                {...field}
-                                                displayEmpty
-                                                sx={{
-                                                    ...inputStyles['& .MuiOutlinedInput-root'],
-                                                    '& .MuiSelect-icon': { color: colors.textMuted }
-                                                }}
-                                                renderValue={(selected) => {
-                                                    if (!selected) {
-                                                        return <Typography sx={{ color: colors.textMuted }}>Selecione...</Typography>;
-                                                    }
-                                                    const acc = accounts?.find(a => a.id === selected);
-                                                    if (!acc) return selected;
-                                                    return (
-                                                        <Stack direction="row" spacing={1} alignItems="center">
-                                                            {getAccountIcon(acc.type, acc.color || colors.textMuted)}
-                                                            <Typography sx={{ color: colors.textPrimary }}>{acc.name}</Typography>
-                                                        </Stack>
-                                                    );
-                                                }}
-                                            >
-                                                <MenuItem value="" disabled>
-                                                    <Typography sx={{ color: colors.textMuted }}>Selecione...</Typography>
-                                                </MenuItem>
-                                                {accounts?.map((acc) => (
-                                                    <MenuItem key={acc.id} value={acc.id}>
-                                                        <Stack direction="row" spacing={1.5} alignItems="center">
-                                                            {getAccountIcon(acc.type, acc.color || colors.textMuted)}
-                                                            <Typography>{acc.name}</Typography>
-                                                        </Stack>
-                                                    </MenuItem>
-                                                ))}
-                                            </Select>
-                                        )}
-                                    />
-                                    {errors.bank_account_id && <FormHelperText>{errors.bank_account_id.message}</FormHelperText>}
-                                </FormControl>
+                                <CardLinkedAccountSelect
+                                    accounts={accounts}
+                                    value={selectedAccountId}
+                                    onChange={(value) => setValue('bank_account_id', value, { shouldDirty: true, shouldValidate: true })}
+                                    errorMessage={errors.bank_account_id?.message}
+                                />
                             </Box>
                         </Stack>
 
@@ -223,7 +162,7 @@ export function CardFormModal({ open, onClose, card }: CardFormModalProps) {
                             <TextField
                                 fullWidth
                                 placeholder="0,00"
-                                value={formatDisplayValue(rawValue)}
+                                value={formatDisplayValue(String(Math.round(Number(creditLimit || 0) * 100)))}
                                 onChange={handleMoneyInput}
                                 InputProps={{
                                     startAdornment: <InputAdornment position="start" sx={{ color: colors.textMuted }}>R$</InputAdornment>,

@@ -1,73 +1,88 @@
-# React + TypeScript + Vite
+# Finnance Management
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicacao web para gestao financeira pessoal com foco em:
+- contas e saldos
+- transacoes (manual, em lote e importacao CSV)
+- categorias
+- cartoes de credito e faturas
+- acompanhamento mensal de contas
+- simulador de salario/holerite
+- perfil do usuario e gestao de usuarios (admin)
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19 + TypeScript
+- Vite (rolldown-vite)
+- Material UI
+- React Query
+- React Hook Form + Zod
+- Supabase
 
-## React Compiler
+## Requisitos
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js 20+
+- pnpm 9+
 
-## Expanding the ESLint configuration
+## Configuracao
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. Instale dependencias:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Crie `.env` com base no exemplo:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp .env.example .env
 ```
+
+3. Preencha as variaveis:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+## Comandos
+
+```bash
+pnpm dev          # ambiente local
+pnpm exec eslint src
+pnpm run build    # type-check + bundle de producao
+pnpm run test     # suite minima com Vitest
+pnpm run test:watch
+pnpm run check:ci # lint + build + test
+```
+
+## Estrutura principal
+
+```text
+src/
+  pages/                 # paginas de rota
+  shared/components/     # componentes reutilizaveis
+  shared/hooks/          # regras de pagina/estado
+  shared/services/       # acesso a dados e regras de persistencia
+  shared/interfaces/     # contratos e tipos
+  shared/constants/      # chaves compartilhadas (ex.: query keys)
+```
+
+## Qualidade tecnica
+
+- Lint: `pnpm exec eslint src`
+- Type-check: `pnpm exec tsc -b`
+- Build: `pnpm run build`
+- Testes: `pnpm run test`
+
+A CI em `.github/workflows/ci.yml` roda esses passos em pull requests e pushes.
+
+## Testes incluidos
+
+- parser e normalizacao da importacao de transacoes
+- resumo de tracking mensal
+- filtro de atualizacoes em grupo de transacoes
+- calculos centrais de folha (`calculatePayroll`)
+- resumo e agrupamento de transacoes
+
+## Observacoes
+
+- O projeto usa chave de cache do React Query centralizada em `src/shared/constants/queryKeys.ts`.
+- O modo admin depende do campo `is_admin` no perfil do usuario autenticado.

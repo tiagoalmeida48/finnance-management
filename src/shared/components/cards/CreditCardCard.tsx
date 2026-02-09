@@ -1,10 +1,11 @@
 import { Box, Typography, IconButton } from '@mui/material';
 import { CreditCard as CardIcon, BarChart3, Pencil, Trash2 } from 'lucide-react';
+import type { NavigateFunction } from 'react-router-dom';
 import { CreditCard as CardInterface } from '../../interfaces/credit-card.interface';
 
 interface CreditCardCardProps {
     card: CardInterface;
-    navigate: any;
+    navigate: NavigateFunction;
     handleEdit: (card: CardInterface) => void;
     handleDelete: (card: CardInterface) => void;
 }

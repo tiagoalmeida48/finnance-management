@@ -1,6 +1,9 @@
 import { supabase } from '@/lib/supabase/client';
 import { CreditCard, Transaction } from '../interfaces';
+import type { CreditCardDetails } from '../interfaces/card-details.interface';
 import { addMonths, startOfMonth, format } from 'date-fns';
+
+type CardTransactionLite = Pick<Transaction, 'amount' | 'card_id' | 'payment_date' | 'is_paid' | 'type'>;
 
 export const cardsService = {
     async getAll() {
@@ -22,12 +25,15 @@ export const cardsService = {
         const now = new Date();
         const currentMonthKey = format(now, 'yyyy-MM');
 
-        return (cards as any[]).map(card => {
+        const cardRows = (cards ?? []) as CreditCard[];
+        const allCardTransactions = (transactions ?? []) as CardTransactionLite[];
+
+        return cardRows.map(card => {
             const closingDay = Number(card.closing_day);
             const dueDay = Number(card.due_day);
             const isNextMonthPayment = closingDay >= dueDay;
 
-            const cardTransactions = transactions?.filter(t => t.card_id === card.id) || [];
+            const cardTransactions = allCardTransactions.filter(t => t.card_id === card.id);
 
             const totalUsage = cardTransactions
                 .filter(t => !t.is_paid)
@@ -161,6 +167,6 @@ export const cardsService = {
             usage: totalUsage,
             current_invoice: currentInvoice,
             available_limit: Number(card.credit_limit) - totalUsage
-        };
+        } as CreditCardDetails;
     }
 };

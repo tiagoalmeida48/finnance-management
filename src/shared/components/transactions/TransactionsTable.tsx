@@ -1,13 +1,19 @@
 import { Fragment } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Checkbox, TableSortLabel, Paper, Collapse, Typography, IconButton, Chip, TextField, InputAdornment, Select, MenuItem, FormControl, Box } from '@mui/material';
-import { ChevronDown, Search } from 'lucide-react';
+import { Table, TableBody, TableCell, TableContainer, TableRow, Checkbox, Paper, Collapse, Typography, IconButton, Chip, TablePagination } from '@mui/material';
+import { ChevronDown } from 'lucide-react';
 import { Transaction } from '../../services/transactions.service';
 import { TransactionRow } from './TransactionRow';
-import { TransactionGroup } from '../../hooks/useTransactionsPageLogic';
+import type { TransactionGroup } from '../../hooks/transactionsPage.utils';
 import { colors } from '@/shared/theme';
+import { TransactionsTableHeader } from './TransactionsTableHeader';
 
 interface TransactionsTableProps {
     groupedTransactions: (Transaction | TransactionGroup)[];
+    totalItems: number;
+    page: number;
+    rowsPerPage: number;
+    onPageChange: (page: number) => void;
+    onRowsPerPageChange: (rowsPerPage: number) => void;
     selectedIds: string[];
     handleSelectAll: (checked: boolean) => void;
     handleSelectRow: (id: string) => void;
@@ -27,30 +33,13 @@ interface TransactionsTableProps {
     categories?: { id: string, name: string }[];
 }
 
-const sortLabelSx = {
-    '&.Mui-active': { color: colors.accent },
-    '& .MuiTableSortLabel-icon': {
-        color: `${colors.accent} !important`,
-        fontSize: 12,
-    },
-};
-
-const inlineSelectSx = {
-    height: 28,
-    borderRadius: '6px',
-    bgcolor: colors.bgSecondary,
-    fontSize: '12px',
-    color: colors.textSecondary,
-    '& fieldset': { border: 'none' },
-    '& .MuiSelect-icon': { color: colors.textMuted, fontSize: 16 },
-    '& .MuiSelect-select': {
-        py: '2px',
-        px: '6px',
-    },
-};
-
 export function TransactionsTable({
     groupedTransactions,
+    totalItems,
+    page,
+    rowsPerPage,
+    onPageChange,
+    onRowsPerPageChange,
     selectedIds,
     handleSelectAll,
     handleSelectRow,
@@ -77,7 +66,15 @@ export function TransactionsTable({
         }).format(amount);
     };
 
-    const isActiveSort = (field: string) => sortConfig.field === field;
+    const visibleTransactionIds = groupedTransactions.flatMap((item) =>
+        'isGroup' in item && item.isGroup
+            ? item.items.map((transaction) => transaction.id)
+            : [item.id]
+    );
+
+    const selectedVisibleCount = visibleTransactionIds.filter((id) => selectedIds.includes(id)).length;
+    const selectAllChecked = visibleTransactionIds.length > 0 && selectedVisibleCount === visibleTransactionIds.length;
+    const selectAllIndeterminate = selectedVisibleCount > 0 && selectedVisibleCount < visibleTransactionIds.length;
 
     return (
         <TableContainer component={Paper} sx={{
@@ -85,205 +82,31 @@ export function TransactionsTable({
             backgroundImage: 'none',
             border: `1px solid ${colors.border}`,
             boxShadow: 'none',
+            minHeight: 360,
         }}>
-            <Table size="small">
-                <TableHead>
-                    <TableRow sx={{
-                        bgcolor: colors.bgSecondary,
-                        borderBottom: `1px solid ${colors.border}`,
-                    }}>
-                        {/* Checkbox */}
-                        <TableCell padding="checkbox" sx={{ py: 1.5, pl: 2 }}>
-                            <Checkbox
-                                size="small"
-                                onChange={(e) => handleSelectAll(e.target.checked)}
-                                sx={{
-                                    width: 18,
-                                    height: 18,
-                                    '& .MuiSvgIcon-root': { fontSize: 18 },
-                                    color: 'rgba(255,255,255,0.15)',
-                                    '&.Mui-checked': { color: colors.accent },
-                                }}
-                            />
-                        </TableCell>
-                        <TableCell sx={{ width: 48 }} />
-
-                        {/* DATA */}
-                        <TableCell sx={{ py: 1.5 }}>
-                            <TableSortLabel
-                                active={isActiveSort('payment_date')}
-                                direction={sortConfig.direction}
-                                onClick={() => handleSort('payment_date')}
-                                sx={sortLabelSx}
-                            >
-                                <Typography sx={{
-                                    fontSize: '11px',
-                                    fontFamily: '"DM Sans"',
-                                    fontWeight: 600,
-                                    color: isActiveSort('payment_date') ? colors.accent : colors.textMuted,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.06em',
-                                }}>
-                                    Data
-                                </Typography>
-                            </TableSortLabel>
-                        </TableCell>
-
-                        {/* DESCRIÇÃO + Search inline */}
-                        <TableCell sx={{ py: 1.5 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <TableSortLabel
-                                    active={isActiveSort('description')}
-                                    direction={sortConfig.direction}
-                                    onClick={() => handleSort('description')}
-                                    sx={sortLabelSx}
-                                >
-                                    <Typography sx={{
-                                        fontSize: '11px',
-                                        fontFamily: '"DM Sans"',
-                                        fontWeight: 600,
-                                        color: isActiveSort('description') ? colors.accent : colors.textMuted,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.06em',
-                                    }}>
-                                        Descrição
-                                    </Typography>
-                                </TableSortLabel>
-                                <TextField
-                                    size="small"
-                                    placeholder="Filtrar..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    slotProps={{
-                                        input: {
-                                            startAdornment: (
-                                                <InputAdornment position="start">
-                                                    <Search size={12} color={colors.textMuted} />
-                                                </InputAdornment>
-                                            ),
-                                        }
-                                    }}
-                                    sx={{
-                                        maxWidth: 160,
-                                        '& .MuiOutlinedInput-root': {
-                                            height: 28,
-                                            borderRadius: '6px',
-                                            '& fieldset': { borderColor: 'rgba(255,255,255,0.06)' },
-                                            '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.12)' },
-                                            '&.Mui-focused fieldset': {
-                                                borderColor: colors.accent,
-                                                borderWidth: '1px',
-                                            },
-                                        },
-                                        '& .MuiInputBase-input': {
-                                            fontSize: '11px',
-                                            py: '3px',
-                                            '&::placeholder': { color: colors.textMuted, opacity: 1 },
-                                        },
-                                    }}
-                                />
-                            </Box>
-                        </TableCell>
-
-                        {/* CATEGORIA + Select inline */}
-                        <TableCell sx={{ py: 1.5 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                <TableSortLabel
-                                    active={isActiveSort('category_id')}
-                                    direction={sortConfig.direction}
-                                    onClick={() => handleSort('category_id')}
-                                    sx={sortLabelSx}
-                                >
-                                    <Typography sx={{
-                                        fontSize: '11px',
-                                        fontFamily: '"DM Sans"',
-                                        fontWeight: 600,
-                                        color: isActiveSort('category_id') ? colors.accent : colors.textMuted,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.06em',
-                                    }}>
-                                        Categoria
-                                    </Typography>
-                                </TableSortLabel>
-                                <FormControl size="small">
-                                    <Select
-                                        value={categoryFilter}
-                                        onChange={(e) => setCategoryFilter(e.target.value)}
-                                        sx={{
-                                            ...inlineSelectSx,
-                                            color: categoryFilter !== 'all' ? colors.accent : colors.textMuted,
-                                        }}
-                                    >
-                                        <MenuItem value="all">Todas</MenuItem>
-                                        {categories?.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
-                                    </Select>
-                                </FormControl>
-                            </Box>
-                        </TableCell>
-
-                        {/* PAGAMENTO + Select inline */}
-                        <TableCell sx={{ py: 1.5 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                <TableSortLabel
-                                    active={isActiveSort('payment_method')}
-                                    direction={sortConfig.direction}
-                                    onClick={() => handleSort('payment_method')}
-                                    sx={sortLabelSx}
-                                >
-                                    <Typography sx={{
-                                        fontSize: '11px',
-                                        fontFamily: '"DM Sans"',
-                                        fontWeight: 600,
-                                        color: isActiveSort('payment_method') ? colors.accent : colors.textMuted,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.06em',
-                                    }}>
-                                        Pagamento
-                                    </Typography>
-                                </TableSortLabel>
-                                <FormControl size="small">
-                                    <Select
-                                        value={paymentMethodFilter}
-                                        onChange={(e) => setPaymentMethodFilter(e.target.value)}
-                                        sx={{
-                                            ...inlineSelectSx,
-                                            color: paymentMethodFilter !== 'all' ? colors.accent : colors.textMuted,
-                                        }}
-                                    >
-                                        <MenuItem value="all">Todos</MenuItem>
-                                        <MenuItem value="credit">Cartão de Crédito</MenuItem>
-                                        <MenuItem value="debit">Débito</MenuItem>
-                                        <MenuItem value="pix">PIX</MenuItem>
-                                        <MenuItem value="money">Dinheiro</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </Box>
-                        </TableCell>
-
-                        {/* VALOR */}
-                        <TableCell align="right" sx={{ py: 1.5 }}>
-                            <TableSortLabel
-                                active={isActiveSort('amount')}
-                                direction={sortConfig.direction}
-                                onClick={() => handleSort('amount')}
-                                sx={sortLabelSx}
-                            >
-                                <Typography sx={{
-                                    fontSize: '11px',
-                                    fontFamily: '"DM Sans"',
-                                    fontWeight: 600,
-                                    color: isActiveSort('amount') ? colors.accent : colors.textMuted,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.06em',
-                                }}>
-                                    Valor
-                                </Typography>
-                            </TableSortLabel>
-                        </TableCell>
-                        <TableCell align="right" sx={{ width: 48 }} />
-                    </TableRow>
-                </TableHead>
+            <Table size="small" sx={{ bgcolor: colors.bgCard }}>
+                <TransactionsTableHeader
+                    selectAllChecked={selectAllChecked}
+                    selectAllIndeterminate={selectAllIndeterminate}
+                    handleSelectAll={handleSelectAll}
+                    handleSort={handleSort}
+                    sortConfig={sortConfig}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    categoryFilter={categoryFilter}
+                    setCategoryFilter={setCategoryFilter}
+                    paymentMethodFilter={paymentMethodFilter}
+                    setPaymentMethodFilter={setPaymentMethodFilter}
+                    categories={categories}
+                />
                 <TableBody>
+                    {groupedTransactions.length === 0 && (
+                        <TableRow>
+                            <TableCell colSpan={8} align="center" sx={{ py: 6, color: colors.textMuted, bgcolor: colors.bgCard }}>
+                                Nenhuma transação encontrada para os filtros atuais.
+                            </TableCell>
+                        </TableRow>
+                    )}
                     {groupedTransactions.map((item) => {
                         if ('isGroup' in item && item.isGroup) {
                             const group = item as TransactionGroup;
@@ -432,6 +255,32 @@ export function TransactionsTable({
                     })}
                 </TableBody>
             </Table>
+            <TablePagination
+                component="div"
+                count={totalItems}
+                page={page}
+                onPageChange={(_, newPage) => onPageChange(newPage)}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={(event) => onRowsPerPageChange(Number(event.target.value))}
+                rowsPerPageOptions={[50, 100, 200, 300, { label: 'Tudo', value: -1 }]}
+                labelRowsPerPage="Itens por página"
+                labelDisplayedRows={({ count, page: currentPage }) => {
+                    const totalPages = rowsPerPage === -1 ? 1 : Math.max(1, Math.ceil(count / rowsPerPage));
+                    const safeCurrentPage = Math.min(currentPage + 1, totalPages);
+                    return `Página ${safeCurrentPage} de ${totalPages}`;
+                }}
+                sx={{
+                    borderTop: `1px solid ${colors.border}`,
+                    bgcolor: colors.bgCard,
+                    color: colors.textSecondary,
+                    '& .MuiTablePagination-selectIcon': { color: colors.textMuted },
+                    '& .MuiTablePagination-toolbar': { minHeight: 52 },
+                    '& .MuiIconButton-root': {
+                        color: colors.textSecondary,
+                        '&.Mui-disabled': { color: 'rgba(255,255,255,0.24)' },
+                    },
+                }}
+            />
         </TableContainer>
     );
 }

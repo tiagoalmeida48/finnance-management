@@ -1,5 +1,6 @@
 import { Grid, Card, CardContent, Stack, Box, IconButton, Typography, Divider, Button } from '@mui/material';
 import { MoreVertical, Landmark, Wallet, CreditCard } from 'lucide-react';
+import type { NavigateFunction } from 'react-router-dom';
 import { Account } from '../../interfaces/account.interface';
 import { CreditCard as CardInterface } from '../../interfaces/credit-card.interface';
 
@@ -7,7 +8,7 @@ interface AccountCardProps {
     account: Account;
     handleOpenMenu: (event: React.MouseEvent<HTMLElement>, account: Account) => void;
     cards: CardInterface[] | undefined;
-    navigate: any;
+    navigate: NavigateFunction;
 }
 
 export function AccountCard({ account, handleOpenMenu, cards, navigate }: AccountCardProps) {

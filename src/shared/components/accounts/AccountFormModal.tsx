@@ -14,8 +14,8 @@ const accountSchema = z.object({
     type: z.enum(['checking', 'savings', 'investment', 'wallet', 'other'] as const),
     initial_balance: z.number(),
     current_balance: z.number().optional(),
-    color: z.string().default('#D4AF37'),
-    icon: z.string().default('wallet'),
+    color: z.string().min(1),
+    icon: z.string().min(1),
     notes: z.string().optional(),
 });
 
@@ -32,14 +32,23 @@ export function AccountFormModal({ open, onClose, account }: AccountFormModalPro
     const updateAccount = useUpdateAccount();
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm<AccountFormValues>({
-        resolver: zodResolver(accountSchema) as any,
+        resolver: zodResolver(accountSchema),
+        defaultValues: {
+            name: '',
+            type: 'checking',
+            initial_balance: 0,
+            current_balance: 0,
+            color: '#D4AF37',
+            icon: 'wallet',
+            notes: '',
+        },
     });
 
     useEffect(() => {
         if (open) {
             reset({
                 name: account?.name || '',
-                type: (account?.type as any) || 'checking',
+                type: account?.type || 'checking',
                 initial_balance: account?.initial_balance || 0,
                 current_balance: account?.current_balance || 0,
                 color: account?.color || '#D4AF37',
@@ -54,7 +63,11 @@ export function AccountFormModal({ open, onClose, account }: AccountFormModalPro
             if (account) {
                 await updateAccount.mutateAsync({ id: account.id, updates: values });
             } else {
-                await createAccount.mutateAsync(values as any);
+                await createAccount.mutateAsync({
+                    ...values,
+                    current_balance: values.initial_balance,
+                    is_active: true,
+                });
             }
             onClose();
         } catch (error) {

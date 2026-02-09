@@ -1,47 +1,9 @@
+import { createElement } from 'react';
 import { Grid, Card, CardContent, Stack, Box, Typography, IconButton, Chip } from '@mui/material';
-import {
-    Pencil,
-    Trash2,
-    ShoppingCart,
-    Coffee,
-    Home,
-    Car,
-    Utensils,
-    Heart,
-    Tag,
-    Gift,
-    Briefcase,
-    Zap,
-    Plane,
-    Activity,
-    Dumbbell,
-    Book,
-    Music,
-    Film,
-    Gamepad2,
-    Camera,
-    Palette,
-    Languages,
-    Dog,
-    GraduationCap,
-    Pill,
-    Stethoscope,
-    Baby,
-    Users,
-    HeartPulse,
-    Smartphone,
-    Laptop,
-    Tv,
-    Ghost,
-    Rocket,
-    Wallet,
-    DollarSign,
-    PiggyBank,
-    Store,
-    Brush,
-} from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { Category } from '../../interfaces/category.interface';
 import { colors } from '@/shared/theme';
+import { getCategoryIcon } from './categoryIcons';
 
 interface CategoryCardProps {
     category: Category;
@@ -49,48 +11,8 @@ interface CategoryCardProps {
     handleDelete: (category: Category) => void;
 }
 
-const iconMap: Record<string, any> = {
-    'shopping-cart': ShoppingCart,
-    'coffee': Coffee,
-    'home': Home,
-    'car': Car,
-    'utensils': Utensils,
-    'heart': Heart,
-    'tag': Tag,
-    'gift': Gift,
-    'briefcase': Briefcase,
-    'zap': Zap,
-    'plane': Plane,
-    'activity': Activity,
-    'dumbbell': Dumbbell,
-    'book': Book,
-    'music': Music,
-    'film': Film,
-    'gamepad': Gamepad2,
-    'camera': Camera,
-    'palette': Palette,
-    'languages': Languages,
-    'dog': Dog,
-    'graduation': GraduationCap,
-    'pill': Pill,
-    'stethoscope': Stethoscope,
-    'baby': Baby,
-    'users': Users,
-    'heart-pulse': HeartPulse,
-    'smartphone': Smartphone,
-    'laptop': Laptop,
-    'tv': Tv,
-    'ghost': Ghost,
-    'rocket': Rocket,
-    'wallet': Wallet,
-    'dollar': DollarSign,
-    'piggy': PiggyBank,
-    'store': Store,
-    'brush': Brush,
-};
-
 export function CategoryCard({ category, handleEdit, handleDelete }: CategoryCardProps) {
-    const Icon = iconMap[category.icon || 'tag'] || Tag;
+    const iconElement = createElement(getCategoryIcon(category.icon), { size: 18 });
 
     return (
         <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
@@ -130,7 +52,7 @@ export function CategoryCard({ category, handleEdit, handleDelete }: CategoryCar
                                     flexShrink: 0,
                                 }}
                             >
-                                <Icon size={18} />
+                                {iconElement}
                             </Box>
 
                             <Box sx={{ minWidth: 0 }}>

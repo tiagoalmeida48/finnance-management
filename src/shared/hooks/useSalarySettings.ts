@@ -1,20 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CreateSalarySettingInput, UpdateSalarySettingInput } from '../interfaces';
 import { salarySettingsService } from '../services/salary-settings.service';
-
-const SALARY_HISTORY_QUERY_KEY = ['salary-settings-history'];
-const SALARY_CURRENT_QUERY_KEY = ['salary-settings-current'];
+import { queryKeys } from '../constants/queryKeys';
 
 export function useSalarySettingsHistory() {
     return useQuery({
-        queryKey: SALARY_HISTORY_QUERY_KEY,
+        queryKey: queryKeys.salary.history,
         queryFn: salarySettingsService.getHistory,
     });
 }
 
 export function useSalaryCurrentSetting() {
     return useQuery({
-        queryKey: SALARY_CURRENT_QUERY_KEY,
+        queryKey: queryKeys.salary.current,
         queryFn: salarySettingsService.getCurrent,
     });
 }
@@ -25,8 +23,8 @@ export function useCreateSalarySetting() {
     return useMutation({
         mutationFn: (input: CreateSalarySettingInput) => salarySettingsService.createSettingWithValidity(input),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: SALARY_HISTORY_QUERY_KEY });
-            queryClient.invalidateQueries({ queryKey: SALARY_CURRENT_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: queryKeys.salary.history });
+            queryClient.invalidateQueries({ queryKey: queryKeys.salary.current });
         },
     });
 }
@@ -37,8 +35,8 @@ export function useUpdateSalarySetting() {
     return useMutation({
         mutationFn: (input: UpdateSalarySettingInput) => salarySettingsService.updateSetting(input),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: SALARY_HISTORY_QUERY_KEY });
-            queryClient.invalidateQueries({ queryKey: SALARY_CURRENT_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: queryKeys.salary.history });
+            queryClient.invalidateQueries({ queryKey: queryKeys.salary.current });
         },
     });
 }
@@ -49,8 +47,8 @@ export function useDeleteCurrentSalarySetting() {
     return useMutation({
         mutationFn: salarySettingsService.deleteCurrentSettingAndRestorePrevious,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: SALARY_HISTORY_QUERY_KEY });
-            queryClient.invalidateQueries({ queryKey: SALARY_CURRENT_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: queryKeys.salary.history });
+            queryClient.invalidateQueries({ queryKey: queryKeys.salary.current });
         },
     });
 }

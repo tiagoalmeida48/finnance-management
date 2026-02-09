@@ -1,47 +1,28 @@
 import { useState, useMemo } from 'react';
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
-    Typography,
-    Box,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
     Alert,
-    Stack,
+    Box,
+    Button,
     CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
     IconButton,
-    TextField,
-    Select,
-    MenuItem,
-    Tooltip
+    Stack,
+    Typography,
 } from '@mui/material';
-import { Upload, X, CheckCircle2, AlertCircle, FileText, Trash2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, FileText, X } from 'lucide-react';
 import Papa from 'papaparse';
 import { useAccounts } from '../../hooks/useAccounts';
 import { useCategories } from '../../hooks/useCategories';
 import { useCreditCards } from '../../hooks/useCreditCards';
 import { useBatchCreateTransactions } from '../../hooks/useTransactions';
-
-interface FileData {
-    Data: string;
-    Descrição: string;
-    Valor: string;
-    Categoria: string;
-    Conta: string;
-    Cartão?: string;
-    'Forma de pagamento'?: string;
-    'Data de pagamento'?: string;
-    'Conta de pagamento'?: string;
-    Notas: string;
-}
+import type { TransactionType } from '../../interfaces';
+import { ImportTransactionsUploadArea } from './import/ImportTransactionsUploadArea';
+import { ImportTransactionsPreviewTable } from './import/ImportTransactionsPreviewTable';
+import type { FileData, ImportPreviewRow } from './import/importTransactions.types';
+import { inferImportTransactionType, parseImportAmount, parseImportDate } from './import/importTransactions.utils';
 
 interface ImportTransactionsModalProps {
     open: boolean;
@@ -126,37 +107,16 @@ export function ImportTransactionsModal({ open, onClose }: ImportTransactionsMod
         setPreviewData(prev => prev.filter((_, i) => i !== index));
     };
 
-    const parseDate = (dateStr: string) => {
-        if (!dateStr) return null;
-
-        // Try DD/MM/YYYY
-        const brFormat = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-        if (brFormat) {
-            const [, day, month, year] = brFormat;
-            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-        }
-
-        // Try YYYY-MM-DD (standard)
-        const isoFormat = dateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-        if (isoFormat) return dateStr;
-
-        return null; // Invalid format
-    };
-
-    const mappedData = useMemo(() => {
+    const mappedData = useMemo<ImportPreviewRow[]>(() => {
         if (!previewData.length || !accounts || !categories || !cards) return [];
 
         return previewData.map(row => {
-            // Clean value: remove thousands separator (.) and replace decimal separator (,) with (.)
-            const cleanedValue = row.Valor.replace(/\./g, '').replace(',', '.').trim();
-            const amount = parseFloat(cleanedValue);
+            const amount = parseImportAmount(row.Valor);
+            const type: TransactionType = inferImportTransactionType(amount);
 
-            // Auto-detect type: negative values are expenses, positive are income
-            const type = amount >= 0 ? 'income' : 'expense';
-
-            const purchaseDate = parseDate(row.Data);
+            const purchaseDate = parseImportDate(row.Data);
             const paymentDateStr = row['Data de pagamento'];
-            const paymentDate = parseDate(paymentDateStr || '');
+            const paymentDate = parseImportDate(paymentDateStr || '');
             const isPaid = !!paymentDateStr;
 
             // Payment method mapping
@@ -184,16 +144,16 @@ export function ImportTransactionsModal({ open, onClose }: ImportTransactionsMod
                     description: row.Descrição,
                     amount: Math.abs(amount),
                     type,
-                    purchase_date: purchaseDate,
-                    payment_date: paymentDate || purchaseDate,
+                    purchase_date: purchaseDate || undefined,
+                    payment_date: paymentDate || purchaseDate || undefined,
                     is_paid: isPaid,
                     is_fixed: false,
-                    recurring_group_id: null,
-                    installment_group_id: null,
-                    installment_number: null,
+                    recurring_group_id: undefined,
+                    installment_group_id: undefined,
+                    installment_number: undefined,
                     account_id: account?.id || paymentAccount?.id,
-                    card_id: card?.id,
-                    category_id: category?.id,
+                    card_id: card?.id || undefined,
+                    category_id: category?.id || undefined,
                     payment_method: paymentMethod,
                     notes: row.Notas,
                 },
@@ -257,49 +217,14 @@ export function ImportTransactionsModal({ open, onClose }: ImportTransactionsMod
 
             <DialogContent>
                 {!file ? (
-                    <Stack spacing={2}>
-                        <Box
-                            component="label"
-                            onDrop={handleDrop}
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                py: 8,
-                                border: isDragOver ? '2px dashed #D4AF37' : '2px dashed #2A2A2A',
-                                borderRadius: 2,
-                                textAlign: 'center',
-                                bgcolor: isDragOver ? 'rgba(212, 175, 55, 0.08)' : 'rgba(255,255,255,0.01)',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                '&:hover': {
-                                    bgcolor: 'rgba(212, 175, 55, 0.05)',
-                                    borderColor: 'primary.main',
-                                    '& .upload-icon': { color: 'primary.main', opacity: 1 }
-                                }
-                            }}
-                        >
-                            <input type="file" accept=".csv" hidden onChange={handleFileChange} />
-                            <Upload className="upload-icon" size={48} style={{ marginBottom: 16, opacity: 0.5, transition: 'all 0.2s' }} />
-                            <Typography variant="h6">Selecione seu arquivo CSV</Typography>
-                            <Typography color="text.secondary" variant="body2">ou arraste e solte aqui</Typography>
-                        </Box>
-
-                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                            <Button
-                                size="small"
-                                variant="text"
-                                startIcon={<FileText size={16} />}
-                                onClick={handleDownloadTemplate}
-                                sx={{ color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
-                            >
-                                Baixar modelo de CSV
-                            </Button>
-                        </Box>
-                    </Stack>
+                    <ImportTransactionsUploadArea
+                        isDragOver={isDragOver}
+                        onDrop={handleDrop}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onFileChange={handleFileChange}
+                        onDownloadTemplate={handleDownloadTemplate}
+                    />
                 ) : (
                     <Stack spacing={3}>
                         <Box sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.02)', borderRadius: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -314,143 +239,15 @@ export function ImportTransactionsModal({ open, onClose }: ImportTransactionsMod
                         {error && <Alert severity="error" icon={<AlertCircle size={20} />}>{error}</Alert>}
 
                         {previewData.length > 0 && (
-                            <>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Preview dos Dados</Typography>
-                                    <Chip
-                                        label={`${totalValid} de ${mappedData.length} válidos`}
-                                        color={totalValid === mappedData.length ? "success" : "warning"}
-                                    />
-                                </Box>
-                                <TableContainer component={Paper} sx={{ maxHeight: 400, border: '1px solid #2A2A2A' }}>
-                                    <Table stickyHeader size="small">
-                                        <TableHead>
-                                            <TableRow>
-                                                <TableCell sx={{ bgcolor: 'background.paper', fontSize: '0.75rem', fontWeight: 700 }}>Data</TableCell>
-                                                <TableCell sx={{ bgcolor: 'background.paper', fontSize: '0.75rem', fontWeight: 700 }}>Descrição</TableCell>
-                                                <TableCell sx={{ bgcolor: 'background.paper', fontSize: '0.75rem', fontWeight: 700 }}>Valor</TableCell>
-                                                <TableCell sx={{ bgcolor: 'background.paper', fontSize: '0.75rem', fontWeight: 700 }}>Categoria</TableCell>
-                                                <TableCell sx={{ bgcolor: 'background.paper', fontSize: '0.75rem', fontWeight: 700 }}>Conta / Cartão</TableCell>
-                                                <TableCell sx={{ bgcolor: 'background.paper', fontSize: '0.75rem', fontWeight: 700 }}>Método</TableCell>
-                                                <TableCell sx={{ bgcolor: 'background.paper', width: 40 }}></TableCell>
-                                                <TableCell sx={{ bgcolor: 'background.paper', width: 40 }}></TableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {mappedData.map((row, idx) => (
-                                                <TableRow key={idx} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.02)' } }}>
-                                                    <TableCell sx={{ p: 0.5 }}>
-                                                        <TextField
-                                                            size="small"
-                                                            variant="standard"
-                                                            value={row.original.Data}
-                                                            onChange={(e) => updateRow(idx, 'Data', e.target.value)}
-                                                            error={row.errors.date}
-                                                            sx={{ input: { fontSize: '0.8rem' } }}
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell sx={{ p: 0.5 }}>
-                                                        <TextField
-                                                            size="small"
-                                                            variant="standard"
-                                                            fullWidth
-                                                            value={row.original.Descrição}
-                                                            onChange={(e) => updateRow(idx, 'Descrição', e.target.value)}
-                                                            sx={{ input: { fontSize: '0.8rem' } }}
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell sx={{ p: 0.5, width: 90 }}>
-                                                        <TextField
-                                                            size="small"
-                                                            variant="standard"
-                                                            value={row.original.Valor}
-                                                            onChange={(e) => updateRow(idx, 'Valor', e.target.value)}
-                                                            error={row.errors.amount}
-                                                            sx={{
-                                                                input: {
-                                                                    fontSize: '0.8rem',
-                                                                    fontWeight: 700,
-                                                                    color: row.mapped.type === 'income' ? 'success.main' : 'error.main'
-                                                                }
-                                                            }}
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell sx={{ p: 0.5, minWidth: 120 }}>
-                                                        <Select
-                                                            size="small"
-                                                            variant="standard"
-                                                            value={row.original.Categoria || ''}
-                                                            onChange={(e) => updateRow(idx, 'Categoria', e.target.value)}
-                                                            fullWidth
-                                                            sx={{ fontSize: '0.8rem' }}
-                                                        >
-                                                            <MenuItem value="">Sem Categoria</MenuItem>
-                                                            {categories?.filter(c => c.type === row.mapped.type).map(c => (
-                                                                <MenuItem key={c.id} value={c.name} sx={{ fontSize: '0.8rem' }}>{c.name}</MenuItem>
-                                                            ))}
-                                                        </Select>
-                                                    </TableCell>
-                                                    <TableCell sx={{ p: 0.5, minWidth: 140 }}>
-                                                        <Select
-                                                            size="small"
-                                                            variant="standard"
-                                                            value={row.original.Conta || row.original.Cartão || ''}
-                                                            onChange={(e) => {
-                                                                const val = e.target.value;
-                                                                const isCard = cards?.some(c => c.name === val);
-                                                                if (isCard) {
-                                                                    updateRow(idx, 'Cartão', val);
-                                                                    updateRow(idx, 'Conta', '');
-                                                                } else {
-                                                                    updateRow(idx, 'Conta', val);
-                                                                    updateRow(idx, 'Cartão', '');
-                                                                }
-                                                            }}
-                                                            fullWidth
-                                                            sx={{ fontSize: '0.8rem' }}
-                                                            error={row.errors.entity}
-                                                        >
-                                                            <MenuItem disabled value="">Selecione...</MenuItem>
-                                                            {accounts?.map(a => (
-                                                                <MenuItem key={a.id} value={a.name} sx={{ fontSize: '0.8rem' }}>🏦 {a.name}</MenuItem>
-                                                            ))}
-                                                            {cards?.map(c => (
-                                                                <MenuItem key={c.id} value={c.name} sx={{ fontSize: '0.8rem' }}>💳 {c.name}</MenuItem>
-                                                            ))}
-                                                        </Select>
-                                                    </TableCell>
-                                                    <TableCell sx={{ p: 0.5, minWidth: 100 }}>
-                                                        <Select
-                                                            size="small"
-                                                            variant="standard"
-                                                            value={row.original['Forma de pagamento'] || ''}
-                                                            onChange={(e) => updateRow(idx, 'Forma de pagamento', e.target.value)}
-                                                            fullWidth
-                                                            sx={{ fontSize: '0.8rem' }}
-                                                        >
-                                                            <MenuItem value="Pix">PIX</MenuItem>
-                                                            <MenuItem value="Débito">Débito</MenuItem>
-                                                            <MenuItem value="Crédito">Crédito</MenuItem>
-                                                            <MenuItem value="Dinheiro">Dinheiro</MenuItem>
-                                                        </Select>
-                                                    </TableCell>
-                                                    <TableCell sx={{ p: 0.5, width: 40 }} align="center">
-                                                        {row.isValid ?
-                                                            <Tooltip title="Válido"><CheckCircle2 size={16} color="#2E7D32" /></Tooltip> :
-                                                            <Tooltip title="Verifique os campos em vermelho"><AlertCircle size={16} color="#D32F2F" /></Tooltip>
-                                                        }
-                                                    </TableCell>
-                                                    <TableCell sx={{ p: 0.5, width: 40 }} align="center">
-                                                        <IconButton size="small" onClick={() => removeRow(idx)} color="inherit" sx={{ opacity: 0.5, '&:hover': { opacity: 1, color: 'error.main' } }}>
-                                                            <Trash2 size={16} />
-                                                        </IconButton>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>
-                            </>
+                            <ImportTransactionsPreviewTable
+                                mappedData={mappedData}
+                                totalValid={totalValid}
+                                categories={categories}
+                                accounts={accounts}
+                                cards={cards}
+                                updateRow={updateRow}
+                                removeRow={removeRow}
+                            />
                         )}
                     </Stack>
                 )}
@@ -468,22 +265,5 @@ export function ImportTransactionsModal({ open, onClose }: ImportTransactionsMod
                 </Button>
             </DialogActions>
         </Dialog>
-    );
-}
-
-function Chip({ label, color }: { label: string, color: 'success' | 'warning' }) {
-    return (
-        <Box sx={{
-            px: 1.5,
-            py: 0.5,
-            borderRadius: 5,
-            fontSize: '0.75rem',
-            fontWeight: 700,
-            bgcolor: color === 'success' ? 'rgba(46, 125, 50, 0.1)' : 'rgba(237, 108, 2, 0.1)',
-            color: color === 'success' ? 'success.main' : 'warning.main',
-            border: '1px solid currentColor'
-        }}>
-            {label}
-        </Box>
     );
 }

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Box, Stack, Typography, IconButton, Popover } from '@mui/material';
+import { Box, Stack, Typography, IconButton } from '@mui/material';
 import { ChevronLeft, ChevronRight, CreditCard } from 'lucide-react';
 import { colors } from '@/shared/theme';
+import { TransactionsMonthPickerPopover } from './TransactionsMonthPickerPopover';
 
 interface TransactionsFilterProps {
     typeFilter: string | null;
@@ -18,7 +19,6 @@ interface TransactionsFilterProps {
     handleNextMonth: () => void;
 }
 
-const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 const monthsFull = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
 interface TabButtonProps {
@@ -64,6 +64,15 @@ export function TransactionsFilter({
 }: TransactionsFilterProps) {
     const [monthAnchor, setMonthAnchor] = useState<HTMLElement | null>(null);
     const [pickerYear, setPickerYear] = useState(currentMonth.getFullYear());
+
+    const handleSelectMonthlyView = () => {
+        setShowAllTime(false);
+    };
+
+    const handleSelectGeneralView = () => {
+        setMonthAnchor(null);
+        setShowAllTime(true);
+    };
 
     const handleOpenMonthPicker = (e: React.MouseEvent<HTMLElement>) => {
         setPickerYear(currentMonth.getFullYear());
@@ -182,13 +191,13 @@ export function TransactionsFilter({
                 }}>
                     <TabButton
                         active={!showAllTime}
-                        onClick={() => setShowAllTime(false)}
+                        onClick={handleSelectMonthlyView}
                     >
                         Mês
                     </TabButton>
                     <TabButton
                         active={showAllTime}
-                        onClick={() => setShowAllTime(true)}
+                        onClick={handleSelectGeneralView}
                     >
                         Geral
                     </TabButton>
@@ -254,106 +263,15 @@ export function TransactionsFilter({
                     </Box>
                 )}
 
-                {/* Month Picker Popover */}
-                <Popover
-                    open={Boolean(monthAnchor)}
-                    anchorEl={monthAnchor}
-                    onClose={() => setMonthAnchor(null)}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                    transformOrigin={{ vertical: 'top', horizontal: 'center' }}
-                    slotProps={{
-                        paper: {
-                            sx: {
-                                mt: 1,
-                                bgcolor: colors.bgCard,
-                                border: `1px solid ${colors.border}`,
-                                borderRadius: '12px',
-                                p: 2,
-                                width: 280,
-                            }
-                        }
-                    }}
-                >
-                    {/* Year selector */}
-                    <Box sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        mb: 1.5,
-                    }}>
-                        <IconButton
-                            size="small"
-                            onClick={() => setPickerYear(y => y - 1)}
-                            sx={{
-                                width: 28,
-                                height: 28,
-                                borderRadius: '7px',
-                                color: colors.textSecondary,
-                                '&:hover': { bgcolor: 'rgba(255,255,255,0.06)' },
-                            }}
-                        >
-                            <ChevronLeft size={15} />
-                        </IconButton>
-                        <Typography sx={{
-                            fontSize: '14px',
-                            fontFamily: '"Plus Jakarta Sans"',
-                            fontWeight: 700,
-                            color: colors.textPrimary,
-                        }}>
-                            {pickerYear}
-                        </Typography>
-                        <IconButton
-                            size="small"
-                            onClick={() => setPickerYear(y => y + 1)}
-                            sx={{
-                                width: 28,
-                                height: 28,
-                                borderRadius: '7px',
-                                color: colors.textSecondary,
-                                '&:hover': { bgcolor: 'rgba(255,255,255,0.06)' },
-                            }}
-                        >
-                            <ChevronRight size={15} />
-                        </IconButton>
-                    </Box>
-
-                    {/* Month grid 4x3 */}
-                    <Box sx={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(4, 1fr)',
-                        gap: 0.5,
-                    }}>
-                        {months.map((m, i) => {
-                            const isCurrentMonth = currentMonth.getMonth() === i && currentMonth.getFullYear() === pickerYear;
-                            const isToday = new Date().getMonth() === i && new Date().getFullYear() === pickerYear;
-                            return (
-                                <Box
-                                    key={m}
-                                    component="button"
-                                    onClick={() => handleSelectMonth(i)}
-                                    sx={{
-                                        py: 1,
-                                        px: 0.5,
-                                        borderRadius: '8px',
-                                        border: isToday && !isCurrentMonth ? `1px solid ${colors.border}` : '1px solid transparent',
-                                        cursor: 'pointer',
-                                        fontSize: '12px',
-                                        fontFamily: '"DM Sans"',
-                                        fontWeight: isCurrentMonth ? 600 : 500,
-                                        bgcolor: isCurrentMonth ? colors.accent : 'transparent',
-                                        color: isCurrentMonth ? colors.bgPrimary : colors.textSecondary,
-                                        transition: 'all 150ms ease',
-                                        '&:hover': {
-                                            bgcolor: isCurrentMonth ? colors.accent : 'rgba(255,255,255,0.06)',
-                                        },
-                                    }}
-                                >
-                                    {m}
-                                </Box>
-                            );
-                        })}
-                    </Box>
-                </Popover>
+                <TransactionsMonthPickerPopover
+                    open={!showAllTime && Boolean(monthAnchor)}
+                    monthAnchor={monthAnchor}
+                    setMonthAnchor={setMonthAnchor}
+                    pickerYear={pickerYear}
+                    setPickerYear={setPickerYear}
+                    currentMonth={currentMonth}
+                    onSelectMonth={handleSelectMonth}
+                />
             </Stack>
         </Box>
     );

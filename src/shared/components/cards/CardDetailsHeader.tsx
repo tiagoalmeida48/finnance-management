@@ -1,22 +1,16 @@
-import { Stack, Box, Typography, Button, IconButton, ToggleButtonGroup, ToggleButton, TextField } from '@mui/material';
+import { Stack, Box, Typography, Button, IconButton, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import { ChevronLeft, ChevronRight, CreditCard as CardIcon, Wallet, TrendingDown, Percent } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import type { NavigateFunction } from 'react-router-dom';
+import type { CreditCardDetails } from '../../interfaces/card-details.interface';
 
 interface CardDetailsHeaderProps {
-    card: any;
-    navigate: any;
+    card: CreditCardDetails;
+    navigate: NavigateFunction;
     isAllTime: boolean;
     setIsAllTime: (val: boolean) => void;
-    isCustom: boolean;
-    setIsCustom: (val: boolean) => void;
     selectedDate: Date;
-    handlePrevMonth: () => void;
-    handleNextMonth: () => void;
-    customStart: string;
-    setCustomStart: (val: string) => void;
-    customEnd: string;
-    setCustomEnd: (val: string) => void;
+    handlePrevYear: () => void;
+    handleNextYear: () => void;
 }
 
 const colors = {
@@ -37,10 +31,7 @@ const formatCurrency = (value: number) =>
 export function CardDetailsHeader({
     card, navigate,
     isAllTime, setIsAllTime,
-    isCustom, setIsCustom,
-    selectedDate, handlePrevMonth, handleNextMonth,
-    customStart, setCustomStart,
-    customEnd, setCustomEnd
+    selectedDate, handlePrevYear, handleNextYear,
 }: CardDetailsHeaderProps) {
     const usagePercent = card.credit_limit > 0
         ? Math.min(((card.usage || 0) / card.credit_limit) * 100, 100)
@@ -67,12 +58,11 @@ export function CardDetailsHeader({
                 <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="center" spacing={1.5}>
                     <ToggleButtonGroup
                         size="small"
-                        value={isAllTime ? 'all' : isCustom ? 'custom' : 'monthly'}
+                        value={isAllTime ? 'all' : 'yearly'}
                         exclusive
                         onChange={(_, value) => {
                             if (value !== null) {
                                 setIsAllTime(value === 'all');
-                                setIsCustom(value === 'custom');
                             }
                         }}
                         sx={{
@@ -91,54 +81,33 @@ export function CardDetailsHeader({
                             },
                         }}
                     >
-                        <ToggleButton value="monthly">Mensal</ToggleButton>
-                        <ToggleButton value="custom">Personalizado</ToggleButton>
+                        <ToggleButton value="yearly">Anual</ToggleButton>
                         <ToggleButton value="all">Geral</ToggleButton>
                     </ToggleButtonGroup>
 
-                    {!isCustom ? (
-                        <Stack
-                            direction="row"
-                            alignItems="center"
-                            spacing={0.5}
-                            sx={{
-                                bgcolor: colors.bgCard,
-                                p: 0.5,
-                                borderRadius: '10px',
-                                border: `1px solid ${colors.border}`,
-                                opacity: isAllTime ? 0.5 : 1,
-                                pointerEvents: isAllTime ? 'none' : 'auto',
-                            }}
-                        >
-                            <IconButton size="small" onClick={handlePrevMonth} sx={{ color: colors.textMuted }}>
-                                <ChevronLeft size={16} />
-                            </IconButton>
-                            <Typography sx={{ fontSize: '13px', fontWeight: 600, minWidth: 100, textAlign: 'center', textTransform: 'capitalize', color: colors.textPrimary }}>
-                                {format(selectedDate, 'MMM yyyy', { locale: ptBR })}
-                            </Typography>
-                            <IconButton size="small" onClick={handleNextMonth} sx={{ color: colors.textMuted }}>
-                                <ChevronRight size={16} />
-                            </IconButton>
-                        </Stack>
-                    ) : (
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                            <TextField
-                                size="small"
-                                type="date"
-                                value={customStart}
-                                onChange={(e) => setCustomStart(e.target.value)}
-                                sx={{ width: 130, '& .MuiInputBase-root': { fontSize: '12px', height: 32, bgcolor: colors.bgCard, borderRadius: '8px' } }}
-                            />
-                            <Typography sx={{ fontSize: '11px', color: colors.textMuted }}>até</Typography>
-                            <TextField
-                                size="small"
-                                type="date"
-                                value={customEnd}
-                                onChange={(e) => setCustomEnd(e.target.value)}
-                                sx={{ width: 130, '& .MuiInputBase-root': { fontSize: '12px', height: 32, bgcolor: colors.bgCard, borderRadius: '8px' } }}
-                            />
-                        </Stack>
-                    )}
+                    <Stack
+                        direction="row"
+                        alignItems="center"
+                        spacing={0.5}
+                        sx={{
+                            bgcolor: colors.bgCard,
+                            p: 0.5,
+                            borderRadius: '10px',
+                            border: `1px solid ${colors.border}`,
+                            opacity: isAllTime ? 0.5 : 1,
+                            pointerEvents: isAllTime ? 'none' : 'auto',
+                        }}
+                    >
+                        <IconButton size="small" onClick={handlePrevYear} sx={{ color: colors.textMuted }}>
+                            <ChevronLeft size={16} />
+                        </IconButton>
+                        <Typography sx={{ fontSize: '13px', fontWeight: 600, minWidth: 70, textAlign: 'center', color: colors.textPrimary }}>
+                            {selectedDate.getFullYear()}
+                        </Typography>
+                        <IconButton size="small" onClick={handleNextYear} sx={{ color: colors.textMuted }}>
+                            <ChevronRight size={16} />
+                        </IconButton>
+                    </Stack>
                 </Stack>
             </Stack>
 

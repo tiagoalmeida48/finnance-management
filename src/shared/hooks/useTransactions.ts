@@ -1,17 +1,23 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { transactionsService } from '../services/transactions.service';
 import { Transaction, CreateTransactionData } from '../interfaces';
+import { queryKeys } from '../constants/queryKeys';
+
+const invalidateTransactionsAndAccounts = (queryClient: QueryClient) => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+    queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all });
+};
 
 export function useTransactions(filters?: Parameters<typeof transactionsService.getAll>[0]) {
     return useQuery({
-        queryKey: ['transactions', filters],
+        queryKey: queryKeys.transactions.list(filters),
         queryFn: () => transactionsService.getAll(filters),
     });
 }
 
 export function useFirstTransactionDate() {
     return useQuery({
-        queryKey: ['transactions', 'first-date'],
+        queryKey: queryKeys.transactions.firstDate,
         queryFn: () => transactionsService.getFirstTransactionDate(),
     });
 }
@@ -21,8 +27,7 @@ export function useCreateTransaction() {
     return useMutation({
         mutationFn: (data: CreateTransactionData) => transactionsService.create(data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['transactions'] });
-            queryClient.invalidateQueries({ queryKey: ['accounts'] });
+            invalidateTransactionsAndAccounts(queryClient);
         },
     });
 }
@@ -32,8 +37,7 @@ export function useBatchCreateTransactions() {
     return useMutation({
         mutationFn: (transactions: Partial<Transaction>[]) => transactionsService.batchCreate(transactions),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['transactions'] });
-            queryClient.invalidateQueries({ queryKey: ['accounts'] });
+            invalidateTransactionsAndAccounts(queryClient);
         },
     });
 }
@@ -44,8 +48,7 @@ export function useUpdateTransaction() {
         mutationFn: ({ id, updates }: { id: string; updates: Partial<Transaction> }) =>
             transactionsService.update(id, updates),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['transactions'] });
-            queryClient.invalidateQueries({ queryKey: ['accounts'] });
+            invalidateTransactionsAndAccounts(queryClient);
         },
     });
 }
@@ -56,8 +59,7 @@ export function useTogglePaymentStatus() {
         mutationFn: ({ id, currentStatus }: { id: string; currentStatus: boolean }) =>
             transactionsService.togglePaymentStatus(id, currentStatus),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['transactions'] });
-            queryClient.invalidateQueries({ queryKey: ['accounts'] });
+            invalidateTransactionsAndAccounts(queryClient);
         },
     });
 }
@@ -69,8 +71,7 @@ export function useBatchPayTransactions() {
             return transactionsService.batchPay(ids, accountId, paymentDate || '');
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['transactions'] });
-            queryClient.invalidateQueries({ queryKey: ['accounts'] });
+            invalidateTransactionsAndAccounts(queryClient);
         },
     });
 }
@@ -80,8 +81,7 @@ export function useBatchUnpayTransactions() {
     return useMutation({
         mutationFn: (ids: string[]) => transactionsService.batchUnpay(ids),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['transactions'] });
-            queryClient.invalidateQueries({ queryKey: ['accounts'] });
+            invalidateTransactionsAndAccounts(queryClient);
         },
     });
 }
@@ -91,8 +91,7 @@ export function useBatchDeleteTransactions() {
     return useMutation({
         mutationFn: (ids: string[]) => transactionsService.batchDelete(ids),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['transactions'] });
-            queryClient.invalidateQueries({ queryKey: ['accounts'] });
+            invalidateTransactionsAndAccounts(queryClient);
         },
     });
 }
@@ -102,8 +101,7 @@ export function useDeleteTransaction() {
     return useMutation({
         mutationFn: (id: string) => transactionsService.delete(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['transactions'] });
-            queryClient.invalidateQueries({ queryKey: ['accounts'] });
+            invalidateTransactionsAndAccounts(queryClient);
         },
     });
 }
@@ -114,8 +112,7 @@ export function useDeleteTransactionGroup() {
         mutationFn: ({ groupId, type }: { groupId: string; type: 'installment' | 'recurring' }) =>
             transactionsService.deleteGroup(groupId, type),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['transactions'] });
-            queryClient.invalidateQueries({ queryKey: ['accounts'] });
+            invalidateTransactionsAndAccounts(queryClient);
         },
     });
 }
@@ -126,8 +123,7 @@ export function useUpdateTransactionGroup() {
         mutationFn: ({ groupId, type, updates }: { groupId: string; type: 'installment' | 'recurring'; updates: Partial<Transaction> }) =>
             transactionsService.updateGroup(groupId, type, updates),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['transactions'] });
-            queryClient.invalidateQueries({ queryKey: ['accounts'] });
+            invalidateTransactionsAndAccounts(queryClient);
         },
     });
 }
@@ -138,9 +134,8 @@ export function usePayBill() {
         mutationFn: (data: { cardId: string; transactionIds: string[]; accountId: string; paymentDate: string; amount: number; description: string }) =>
             transactionsService.payBill(data.cardId, data.transactionIds, data.accountId, data.paymentDate, data.amount, data.description),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['transactions'] });
-            queryClient.invalidateQueries({ queryKey: ['accounts'] });
-            queryClient.invalidateQueries({ queryKey: ['cards'] });
+            invalidateTransactionsAndAccounts(queryClient);
+            queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
         },
     });
 }

@@ -1,26 +1,29 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { format, startOfMonth, addMonths, subMonths, endOfMonth } from 'date-fns';
+import { format, startOfMonth, addMonths, subYears, addYears } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useCreditCardDetails } from './useCreditCards';
+import type {
+    CardCategoryPoint,
+    CardHistoryChartPoint,
+    CardStatement,
+    StatementTransaction,
+} from '../interfaces/card-details.interface';
 
 export function useCreditCardDetailsLogic() {
-    const { id } = useParams<{ id: string }>();
+    const { id = '' } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { data: card, isLoading } = useCreditCardDetails(id!);
+    const { data: card, isLoading } = useCreditCardDetails(id);
 
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [isAllTime, setIsAllTime] = useState(true);
-    const [isCustom, setIsCustom] = useState(false);
-    const [customStart, setCustomStart] = useState(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
-    const [customEnd, setCustomEnd] = useState(format(endOfMonth(new Date()), 'yyyy-MM-dd'));
+    const [isAllTime, setIsAllTime] = useState(false);
     const [payModalOpen, setPayModalOpen] = useState(false);
-    const [selectedStatement, setSelectedStatement] = useState<any>(null);
+    const [selectedStatement, setSelectedStatement] = useState<CardStatement | null>(null);
 
-    const handlePrevMonth = () => setSelectedDate(prev => subMonths(prev, 1));
-    const handleNextMonth = () => setSelectedDate(prev => addMonths(prev, 1));
+    const handlePrevYear = () => setSelectedDate(prev => subYears(prev, 1));
+    const handleNextYear = () => setSelectedDate(prev => addYears(prev, 1));
 
-    const handleOpenPayModal = (s: any) => {
+    const handleOpenPayModal = (s: CardStatement) => {
         setSelectedStatement(s);
         setPayModalOpen(true);
     };
@@ -32,9 +35,9 @@ export function useCreditCardDetailsLogic() {
         const dueDay = Number(card.due_day);
         const isNextMonthPayment = closingDay >= dueDay;
 
-        const cardTransactions = card.transactions.filter((t: any) => t.card_id === id);
+        const cardTransactions = card.transactions.filter((t) => t.card_id === id);
 
-        const allStatementTransactions = cardTransactions.map((t: any) => {
+        const allStatementTransactions: StatementTransaction[] = cardTransactions.map((t) => {
             const date = new Date(t.payment_date + 'T12:00:00');
             const day = date.getDate();
 
@@ -51,33 +54,25 @@ export function useCreditCardDetailsLogic() {
             };
         });
 
-        let filteredTransactions = allStatementTransactions;
+        let filteredTransactions: StatementTransaction[] = allStatementTransactions;
 
         if (!isAllTime) {
-            if (isCustom) {
-                const rangeStartKey = format(new Date(customStart + 'T12:00:00'), 'yyyy-MM');
-                const rangeEndKey = format(new Date(customEnd + 'T12:00:00'), 'yyyy-MM');
-                filteredTransactions = allStatementTransactions.filter((t: any) =>
-                    t.statementMonthKey >= rangeStartKey && t.statementMonthKey <= rangeEndKey
-                );
-            } else {
-                const selectedKey = format(selectedDate, 'yyyy-MM');
-                filteredTransactions = allStatementTransactions.filter((t: any) =>
-                    t.statementMonthKey === selectedKey
-                );
-            }
+            const selectedYearKey = format(selectedDate, 'yyyy');
+            filteredTransactions = allStatementTransactions.filter((t) =>
+                t.statementMonthKey.startsWith(`${selectedYearKey}-`)
+            );
         }
 
         // Group by real month key (yyyy-MM) to avoid mixing values across years.
-        const groups: Record<string, { date: Date; trans: any[] }> = {};
+        const groups: Record<string, { date: Date; trans: StatementTransaction[] }> = {};
 
-        filteredTransactions.forEach((t: any) => {
+        filteredTransactions.forEach((t) => {
             const key = t.statementMonthKey;
             if (!groups[key]) groups[key] = { date: t.statementDate, trans: [] };
             groups[key].trans.push(t);
         });
 
-        const statements = Object.entries(groups)
+        const statements: CardStatement[] = Object.entries(groups)
             .map(([monthKey, group]) => {
                 const total = group.trans.reduce((sum, t) => {
                     return t.type === 'income' ? sum - Number(t.amount) : sum + Number(t.amount);
@@ -101,7 +96,7 @@ export function useCreditCardDetailsLogic() {
             })
             .sort((a, b) => b.date.getTime() - a.date.getTime());
 
-        const chartData = [...statements]
+        const chartData: CardHistoryChartPoint[] = [...statements]
             .reverse()
             .map(s => ({
                 name: format(s.date, 'MMM/yy', { locale: ptBR }),
@@ -109,31 +104,28 @@ export function useCreditCardDetailsLogic() {
             }));
 
         const categoryMap: Record<string, number> = {};
-        filteredTransactions.forEach((t: any) => {
+        filteredTransactions.forEach((t) => {
             if (t.type === 'expense') {
                 const catName = t.category?.name || 'Sem Categoria';
                 categoryMap[catName] = (categoryMap[catName] || 0) + Number(t.amount);
             }
         });
 
-        const categoryData = Object.entries(categoryMap)
+        const categoryData: CardCategoryPoint[] = Object.entries(categoryMap)
             .map(([name, value]) => ({ name, value }))
             .sort((a, b) => b.value - a.value)
             .slice(0, 5);
 
         return { statements, chartData, categoryData };
-    }, [card, id, isAllTime, isCustom, selectedDate, customStart, customEnd]);
+    }, [card, id, isAllTime, selectedDate]);
 
     return {
         id, navigate, card, isLoading,
         selectedDate, setSelectedDate,
         isAllTime, setIsAllTime,
-        isCustom, setIsCustom,
-        customStart, setCustomStart,
-        customEnd, setCustomEnd,
         payModalOpen, setPayModalOpen,
         selectedStatement, setSelectedStatement,
-        handlePrevMonth, handleNextMonth,
+        handlePrevYear, handleNextYear,
         handleOpenPayModal, historyData
     };
 }

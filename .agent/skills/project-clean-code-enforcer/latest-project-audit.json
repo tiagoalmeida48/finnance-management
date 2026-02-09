@@ -1,59 +1,8 @@
 {
-  "generated_at": "2026-02-08T13:11:28",
-  "root": "D:\\DEV\\Pessoal\\finnance-management",
+  "generated_at": "2026-02-08T23:16:55",
+  "root": "D:\\DEV\\Pessoal\\finnance-management\\src",
   "max_lines": 300,
-  "files_scanned": 118,
-  "oversized_files": [
-    {
-      "File": "PROMPT GERADOR DE PRD E SPECS.md",
-      "Lines": 1292,
-      "CommentLines": 0
-    },
-    {
-      "File": "src\\shared\\components\\transactions\\ImportTransactionsModal.tsx",
-      "Lines": 489,
-      "CommentLines": 6
-    },
-    {
-      "File": "src\\shared\\components\\transactions\\TransactionsTable.tsx",
-      "Lines": 437,
-      "CommentLines": 0
-    },
-    {
-      "File": "src\\shared\\services\\transactions.service.ts",
-      "Lines": 414,
-      "CommentLines": 0
-    },
-    {
-      "File": "src\\pages\\UsersManagementPage.tsx",
-      "Lines": 391,
-      "CommentLines": 0
-    },
-    {
-      "File": "src\\shared\\components\\categories\\CategoryFormModal.tsx",
-      "Lines": 375,
-      "CommentLines": 0
-    },
-    {
-      "File": "src\\shared\\components\\layout\\Sidebar.tsx",
-      "Lines": 362,
-      "CommentLines": 0
-    },
-    {
-      "File": "src\\shared\\components\\transactions\\TransactionsFilter.tsx",
-      "Lines": 360,
-      "CommentLines": 0
-    },
-    {
-      "File": "src\\shared\\components\\cards\\CardFormModal.tsx",
-      "Lines": 357,
-      "CommentLines": 0
-    },
-    {
-      "File": "src\\shared\\hooks\\useTransactionsPageLogic.ts",
-      "Lines": 344,
-      "CommentLines": 0
-    }
-  ],
+  "files_scanned": 116,
+  "oversized_files": [],
   "duplicate_file_groups": []
 }

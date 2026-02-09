@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardService } from '../services/dashboard.service';
+import { queryKeys } from '../constants/queryKeys';
 
 export function useDashboardPageLogic() {
     const [filterType, setFilterType] = useState<'monthly' | 'general'>('general');
@@ -9,17 +10,17 @@ export function useDashboardPageLogic() {
     const filter = filterType === 'monthly' ? currentDate : undefined;
 
     const { data: stats, isLoading: statsLoading } = useQuery({
-        queryKey: ['dashboard-stats', filter],
+        queryKey: queryKeys.dashboard.stats(filter),
         queryFn: () => dashboardService.getStats(filter),
     });
 
     const { data: chartData, isLoading: chartLoading } = useQuery({
-        queryKey: ['dashboard-charts', filter],
+        queryKey: queryKeys.dashboard.charts(filter),
         queryFn: () => dashboardService.getChartData(filter),
     });
 
     const { data: categories, isLoading: categoriesLoading } = useQuery({
-        queryKey: ['dashboard-categories', filter],
+        queryKey: queryKeys.dashboard.categories(filter),
         queryFn: () => dashboardService.getCategoryDistribution(filter),
     });
 

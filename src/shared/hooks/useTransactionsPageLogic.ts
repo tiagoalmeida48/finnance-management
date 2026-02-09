@@ -7,23 +7,18 @@ import {
     useBatchDeleteTransactions,
     useBatchPayTransactions,
     useBatchUnpayTransactions,
-    useDeleteTransactionGroup,
-    useFirstTransactionDate
+    useDeleteTransactionGroup
 } from './useTransactions';
 import { useAccounts } from './useAccounts';
 import { useCategories } from './useCategories';
 import { Transaction } from '../services/transactions.service';
-
-export interface TransactionGroup {
-    id: string;
-    isGroup: boolean;
-    type: 'installment' | 'recurring';
-    mainTransaction: Transaction;
-    items: Transaction[];
-    totalAmount: number;
-    paidAmount: number;
-    isAllPaid: boolean;
-}
+import {
+    getFilteredTransactionsAndSummaries,
+    getGroupedTransactions,
+    type TransactionGroup,
+    type TransactionSortConfig,
+    type TransactionSortField,
+} from './transactionsPage.utils';
 
 export function useTransactionsPageLogic() {
     const [modalOpen, setModalOpen] = useState(false);
@@ -41,10 +36,12 @@ export function useTransactionsPageLogic() {
     const [searchQuery, setSearchQuery] = useState('');
     const [categoryFilter, setCategoryFilter] = useState<string>('all');
     const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('all');
-    const [sortConfig, setSortConfig] = useState<{ field: keyof Transaction | 'amount' | 'payment_date' | 'is_paid' | 'payment_method'; direction: 'asc' | 'desc' }>({
+    const [sortConfig, setSortConfig] = useState<TransactionSortConfig>({
         field: 'payment_date',
         direction: 'desc'
     });
+    const [transactionsPage, setTransactionsPage] = useState(0);
+    const [transactionsRowsPerPage, setTransactionsRowsPerPage] = useState(100);
 
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -57,7 +54,6 @@ export function useTransactionsPageLogic() {
     });
 
     const { data: accounts, isLoading: accountsLoading } = useAccounts();
-    const { data: firstTransactionDate } = useFirstTransactionDate();
     const { data: categories } = useCategories();
 
     const deleteTransaction = useDeleteTransaction();
@@ -76,6 +72,12 @@ export function useTransactionsPageLogic() {
 
     const handleCloseMenu = () => {
         setAnchorEl(null);
+    };
+
+    const handleSetShowAllTime = (value: boolean) => {
+        setShowAllTime(value);
+        setAnchorEl(null);
+        setMenuTransaction(null);
     };
 
     const handleEdit = () => {
@@ -185,27 +187,34 @@ export function useTransactionsPageLogic() {
     };
 
     const handleSelectAll = (checked: boolean) => {
-        if (checked && transactions) {
-            const filtered = transactions.filter(t => !typeFilter || t.type === typeFilter);
-            setSelectedIds(filtered.map(t => t.id));
-        } else {
-            setSelectedIds([]);
+        if (!checked) {
+            setSelectedIds(prev => prev.filter(id => !currentPageTransactionIds.includes(id)));
+            return;
         }
+
+        setSelectedIds(prev => {
+            const merged = new Set([...prev, ...currentPageTransactionIds]);
+            return Array.from(merged);
+        });
     };
 
     const handlePrevMonth = () => {
         setCurrentMonth(prev => subMonths(prev, 1));
         setShowAllTime(false);
+        setAnchorEl(null);
+        setMenuTransaction(null);
         setSelectedIds([]);
     };
 
     const handleNextMonth = () => {
         setCurrentMonth(prev => addMonths(prev, 1));
         setShowAllTime(false);
+        setAnchorEl(null);
+        setMenuTransaction(null);
         setSelectedIds([]);
     };
 
-    const handleSort = (field: keyof Transaction | 'amount' | 'payment_date' | 'is_paid' | 'payment_method') => {
+    const handleSort = (field: TransactionSortField) => {
         setSortConfig(prev => ({
             field,
             direction: prev.field === field && prev.direction === 'desc' ? 'asc' : 'desc'
@@ -214,103 +223,49 @@ export function useTransactionsPageLogic() {
 
     const { filteredTransactions, summaries } = useMemo(() => {
         if (!transactions) return { filteredTransactions: [], summaries: { income: 0, expense: 0, balance: 0, pending: 0 } };
-
-        const filtered = transactions.filter(t => {
-            if (typeFilter && t.type !== typeFilter) return false;
-            if (searchQuery && !t.description.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-            if (categoryFilter !== 'all' && t.category_id !== categoryFilter) return false;
-            if (paymentMethodFilter !== 'all' && t.payment_method !== paymentMethodFilter) return false;
-            if (hideCreditCards && t.card_id) return false;
-            return true;
+        return getFilteredTransactionsAndSummaries({
+            transactions,
+            typeFilter,
+            searchQuery,
+            categoryFilter,
+            paymentMethodFilter,
+            hideCreditCards,
+            sortConfig,
         });
-
-        const initialBalanceSum = accounts?.reduce((acc, a) => acc + (a.initial_balance || 0), 0) || 0;
-        const isFirstMonth = firstTransactionDate &&
-            format(startOfMonth(new Date(firstTransactionDate + 'T12:00:00')), 'yyyy-MM') ===
-            format(startOfMonth(currentMonth), 'yyyy-MM');
-
-        const shouldIncludeInitialBalance = showAllTime || isFirstMonth;
-        const baseIncome = shouldIncludeInitialBalance ? initialBalanceSum : 0;
-
-        const stats = filtered.reduce((acc, t) => {
-            const amount = t.amount;
-            if (t.type === 'income') {
-                acc.income += amount;
-            } else if (t.type === 'expense') {
-                if (!t.card_id) acc.expense += amount;
-            } else if (t.type === 'transfer') {
-                acc.expense += amount;
-            }
-            if (!t.is_paid) acc.pending += amount;
-            return acc;
-        }, { income: baseIncome, expense: 0, balance: 0, pending: 0 });
-
-        const summaries = { ...stats, balance: stats.income - stats.expense };
-
-        filtered.sort((a, b) => {
-            const field = sortConfig.field;
-            let valA: any = a[field as keyof Transaction];
-            let valB: any = b[field as keyof Transaction];
-            if (field === 'category_id') {
-                valA = a.category?.name || '';
-                valB = b.category?.name || '';
-            }
-            if (field === 'is_paid') {
-                valA = a.is_paid ? 1 : 0;
-                valB = b.is_paid ? 1 : 0;
-            }
-            if (field === 'payment_method') {
-                valA = a.payment_method || (a.card_id ? 'credit' : 'account');
-                valB = b.payment_method || (b.card_id ? 'credit' : 'account');
-            }
-            if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
-            if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
-            return 0;
-        });
-
-        return { filteredTransactions: filtered, summaries };
-    }, [transactions, typeFilter, searchQuery, categoryFilter, paymentMethodFilter, sortConfig, hideCreditCards, accounts, firstTransactionDate, currentMonth, showAllTime]);
+    }, [transactions, typeFilter, searchQuery, categoryFilter, paymentMethodFilter, sortConfig, hideCreditCards]);
 
     const groupedTransactions = useMemo(() => {
-        const groups: (Transaction | TransactionGroup)[] = [];
-        const groupMap: Record<string, TransactionGroup> = {};
-
-        filteredTransactions.forEach(t => {
-            const groupId = t.installment_group_id || t.recurring_group_id;
-            const groupType = t.installment_group_id ? 'installment' : 'recurring';
-
-            if (groupId) {
-                if (!groupMap[groupId]) {
-                    groupMap[groupId] = {
-                        id: groupId,
-                        isGroup: true,
-                        type: groupType,
-                        mainTransaction: t,
-                        items: [],
-                        totalAmount: 0,
-                        paidAmount: 0,
-                        isAllPaid: true
-                    };
-                    groups.push(groupMap[groupId]);
-                }
-                const group = groupMap[groupId];
-                group.items.push(t);
-                group.totalAmount += t.amount;
-                if (t.is_paid) group.paidAmount += t.amount;
-                if (!t.is_paid) group.isAllPaid = false;
-
-                group.items.sort((a, b) => {
-                    if (groupType === 'installment') return (a.installment_number || 0) - (b.installment_number || 0);
-                    return new Date(a.payment_date + 'T12:00:00').getTime() - new Date(b.payment_date + 'T12:00:00').getTime();
-                });
-                group.mainTransaction = group.items[0];
-            } else {
-                groups.push(t);
-            }
-        });
-
-        return groups;
+        return getGroupedTransactions(filteredTransactions);
     }, [filteredTransactions]);
+
+    const showingAllTransactions = transactionsRowsPerPage === -1;
+    const maxTransactionsPage = showingAllTransactions
+        ? 0
+        : Math.max(0, Math.ceil(groupedTransactions.length / transactionsRowsPerPage) - 1);
+    const safeTransactionsPage = Math.min(transactionsPage, maxTransactionsPage);
+
+    const paginatedGroupedTransactions = useMemo(() => {
+        if (showingAllTransactions) {
+            return groupedTransactions;
+        }
+        const startIndex = safeTransactionsPage * transactionsRowsPerPage;
+        return groupedTransactions.slice(startIndex, startIndex + transactionsRowsPerPage);
+    }, [groupedTransactions, safeTransactionsPage, showingAllTransactions, transactionsRowsPerPage]);
+
+    const currentPageTransactionIds = paginatedGroupedTransactions.flatMap((item: Transaction | TransactionGroup) =>
+        'isGroup' in item && item.isGroup
+            ? item.items.map((transaction) => transaction.id)
+            : [item.id]
+    );
+
+    const handleTransactionsPageChange = (page: number) => {
+        setTransactionsPage(page);
+    };
+
+    const handleTransactionsRowsPerPageChange = (rowsPerPage: number) => {
+        setTransactionsRowsPerPage(rowsPerPage);
+        setTransactionsPage(0);
+    };
 
     return {
         modalOpen, setModalOpen,
@@ -321,13 +276,15 @@ export function useTransactionsPageLogic() {
         typeFilter, setTypeFilter,
         currentMonth, setCurrentMonth,
         showPendingOnly, setShowPendingOnly,
-        showAllTime, setShowAllTime,
+        showAllTime, setShowAllTime: handleSetShowAllTime,
         hideCreditCards, setHideCreditCards,
         expandedGroups, setExpandedGroups,
         searchQuery, setSearchQuery,
         categoryFilter, setCategoryFilter,
         paymentMethodFilter, setPaymentMethodFilter,
         sortConfig, setSortConfig,
+        transactionsPage: safeTransactionsPage, setTransactionsPage: handleTransactionsPageChange,
+        transactionsRowsPerPage, setTransactionsRowsPerPage: handleTransactionsRowsPerPageChange,
         selectedIds, setSelectedIds,
         anchorEl, setAnchorEl,
         menuTransaction, setMenuTransaction,
@@ -338,7 +295,7 @@ export function useTransactionsPageLogic() {
         handleTogglePaid, handleConfirmPayment, handleBatchUnpay, handleBatchDelete,
         handleAdd, handleImport, toggleGroup, handleSelectRow, handleSelectAll,
         handlePrevMonth, handleNextMonth, handleSort,
-        filteredTransactions, summaries, groupedTransactions,
+        filteredTransactions, summaries, groupedTransactions, paginatedGroupedTransactions,
         togglePaymentStatus // exposes isPending etc if needed
     };
 }

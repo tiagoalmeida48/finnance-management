@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react';
-import { useAuth, Profile } from '../../lib/supabase/auth-context';
+import { useAuth } from '../../lib/supabase/auth-context';
 import { supabase } from '../../lib/supabase/client';
+
+type FeedbackMessage = { type: 'success' | 'error'; text: string } | null;
+
+const getErrorMessage = (error: unknown, fallback: string) =>
+    error instanceof Error ? error.message : fallback;
 
 export function useProfilePageLogic() {
     const { user, profile, refreshProfile } = useAuth();
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(true);
-    const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [message, setMessage] = useState<FeedbackMessage>(null);
     const [fullName, setFullName] = useState('');
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
@@ -28,7 +33,7 @@ export function useProfilePageLogic() {
         } else {
             setFetching(false);
         }
-    }, [profile, user, fetching]);
+    }, [profile, user, fetching, refreshProfile]);
 
     async function handleUpdate() {
         if (!user) return;
@@ -47,8 +52,8 @@ export function useProfilePageLogic() {
             if (error) throw error;
             await refreshProfile();
             setMessage({ type: 'success', text: 'Nome atualizado com sucesso!' });
-        } catch (error: any) {
-            setMessage({ type: 'error', text: error.message || 'Erro ao atualizar perfil.' });
+        } catch (error: unknown) {
+            setMessage({ type: 'error', text: getErrorMessage(error, 'Erro ao atualizar perfil.') });
         } finally {
             setLoading(false);
         }
@@ -90,8 +95,8 @@ export function useProfilePageLogic() {
 
             await refreshProfile();
             setMessage({ type: 'success', text: 'Foto do perfil atualizada!' });
-        } catch (error: any) {
-            setMessage({ type: 'error', text: error.message || 'Erro ao carregar avatar.' });
+        } catch (error: unknown) {
+            setMessage({ type: 'error', text: getErrorMessage(error, 'Erro ao carregar avatar.') });
         } finally {
             setUploading(false);
         }
@@ -121,8 +126,8 @@ export function useProfilePageLogic() {
             setMessage({ type: 'success', text: 'Senha atualizada com sucesso!' });
             setPassword('');
             setConfirmPassword('');
-        } catch (error: any) {
-            setMessage({ type: 'error', text: error.message || 'Erro ao atualizar senha.' });
+        } catch (error: unknown) {
+            setMessage({ type: 'error', text: getErrorMessage(error, 'Erro ao atualizar senha.') });
         } finally {
             setPwdLoading(false);
         }
@@ -132,26 +137,5 @@ export function useProfilePageLogic() {
         user, profile, loading, fetching, message, setMessage, fullName, setFullName, avatarUrl, uploading,
         password, setPassword, confirmPassword, setConfirmPassword, showPassword, setShowPassword, pwdLoading,
         handleUpdate, uploadAvatar, handlePasswordUpdate
-    } as {
-        user: any;
-        profile: Profile | null;
-        loading: boolean;
-        fetching: boolean;
-        message: { type: 'success' | 'error', text: string } | null;
-        setMessage: (m: { type: 'success' | 'error', text: string } | null) => void;
-        fullName: string;
-        setFullName: (n: string) => void;
-        avatarUrl: string | null;
-        uploading: boolean;
-        password: string;
-        setPassword: (p: string) => void;
-        confirmPassword: string;
-        setConfirmPassword: (p: string) => void;
-        showPassword: boolean;
-        setShowPassword: (s: boolean) => void;
-        pwdLoading: boolean;
-        handleUpdate: () => Promise<void>;
-        uploadAvatar: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
-        handlePasswordUpdate: () => Promise<void>;
     };
 }

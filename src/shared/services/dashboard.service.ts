@@ -1,9 +1,33 @@
 import { supabase } from '@/lib/supabase/client';
 import { startOfMonth, endOfMonth, format, subMonths, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import type { Transaction } from '../interfaces/transaction.interface';
+
+type DashboardFilter = Date | { start: string; end: string };
+
+interface DashboardTransactionRow {
+    amount: number;
+    type: string;
+    card_id?: string | null;
+    payment_date: string;
+    category?: { name?: string } | null;
+}
+
+interface DashboardMonthBucket {
+    key: string;
+    name: string;
+    receita: number;
+    despesa: number;
+    date: Date;
+}
+
+interface CategoryDistributionRow {
+    amount: number;
+    category?: { name?: string } | { name?: string }[] | null;
+}
 
 export const dashboardService = {
-    async getStats(filter?: Date | { start: string; end: string }) {
+    async getStats(filter?: DashboardFilter) {
         const { data: accounts } = await supabase.from('bank_accounts').select('current_balance, initial_balance').is('deleted_at', null);
         const { data: cards } = await supabase.from('credit_cards').select('credit_limit').is('deleted_at', null);
 
@@ -23,7 +47,8 @@ export const dashboardService = {
             query = query.gte('payment_date', filter.start).lte('payment_date', filter.end);
         }
 
-        const { data: transactions } = await query;
+        const { data: transactionsData } = await query;
+        const transactions = (transactionsData ?? []) as Transaction[];
 
         const totalBalance = accounts?.reduce((acc, curr) => acc + (Number(curr.current_balance) || 0), 0) || 0;
         const totalLimit = cards?.reduce((acc, curr) => acc + (Number(curr.credit_limit) || 0), 0) || 0;
@@ -52,11 +77,11 @@ export const dashboardService = {
         const baseIncome = shouldIncludeInitialBalance ? initialBalanceSum : 0;
 
         const monthlyIncome = (transactions
-            ?.filter(t => t.type === 'income' || t.type === 'receita')
+            .filter(t => t.type === 'income')
             .reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0) || 0) + baseIncome;
 
         const monthlyExpenses = transactions
-            ?.filter(t => (t.type === 'expense' || t.type === 'despesa' || t.type === 'transfer') && !t.card_id)
+            .filter(t => (t.type === 'expense' || t.type === 'transfer') && !t.card_id)
             .reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0) || 0;
 
         return {
@@ -64,12 +89,12 @@ export const dashboardService = {
             totalLimit: totalLimit - totalUsed,
             monthlyIncome,
             monthlyExpenses,
-            transactions: transactions || []
+            transactions
         };
     },
 
-    async getChartData(filter?: Date | { start: string; end: string }) {
-        let months: any[] = [];
+    async getChartData(filter?: DashboardFilter) {
+        const months: DashboardMonthBucket[] = [];
         let startDate: string | null = null;
         let finalDate: string | null = null;
 
@@ -137,9 +162,10 @@ export const dashboardService = {
         if (startDate) query = query.gte('payment_date', format(new Date(startDate), 'yyyy-MM-dd'));
         if (finalDate) query = query.lte('payment_date', format(new Date(finalDate), 'yyyy-MM-dd'));
 
-        const { data: transactions } = await query;
+        const { data: transactionsData } = await query;
+        const transactions = (transactionsData ?? []) as DashboardTransactionRow[];
 
-        (transactions as any[])?.forEach(t => {
+        transactions.forEach(t => {
             const date = new Date(t.payment_date + 'T12:00:00');
             const monthKey = format(date, 'yyyy-MM');
             const month = months.find(m => m.key === monthKey);
@@ -158,7 +184,7 @@ export const dashboardService = {
         return months.map(({ name, receita, despesa }) => ({ name, receita, despesa }));
     },
 
-    async getCategoryDistribution(filter?: Date | { start: string; end: string }) {
+    async getCategoryDistribution(filter?: DashboardFilter) {
         let query = supabase
             .from('transactions')
             .select('amount, category:category_id(name)')
@@ -172,11 +198,13 @@ export const dashboardService = {
             query = query.gte('payment_date', filter.start).lte('payment_date', filter.end);
         }
 
-        const { data: transactions } = await query;
+        const { data: transactionsData } = await query;
+        const transactions = (transactionsData ?? []) as CategoryDistributionRow[];
         const distribution: Record<string, number> = {};
 
-        transactions?.forEach((t: any) => {
-            const name = t.category?.name || 'Geral';
+        transactions.forEach((t) => {
+            const category = Array.isArray(t.category) ? t.category[0] : t.category;
+            const name = category?.name || 'Geral';
             distribution[name] = (distribution[name] || 0) + Number(t.amount);
         });
 

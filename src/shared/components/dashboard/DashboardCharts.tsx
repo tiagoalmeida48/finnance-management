@@ -2,9 +2,21 @@ import { Grid, Card, CardContent, Typography, Box, Stack } from '@mui/material';
 import { ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { colors } from '@/shared/theme';
 
+interface DashboardChartPoint {
+    name: string;
+    receita: number;
+    despesa: number;
+}
+
+interface DashboardCategoryPoint {
+    name: string;
+    value: number;
+    fill?: string;
+}
+
 interface DashboardChartsProps {
-    chartData: any[] | undefined;
-    categories: any[] | undefined;
+    chartData: DashboardChartPoint[] | undefined;
+    categories: DashboardCategoryPoint[] | undefined;
 }
 
 const formatBRL = (val: number) => new Intl.NumberFormat('pt-BR', {
@@ -21,55 +33,64 @@ const formatCompact = (val: number) => {
 
 const formatPercent = (value: number) => `${value.toFixed(1).replace('.', ',')}%`;
 
+interface PieTooltipProps {
+    active?: boolean;
+    payload?: Array<{ payload: DashboardCategoryPoint }>;
+    totalCategoryValue: number;
+}
+
+function CustomPieTooltip({ active, payload, totalCategoryValue }: PieTooltipProps) {
+    if (!active || !payload || !payload.length) return null;
+
+    const item = payload[0].payload;
+    const color = item.fill || colors.accent;
+    const percentage = totalCategoryValue > 0 ? (Number(item.value || 0) / totalCategoryValue) * 100 : 0;
+
+    return (
+        <Box sx={{
+            minWidth: 170,
+            bgcolor: 'rgba(20, 20, 30, 0.96)',
+            border: '1px solid rgba(255,255,255,0.16)',
+            borderRadius: '12px',
+            backdropFilter: 'blur(16px)',
+            boxShadow: '0 14px 34px rgba(0, 0, 0, 0.5)',
+            p: '10px 12px',
+        }}>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.6 }}>
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: color }} />
+                <Typography sx={{ fontSize: '12px', color: colors.textSecondary, fontWeight: 600 }}>
+                    {item.name}
+                </Typography>
+            </Stack>
+
+            <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1.5}>
+                <Typography sx={{ fontSize: '14px', fontWeight: 700, color: colors.textPrimary }}>
+                    {formatBRL(item.value)}
+                </Typography>
+                <Box sx={{
+                    px: 1,
+                    py: 0.2,
+                    borderRadius: '999px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color,
+                    bgcolor: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.14)',
+                }}>
+                    {formatPercent(percentage)}
+                </Box>
+            </Stack>
+        </Box>
+    );
+}
+
 export function DashboardCharts({ chartData, categories }: DashboardChartsProps) {
     const CATEGORY_COLORS = [colors.yellow, colors.purple, colors.green, colors.red, colors.blue];
-
-    const totalCategoryValue = categories?.reduce((sum, cat) => sum + cat.value, 0) || 1;
-
-    const CustomPieTooltip = ({ active, payload }: any) => {
-        if (!active || !payload || !payload.length) return null;
-
-        const item = payload[0].payload;
-        const color = item.fill;
-        const percentage = totalCategoryValue > 0 ? (Number(item.value || 0) / totalCategoryValue) * 100 : 0;
-
-        return (
-            <Box sx={{
-                minWidth: 170,
-                bgcolor: 'rgba(20, 20, 30, 0.96)',
-                border: '1px solid rgba(255,255,255,0.16)',
-                borderRadius: '12px',
-                backdropFilter: 'blur(16px)',
-                boxShadow: '0 14px 34px rgba(0, 0, 0, 0.5)',
-                p: '10px 12px',
-            }}>
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.6 }}>
-                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: color }} />
-                    <Typography sx={{ fontSize: '12px', color: colors.textSecondary, fontWeight: 600 }}>
-                        {item.name}
-                    </Typography>
-                </Stack>
-
-                <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1.5}>
-                    <Typography sx={{ fontSize: '14px', fontWeight: 700, color: colors.textPrimary }}>
-                        {formatBRL(item.value)}
-                    </Typography>
-                    <Box sx={{
-                        px: 1,
-                        py: 0.2,
-                        borderRadius: '999px',
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        color,
-                        bgcolor: 'rgba(255,255,255,0.06)',
-                        border: '1px solid rgba(255,255,255,0.14)',
-                    }}>
-                        {formatPercent(percentage)}
-                    </Box>
-                </Stack>
-            </Box>
-        );
-    };
+    const pieCategories = categories?.map((cat, index) => ({
+        ...cat,
+        fill: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+    })) ?? [];
+    const totalCategoryValue = pieCategories.reduce((sum, cat) => sum + cat.value, 0) || 1;
 
     return (
         <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -120,7 +141,7 @@ export function DashboardCharts({ chartData, categories }: DashboardChartsProps)
                                             padding: '12px 16px',
                                         }}
                                         labelStyle={{ color: colors.textSecondary, fontSize: '12px', marginBottom: 8 }}
-                                        formatter={(value: any, name: any) => [formatBRL(value ?? 0), name]}
+                                        formatter={(value: number | string | undefined, name?: string) => [formatBRL(Number(value) || 0), name || '']}
                                     />
                                     <Line
                                         type="monotone"
@@ -159,7 +180,7 @@ export function DashboardCharts({ chartData, categories }: DashboardChartsProps)
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
-                                        data={categories}
+                                        data={pieCategories}
                                         cx="50%"
                                         cy="50%"
                                         innerRadius={55}
@@ -169,20 +190,20 @@ export function DashboardCharts({ chartData, categories }: DashboardChartsProps)
                                         dataKey="value"
                                         stroke="none"
                                     >
-                                        {categories?.map((_, index) => (
-                                            <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]} />
+                                        {pieCategories.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.fill} />
                                         ))}
                                     </Pie>
-                                    <Tooltip content={<CustomPieTooltip />} cursor={false} offset={16} wrapperStyle={{ zIndex: 10 }} />
+                                    <Tooltip content={<CustomPieTooltip totalCategoryValue={totalCategoryValue} />} cursor={false} offset={16} wrapperStyle={{ zIndex: 10 }} />
                                 </PieChart>
                             </ResponsiveContainer>
                         </Box>
 
                         {/* Category List with Progress Bars */}
                         <Stack spacing={0} sx={{ mt: 1 }}>
-                            {categories?.slice(0, 5).map((cat, idx) => {
+                            {pieCategories.slice(0, 5).map((cat, idx) => {
                                 const percentage = (cat.value / totalCategoryValue) * 100;
-                                const color = CATEGORY_COLORS[idx % CATEGORY_COLORS.length];
+                                const color = cat.fill || colors.accent;
                                 return (
                                     <Box
                                         key={idx}

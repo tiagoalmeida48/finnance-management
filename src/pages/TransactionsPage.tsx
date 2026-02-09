@@ -27,7 +27,8 @@ export function TransactionsPage() {
         importModalOpen, setImportModalOpen,
         deleteModalOpen, setDeleteModalOpen,
         handleAdd, handleImport,
-        groupedTransactions, selectedIds, handleSelectAll, handleSelectRow,
+        groupedTransactions, paginatedGroupedTransactions, transactionsPage, setTransactionsPage,
+        transactionsRowsPerPage, setTransactionsRowsPerPage, selectedIds, handleSelectAll, handleSelectRow,
         handleTogglePaid, handleOpenMenu, handleSort, sortConfig,
         expandedGroups, toggleGroup, anchorEl, handleCloseMenu,
         menuTransaction, handleEdit, handleDelete, handleConfirmDelete,
@@ -125,7 +126,12 @@ export function TransactionsPage() {
                 />
 
                 <TransactionsTable
-                    groupedTransactions={groupedTransactions}
+                    groupedTransactions={paginatedGroupedTransactions}
+                    totalItems={groupedTransactions.length}
+                    page={transactionsPage}
+                    rowsPerPage={transactionsRowsPerPage}
+                    onPageChange={setTransactionsPage}
+                    onRowsPerPageChange={setTransactionsRowsPerPage}
                     selectedIds={selectedIds}
                     handleSelectAll={handleSelectAll}
                     handleSelectRow={handleSelectRow}

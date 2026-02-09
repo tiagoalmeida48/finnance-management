@@ -43,6 +43,7 @@ export function TransactionFormModal({ open, onClose, transaction }: Transaction
         setShowInstallmentGrid,
         applyToGroup,
         setApplyToGroup,
+        resetUiState,
         transactionType,
         paymentMethod,
         isInstallment,
@@ -73,11 +74,15 @@ export function TransactionFormModal({ open, onClose, transaction }: Transaction
             : `Criar ${getTypeConfig(transactionType).label}`;
 
     const filteredCategories = categories.filter((category) => category.type === transactionType);
+    const handleCloseModal = () => {
+        resetUiState();
+        onClose();
+    };
 
     return (
         <Dialog
             open={open}
-            onClose={onClose}
+            onClose={handleCloseModal}
             maxWidth={false}
             slotProps={{
                 paper: {
@@ -166,7 +171,7 @@ export function TransactionFormModal({ open, onClose, transaction }: Transaction
                 <TransactionFormActions
                     isSubmitting={isSubmitting}
                     submitLabel={submitLabel}
-                    onClose={onClose}
+                    onClose={handleCloseModal}
                 />
             </form>
         </Dialog>
