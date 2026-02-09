@@ -1,14 +1,20 @@
+import { lazy, Suspense } from 'react';
 import { Box } from '@mui/material';
 import { useAuth } from './lib/supabase/auth-context';
-import { Sidebar } from './shared/components/layout/Sidebar';
 import { AppRoutes } from './app-routes/AppRouter';
+
+const Sidebar = lazy(() => import('./shared/components/layout/Sidebar').then((module) => ({ default: module.Sidebar })));
 
 function App() {
   const { user } = useAuth();
 
   return (
     <Box sx={{ display: 'flex', bgcolor: 'background.default', minHeight: '100vh' }}>
-      {user && <Sidebar />}
+      {user && (
+        <Suspense fallback={null}>
+          <Sidebar />
+        </Suspense>
+      )}
       <Box
         component="main"
         sx={{

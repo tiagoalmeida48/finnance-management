@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Box, Button, Card, CardContent, Container, TextField, Typography, Stack, Alert } from '@mui/material';
 import { supabase } from '@/lib/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { useSiteBranding } from '@/shared/hooks/useSiteBranding';
 
 export function LoginPage() {
@@ -62,10 +61,18 @@ export function LoginPage() {
             }}
         >
             <Container maxWidth="sm">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
+                <Box
+                    sx={{
+                        opacity: 0,
+                        transform: 'translateY(20px)',
+                        animation: 'loginFadeIn 420ms ease-out forwards',
+                        '@keyframes loginFadeIn': {
+                            to: {
+                                opacity: 1,
+                                transform: 'translateY(0)',
+                            },
+                        },
+                    }}
                 >
                     <Card>
                         <CardContent sx={{ p: 4 }}>
@@ -114,7 +121,7 @@ export function LoginPage() {
                             </form>
                         </CardContent>
                     </Card>
-                </motion.div>
+                </Box>
             </Container>
         </Box>
     );

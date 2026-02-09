@@ -40,5 +40,8 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      - name: Performance budget
+        run: pnpm run perf:budget
+
       - name: Test
         run: pnpm run test

@@ -1,0 +1,18 @@
+services:
+  finnance-frontend:
+    image: ghcr.io/your-org/finnance-frontend:latest
+    container_name: finnance-frontend
+    restart: unless-stopped
+    networks:
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.finnance.rule=Host(`app.seu-dominio.com`)"
+      - "traefik.http.routers.finnance.entrypoints=websecure"
+      - "traefik.http.routers.finnance.tls=true"
+      - "traefik.http.services.finnance.loadbalancer.server.port=80"
+      - "traefik.http.routers.finnance.middlewares=finnance-chain@file"
+
+networks:
+  traefik-public:
+    external: true
