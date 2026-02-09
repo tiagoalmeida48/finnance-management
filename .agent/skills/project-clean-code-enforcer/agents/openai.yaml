@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Clean Code Enforcer"
+  short_description: "Enforce 300-line limits and clean refactors"
+  default_prompt: "Use $project-clean-code-enforcer to audit this repository and refactor files over 300 lines while removing duplication and comments."

@@ -1,12 +1,12 @@
 import { TextField, Button, Collapse, Box, Typography } from '@mui/material';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { UseFormRegister } from 'react-hook-form';
+import { FieldArrayWithId, UseFormRegister } from 'react-hook-form';
 import { TransactionFormValues } from '../../../hooks/useTransactionFormLogic';
 
 interface InstallmentGridProps {
     show: boolean;
     setShow: (val: boolean) => void;
-    fields: any[];
+    fields: FieldArrayWithId<TransactionFormValues, 'installments', 'id'>[];
     register: UseFormRegister<TransactionFormValues>;
 }
 
@@ -39,7 +39,7 @@ export function InstallmentGrid({ show, setShow, fields, register }: Installment
                             size="small"
                             label={`Parcela ${index + 1}`}
                             type="number"
-                            {...register(`installments.${index}.amount` as any)}
+                            {...register(`installments.${index}.amount`)}
                             inputProps={{ step: '0.01' }}
                             InputProps={{
                                 startAdornment: <Typography variant="caption" sx={{ mr: 0.5 }}>R$</Typography>
