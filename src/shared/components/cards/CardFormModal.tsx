@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Typography, Stack,
-    Box, InputAdornment
+    Box, InputAdornment, Chip
 } from '@mui/material';
 import { useCreateCreditCard, useUpdateCreditCard } from '../../hooks/useCreditCards';
 import { useAccounts } from '../../hooks/useAccounts';
@@ -24,6 +24,15 @@ const cardSchema = z.object({
 });
 
 type CardFormValues = z.infer<typeof cardSchema>;
+
+const OPEN_CYCLE_END = '9999-12-31';
+
+const formatCycleDateLabel = (value?: string) => {
+    if (!value) return '-';
+    const parsed = new Date(`${value}T12:00:00`);
+    if (Number.isNaN(parsed.getTime())) return '-';
+    return parsed.toLocaleDateString('pt-BR');
+};
 
 interface CardFormModalProps {
     open: boolean;
@@ -65,6 +74,17 @@ export function CardFormModal({ open, onClose, card }: CardFormModalProps) {
         defaultValue: '',
     });
 
+    const currentCycle = card?.current_statement_cycle ?? null;
+    const activeClosingDay = currentCycle?.closing_day ?? card?.closing_day;
+    const activeDueDay = currentCycle?.due_day ?? card?.due_day;
+    const cyclePeriodLabel = currentCycle
+        ? `${formatCycleDateLabel(currentCycle.date_start)} ${
+            currentCycle.date_end === OPEN_CYCLE_END
+                ? 'em diante'
+                : `ate ${formatCycleDateLabel(currentCycle.date_end)}`
+        }`
+        : null;
+
     useEffect(() => {
         if (open) {
             const cardColor = card?.color || '#C9A84C';
@@ -98,7 +118,14 @@ export function CardFormModal({ open, onClose, card }: CardFormModalProps) {
     const onSubmit = async (values: CardFormValues) => {
         try {
             if (card) {
-                await updateCard.mutateAsync({ id: card.id, updates: values });
+                const updates = {
+                    name: values.name,
+                    bank_account_id: values.bank_account_id,
+                    credit_limit: values.credit_limit,
+                    color: values.color,
+                    notes: values.notes,
+                };
+                await updateCard.mutateAsync({ id: card.id, updates });
             } else {
                 await createCard.mutateAsync({
                     ...values,
@@ -174,29 +201,59 @@ export function CardFormModal({ open, onClose, card }: CardFormModalProps) {
                             />
                         </Box>
 
-                        {/* Row 3: Dia Fechamento + Dia Vencimento */}
-                        <Stack direction="row" spacing={2}>
-                            <Box sx={{ flex: 1 }}>
-                                <Typography sx={labelStyles}>Dia Fechamento</Typography>
-                                <TextField
-                                    fullWidth
-                                    type="number"
-                                    {...register('closing_day', { valueAsNumber: true })}
-                                    inputProps={{ min: 1, max: 31 }}
-                                    sx={inputStyles}
-                                />
+                        {!card ? (
+                            <Stack direction="row" spacing={2}>
+                                <Box sx={{ flex: 1 }}>
+                                    <Typography sx={labelStyles}>Dia Fechamento</Typography>
+                                    <TextField
+                                        fullWidth
+                                        type="number"
+                                        {...register('closing_day', { valueAsNumber: true })}
+                                        inputProps={{ min: 1, max: 31 }}
+                                        sx={inputStyles}
+                                    />
+                                </Box>
+                                <Box sx={{ flex: 1 }}>
+                                    <Typography sx={labelStyles}>Dia Vencimento</Typography>
+                                    <TextField
+                                        fullWidth
+                                        type="number"
+                                        {...register('due_day', { valueAsNumber: true })}
+                                        inputProps={{ min: 1, max: 31 }}
+                                        sx={inputStyles}
+                                    />
+                                </Box>
+                            </Stack>
+                        ) : (
+                            <Box sx={{
+                                p: 1.5,
+                                borderRadius: '10px',
+                                border: `1px solid ${colors.border}`,
+                                bgcolor: 'rgba(201, 168, 76, 0.08)',
+                            }}>
+                                <Typography sx={{ fontSize: '12px', color: colors.textSecondary, mb: 1 }}>
+                                    Vigencia atual do ciclo da fatura
+                                </Typography>
+                                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mb: 1 }}>
+                                    <Chip
+                                        size="small"
+                                        label={`Fechamento: dia ${activeClosingDay ?? '-'}`}
+                                        sx={{ bgcolor: 'rgba(255,255,255,0.08)', color: colors.textPrimary }}
+                                    />
+                                    <Chip
+                                        size="small"
+                                        label={`Vencimento: dia ${activeDueDay ?? '-'}`}
+                                        sx={{ bgcolor: 'rgba(255,255,255,0.08)', color: colors.textPrimary }}
+                                    />
+                                </Stack>
+                                <Typography sx={{ fontSize: '11px', color: colors.textMuted }}>
+                                    {cyclePeriodLabel ? `Periodo: ${cyclePeriodLabel}` : 'Periodo: sem vigencia carregada'}
+                                </Typography>
+                                <Typography sx={{ fontSize: '11px', color: colors.textMuted, mt: 0.75 }}>
+                                    Para alterar dias de fechamento e vencimento, use o historico de ciclo no detalhe do cartao.
+                                </Typography>
                             </Box>
-                            <Box sx={{ flex: 1 }}>
-                                <Typography sx={labelStyles}>Dia Vencimento</Typography>
-                                <TextField
-                                    fullWidth
-                                    type="number"
-                                    {...register('due_day', { valueAsNumber: true })}
-                                    inputProps={{ min: 1, max: 31 }}
-                                    sx={inputStyles}
-                                />
-                            </Box>
-                        </Stack>
+                        )}
 
                         {/* Row 4: Notas */}
                         <Box>

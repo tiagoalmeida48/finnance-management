@@ -24,6 +24,9 @@ const colors = {
 };
 
 export function CreditCardCard({ card, navigate, handleEdit, handleDelete }: CreditCardCardProps) {
+    const dueDay = card.current_statement_cycle?.due_day ?? card.due_day;
+    const closingDay = card.current_statement_cycle?.closing_day ?? card.closing_day;
+
     const usagePercent = card.credit_limit > 0
         ? Math.min(((card.usage || 0) / card.credit_limit) * 100, 100)
         : 0;
@@ -76,7 +79,7 @@ export function CreditCardCard({ card, navigate, handleEdit, handleDelete }: Cre
                             {card.name}
                         </Typography>
                         <Typography sx={{ fontSize: '13px', color: colors.textSecondary, fontFamily: 'DM Sans' }}>
-                            Venc: <Box component="span" sx={{ fontWeight: 600 }}>{card.due_day}</Box> • Fecha: <Box component="span" sx={{ fontWeight: 600 }}>{card.closing_day}</Box>
+                            Venc: <Box component="span" sx={{ fontWeight: 600 }}>{dueDay}</Box> • Fecha: <Box component="span" sx={{ fontWeight: 600 }}>{closingDay}</Box>
                         </Typography>
                     </Box>
                 </Box>

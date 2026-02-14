@@ -19,7 +19,7 @@ const transactionSchema = z.object({
     category_id: z.string().optional().nullable(),
     is_fixed: z.boolean().default(false),
     repeat_count: z.coerce.number().min(1).max(60).optional(),
-    is_paid: z.boolean().default(true),
+    is_paid: z.boolean().default(false),
     payment_method: z.string().optional(),
     notes: z.string().optional(),
     is_installment: z.boolean().default(false),
@@ -41,7 +41,6 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
     const { data: categories } = useCategories();
     const { data: cards } = useCreditCards();
 
-    const [showInstallmentGrid, setShowInstallmentGrid] = useState(false);
     const [applyToGroup, setApplyToGroup] = useState(false);
 
     const createTransaction = useCreateTransaction();
@@ -57,7 +56,7 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
             payment_date: new Date().toISOString().split('T')[0],
             is_fixed: false,
             repeat_count: 1,
-            is_paid: true,
+            is_paid: false,
             is_installment: false,
             total_installments: 1,
             account_id: '',
@@ -114,7 +113,7 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
                 payment_date: transaction?.payment_date || new Date().toISOString().split('T')[0],
                 is_fixed: transaction?.is_fixed || false,
                 repeat_count: 1,
-                is_paid: transaction?.is_paid ?? true,
+                is_paid: transaction?.is_paid ?? false,
                 is_installment: !!transaction?.installment_group_id,
                 total_installments: transaction?.total_installments || 1,
                 account_id: transaction?.account_id || '',
@@ -129,7 +128,6 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
     }, [transaction, open, reset]);
 
     const resetUiState = () => {
-        setShowInstallmentGrid(false);
         setApplyToGroup(false);
     };
 
@@ -148,7 +146,10 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
                 delete payload.installments;
             }
 
-            if (!values.is_fixed) payload.recurring_group_id = undefined;
+            if (!values.is_fixed) {
+                payload.recurring_group_id = null;
+                payload.repeat_count = undefined;
+            }
 
             if (payload.category_id === '') payload.category_id = undefined;
             if (payload.account_id === '') payload.account_id = undefined;
@@ -160,6 +161,11 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
                 delete payload.is_installment;
                 delete payload.installment_amounts;
                 delete payload.installments;
+
+                if (applyToGroup && values.payment_date === transaction.payment_date) {
+                    delete payload.payment_date;
+                }
+
                 const groupId = transaction.installment_group_id || transaction.recurring_group_id;
                 const groupType = transaction.installment_group_id ? 'installment' : 'recurring';
                 if (applyToGroup && groupId) {
@@ -168,7 +174,17 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
                     await updateTransaction.mutateAsync({ id: transaction.id, updates: payload });
                 }
             } else {
-                await createTransaction.mutateAsync(payload as CreateTransactionData);
+                const createPayload: CreateTransactionData = {
+                    ...(payload as CreateTransactionData),
+                    // New transactions must always start as pending.
+                    is_paid: false,
+                    // Recurrence only exists when explicitly enabled.
+                    is_fixed: Boolean(values.is_fixed),
+                    recurring_group_id: values.is_fixed ? (payload.recurring_group_id as string | null | undefined) : null,
+                    repeat_count: values.is_fixed ? values.repeat_count : undefined,
+                };
+
+                await createTransaction.mutateAsync(createPayload);
             }
             resetUiState();
             onClose();
@@ -179,7 +195,6 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
 
     return {
         form, accounts, categories, cards: filteredCards,
-        showInstallmentGrid, setShowInstallmentGrid,
         applyToGroup, setApplyToGroup,
         resetUiState,
         transactionType, paymentMethod, isInstallment, isFixed,

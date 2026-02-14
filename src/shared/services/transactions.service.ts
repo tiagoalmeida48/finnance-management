@@ -56,26 +56,40 @@ const syncBalance = async (transaction: Transaction, action: 'add' | 'remove', f
 
 export const transactionsService = {
     async getAll(filters?: { account_id?: string; category_id?: string; start_date?: string; end_date?: string; is_paid?: boolean }) {
-        let query = supabase
-            .from('transactions')
-            .select('*, bank_account:account_id(name), to_bank_account:to_account_id(name), category:category_id(name, color, icon), credit_card:card_id(name)')
-            .order('payment_date', { ascending: false });
+        const pageSize = 1000;
+        let from = 0;
+        const allTransactions: Transaction[] = [];
 
-        if (filters?.account_id) query = query.eq('account_id', filters.account_id);
-        if (filters?.category_id) query = query.eq('category_id', filters.category_id);
-        if (filters?.start_date) query = query.gte('payment_date', filters.start_date);
-        if (filters?.end_date) query = query.lte('payment_date', filters.end_date);
-        if (filters?.is_paid !== undefined) query = query.eq('is_paid', filters.is_paid);
+        while (true) {
+            let query = supabase
+                .from('transactions')
+                .select('*, bank_account:account_id(name), to_bank_account:to_account_id(name), category:category_id(name, color, icon), credit_card:card_id(name, color)')
+                .order('payment_date', { ascending: false })
+                .range(from, from + pageSize - 1);
 
-        const { data, error } = await query;
-        if (error) throw error;
-        return data as Transaction[];
+            if (filters?.account_id) query = query.eq('account_id', filters.account_id);
+            if (filters?.category_id) query = query.eq('category_id', filters.category_id);
+            if (filters?.start_date) query = query.gte('payment_date', filters.start_date);
+            if (filters?.end_date) query = query.lte('payment_date', filters.end_date);
+            if (filters?.is_paid !== undefined) query = query.eq('is_paid', filters.is_paid);
+
+            const { data, error } = await query;
+            if (error) throw error;
+
+            const page = (data ?? []) as Transaction[];
+            allTransactions.push(...page);
+
+            if (page.length < pageSize) break;
+            from += pageSize;
+        }
+
+        return allTransactions;
     },
 
     async getById(id: string) {
         const { data, error } = await supabase
             .from('transactions')
-            .select('*, bank_account:account_id(name), to_bank_account:to_account_id(name), category:category_id(name, color, icon), credit_card:card_id(name)')
+            .select('*, bank_account:account_id(name), to_bank_account:to_account_id(name), category:category_id(name, color, icon), credit_card:card_id(name, color)')
             .eq('id', id)
             .single();
 
@@ -87,9 +101,12 @@ export const transactionsService = {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Not authenticated');
 
-        const totalInstallments = transaction.is_installment ? (transaction.total_installments || 1) : 1;
+        const parsedTotalInstallments = Number(transaction.total_installments ?? 1);
+        const totalInstallments = Number.isFinite(parsedTotalInstallments)
+            ? Math.max(1, Math.trunc(parsedTotalInstallments))
+            : 1;
         const repeatCount = transaction.is_fixed ? (transaction.repeat_count || 1) : 1;
-        const isInstallment = transaction.is_installment || (transaction.total_installments && transaction.total_installments > 1);
+        const isInstallment = Boolean(transaction.is_installment) || totalInstallments > 1;
 
         if (isInstallment && totalInstallments > 1) {
             const installmentGroupId = crypto.randomUUID();
@@ -107,10 +124,11 @@ export const transactionsService = {
                     description: installmentDescription,
                     amount: currentAmount,
                     payment_date: format(installmentDate, 'yyyy-MM-dd'),
+                    recurring_group_id: null,
                     installment_group_id: installmentGroupId,
                     installment_number: i,
                     total_installments: totalInstallments,
-                    is_paid: transaction.card_id ? false : (i === 1 ? transaction.is_paid : false)
+                    is_paid: false
                 }));
             }
 
@@ -123,13 +141,79 @@ export const transactionsService = {
             const { data, error } = await supabase.from('transactions').insert(transactionsToCreate).select();
             if (error) throw error;
 
-            if (data) {
-                for (const t of data) {
-                    await syncBalance(t as Transaction, 'add');
+            const insertedTransactions = (data ?? []) as Transaction[];
+            const existingNumbers = new Set<number>(
+                insertedTransactions
+                    .map((item) => Number(item.installment_number))
+                    .filter((numberValue) => Number.isInteger(numberValue) && numberValue > 0),
+            );
+
+            if (existingNumbers.size < totalInstallments) {
+                const { data: persistedRows, error: persistedError } = await supabase
+                    .from('transactions')
+                    .select('installment_number')
+                    .eq('installment_group_id', installmentGroupId);
+
+                if (persistedError) throw persistedError;
+
+                (persistedRows ?? []).forEach((row) => {
+                    const persistedNumber = Number(row.installment_number);
+                    if (Number.isInteger(persistedNumber) && persistedNumber > 0) {
+                        existingNumbers.add(persistedNumber);
+                    }
+                });
+
+                const missingTransactions: TransactionInsertPayload[] = [];
+
+                for (let i = 1; i <= totalInstallments; i++) {
+                    if (existingNumbers.has(i)) continue;
+
+                    const installmentDate = addMonths(baseDate, i - 1);
+                    const installmentDescription = `${transaction.description} (${i.toString().padStart(2, '0')}/${totalInstallments.toString().padStart(2, '0')})`;
+                    const currentAmount = transaction.installment_amounts?.[i - 1] ?? transaction.amount;
+
+                    missingTransactions.push(sanitizePayload({
+                        ...transaction,
+                        user_id: user.id,
+                        description: installmentDescription,
+                        amount: currentAmount,
+                        payment_date: format(installmentDate, 'yyyy-MM-dd'),
+                        recurring_group_id: null,
+                        installment_group_id: installmentGroupId,
+                        installment_number: i,
+                        total_installments: totalInstallments,
+                        is_paid: false,
+                    }));
+                }
+
+                missingTransactions.forEach((item) => {
+                    delete item.installment_amounts;
+                    delete item.repeat_count;
+                    delete item.is_installment;
+                });
+
+                if (missingTransactions.length > 0) {
+                    const { data: backfilledData, error: backfillError } = await supabase
+                        .from('transactions')
+                        .insert(missingTransactions)
+                        .select();
+
+                    if (backfillError) throw backfillError;
+
+                    if (backfilledData) {
+                        insertedTransactions.push(...(backfilledData as Transaction[]));
+                    }
                 }
             }
 
-            return (data as Transaction[])[0];
+            if (insertedTransactions.length > 0) {
+                for (const item of insertedTransactions) {
+                    await syncBalance(item, 'add');
+                }
+            }
+
+            insertedTransactions.sort((a, b) => (a.installment_number || 0) - (b.installment_number || 0));
+            return insertedTransactions[0];
         }
 
         if (transaction.is_fixed && repeatCount > 1) {
@@ -144,7 +228,7 @@ export const transactionsService = {
                     user_id: user.id,
                     payment_date: format(recurrenceDate, 'yyyy-MM-dd'),
                     recurring_group_id: recurringGroupId,
-                    is_paid: i === 0 ? transaction.is_paid : false
+                    is_paid: false
                 }));
             }
 
@@ -166,7 +250,10 @@ export const transactionsService = {
             return data[0] as Transaction;
         }
 
-        const payload: TransactionInsertPayload = sanitizePayload({ ...transaction, user_id: user.id });
+        const payload: TransactionInsertPayload = sanitizePayload({ ...transaction, user_id: user.id, is_paid: false });
+        if (!transaction.is_fixed) {
+            payload.recurring_group_id = null;
+        }
         delete payload.installment_amounts;
         delete payload.repeat_count;
         delete payload.is_installment;

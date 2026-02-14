@@ -4,13 +4,11 @@ export interface FileData {
     Data: string;
     Descrição: string;
     Valor: string;
-    Categoria: string;
-    Conta: string;
-    Cartão?: string;
-    'Forma de pagamento'?: string;
+    Categoria?: string;
+    Parcelas?: string;
     'Data de pagamento'?: string;
     'Conta de pagamento'?: string;
-    Notas: string;
+    Notas?: string;
 }
 
 export type NormalizedImportTransaction = Omit<Partial<Transaction>, 'type' | 'purchase_date' | 'payment_date'> & {
@@ -27,5 +25,6 @@ export interface ImportPreviewRow {
         amount: boolean;
         date: boolean;
         entity: boolean;
+        installments: boolean;
     };
 }

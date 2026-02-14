@@ -1,9 +1,8 @@
 import { Box, Collapse, Stack, Switch, TextField, Typography } from '@mui/material';
-import { InstallmentGrid } from './InstallmentGrid';
 import { colors } from '@/shared/theme';
 import type { Transaction } from '@/shared/interfaces';
 import type { TransactionFormValues } from '@/shared/hooks/useTransactionFormLogic';
-import type { FieldArrayWithId, UseFormRegister } from 'react-hook-form';
+import type { UseFormRegister } from 'react-hook-form';
 import { labelStyles, toggleConfig } from './transactionFormStyles';
 
 interface TransactionAdvancedSectionProps {
@@ -14,9 +13,6 @@ interface TransactionAdvancedSectionProps {
     transaction?: Transaction;
     applyToGroup: boolean;
     setApplyToGroup: (value: boolean) => void;
-    showInstallmentGrid: boolean;
-    setShowInstallmentGrid: (value: boolean) => void;
-    fields: FieldArrayWithId<TransactionFormValues, 'installments', 'id'>[];
     register: UseFormRegister<TransactionFormValues>;
 }
 
@@ -53,9 +49,6 @@ export function TransactionAdvancedSection({
     transaction,
     applyToGroup,
     setApplyToGroup,
-    showInstallmentGrid,
-    setShowInstallmentGrid,
-    fields,
     register,
 }: TransactionAdvancedSectionProps) {
     const RecurringIcon = toggleConfig.recurring.icon;
@@ -147,12 +140,6 @@ export function TransactionAdvancedSection({
                             </Typography>
                         )}
                     </Box>
-                    <InstallmentGrid
-                        show={showInstallmentGrid}
-                        setShow={setShowInstallmentGrid}
-                        fields={fields}
-                        register={register}
-                    />
                 </Stack>
             </Collapse>
 

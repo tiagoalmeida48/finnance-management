@@ -25,7 +25,7 @@ export interface Transaction {
     bank_account?: { name: string };
     to_bank_account?: { name: string };
     category?: { name: string; color: string; icon: string };
-    credit_card?: { name: string };
+    credit_card?: { name: string; color?: string };
 }
 
 export interface CreateTransactionData extends Omit<Transaction, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'bank_account' | 'to_bank_account' | 'category' | 'credit_card'> {

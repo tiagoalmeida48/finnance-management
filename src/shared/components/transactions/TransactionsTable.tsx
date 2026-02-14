@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableRow, Checkbox, Paper, Collapse, Typography, IconButton, Chip, TablePagination } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableRow, Checkbox, Paper, Typography, IconButton, Chip, TablePagination, Box, LinearProgress, Stack, Collapse } from '@mui/material';
 import { ChevronDown } from 'lucide-react';
 import { Transaction } from '../../services/transactions.service';
 import { TransactionRow } from './TransactionRow';
@@ -19,7 +19,7 @@ interface TransactionsTableProps {
     handleSelectRow: (id: string) => void;
     handleTogglePaid: (t: Transaction) => void;
     handleOpenMenu: (e: React.MouseEvent<HTMLElement>, t: Transaction) => void;
-    handleSort: (field: keyof Transaction | 'amount' | 'payment_date' | 'is_paid' | 'payment_method') => void;
+    handleSort: (field: keyof Transaction | 'amount' | 'payment_date' | 'is_paid' | 'payment_method' | 'installment_progress') => void;
     sortConfig: { field: string, direction: 'asc' | 'desc' };
     expandedGroups: Record<string, boolean>;
     toggleGroup: (id: string) => void;
@@ -30,7 +30,13 @@ interface TransactionsTableProps {
     setCategoryFilter: (val: string) => void;
     paymentMethodFilter: string;
     setPaymentMethodFilter: (val: string) => void;
+    accountFilter: string;
+    setAccountFilter: (val: string) => void;
+    cardFilter: string;
+    setCardFilter: (val: string) => void;
     categories?: { id: string, name: string }[];
+    accounts?: { id: string, name: string }[];
+    cards?: { id: string, name: string }[];
 }
 
 export function TransactionsTable({
@@ -56,7 +62,13 @@ export function TransactionsTable({
     setCategoryFilter,
     paymentMethodFilter,
     setPaymentMethodFilter,
+    accountFilter,
+    setAccountFilter,
+    cardFilter,
+    setCardFilter,
     categories,
+    accounts,
+    cards,
 }: TransactionsTableProps) {
     const formatBRL = (amount: number) => {
         return new Intl.NumberFormat('pt-BR', {
@@ -75,6 +87,7 @@ export function TransactionsTable({
     const selectedVisibleCount = visibleTransactionIds.filter((id) => selectedIds.includes(id)).length;
     const selectAllChecked = visibleTransactionIds.length > 0 && selectedVisibleCount === visibleTransactionIds.length;
     const selectAllIndeterminate = selectedVisibleCount > 0 && selectedVisibleCount < visibleTransactionIds.length;
+
 
     return (
         <TableContainer component={Paper} sx={{
@@ -97,12 +110,18 @@ export function TransactionsTable({
                     setCategoryFilter={setCategoryFilter}
                     paymentMethodFilter={paymentMethodFilter}
                     setPaymentMethodFilter={setPaymentMethodFilter}
+                    accountFilter={accountFilter}
+                    setAccountFilter={setAccountFilter}
+                    cardFilter={cardFilter}
+                    setCardFilter={setCardFilter}
                     categories={categories}
+                    accounts={accounts}
+                    cards={cards}
                 />
                 <TableBody>
                     {groupedTransactions.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={8} align="center" sx={{ py: 6, color: colors.textMuted, bgcolor: colors.bgCard }}>
+                            <TableCell colSpan={9} align="center" sx={{ py: 6, color: colors.textMuted, bgcolor: colors.bgCard }}>
                                 Nenhuma transação encontrada para os filtros atuais.
                             </TableCell>
                         </TableRow>
@@ -110,12 +129,17 @@ export function TransactionsTable({
                     {groupedTransactions.map((item) => {
                         if ('isGroup' in item && item.isGroup) {
                             const group = item as TransactionGroup;
-                            const isExpanded = expandedGroups[group.id];
+                            const isExpanded = Boolean(expandedGroups[group.id]);
                             return (
                                 <Fragment key={group.id}>
                                     <TableRow sx={{
                                         bgcolor: colors.bgSecondary,
+                                        minHeight: 56,
                                         borderLeft: `3px solid ${colors.purple}`,
+                                        '& > .MuiTableCell-root': {
+                                            py: 1.75,
+                                            borderBottom: `1px solid ${colors.border}`,
+                                        },
                                         '&:hover': { bgcolor: colors.bgCardHover },
                                     }}>
                                         <TableCell padding="checkbox" sx={{ pl: 2 }}>
@@ -135,7 +159,7 @@ export function TransactionsTable({
                                                 }}
                                             />
                                         </TableCell>
-                                        <TableCell sx={{ p: 0 }}>
+                                        <TableCell sx={{ width: 48, p: 0 }}>
                                             <IconButton
                                                 size="small"
                                                 onClick={() => toggleGroup(group.id)}
@@ -144,7 +168,7 @@ export function TransactionsTable({
                                                     height: 28,
                                                     borderRadius: '6px',
                                                     color: colors.textMuted,
-                                                    transition: 'all 150ms ease',
+                                                    transition: 'transform 250ms cubic-bezier(0.4, 0, 0.2, 1)',
                                                     transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
                                                     '&:hover': { bgcolor: 'rgba(255,255,255,0.06)' },
                                                 }}
@@ -152,7 +176,7 @@ export function TransactionsTable({
                                                 <ChevronDown size={14} />
                                             </IconButton>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell sx={{ width: 100 }}>
                                             <Chip
                                                 label={group.type === 'installment' ? 'Parcelado' : 'Recorrente'}
                                                 size="small"
@@ -167,42 +191,102 @@ export function TransactionsTable({
                                             />
                                         </TableCell>
                                         <TableCell>
+                                            <Stack direction="row" spacing={1} alignItems="center">
+                                                <Typography sx={{
+                                                    fontSize: '14px',
+                                                    fontWeight: 500,
+                                                    color: colors.textPrimary,
+                                                }}>
+                                                    {group.mainTransaction.description}
+                                                </Typography>
+                                                <Chip
+                                                    label={`${group.totalItemsCount} ${group.totalItemsCount === 1 ? 'parcela' : 'parcelas'}`}
+                                                    size="small"
+                                                    sx={{
+                                                        height: 18,
+                                                        fontSize: '10px',
+                                                        fontWeight: 600,
+                                                        borderRadius: '4px',
+                                                        bgcolor: 'rgba(255,255,255,0.06)',
+                                                        color: colors.textSecondary,
+                                                    }}
+                                                />
+                                            </Stack>
+                                        </TableCell>
+                                        <TableCell>
+                                            {group.categoryName ? (
+                                                <Chip
+                                                    label={group.categoryName}
+                                                    size="small"
+                                                    sx={{
+                                                        height: 22,
+                                                        fontSize: '11px',
+                                                        fontWeight: 600,
+                                                        borderRadius: '6px',
+                                                        bgcolor: group.categoryColor ? `${group.categoryColor}15` : 'rgba(255,255,255,0.05)',
+                                                        color: group.categoryColor || colors.textSecondary,
+                                                    }}
+                                                />
+                                            ) : (
+                                                <Chip
+                                                    label="Sem categoria"
+                                                    size="small"
+                                                    sx={{
+                                                        height: 20,
+                                                        fontSize: '11px',
+                                                        borderRadius: '4px',
+                                                        bgcolor: 'rgba(255,255,255,0.03)',
+                                                        color: colors.textMuted,
+                                                    }}
+                                                />
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
                                             <Typography sx={{
-                                                fontSize: '14px',
+                                                fontSize: '13px',
                                                 fontWeight: 500,
                                                 color: colors.textPrimary,
+                                                lineHeight: '22px',
                                             }}>
-                                                {group.mainTransaction.description}
-                                            </Typography>
-                                            <Typography sx={{ fontSize: '12px', color: colors.textMuted }}>
-                                                {group.items.length} itens
+                                                {group.mainTransaction.payment_method === 'money' && 'Dinheiro:'}
+                                                {group.mainTransaction.payment_method === 'debit' && 'Débito: '}
+                                                {group.mainTransaction.payment_method === 'credit' && 'Crédito: '}
+                                                {group.mainTransaction.payment_method === 'pix' && 'PIX: '}
+                                                {!group.mainTransaction.payment_method && (group.mainTransaction.card_id ? 'Cartão: ' : 'Conta: ')}
+                                                {(group.mainTransaction.credit_card?.name || group.mainTransaction.bank_account?.name) && (
+                                                    <Typography
+                                                        component="span"
+                                                        sx={{
+                                                            fontSize: '13px',
+                                                            color: group.mainTransaction.credit_card?.color || colors.textMuted,
+                                                        }}
+                                                    >
+                                                        {group.mainTransaction.credit_card?.name || group.mainTransaction.bank_account?.name}
+                                                    </Typography>
+                                                )}
                                             </Typography>
                                         </TableCell>
                                         <TableCell>
-                                            <Chip
-                                                label="Sem categoria"
-                                                size="small"
-                                                sx={{
-                                                    height: 20,
-                                                    fontSize: '11px',
-                                                    borderRadius: '4px',
-                                                    bgcolor: 'rgba(255,255,255,0.03)',
-                                                    color: colors.textMuted,
-                                                }}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <Chip
-                                                label={group.isAllPaid ? 'Pago' : 'Pendente'}
-                                                size="small"
-                                                sx={{
-                                                    height: 20,
-                                                    fontSize: '11px',
-                                                    borderRadius: '4px',
-                                                    bgcolor: group.isAllPaid ? colors.greenBg : colors.yellowBg,
-                                                    color: group.isAllPaid ? colors.green : colors.yellow,
-                                                }}
-                                            />
+                                            <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 220 }}>
+                                                <Box sx={{ minWidth: 150, maxWidth: 240, width: '100%' }}>
+                                                    <LinearProgress
+                                                        variant="determinate"
+                                                        value={group.paidItemsPercent}
+                                                        sx={{
+                                                            height: 6,
+                                                            borderRadius: 99,
+                                                            bgcolor: 'rgba(255,255,255,0.08)',
+                                                            '& .MuiLinearProgress-bar': {
+                                                                borderRadius: 99,
+                                                                bgcolor: colors.accent,
+                                                            },
+                                                        }}
+                                                    />
+                                                </Box>
+                                                <Typography sx={{ fontSize: '11px', color: colors.textSecondary, whiteSpace: 'nowrap' }}>
+                                                    {group.paidItemsCount}/{group.totalItemsCount} ({group.paidItemsPercent}%)
+                                                </Typography>
+                                            </Stack>
                                         </TableCell>
                                         <TableCell align="right">
                                             <Typography sx={{
@@ -216,12 +300,12 @@ export function TransactionsTable({
                                         </TableCell>
                                         <TableCell align="right" />
                                     </TableRow>
-                                    <TableRow>
-                                        <TableCell sx={{ p: 0 }} colSpan={8}>
-                                            <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                                                <Table size="small">
+                                    <TableRow sx={{ p: 0, '& > .MuiTableCell-root': { p: 0, borderBottom: 'none' } }}>
+                                        <TableCell colSpan={9} sx={{ p: 0 }}>
+                                            <Collapse in={isExpanded} timeout={250} unmountOnExit>
+                                                <Table size="small" sx={{ bgcolor: colors.bgCard }}>
                                                     <TableBody>
-                                                        {group.items.map(t => (
+                                                        {group.items.map((t) => (
                                                             <TransactionRow
                                                                 key={t.id}
                                                                 transaction={t}

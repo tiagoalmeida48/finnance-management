@@ -14,6 +14,8 @@ interface TransactionRowProps {
     isPendingToggle?: boolean;
 }
 
+
+
 export function TransactionRow({
     transaction: t,
     isChild = false,
@@ -21,7 +23,7 @@ export function TransactionRow({
     handleSelectRow,
     handleTogglePaid,
     handleOpenMenu,
-    isPendingToggle
+    isPendingToggle,
 }: TransactionRowProps) {
     const formatBRL = (amount: number) => (
         new Intl.NumberFormat('pt-BR', {
@@ -44,7 +46,6 @@ export function TransactionRow({
 
     const typeConfig = getTypeConfig(t.type);
     const TypeIcon = typeConfig.icon;
-
     return (
         <TableRow sx={{
             minHeight: 56,
@@ -117,7 +118,7 @@ export function TransactionRow({
                     )}
                     {isChild && <Box sx={{ width: 32 }} />}
                     <Box sx={{ opacity: t.is_paid ? 1 : 0.7 }}>
-                        <Stack direction="row" spacing={1} alignItems="center">
+                        <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap">
                             <Typography sx={{
                                 fontSize: '14px',
                                 fontWeight: 500,
@@ -125,38 +126,17 @@ export function TransactionRow({
                             }}>
                                 {t.description}
                             </Typography>
-                            {t.is_fixed && (
-                                <Tooltip title="Recorrente">
-                                    <RefreshCw size={12} color={colors.textMuted} />
-                                </Tooltip>
-                            )}
-                        </Stack>
-                        <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
                             {t.installment_number && (
                                 <Chip
                                     label={`${t.installment_number}/${t.total_installments}`}
                                     size="small"
                                     sx={{
-                                        height: 18,
-                                        fontSize: '10px',
-                                        fontWeight: 600,
+                                        height: 20,
+                                        fontSize: '13px',
+                                        fontWeight: 700,
                                         borderRadius: '4px',
                                         bgcolor: colors.purpleBg,
                                         color: colors.purple,
-                                    }}
-                                />
-                            )}
-                            {t.is_fixed && (
-                                <Chip
-                                    label="Recorrente"
-                                    size="small"
-                                    sx={{
-                                        height: 18,
-                                        fontSize: '10px',
-                                        fontWeight: 600,
-                                        borderRadius: '4px',
-                                        bgcolor: 'rgba(59, 130, 246, 0.1)',
-                                        color: '#3B82F6',
                                     }}
                                 />
                             )}
@@ -174,60 +154,87 @@ export function TransactionRow({
                                     }}
                                 />
                             )}
+                            {t.is_fixed && (
+                                <Tooltip title="Recorrente">
+                                    <RefreshCw size={12} color={colors.textMuted} />
+                                </Tooltip>
+                            )}
+                        </Stack>
+                        <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
+                            {t.is_fixed && (
+                                <Chip
+                                    label="Recorrente"
+                                    size="small"
+                                    sx={{
+                                        height: 18,
+                                        fontSize: '10px',
+                                        fontWeight: 600,
+                                        borderRadius: '4px',
+                                        bgcolor: 'rgba(59, 130, 246, 0.1)',
+                                        color: '#3B82F6',
+                                    }}
+                                />
+                            )}
                         </Stack>
                     </Box>
                 </Stack>
             </TableCell>
-            <TableCell sx={{ py: 1.75 }}>
-                {t.type !== 'transfer' ? (
-                    t.category?.name ? (
-                        <Chip
-                            label={t.category.name}
-                            size="small"
-                            sx={{
-                                height: 22,
-                                fontSize: '11px',
-                                fontWeight: 600,
-                                borderRadius: '6px',
-                                bgcolor: t.category?.color ? `${t.category.color}15` : 'rgba(255,255,255,0.05)',
-                                color: t.category?.color || colors.textSecondary,
-                                opacity: t.is_paid ? 1 : 0.7,
-                            }}
-                        />
-                    ) : (
-                        <Chip
-                            label="Sem categoria"
-                            size="small"
-                            sx={{
-                                height: 20,
-                                fontSize: '11px',
-                                borderRadius: '4px',
-                                bgcolor: 'rgba(255,255,255,0.03)',
-                                color: colors.textMuted,
-                            }}
-                        />
-                    )
-                ) : (
-                    <Chip
-                        label="Transferência"
-                        size="small"
-                        sx={{
-                            height: 20,
-                            fontSize: '11px',
-                            borderRadius: '4px',
-                            bgcolor: colors.yellowBg,
-                            color: colors.yellow,
-                        }}
-                    />
+            <TableCell sx={{ py: 1.75, verticalAlign: 'top' }}>
+                {!isChild && (
+                    <Box sx={{ minHeight: 24, display: 'flex', alignItems: 'flex-start' }}>
+                        {t.type !== 'transfer' ? (
+                            t.category?.name ? (
+                                <Chip
+                                    label={t.category.name}
+                                    size="small"
+                                    sx={{
+                                        height: 22,
+                                        fontSize: '11px',
+                                        fontWeight: 600,
+                                        borderRadius: '6px',
+                                        bgcolor: t.category?.color ? `${t.category.color}15` : 'rgba(255,255,255,0.05)',
+                                        color: t.category?.color || colors.textSecondary,
+                                        opacity: t.is_paid ? 1 : 0.7,
+                                    }}
+                                />
+                            ) : (
+                                <Chip
+                                    label="Sem categoria"
+                                    size="small"
+                                    sx={{
+                                        height: 20,
+                                        fontSize: '11px',
+                                        borderRadius: '4px',
+                                        bgcolor: 'rgba(255,255,255,0.03)',
+                                        color: colors.textMuted,
+                                    }}
+                                />
+                            )
+                        ) : (
+                            <Chip
+                                label="Transferência"
+                                size="small"
+                                sx={{
+                                    height: 20,
+                                    fontSize: '11px',
+                                    borderRadius: '4px',
+                                    bgcolor: colors.yellowBg,
+                                    color: colors.yellow,
+                                }}
+                            />
+                        )}
+                    </Box>
                 )}
             </TableCell>
-            <TableCell sx={{ py: 1.75 }}>
-                <Stack direction="row" spacing={1.5} alignItems="center">
-                    <Box sx={{ opacity: t.is_paid ? 1 : 0.7 }}>
+            <TableCell sx={{ py: 1.75, verticalAlign: 'top' }}>
+                {!isChild && (
+                    <Box sx={{ minHeight: 24 }}>
                         <Typography sx={{
                             fontSize: '13px',
                             fontWeight: 500,
                             color: colors.textPrimary,
+                            lineHeight: '22px',
+                            opacity: t.is_paid ? 1 : 0.7,
                         }}>
                             {t.payment_method === 'money' && 'Dinheiro'}
                             {t.payment_method === 'debit' && 'Débito'}
@@ -236,13 +243,23 @@ export function TransactionRow({
                             {t.type === 'transfer' && 'Transferência'}
                             {!t.payment_method && (t.card_id ? 'Cartão' : 'Conta')}
                         </Typography>
-                        <Typography sx={{ fontSize: '11px', color: colors.textMuted }}>
+                        <Typography sx={{
+                            fontSize: '11px',
+                            lineHeight: 1.2,
+                            color: t.credit_card?.color || colors.textMuted,
+                            opacity: t.is_paid ? 1 : 0.7,
+                        }}>
                             {t.type === 'transfer'
                                 ? `${t.bank_account?.name} → ${t.to_bank_account?.name}`
                                 : (t.credit_card?.name || t.bank_account?.name || '')}
                         </Typography>
                     </Box>
-                </Stack>
+                )}
+            </TableCell>
+            <TableCell sx={{ py: 1.75 }}>
+                <Typography sx={{ fontSize: '11px', color: colors.textMuted }}>
+                    -
+                </Typography>
             </TableCell>
             <TableCell align="right" sx={{ py: 1.75 }}>
                 <Typography sx={{

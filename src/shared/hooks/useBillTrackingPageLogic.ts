@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
-import { format, startOfMonth, addMonths, startOfYear, endOfYear, eachMonthOfInterval } from 'date-fns';
+import { addMonths, format, startOfYear, endOfYear, eachMonthOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useTransactions } from './useTransactions';
 import { useCreditCards } from './useCreditCards';
 import { calculateTrackingSummary } from './billTracking.utils';
+import { resolveStatementMonth } from '../services/card-statement-cycle.utils';
 
 interface TrackingItem {
     id: string;
@@ -45,18 +46,17 @@ export function useBillTrackingPageLogic() {
             );
 
             const cardBills = cards.map(card => {
-                const closingDay = Number(card.closing_day);
-                const dueDay = Number(card.due_day);
-                const isNextMonthPayment = closingDay >= dueDay;
+                const statementCycles = card.statement_cycles ?? [];
+                const statementPeriodRanges = card.statement_period_ranges ?? [];
+                const fallbackCycle = {
+                    closing_day: card.current_statement_cycle?.closing_day ?? card.closing_day,
+                    due_day: card.current_statement_cycle?.due_day ?? card.due_day,
+                };
                 const cardTransactions = transactions.filter(t => t.card_id === card.id);
 
                 const billTransactions = cardTransactions.filter(t => {
-                    const date = new Date(t.payment_date + 'T12:00:00');
-                    const day = date.getDate();
-                    let monthShift = isNextMonthPayment ? 1 : 0;
-                    if (day > closingDay) monthShift += 1;
-                    const statementMonth = addMonths(startOfMonth(date), monthShift);
-                    return format(statementMonth, 'yyyy-MM') === monthStr;
+                    const resolved = resolveStatementMonth(t, statementCycles, fallbackCycle, statementPeriodRanges);
+                    return resolved?.statementMonthKey === monthStr;
                 });
 
                 if (billTransactions.length === 0) return null;

@@ -29,7 +29,7 @@ interface TransactionsTableHeaderProps {
     selectAllChecked: boolean;
     selectAllIndeterminate: boolean;
     handleSelectAll: (checked: boolean) => void;
-    handleSort: (field: keyof Transaction | 'amount' | 'payment_date' | 'is_paid' | 'payment_method') => void;
+    handleSort: (field: keyof Transaction | 'amount' | 'payment_date' | 'is_paid' | 'payment_method' | 'installment_progress') => void;
     sortConfig: { field: string; direction: 'asc' | 'desc' };
     searchQuery: string;
     setSearchQuery: (value: string) => void;
@@ -37,7 +37,13 @@ interface TransactionsTableHeaderProps {
     setCategoryFilter: (value: string) => void;
     paymentMethodFilter: string;
     setPaymentMethodFilter: (value: string) => void;
+    accountFilter: string;
+    setAccountFilter: (value: string) => void;
+    cardFilter: string;
+    setCardFilter: (value: string) => void;
     categories?: { id: string; name: string }[];
+    accounts?: { id: string; name: string }[];
+    cards?: { id: string; name: string }[];
 }
 
 export function TransactionsTableHeader({
@@ -52,7 +58,13 @@ export function TransactionsTableHeader({
     setCategoryFilter,
     paymentMethodFilter,
     setPaymentMethodFilter,
+    accountFilter,
+    setAccountFilter,
+    cardFilter,
+    setCardFilter,
     categories,
+    accounts,
+    cards,
 }: TransactionsTableHeaderProps) {
     const isActiveSort = (field: string) => sortConfig.field === field;
 
@@ -190,7 +202,7 @@ export function TransactionsTableHeader({
                 </TableCell>
 
                 <TableCell sx={{ py: 1.5 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
                         <TableSortLabel
                             active={isActiveSort('payment_method')}
                             direction={sortConfig.direction}
@@ -224,7 +236,55 @@ export function TransactionsTableHeader({
                                 <MenuItem value="money">Dinheiro</MenuItem>
                             </Select>
                         </FormControl>
+                        <FormControl size="small">
+                            <Select
+                                value={accountFilter}
+                                onChange={(e) => setAccountFilter(e.target.value)}
+                                sx={{
+                                    ...inlineSelectSx,
+                                    minWidth: 110,
+                                    color: accountFilter !== 'all' ? colors.accent : colors.textMuted,
+                                }}
+                            >
+                                <MenuItem value="all">Todas Contas</MenuItem>
+                                {accounts?.map((account) => <MenuItem key={account.id} value={account.id}>{account.name}</MenuItem>)}
+                            </Select>
+                        </FormControl>
+                        <FormControl size="small">
+                            <Select
+                                value={cardFilter}
+                                onChange={(e) => setCardFilter(e.target.value)}
+                                sx={{
+                                    ...inlineSelectSx,
+                                    minWidth: 110,
+                                    color: cardFilter !== 'all' ? colors.accent : colors.textMuted,
+                                }}
+                            >
+                                <MenuItem value="all">Todos Cartões</MenuItem>
+                                {cards?.map((card) => <MenuItem key={card.id} value={card.id}>{card.name}</MenuItem>)}
+                            </Select>
+                        </FormControl>
                     </Box>
+                </TableCell>
+
+                <TableCell sx={{ py: 1.5 }}>
+                    <TableSortLabel
+                        active={isActiveSort('installment_progress')}
+                        direction={sortConfig.direction}
+                        onClick={() => handleSort('installment_progress')}
+                        sx={sortLabelSx}
+                    >
+                        <Typography sx={{
+                            fontSize: '11px',
+                            fontFamily: '"DM Sans"',
+                            fontWeight: 600,
+                            color: isActiveSort('installment_progress') ? colors.accent : colors.textMuted,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.06em',
+                        }}>
+                            Progresso
+                        </Typography>
+                    </TableSortLabel>
                 </TableCell>
 
                 <TableCell align="right" sx={{ py: 1.5 }}>

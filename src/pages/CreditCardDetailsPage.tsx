@@ -1,11 +1,15 @@
+import { useState } from 'react';
 import { Box, Container, Typography, CircularProgress } from '@mui/material';
 import { useCreditCardDetailsLogic } from '../shared/hooks/useCreditCardDetailsLogic';
 import { CardDetailsHeader } from '../shared/components/cards/CardDetailsHeader';
 import { CardDetailsCharts } from '../shared/components/cards/CardDetailsCharts';
 import { CardStatementList } from '../shared/components/cards/CardStatementList';
+import { CardStatementCycleHistoryModal } from '../shared/components/cards/CardStatementCycleHistory';
 import { PayBillModal } from '../shared/components/cards/PayBillModal';
 
 export function CreditCardDetailsPage() {
+    const [cycleHistoryOpen, setCycleHistoryOpen] = useState(false);
+
     const {
         navigate, card, isLoading,
         selectedDate,
@@ -37,9 +41,22 @@ export function CreditCardDetailsPage() {
                     selectedDate={selectedDate}
                     handlePrevYear={handlePrevYear}
                     handleNextYear={handleNextYear}
+                    onOpenStatementCycleHistory={() => setCycleHistoryOpen(true)}
+                />
+                <CardStatementCycleHistoryModal
+                    cardId={card.id}
+                    cardName={card.name}
+                    fallbackClosingDay={card.current_statement_cycle?.closing_day ?? card.closing_day}
+                    fallbackDueDay={card.current_statement_cycle?.due_day ?? card.due_day}
+                    open={cycleHistoryOpen}
+                    onClose={() => setCycleHistoryOpen(false)}
                 />
                 <CardDetailsCharts chartData={historyData.chartData} categoryData={historyData.categoryData} />
-                <CardStatementList statements={historyData.statements} handleOpenPayModal={handleOpenPayModal} />
+                <CardStatementList
+                    cardId={card.id}
+                    statements={historyData.statements}
+                    handleOpenPayModal={handleOpenPayModal}
+                />
                 {selectedStatement && (
                     <PayBillModal
                         open={payModalOpen}

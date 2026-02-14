@@ -4,7 +4,6 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { ptBR as pickersPtBR } from '@mui/x-date-pickers/locales';
 import { ptBR } from 'date-fns/locale';
-import { useFieldArray } from 'react-hook-form';
 import { useTransactionFormLogic } from '../../hooks/useTransactionFormLogic';
 import type { Transaction } from '../../interfaces/transaction.interface';
 import { colors } from '@/shared/theme';
@@ -39,8 +38,6 @@ export function TransactionFormModal({ open, onClose, transaction }: Transaction
         accounts = [],
         categories = [],
         cards = [],
-        showInstallmentGrid,
-        setShowInstallmentGrid,
         applyToGroup,
         setApplyToGroup,
         resetUiState,
@@ -59,7 +56,6 @@ export function TransactionFormModal({ open, onClose, transaction }: Transaction
         formState: { errors, isSubmitting },
     } = form;
 
-    const { fields } = useFieldArray({ control, name: 'installments' });
     const amount = watch('amount') || 0;
     const totalInstallments = watch('total_installments') || 1;
     const handleMoneyInput = (event: ChangeEvent<HTMLInputElement>) => {
@@ -160,9 +156,6 @@ export function TransactionFormModal({ open, onClose, transaction }: Transaction
                             transaction={transaction}
                             applyToGroup={applyToGroup}
                             setApplyToGroup={setApplyToGroup}
-                            showInstallmentGrid={showInstallmentGrid}
-                            setShowInstallmentGrid={setShowInstallmentGrid}
-                            fields={fields}
                             register={register}
                         />
                     </DialogContent>

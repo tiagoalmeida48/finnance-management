@@ -11,6 +11,7 @@ import {
 } from './useTransactions';
 import { useAccounts } from './useAccounts';
 import { useCategories } from './useCategories';
+import { useCreditCards } from './useCreditCards';
 import { Transaction } from '../services/transactions.service';
 import {
     getFilteredTransactionsAndSummaries,
@@ -31,11 +32,15 @@ export function useTransactionsPageLogic() {
     const [showPendingOnly, setShowPendingOnly] = useState(false);
     const [showAllTime, setShowAllTime] = useState(false);
     const [hideCreditCards, setHideCreditCards] = useState(false);
+    const [showOnlyCardPurchases, setShowOnlyCardPurchases] = useState(false);
+    const [showInstallmentsOnly, setShowInstallmentsOnly] = useState(false);
     const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
     const [searchQuery, setSearchQuery] = useState('');
     const [categoryFilter, setCategoryFilter] = useState<string>('all');
     const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('all');
+    const [accountFilter, setAccountFilter] = useState<string>('all');
+    const [cardFilter, setCardFilter] = useState<string>('all');
     const [sortConfig, setSortConfig] = useState<TransactionSortConfig>({
         field: 'payment_date',
         direction: 'desc'
@@ -47,14 +52,17 @@ export function useTransactionsPageLogic() {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [menuTransaction, setMenuTransaction] = useState<Transaction | null>(null);
 
+    const shouldUseAllTimeRange = showAllTime || showInstallmentsOnly;
+
     const { data: transactions, isLoading: transactionsLoading } = useTransactions({
-        start_date: showAllTime ? undefined : format(startOfMonth(currentMonth), 'yyyy-MM-dd'),
-        end_date: showAllTime ? undefined : format(endOfMonth(currentMonth), 'yyyy-MM-dd'),
-        is_paid: showPendingOnly ? false : undefined
+        start_date: shouldUseAllTimeRange ? undefined : format(startOfMonth(currentMonth), 'yyyy-MM-dd'),
+        end_date: shouldUseAllTimeRange ? undefined : format(endOfMonth(currentMonth), 'yyyy-MM-dd'),
+        is_paid: undefined
     });
 
     const { data: accounts, isLoading: accountsLoading } = useAccounts();
     const { data: categories } = useCategories();
+    const { data: cards, isLoading: cardsLoading } = useCreditCards();
 
     const deleteTransaction = useDeleteTransaction();
     const batchDeleteTransactions = useBatchDeleteTransactions();
@@ -63,7 +71,7 @@ export function useTransactionsPageLogic() {
     const deleteTransactionGroup = useDeleteTransactionGroup();
     const togglePaymentStatus = useTogglePaymentStatus();
 
-    const isLoading = transactionsLoading || accountsLoading;
+    const isLoading = transactionsLoading || accountsLoading || cardsLoading;
 
     const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, transaction: Transaction) => {
         setAnchorEl(event.currentTarget);
@@ -76,6 +84,32 @@ export function useTransactionsPageLogic() {
 
     const handleSetShowAllTime = (value: boolean) => {
         setShowAllTime(value);
+        if (!value) {
+            setShowInstallmentsOnly(false);
+        }
+        setAnchorEl(null);
+        setMenuTransaction(null);
+    };
+
+    const handleSetHideCreditCards = (value: boolean) => {
+        setHideCreditCards(value);
+        if (value) {
+            setShowOnlyCardPurchases(false);
+        }
+    };
+
+    const handleSetShowOnlyCardPurchases = (value: boolean) => {
+        setShowOnlyCardPurchases(value);
+        if (value) {
+            setHideCreditCards(false);
+        }
+    };
+
+    const handleSetShowInstallmentsOnly = (value: boolean) => {
+        setShowInstallmentsOnly(value);
+        if (value) {
+            setShowAllTime(true);
+        }
         setAnchorEl(null);
         setMenuTransaction(null);
     };
@@ -101,10 +135,11 @@ export function useTransactionsPageLogic() {
                 if (groupId) {
                     await deleteTransactionGroup.mutateAsync({ groupId, type: groupType });
                 }
+                setSelectedIds([]);
             } else {
                 await deleteTransaction.mutateAsync(menuTransaction.id);
+                setSelectedIds(prev => prev.filter(id => id !== menuTransaction.id));
             }
-            setSelectedIds(prev => prev.filter(id => id !== menuTransaction.id));
             setDeleteModalOpen(false);
             setMenuTransaction(null);
         } catch (error) {
@@ -126,19 +161,19 @@ export function useTransactionsPageLogic() {
 
     const handleConfirmPayment = async (data: { account_id: string; payment_date: string }) => {
         try {
-            if (selectedIds.length > 0) {
+            if (selectedTransaction) {
+                await batchPayTransactions.mutateAsync({
+                    ids: [selectedTransaction.id],
+                    accountId: data.account_id,
+                    paymentDate: data.payment_date
+                });
+            } else if (selectedIds.length > 0) {
                 await batchPayTransactions.mutateAsync({
                     ids: selectedIds,
                     accountId: data.account_id,
                     paymentDate: data.payment_date
                 });
                 setSelectedIds([]);
-            } else if (selectedTransaction) {
-                await batchPayTransactions.mutateAsync({
-                    ids: [selectedTransaction.id],
-                    accountId: data.account_id,
-                    paymentDate: data.payment_date
-                });
             }
             setPaymentModalOpen(false);
             setSelectedTransaction(undefined);
@@ -198,6 +233,12 @@ export function useTransactionsPageLogic() {
         });
     };
 
+    const handleOpenBatchPayModal = () => {
+        if (selectedIds.length === 0) return;
+        setSelectedTransaction(undefined);
+        setPaymentModalOpen(true);
+    };
+
     const handlePrevMonth = () => {
         setCurrentMonth(prev => subMonths(prev, 1));
         setShowAllTime(false);
@@ -225,18 +266,23 @@ export function useTransactionsPageLogic() {
         if (!transactions) return { filteredTransactions: [], summaries: { income: 0, expense: 0, balance: 0, pending: 0 } };
         return getFilteredTransactionsAndSummaries({
             transactions,
+            showPendingOnly,
             typeFilter,
             searchQuery,
             categoryFilter,
             paymentMethodFilter,
+            accountFilter,
+            cardFilter,
             hideCreditCards,
+            showOnlyCardPurchases,
+            showInstallmentsOnly,
             sortConfig,
         });
-    }, [transactions, typeFilter, searchQuery, categoryFilter, paymentMethodFilter, sortConfig, hideCreditCards]);
+    }, [transactions, showPendingOnly, typeFilter, searchQuery, categoryFilter, paymentMethodFilter, accountFilter, cardFilter, sortConfig, hideCreditCards, showOnlyCardPurchases, showInstallmentsOnly]);
 
     const groupedTransactions = useMemo(() => {
-        return getGroupedTransactions(filteredTransactions);
-    }, [filteredTransactions]);
+        return getGroupedTransactions(filteredTransactions, sortConfig);
+    }, [filteredTransactions, sortConfig]);
 
     const showingAllTransactions = transactionsRowsPerPage === -1;
     const maxTransactionsPage = showingAllTransactions
@@ -277,11 +323,15 @@ export function useTransactionsPageLogic() {
         currentMonth, setCurrentMonth,
         showPendingOnly, setShowPendingOnly,
         showAllTime, setShowAllTime: handleSetShowAllTime,
-        hideCreditCards, setHideCreditCards,
+        showInstallmentsOnly, setShowInstallmentsOnly: handleSetShowInstallmentsOnly,
+        hideCreditCards, setHideCreditCards: handleSetHideCreditCards,
+        showOnlyCardPurchases, setShowOnlyCardPurchases: handleSetShowOnlyCardPurchases,
         expandedGroups, setExpandedGroups,
         searchQuery, setSearchQuery,
         categoryFilter, setCategoryFilter,
         paymentMethodFilter, setPaymentMethodFilter,
+        accountFilter, setAccountFilter,
+        cardFilter, setCardFilter,
         sortConfig, setSortConfig,
         transactionsPage: safeTransactionsPage, setTransactionsPage: handleTransactionsPageChange,
         transactionsRowsPerPage, setTransactionsRowsPerPage: handleTransactionsRowsPerPageChange,
@@ -289,10 +339,11 @@ export function useTransactionsPageLogic() {
         anchorEl, setAnchorEl,
         menuTransaction, setMenuTransaction,
         transactions, isLoading,
-        categories, accounts,
+        categories, accounts, cards,
         handleOpenMenu, handleCloseMenu,
         handleEdit, handleDelete, handleConfirmDelete,
         handleTogglePaid, handleConfirmPayment, handleBatchUnpay, handleBatchDelete,
+        handleOpenBatchPayModal,
         handleAdd, handleImport, toggleGroup, handleSelectRow, handleSelectAll,
         handlePrevMonth, handleNextMonth, handleSort,
         filteredTransactions, summaries, groupedTransactions, paginatedGroupedTransactions,

@@ -1,5 +1,5 @@
 import { Box, Container, Stack, Typography, Button, Menu, MenuItem, Slide } from '@mui/material';
-import { Plus, Pencil, Trash2, CheckCircle2, Upload, Tag } from 'lucide-react';
+import { Plus, Pencil, Trash2, CheckCircle2, Clock, Upload } from 'lucide-react';
 import { useTransactionsPageLogic } from '../shared/hooks/useTransactionsPageLogic';
 import { TransactionsSummary } from '../shared/components/transactions/TransactionsSummary';
 import { TransactionsFilter } from '../shared/components/transactions/TransactionsFilter';
@@ -7,6 +7,7 @@ import { TransactionsTable } from '../shared/components/transactions/Transaction
 import { TransactionFormModal } from '../shared/components/transactions/TransactionFormModal';
 import { DeleteTransactionModal } from '../shared/components/transactions/DeleteTransactionModal';
 import { ImportTransactionsModal } from '../shared/components/transactions/ImportTransactionsModal';
+import { PaymentConfirmModal } from '../shared/components/cards/PaymentConfirmModal';
 import { colors } from '@/shared/theme';
 
 export function TransactionsPage() {
@@ -15,16 +16,20 @@ export function TransactionsPage() {
         typeFilter, setTypeFilter,
         showPendingOnly, setShowPendingOnly,
         showAllTime, setShowAllTime,
+        showInstallmentsOnly, setShowInstallmentsOnly,
         currentMonth, setCurrentMonth,
         searchQuery, setSearchQuery,
         hideCreditCards, setHideCreditCards,
         categoryFilter, setCategoryFilter,
         paymentMethodFilter, setPaymentMethodFilter,
-        categories,
+        accountFilter, setAccountFilter,
+        cardFilter, setCardFilter,
+        categories, accounts, cards,
         handlePrevMonth, handleNextMonth,
         selectedTransaction, setSelectedTransaction,
         modalOpen, setModalOpen,
         importModalOpen, setImportModalOpen,
+        paymentModalOpen, setPaymentModalOpen,
         deleteModalOpen, setDeleteModalOpen,
         handleAdd, handleImport,
         groupedTransactions, paginatedGroupedTransactions, transactionsPage, setTransactionsPage,
@@ -32,6 +37,10 @@ export function TransactionsPage() {
         handleTogglePaid, handleOpenMenu, handleSort, sortConfig,
         expandedGroups, toggleGroup, anchorEl, handleCloseMenu,
         menuTransaction, handleEdit, handleDelete, handleConfirmDelete,
+        handleConfirmPayment,
+        handleBatchDelete,
+        handleBatchUnpay,
+        handleOpenBatchPayModal,
         togglePaymentStatus
     } = useTransactionsPageLogic();
 
@@ -117,6 +126,8 @@ export function TransactionsPage() {
                     setShowPendingOnly={setShowPendingOnly}
                     showAllTime={showAllTime}
                     setShowAllTime={setShowAllTime}
+                    showInstallmentsOnly={showInstallmentsOnly}
+                    setShowInstallmentsOnly={setShowInstallmentsOnly}
                     currentMonth={currentMonth}
                     setCurrentMonth={setCurrentMonth}
                     hideCreditCards={hideCreditCards}
@@ -148,7 +159,13 @@ export function TransactionsPage() {
                     setCategoryFilter={setCategoryFilter}
                     paymentMethodFilter={paymentMethodFilter}
                     setPaymentMethodFilter={setPaymentMethodFilter}
+                    accountFilter={accountFilter}
+                    setAccountFilter={setAccountFilter}
+                    cardFilter={cardFilter}
+                    setCardFilter={setCardFilter}
                     categories={categories}
+                    accounts={accounts}
+                    cards={cards}
                 />
 
                 {/* Context Menu */}
@@ -209,27 +226,8 @@ export function TransactionsPage() {
                             <Stack direction="row" spacing={1.5}>
                                 <Button
                                     size="small"
-                                    startIcon={<Tag size={14} />}
-                                    sx={{
-                                        borderRadius: '8px',
-                                        px: 2,
-                                        py: 1,
-                                        fontSize: '12px',
-                                        fontWeight: 500,
-                                        borderColor: 'rgba(255,255,255,0.1)',
-                                        color: colors.textSecondary,
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        '&:hover': {
-                                            borderColor: 'rgba(255,255,255,0.2)',
-                                            bgcolor: 'rgba(255,255,255,0.04)',
-                                        },
-                                    }}
-                                >
-                                    Categorizar
-                                </Button>
-                                <Button
-                                    size="small"
                                     startIcon={<CheckCircle2 size={14} />}
+                                    onClick={handleOpenBatchPayModal}
                                     sx={{
                                         borderRadius: '8px',
                                         px: 2,
@@ -247,7 +245,27 @@ export function TransactionsPage() {
                                 </Button>
                                 <Button
                                     size="small"
+                                    startIcon={<Clock size={14} />}
+                                    onClick={handleBatchUnpay}
+                                    sx={{
+                                        borderRadius: '8px',
+                                        px: 2,
+                                        py: 1,
+                                        fontSize: '12px',
+                                        fontWeight: 600,
+                                        bgcolor: colors.yellowBg,
+                                        color: colors.yellow,
+                                        '&:hover': {
+                                            bgcolor: 'rgba(245, 158, 11, 0.2)',
+                                        },
+                                    }}
+                                >
+                                    Marcar Pendente
+                                </Button>
+                                <Button
+                                    size="small"
                                     startIcon={<Trash2 size={14} />}
+                                    onClick={handleBatchDelete}
                                     sx={{
                                         borderRadius: '8px',
                                         px: 2,
@@ -291,6 +309,15 @@ export function TransactionsPage() {
                 <ImportTransactionsModal
                     open={importModalOpen}
                     onClose={() => setImportModalOpen(false)}
+                />
+
+                <PaymentConfirmModal
+                    open={paymentModalOpen}
+                    onClose={() => {
+                        setPaymentModalOpen(false);
+                        setSelectedTransaction(undefined);
+                    }}
+                    onConfirm={handleConfirmPayment}
                 />
             </Container>
         </Box>

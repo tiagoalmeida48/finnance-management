@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { format, startOfMonth, addMonths, subYears, addYears } from 'date-fns';
+import { format, subYears, addYears } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useCreditCardDetails } from './useCreditCards';
 import type {
@@ -9,6 +9,7 @@ import type {
     CardStatement,
     StatementTransaction,
 } from '../interfaces/card-details.interface';
+import { resolveStatementMonth } from '../services/card-statement-cycle.utils';
 
 export function useCreditCardDetailsLogic() {
     const { id = '' } = useParams<{ id: string }>();
@@ -31,28 +32,27 @@ export function useCreditCardDetailsLogic() {
     const historyData = useMemo(() => {
         if (!card || !card.transactions) return { statements: [], chartData: [], categoryData: [] };
 
-        const closingDay = Number(card.closing_day);
-        const dueDay = Number(card.due_day);
-        const isNextMonthPayment = closingDay >= dueDay;
+        const statementCycles = card.statement_cycles ?? [];
+        const statementPeriodRanges = card.statement_period_ranges ?? [];
+        const fallbackCycle = {
+            closing_day: card.current_statement_cycle?.closing_day ?? card.closing_day,
+            due_day: card.current_statement_cycle?.due_day ?? card.due_day,
+        };
 
         const cardTransactions = card.transactions.filter((t) => t.card_id === id);
 
-        const allStatementTransactions: StatementTransaction[] = cardTransactions.map((t) => {
-            const date = new Date(t.payment_date + 'T12:00:00');
-            const day = date.getDate();
+        const allStatementTransactions: StatementTransaction[] = cardTransactions
+            .map((transaction) => {
+                const resolved = resolveStatementMonth(transaction, statementCycles, fallbackCycle, statementPeriodRanges);
+                if (!resolved) return null;
 
-            let monthShift = isNextMonthPayment ? 1 : 0;
-            if (day > closingDay) {
-                monthShift += 1;
-            }
-
-            const statementMonth = addMonths(startOfMonth(date), monthShift);
-            return {
-                ...t,
-                statementDate: statementMonth,
-                statementMonthKey: format(statementMonth, 'yyyy-MM')
-            };
-        });
+                return {
+                    ...transaction,
+                    statementDate: resolved.statementDate,
+                    statementMonthKey: resolved.statementMonthKey,
+                };
+            })
+            .filter((transaction): transaction is StatementTransaction => transaction !== null);
 
         let filteredTransactions: StatementTransaction[] = allStatementTransactions;
 

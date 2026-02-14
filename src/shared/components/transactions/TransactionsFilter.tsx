@@ -11,6 +11,8 @@ interface TransactionsFilterProps {
     setShowPendingOnly: (val: boolean) => void;
     showAllTime: boolean;
     setShowAllTime: (val: boolean) => void;
+    showInstallmentsOnly: boolean;
+    setShowInstallmentsOnly: (val: boolean) => void;
     currentMonth: Date;
     setCurrentMonth: (date: Date) => void;
     hideCreditCards: boolean;
@@ -58,6 +60,7 @@ export function TransactionsFilter({
     typeFilter, setTypeFilter,
     showPendingOnly, setShowPendingOnly,
     showAllTime, setShowAllTime,
+    showInstallmentsOnly, setShowInstallmentsOnly,
     currentMonth, setCurrentMonth,
     hideCreditCards, setHideCreditCards,
     handlePrevMonth, handleNextMonth
@@ -66,11 +69,19 @@ export function TransactionsFilter({
     const [pickerYear, setPickerYear] = useState(currentMonth.getFullYear());
 
     const handleSelectMonthlyView = () => {
+        setShowInstallmentsOnly(false);
         setShowAllTime(false);
     };
 
     const handleSelectGeneralView = () => {
         setMonthAnchor(null);
+        setShowInstallmentsOnly(false);
+        setShowAllTime(true);
+    };
+
+    const handleSelectInstallmentsView = () => {
+        setMonthAnchor(null);
+        setShowInstallmentsOnly(true);
         setShowAllTime(true);
     };
 
@@ -149,7 +160,7 @@ export function TransactionsFilter({
 
             {/* Right side */}
             <Stack direction="row" spacing={1} alignItems="center">
-                {/* Hide Credit Cards */}
+                {/* Toggle Credit Card Visibility */}
                 <Box
                     onClick={() => setHideCreditCards(!hideCreditCards)}
                     sx={{
@@ -176,7 +187,7 @@ export function TransactionsFilter({
                         color: hideCreditCards ? colors.accent : colors.textSecondary,
                         whiteSpace: 'nowrap',
                     }}>
-                        Ocultar Cartão
+                        {hideCreditCards ? 'Mostrar Cartão' : 'Ocultar Cartão'}
                     </Typography>
                 </Box>
 
@@ -190,21 +201,27 @@ export function TransactionsFilter({
                     p: '3px',
                 }}>
                     <TabButton
-                        active={!showAllTime}
+                        active={!showAllTime && !showInstallmentsOnly}
                         onClick={handleSelectMonthlyView}
                     >
                         Mês
                     </TabButton>
                     <TabButton
-                        active={showAllTime}
+                        active={showAllTime && !showInstallmentsOnly}
                         onClick={handleSelectGeneralView}
                     >
                         Geral
                     </TabButton>
+                    <TabButton
+                        active={showInstallmentsOnly}
+                        onClick={handleSelectInstallmentsView}
+                    >
+                        Parcelados
+                    </TabButton>
                 </Box>
 
                 {/* Date Selector */}
-                {!showAllTime && (
+                {!showAllTime && !showInstallmentsOnly && (
                     <Box sx={{
                         display: 'flex',
                         alignItems: 'center',
@@ -264,7 +281,7 @@ export function TransactionsFilter({
                 )}
 
                 <TransactionsMonthPickerPopover
-                    open={!showAllTime && Boolean(monthAnchor)}
+                    open={!showAllTime && !showInstallmentsOnly && Boolean(monthAnchor)}
                     monthAnchor={monthAnchor}
                     setMonthAnchor={setMonthAnchor}
                     pickerYear={pickerYear}

@@ -44,6 +44,33 @@ export interface CreditCard {
     notes?: string;
     created_at: string;
     updated_at: string;
+    statement_cycles?: CreditCardStatementCycle[];
+    statement_period_ranges?: CreditCardStatementPeriodRange[];
+    current_statement_cycle?: CreditCardStatementCycle | null;
+}
+
+export interface CreditCardStatementCycle {
+    id: string;
+    user_id: string;
+    card_id: string;
+    date_start: string;
+    date_end: string;
+    closing_day: number;
+    due_day: number;
+    notes?: string | null;
+    created_at: string;
+}
+
+export interface CreditCardStatementPeriodRange {
+    id: string;
+    user_id: string;
+    card_id: string;
+    period_start: string;
+    period_end: string;
+    statement_month_key: string;
+    statement_name: string;
+    notes?: string | null;
+    created_at: string;
 }
 
 export type TransactionType = 'income' | 'expense' | 'transfer';
@@ -76,5 +103,5 @@ export interface Transaction {
     bank_account?: { name: string };
     to_bank_account?: { name: string };
     category?: { name: string, color: string, icon: string };
-    credit_card?: { name: string };
+    credit_card?: { name: string; color?: string };
 }

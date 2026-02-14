@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase/client';
 import type { Transaction } from '../interfaces';
-import { filterGroupUpdates } from './transactionsGroup.utils';
+import { extractDayFromDateLike, filterGroupUpdates, replaceDateDayPreservingMonth } from './transactionsGroup.utils';
 
 type SyncBalanceFn = (transaction: Transaction, action: 'add' | 'remove', force?: boolean) => Promise<void>;
 
@@ -94,10 +94,12 @@ export async function deleteTransactionById(id: string, syncBalance: SyncBalance
 }
 
 export async function deleteTransactionGroup(groupId: string, type: 'installment' | 'recurring', syncBalance: SyncBalanceFn) {
+    const groupColumn = type === 'installment' ? 'installment_group_id' : 'recurring_group_id';
+
     const { data: transactions, error: fetchError } = await supabase
         .from('transactions')
         .select('*')
-        .eq(type === 'installment' ? 'installment_group_id' : 'recurring_group_id', groupId);
+        .eq(groupColumn, groupId);
 
     if (fetchError) throw fetchError;
 
@@ -109,8 +111,8 @@ export async function deleteTransactionGroup(groupId: string, type: 'installment
 
     const { error } = await supabase
         .from('transactions')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq(type === 'installment' ? 'installment_group_id' : 'recurring_group_id', groupId);
+        .delete()
+        .eq(groupColumn, groupId);
 
     if (error) throw error;
 }
@@ -163,27 +165,71 @@ export async function updateTransactionGroup(
 ) {
     const column = type === 'installment' ? 'installment_group_id' : 'recurring_group_id';
 
-    const { data: oldTransactions } = await supabase
+    const { data: oldTransactions, error: oldTransactionsError } = await supabase
         .from('transactions')
         .select('*')
         .eq(column, groupId);
+    if (oldTransactionsError) throw oldTransactionsError;
 
-    if (oldTransactions) {
-        for (const transaction of oldTransactions) {
-            await syncBalance(transaction as Transaction, 'remove');
-        }
+    const transactionsBeforeUpdate = (oldTransactions ?? []) as Transaction[];
+    if (transactionsBeforeUpdate.length === 0) return [];
+
+    const updatesWithoutDate = { ...updates };
+    delete updatesWithoutDate.payment_date;
+    delete updatesWithoutDate.purchase_date;
+
+    const allowedUpdates = filterGroupUpdates(updatesWithoutDate);
+    const targetPaymentDay = extractDayFromDateLike(updates.payment_date);
+    const targetPurchaseDay = extractDayFromDateLike(updates.purchase_date) ?? targetPaymentDay;
+    const shouldAdjustDates = targetPaymentDay !== null || targetPurchaseDay !== null;
+
+    const timestamp = new Date().toISOString();
+    let updatedTransactions: Transaction[] = [];
+
+    if (shouldAdjustDates) {
+        updatedTransactions = await Promise.all(
+            transactionsBeforeUpdate.map(async (transaction) => {
+                const perTransactionDateUpdates: Partial<Transaction> = {};
+
+                if (targetPaymentDay !== null) {
+                    const nextPaymentDate = replaceDateDayPreservingMonth(transaction.payment_date, targetPaymentDay);
+                    if (nextPaymentDate) {
+                        perTransactionDateUpdates.payment_date = nextPaymentDate;
+                    }
+                }
+
+                if (targetPurchaseDay !== null && transaction.purchase_date) {
+                    const nextPurchaseDate = replaceDateDayPreservingMonth(transaction.purchase_date, targetPurchaseDay);
+                    if (nextPurchaseDate) {
+                        perTransactionDateUpdates.purchase_date = nextPurchaseDate;
+                    }
+                }
+
+                const { data: updatedTransaction, error: updateError } = await supabase
+                    .from('transactions')
+                    .update({ ...allowedUpdates, ...perTransactionDateUpdates, updated_at: timestamp })
+                    .eq('id', transaction.id)
+                    .select()
+                    .single();
+
+                if (updateError) throw updateError;
+                return updatedTransaction as Transaction;
+            }),
+        );
+    } else {
+        const { data, error } = await supabase
+            .from('transactions')
+            .update({ ...allowedUpdates, updated_at: timestamp })
+            .eq(column, groupId)
+            .select();
+
+        if (error) throw error;
+        updatedTransactions = data as Transaction[];
     }
 
-    const allowedUpdates = filterGroupUpdates(updates);
-
-    const { data, error } = await supabase
-        .from('transactions')
-        .update({ ...allowedUpdates, updated_at: new Date().toISOString() })
-        .eq(column, groupId)
-        .select();
-
-    if (error) throw error;
-    const updatedTransactions = data as Transaction[];
+    for (const transaction of transactionsBeforeUpdate) {
+        await syncBalance(transaction, 'remove');
+    }
 
     for (const transaction of updatedTransactions) {
         await syncBalance(transaction, 'add');
