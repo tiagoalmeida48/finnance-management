@@ -3,7 +3,6 @@ import { cardsService } from '../services/cards.service';
 import type { CreditCardDetails } from '../interfaces/card-details.interface';
 import {
     CreateCreditCardStatementCycleInput,
-    CreateCreditCardStatementPeriodRangeInput,
     UpdateCreditCardInput,
 } from '../interfaces';
 import { queryKeys } from '../constants/queryKeys';
@@ -74,35 +73,3 @@ export function useCreateCardStatementCycle(cardId: string) {
     });
 }
 
-export function useCardStatementPeriodRanges(id: string, enabled = true) {
-    return useQuery({
-        queryKey: queryKeys.cards.statementPeriodRanges(id),
-        queryFn: () => cardsService.getStatementPeriodRanges(id),
-        enabled: !!id && enabled,
-    });
-}
-
-export function useCreateCardStatementPeriodRange(cardId: string) {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (input: Omit<CreateCreditCardStatementPeriodRangeInput, 'card_id'>) =>
-            cardsService.createStatementPeriodRange({ ...input, card_id: cardId }),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
-            queryClient.invalidateQueries({ queryKey: queryKeys.cards.details(cardId) });
-            queryClient.invalidateQueries({ queryKey: queryKeys.cards.statementPeriodRanges(cardId) });
-        },
-    });
-}
-
-export function useDeleteCardStatementPeriodRange(cardId: string) {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (id: string) => cardsService.deleteStatementPeriodRange(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
-            queryClient.invalidateQueries({ queryKey: queryKeys.cards.details(cardId) });
-            queryClient.invalidateQueries({ queryKey: queryKeys.cards.statementPeriodRanges(cardId) });
-        },
-    });
-}

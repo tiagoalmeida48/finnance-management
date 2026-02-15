@@ -1,13 +1,10 @@
 import { addMonths, format, isValid, parseISO, startOfMonth, subDays } from 'date-fns';
-import type { CreditCardStatementCycle, CreditCardStatementPeriodRange, Transaction } from '../interfaces';
+import type { CreditCardStatementCycle, Transaction } from '../interfaces';
 
 export const OPEN_CYCLE_END = '9999-12-31';
 
 type StatementCycleLike = Pick<CreditCardStatementCycle, 'date_start' | 'date_end' | 'closing_day' | 'due_day'>;
 type StatementCycleWithOptionalId = StatementCycleLike & { id?: string };
-type StatementPeriodRangeLike =
-    Pick<CreditCardStatementPeriodRange, 'period_start' | 'period_end'>
-    & Partial<Pick<CreditCardStatementPeriodRange, 'statement_month_key'>>;
 
 interface StatementCycleFallback {
     closing_day: number;
@@ -25,7 +22,6 @@ export interface ResolvedStatementMonth {
     statementDate: Date;
     statementMonthKey: string;
     cycle: StatementCycleLike | StatementCycleFallback;
-    statementPeriodRange?: StatementPeriodRangeLike | null;
 }
 
 export interface CycleInsertionPlan {
@@ -51,18 +47,7 @@ const toDateAtNoon = (value: string) => {
     return parsed;
 };
 
-const MONTH_KEY_PATTERN = /^[0-9]{4}-(0[1-9]|1[0-2])$/;
 
-const resolveStatementMonthKeyFromRange = (range: StatementPeriodRangeLike) => {
-    const explicitMonthKey = range.statement_month_key?.trim() || '';
-    if (MONTH_KEY_PATTERN.test(explicitMonthKey)) {
-        return explicitMonthKey;
-    }
-
-    const periodEndDate = toDateAtNoon(range.period_end);
-    if (!periodEndDate) return null;
-    return format(periodEndDate, 'yyyy-MM');
-};
 
 const toDateKeyIgnoringTime = (value?: string | null) => {
     if (!value) return null;
@@ -90,13 +75,7 @@ export const resolveStatementCycleForDate = <T extends StatementCycleLike>(cycle
     return orderedCycles.find((cycle) => dateKey >= cycle.date_start && dateKey <= cycle.date_end) || null;
 };
 
-export const sortStatementPeriodRangesAsc = <T extends StatementPeriodRangeLike>(ranges: T[]) =>
-    [...ranges].sort((a, b) => a.period_start.localeCompare(b.period_start));
 
-export const resolveStatementPeriodRangeForDate = <T extends StatementPeriodRangeLike>(ranges: T[], dateKey: string) => {
-    const orderedRanges = sortStatementPeriodRangesAsc(ranges);
-    return orderedRanges.find((range) => dateKey >= range.period_start && dateKey <= range.period_end) || null;
-};
 
 export const getCurrentStatementCycle = <T extends StatementCycleLike>(
     cycles: T[],
@@ -113,7 +92,6 @@ export const resolveStatementMonth = (
     transaction: Pick<Transaction, 'purchase_date' | 'payment_date'>,
     cycles: StatementCycleLike[],
     fallbackCycle?: StatementCycleFallback,
-    statementPeriodRanges: StatementPeriodRangeLike[] = []
 ): ResolvedStatementMonth | null => {
     const anchorDateKey = getTransactionAnchorDateKey(transaction);
     if (!anchorDateKey) return null;
@@ -124,56 +102,19 @@ export const resolveStatementMonth = (
     const cycle = resolveStatementCycleForDate(cycles, anchorDateKey) || fallbackCycle;
     if (!cycle) return null;
 
-    const statementPeriodRange = resolveStatementPeriodRangeForDate(statementPeriodRanges, anchorDateKey);
-    if (statementPeriodRange) {
-        const statementMonthKey = resolveStatementMonthKeyFromRange(statementPeriodRange);
-        if (!statementMonthKey) return null;
-
-        const statementDate = toDateAtNoon(`${statementMonthKey}-01`);
-        if (!statementDate) return null;
-
-        return {
-            anchorDate,
-            anchorDateKey,
-            statementDate,
-            statementMonthKey,
-            cycle,
-            statementPeriodRange,
-        };
-    }
-
-    // Determine which statement month this transaction belongs to.
-    // closingMonthShift: if the anchor day is past the closing day, it starts a new cycle.
-    // dueMonthShift: if closing_day >= due_day, the due date falls in the next month,
-    // so the statement is named after the due month (one extra shift).
     const closingMonthShift = anchorDate.getDate() > cycle.closing_day ? 1 : 0;
     const dueMonthShift = cycle.closing_day >= cycle.due_day ? 1 : 0;
     const monthShift = closingMonthShift + dueMonthShift;
 
     const statementDate = addMonths(startOfMonth(anchorDate), monthShift);
-    const fallbackStatementMonthKey = format(statementDate, 'yyyy-MM');
-
-    // If a statement month already has an explicit configured range,
-    // transactions outside that range must not be assigned to that month via fallback cycle rules.
-    if (statementPeriodRanges.length > 0) {
-        const configuredMonthKeys = new Set(
-            statementPeriodRanges
-                .map(resolveStatementMonthKeyFromRange)
-                .filter((monthKey): monthKey is string => Boolean(monthKey))
-        );
-
-        if (configuredMonthKeys.has(fallbackStatementMonthKey)) {
-            return null;
-        }
-    }
+    const statementMonthKey = format(statementDate, 'yyyy-MM');
 
     return {
         anchorDate,
         anchorDateKey,
         statementDate,
-        statementMonthKey: fallbackStatementMonthKey,
+        statementMonthKey,
         cycle,
-        statementPeriodRange: null,
     };
 };
 

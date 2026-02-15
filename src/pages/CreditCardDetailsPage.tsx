@@ -6,9 +6,12 @@ import { CardDetailsCharts } from '../shared/components/cards/CardDetailsCharts'
 import { CardStatementList } from '../shared/components/cards/CardStatementList';
 import { CardStatementCycleHistoryModal } from '../shared/components/cards/CardStatementCycleHistory';
 import { PayBillModal } from '../shared/components/cards/PayBillModal';
+import { TransactionFormModal } from '../shared/components/transactions/TransactionFormModal';
+import type { Transaction } from '../shared/interfaces';
 
 export function CreditCardDetailsPage() {
     const [cycleHistoryOpen, setCycleHistoryOpen] = useState(false);
+    const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
     const {
         navigate, card, isLoading,
@@ -56,6 +59,12 @@ export function CreditCardDetailsPage() {
                     cardId={card.id}
                     statements={historyData.statements}
                     handleOpenPayModal={handleOpenPayModal}
+                    onEditTransaction={(transaction) => setEditingTransaction(transaction as Transaction)}
+                />
+                <TransactionFormModal
+                    open={!!editingTransaction}
+                    onClose={() => setEditingTransaction(null)}
+                    transaction={editingTransaction ?? undefined}
                 />
                 {selectedStatement && (
                     <PayBillModal

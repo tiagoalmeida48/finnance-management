@@ -20,7 +20,6 @@ export const queryKeys = {
         all: ['credit_cards'] as const,
         details: (id: string) => ['credit_cards', id, 'details'] as const,
         statementCycles: (id: string) => ['credit_cards', id, 'statement-cycles'] as const,
-        statementPeriodRanges: (id: string) => ['credit_cards', id, 'statement-period-ranges'] as const,
     },
     transactions: {
         all: ['transactions'] as const,

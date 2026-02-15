@@ -15,3 +15,4 @@ description: Regras gerais do projeto FINNANCE
   - `pnpm run dev` ao invés de `npm run dev`
   - `pnpm run build` ao invés de `npm run build`
   - `pnpm add <package>` ao invés de `npm install <package>`
+- Nunca roda `pnpm run build`

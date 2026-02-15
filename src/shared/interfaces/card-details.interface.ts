@@ -1,12 +1,12 @@
 import type { CreditCard } from './credit-card.interface';
+import type { CreditCardInvoice } from './credit-card-invoice.interface';
 import type { CreditCardStatementCycle } from './credit-card-statement-cycle.interface';
-import type { CreditCardStatementPeriodRange } from './credit-card-statement-period-range.interface';
 import type { Transaction } from './transaction.interface';
 
 export interface CreditCardDetails extends CreditCard {
     transactions: Transaction[];
+    invoices: CreditCardInvoice[];
     statement_cycles: CreditCardStatementCycle[];
-    statement_period_ranges: CreditCardStatementPeriodRange[];
     usage: number;
     current_invoice: number;
     available_limit: number;

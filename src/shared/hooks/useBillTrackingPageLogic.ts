@@ -47,7 +47,6 @@ export function useBillTrackingPageLogic() {
 
             const cardBills = cards.map(card => {
                 const statementCycles = card.statement_cycles ?? [];
-                const statementPeriodRanges = card.statement_period_ranges ?? [];
                 const fallbackCycle = {
                     closing_day: card.current_statement_cycle?.closing_day ?? card.closing_day,
                     due_day: card.current_statement_cycle?.due_day ?? card.due_day,
@@ -55,7 +54,7 @@ export function useBillTrackingPageLogic() {
                 const cardTransactions = transactions.filter(t => t.card_id === card.id);
 
                 const billTransactions = cardTransactions.filter(t => {
-                    const resolved = resolveStatementMonth(t, statementCycles, fallbackCycle, statementPeriodRanges);
+                    const resolved = resolveStatementMonth(t, statementCycles, fallbackCycle);
                     return resolved?.statementMonthKey === monthStr;
                 });
 

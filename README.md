@@ -1,43 +1,39 @@
 # Finnance Management
 
-Aplicacao web para gestao financeira pessoal com foco em:
+Aplicação web para gestão financeira pessoal com foco em:
 - contas e saldos
-- transacoes (manual, em lote e importacao CSV)
+- transações (manual, em lote e importação CSV)
 - categorias
-- cartoes de credito e faturas
+- cartões de crédito e faturas
 - acompanhamento mensal de contas
-- simulador de salario/holerite
-- perfil do usuario e gestao de usuarios (admin)
+- simulador de salário/holerite
+- perfil do usuário e gestão de usuários (admin)
 
 ## Stack
 
-- React 19 + TypeScript
-- Vite (rolldown-vite)
-- Material UI
-- React Query
-- React Hook Form + Zod
-- Supabase
+- React 19 + TypeScript 5.9
+- rolldown-vite 7.2.5
+- Material UI v7
+- React Query v5
+- React Hook Form v7 + Zod v4
+- Framer Motion 12
+- Recharts 3
+- Supabase (Auth + PostgreSQL + RLS)
 
 ## Requisitos
 
 - Node.js 20+
 - pnpm 9+
 
-## Configuracao
+## Configuração
 
-1. Instale dependencias:
+1. Instale dependências:
 
 ```bash
 pnpm install
 ```
 
-2. Crie `.env` com base no exemplo:
-
-```bash
-cp .env.example .env
-```
-
-3. Preencha as variaveis:
+2. Crie `.env.local` com as variáveis:
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_PUBLISHABLE_KEY`
@@ -47,8 +43,8 @@ cp .env.example .env
 ```bash
 pnpm dev          # ambiente local
 pnpm exec eslint src
-pnpm run build    # type-check + bundle de producao
-pnpm run test     # suite minima com Vitest
+pnpm run build    # type-check + bundle de produção
+pnpm run test     # suite mínima com Vitest
 pnpm run test:watch
 pnpm run check:ci # lint + build + test
 ```
@@ -57,15 +53,20 @@ pnpm run check:ci # lint + build + test
 
 ```text
 src/
-  pages/                 # paginas de rota
-  shared/components/     # componentes reutilizaveis
-  shared/hooks/          # regras de pagina/estado
-  shared/services/       # acesso a dados e regras de persistencia
+  app-routes/            # rotas com lazy loading
+  pages/                 # páginas de rota
+  shared/components/     # componentes reutilizáveis por domínio
+  shared/hooks/          # regras de página/estado
+  shared/services/       # acesso a dados e regras de persistência
   shared/interfaces/     # contratos e tipos
   shared/constants/      # chaves compartilhadas (ex.: query keys)
+  shared/contexts/       # contexts (auth, branding)
+  shared/theme/          # tema MUI customizado
+  shared/utils/          # utilitários e formatadores
+  lib/supabase/          # cliente Supabase e AuthProvider
 ```
 
-## Qualidade tecnica
+## Qualidade técnica
 
 - Lint: `pnpm exec eslint src`
 - Type-check: `pnpm exec tsc -b`
@@ -74,15 +75,17 @@ src/
 
 A CI em `.github/workflows/ci.yml` roda esses passos em pull requests e pushes.
 
-## Testes incluidos
+## Testes incluídos
 
-- parser e normalizacao da importacao de transacoes
+- parser e normalização da importação de transações
 - resumo de tracking mensal
-- filtro de atualizacoes em grupo de transacoes
-- calculos centrais de folha (`calculatePayroll`)
-- resumo e agrupamento de transacoes
+- filtro de atualizações em grupo de transações
+- cálculos centrais de folha (`calculatePayroll`)
+- resumo e agrupamento de transações
+- lógica de ciclos de fatura de cartão
 
-## Observacoes
+## Observações
 
 - O projeto usa chave de cache do React Query centralizada em `src/shared/constants/queryKeys.ts`.
-- O modo admin depende do campo `is_admin` no perfil do usuario autenticado.
+- O modo admin depende do campo `is_admin` no perfil do usuário autenticado.
+- Gerenciador de pacotes: sempre usar **pnpm**.

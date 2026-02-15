@@ -45,7 +45,6 @@ export interface CreditCard {
     created_at: string;
     updated_at: string;
     statement_cycles?: CreditCardStatementCycle[];
-    statement_period_ranges?: CreditCardStatementPeriodRange[];
     current_statement_cycle?: CreditCardStatementCycle | null;
 }
 
@@ -61,20 +60,7 @@ export interface CreditCardStatementCycle {
     created_at: string;
 }
 
-export interface CreditCardStatementPeriodRange {
-    id: string;
-    user_id: string;
-    card_id: string;
-    period_start: string;
-    period_end: string;
-    statement_month_key: string;
-    statement_name: string;
-    notes?: string | null;
-    created_at: string;
-}
-
 export type TransactionType = 'income' | 'expense' | 'transfer';
-// The database supports both English and Portuguese types, but we'll use English in the UI logic.
 
 export interface Transaction {
     id: string;
@@ -99,7 +85,6 @@ export interface Transaction {
     created_at: string;
     updated_at: string;
 
-    // Relations (loaded by Supabase)
     bank_account?: { name: string };
     to_bank_account?: { name: string };
     category?: { name: string, color: string, icon: string };

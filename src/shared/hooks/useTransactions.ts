@@ -6,6 +6,7 @@ import { queryKeys } from '../constants/queryKeys';
 const invalidateTransactionsAndAccounts = (queryClient: QueryClient) => {
     queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
     queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all });
+    queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
 };
 
 export function useTransactions(filters?: Parameters<typeof transactionsService.getAll>[0]) {

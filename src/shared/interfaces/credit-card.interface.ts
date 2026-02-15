@@ -1,5 +1,4 @@
 import type { CreditCardStatementCycle } from './credit-card-statement-cycle.interface';
-import type { CreditCardStatementPeriodRange } from './credit-card-statement-period-range.interface';
 
 export interface CreditCard {
     id: string;
@@ -19,7 +18,6 @@ export interface CreditCard {
         name: string;
     };
     statement_cycles?: CreditCardStatementCycle[];
-    statement_period_ranges?: CreditCardStatementPeriodRange[];
     current_statement_cycle?: CreditCardStatementCycle | null;
     usage?: number;
     current_invoice?: number;

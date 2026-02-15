@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase/client';
 import type { Transaction } from '../interfaces';
+import { invoicesService } from './invoices.service';
 import { extractDayFromDateLike, filterGroupUpdates, replaceDateDayPreservingMonth } from './transactionsGroup.utils';
 
 type SyncBalanceFn = (transaction: Transaction, action: 'add' | 'remove', force?: boolean) => Promise<void>;
@@ -26,6 +27,12 @@ export async function batchPayTransactions(
     for (const transaction of updated) {
         await syncBalance(transaction, 'add');
     }
+
+    const invoiceIds = [...new Set(updated.filter(t => t.invoice_id).map(t => t.invoice_id!))];
+    for (const invoiceId of invoiceIds) {
+        await invoicesService.recalculateInvoiceTotal(invoiceId);
+    }
+
     return updated;
 }
 
@@ -51,7 +58,14 @@ export async function batchUnpayTransactions(ids: string[], syncBalance: SyncBal
         .select();
 
     if (error) throw error;
-    return data as Transaction[];
+    const updated = data as Transaction[];
+
+    const invoiceIds = [...new Set(updated.filter(t => t.invoice_id).map(t => t.invoice_id!))];
+    for (const invoiceId of invoiceIds) {
+        await invoicesService.recalculateInvoiceTotal(invoiceId);
+    }
+
+    return updated;
 }
 
 export async function batchDeleteTransactions(ids: string[], syncBalance: SyncBalanceFn) {
@@ -60,9 +74,13 @@ export async function batchDeleteTransactions(ids: string[], syncBalance: SyncBa
         .select('*')
         .in('id', ids);
 
+    const invoiceIdsToRecalculate: Set<string> = new Set();
+
     if (transactions) {
         for (const transaction of transactions) {
-            await syncBalance(transaction as Transaction, 'remove');
+            const t = transaction as Transaction;
+            await syncBalance(t, 'remove');
+            if (t.invoice_id) invoiceIdsToRecalculate.add(t.invoice_id);
         }
     }
 
@@ -72,6 +90,10 @@ export async function batchDeleteTransactions(ids: string[], syncBalance: SyncBa
         .in('id', ids);
 
     if (error) throw error;
+
+    for (const invoiceId of invoiceIdsToRecalculate) {
+        await invoicesService.recalculateInvoiceTotal(invoiceId);
+    }
 }
 
 export async function deleteTransactionById(id: string, syncBalance: SyncBalanceFn) {
@@ -83,7 +105,8 @@ export async function deleteTransactionById(id: string, syncBalance: SyncBalance
 
     if (fetchError) throw fetchError;
 
-    await syncBalance(transaction as Transaction, 'remove');
+    const t = transaction as Transaction;
+    await syncBalance(t, 'remove');
 
     const { error } = await supabase
         .from('transactions')
@@ -91,6 +114,10 @@ export async function deleteTransactionById(id: string, syncBalance: SyncBalance
         .eq('id', id);
 
     if (error) throw error;
+
+    if (t.invoice_id) {
+        await invoicesService.recalculateInvoiceTotal(t.invoice_id);
+    }
 }
 
 export async function deleteTransactionGroup(groupId: string, type: 'installment' | 'recurring', syncBalance: SyncBalanceFn) {
@@ -103,9 +130,13 @@ export async function deleteTransactionGroup(groupId: string, type: 'installment
 
     if (fetchError) throw fetchError;
 
+    const invoiceIdsToRecalculate: Set<string> = new Set();
+
     if (transactions) {
         for (const transaction of transactions) {
-            await syncBalance(transaction as Transaction, 'remove');
+            const t = transaction as Transaction;
+            await syncBalance(t, 'remove');
+            if (t.invoice_id) invoiceIdsToRecalculate.add(t.invoice_id);
         }
     }
 
@@ -115,6 +146,10 @@ export async function deleteTransactionGroup(groupId: string, type: 'installment
         .eq(groupColumn, groupId);
 
     if (error) throw error;
+
+    for (const invoiceId of invoiceIdsToRecalculate) {
+        await invoicesService.recalculateInvoiceTotal(invoiceId);
+    }
 }
 
 export async function payCardBill(
@@ -152,6 +187,21 @@ export async function payCardBill(
         .in('id', transactionIds);
 
     if (updateError) throw updateError;
+
+    const { data: updatedTransactions } = await supabase
+        .from('transactions')
+        .select('invoice_id')
+        .in('id', transactionIds);
+
+    const invoiceIds = [...new Set(
+        (updatedTransactions ?? [])
+            .filter((t: { invoice_id: string | null }) => t.invoice_id)
+            .map((t: { invoice_id: string | null }) => t.invoice_id!)
+    )];
+
+    for (const invoiceId of invoiceIds) {
+        await invoicesService.recalculateInvoiceTotal(invoiceId);
+    }
 
     await syncBalance(paymentTransaction as Transaction, 'add');
     return paymentTransaction as Transaction;

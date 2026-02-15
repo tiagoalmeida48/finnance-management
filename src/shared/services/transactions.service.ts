@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/supabase/client';
 import { addMonths, format } from 'date-fns';
 import { accountsService } from './accounts.service';
-import { Transaction, CreateTransactionData } from '../interfaces';
+import { invoicesService } from './invoices.service';
+import { Transaction, CreateTransactionData, CreditCard } from '../interfaces';
 import {
     batchDeleteTransactions,
     batchPayTransactions,
@@ -52,6 +53,40 @@ const syncBalance = async (transaction: Transaction, action: 'add' | 'remove', f
             await accountsService.adjustBalance(transaction.to_account_id, amount * multiplier);
         }
     }
+};
+
+const linkTransactionToInvoice = async (transaction: Transaction) => {
+    if (!transaction.card_id) return;
+
+    const { data: card } = await supabase
+        .from('credit_cards')
+        .select('closing_day, due_day')
+        .eq('id', transaction.card_id)
+        .single();
+
+    if (!card) return;
+
+    const cardRow = card as Pick<CreditCard, 'closing_day' | 'due_day'>;
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData.user?.id;
+    if (!userId) return;
+
+    const invoice = await invoicesService.resolveOrCreateInvoice({
+        transaction: { purchase_date: transaction.purchase_date, payment_date: transaction.payment_date },
+        cardId: transaction.card_id,
+        userId,
+        closingDay: Number(cardRow.closing_day),
+        dueDay: Number(cardRow.due_day),
+    });
+
+    if (invoice) {
+        await invoicesService.linkTransactionToInvoice(invoice.id, transaction.id);
+    }
+};
+
+const unlinkTransactionFromInvoice = async (transaction: Transaction) => {
+    if (!transaction.invoice_id) return;
+    await invoicesService.unlinkTransactionFromInvoice(transaction.invoice_id, transaction.id);
 };
 
 export const transactionsService = {
@@ -209,6 +244,7 @@ export const transactionsService = {
             if (insertedTransactions.length > 0) {
                 for (const item of insertedTransactions) {
                     await syncBalance(item, 'add');
+                    await linkTransactionToInvoice(item);
                 }
             }
 
@@ -243,7 +279,9 @@ export const transactionsService = {
 
             if (data) {
                 for (const t of data) {
-                    await syncBalance(t as Transaction, 'add');
+                    const trans = t as Transaction;
+                    await syncBalance(trans, 'add');
+                    await linkTransactionToInvoice(trans);
                 }
             }
 
@@ -267,6 +305,7 @@ export const transactionsService = {
         if (error) throw error;
         const created = data as Transaction;
         await syncBalance(created, 'add');
+        await linkTransactionToInvoice(created);
         return created;
     },
 
@@ -307,6 +346,16 @@ export const transactionsService = {
 
         await syncBalance(oldTransaction, 'remove');
         await syncBalance(updated, 'add');
+
+        const cardChanged = oldTransaction.card_id !== updated.card_id;
+        const dateChanged = oldTransaction.payment_date !== updated.payment_date;
+
+        if (cardChanged || dateChanged) {
+            await unlinkTransactionFromInvoice(oldTransaction);
+            await linkTransactionToInvoice(updated);
+        } else if (updated.invoice_id && Number(oldTransaction.amount) !== Number(updated.amount)) {
+            await invoicesService.recalculateInvoiceTotal(updated.invoice_id);
+        }
 
         return updated;
     },

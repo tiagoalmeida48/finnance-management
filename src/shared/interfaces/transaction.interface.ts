@@ -11,6 +11,7 @@ export interface Transaction {
     account_id?: string | null;
     to_account_id?: string | null;
     card_id?: string | null;
+    invoice_id?: string | null;
     category_id?: string | null;
     is_fixed: boolean;
     is_paid: boolean;

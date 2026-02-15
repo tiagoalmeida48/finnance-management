@@ -9,7 +9,6 @@ import type {
     CardStatement,
     StatementTransaction,
 } from '../interfaces/card-details.interface';
-import { resolveStatementMonth } from '../services/card-statement-cycle.utils';
 
 export function useCreditCardDetailsLogic() {
     const { id = '' } = useParams<{ id: string }>();
@@ -30,68 +29,43 @@ export function useCreditCardDetailsLogic() {
     };
 
     const historyData = useMemo(() => {
-        if (!card || !card.transactions) return { statements: [], chartData: [], categoryData: [] };
+        if (!card) return { statements: [], chartData: [], categoryData: [] };
 
-        const statementCycles = card.statement_cycles ?? [];
-        const statementPeriodRanges = card.statement_period_ranges ?? [];
-        const fallbackCycle = {
-            closing_day: card.current_statement_cycle?.closing_day ?? card.closing_day,
-            due_day: card.current_statement_cycle?.due_day ?? card.due_day,
-        };
+        const invoices = card.invoices ?? [];
+        const cardTransactions = card.transactions ?? [];
 
-        const cardTransactions = card.transactions.filter((t) => t.card_id === id);
-
-        const allStatementTransactions: StatementTransaction[] = cardTransactions
-            .map((transaction) => {
-                const resolved = resolveStatementMonth(transaction, statementCycles, fallbackCycle, statementPeriodRanges);
-                if (!resolved) return null;
-
-                return {
-                    ...transaction,
-                    statementDate: resolved.statementDate,
-                    statementMonthKey: resolved.statementMonthKey,
-                };
-            })
-            .filter((transaction): transaction is StatementTransaction => transaction !== null);
-
-        let filteredTransactions: StatementTransaction[] = allStatementTransactions;
-
-        if (!isAllTime) {
-            const selectedYearKey = format(selectedDate, 'yyyy');
-            filteredTransactions = allStatementTransactions.filter((t) =>
-                t.statementMonthKey.startsWith(`${selectedYearKey}-`)
-            );
+        const transactionsByInvoice = new Map<string, StatementTransaction[]>();
+        for (const t of cardTransactions) {
+            if (!t.invoice_id) continue;
+            const existing = transactionsByInvoice.get(t.invoice_id) ?? [];
+            existing.push({
+                ...t,
+                statementDate: new Date(`${(invoices.find(inv => inv.id === t.invoice_id)?.month_key ?? format(new Date(), 'yyyy-MM'))}-01T12:00:00`),
+                statementMonthKey: invoices.find(inv => inv.id === t.invoice_id)?.month_key ?? '',
+            });
+            transactionsByInvoice.set(t.invoice_id, existing);
         }
 
-        // Group by real month key (yyyy-MM) to avoid mixing values across years.
-        const groups: Record<string, { date: Date; trans: StatementTransaction[] }> = {};
+        let filteredInvoices = invoices;
+        if (!isAllTime) {
+            const selectedYearKey = format(selectedDate, 'yyyy');
+            filteredInvoices = invoices.filter(inv => inv.month_key.startsWith(`${selectedYearKey}-`));
+        }
 
-        filteredTransactions.forEach((t) => {
-            const key = t.statementMonthKey;
-            if (!groups[key]) groups[key] = { date: t.statementDate, trans: [] };
-            groups[key].trans.push(t);
-        });
+        const statements: CardStatement[] = filteredInvoices
 
-        const statements: CardStatement[] = Object.entries(groups)
-            .map(([monthKey, group]) => {
-                const total = group.trans.reduce((sum, t) => {
-                    return t.type === 'income' ? sum - Number(t.amount) : sum + Number(t.amount);
-                }, 0);
-
-                const unpaidTotal = group.trans
-                    .filter(t => !t.is_paid)
-                    .reduce((sum, t) => {
-                        return t.type === 'income' ? sum - Number(t.amount) : sum + Number(t.amount);
-                    }, 0);
+            .map(inv => {
+                const statementDate = new Date(`${inv.month_key}-01T12:00:00`);
+                const invoiceTransactions = transactionsByInvoice.get(inv.id) ?? [];
 
                 return {
-                    month: format(group.date, 'MMM/yyyy', { locale: ptBR }),
-                    monthKey,
-                    total,
-                    unpaidTotal,
-                    unpaidIds: group.trans.filter(t => !t.is_paid).map(t => t.id),
-                    transactions: group.trans,
-                    date: group.date
+                    month: format(statementDate, 'MMM/yyyy', { locale: ptBR }),
+                    monthKey: inv.month_key,
+                    total: Number(inv.total_amount),
+                    unpaidTotal: Number(inv.total_amount) - Number(inv.paid_amount),
+                    unpaidIds: invoiceTransactions.filter(t => !t.is_paid).map(t => t.id),
+                    transactions: invoiceTransactions,
+                    date: statementDate,
                 };
             })
             .sort((a, b) => b.date.getTime() - a.date.getTime());
@@ -100,16 +74,18 @@ export function useCreditCardDetailsLogic() {
             .reverse()
             .map(s => ({
                 name: format(s.date, 'MMM/yy', { locale: ptBR }),
-                total: s.total
+                total: s.total,
             }));
 
         const categoryMap: Record<string, number> = {};
-        filteredTransactions.forEach((t) => {
-            if (t.type === 'expense') {
-                const catName = t.category?.name || 'Sem Categoria';
-                categoryMap[catName] = (categoryMap[catName] || 0) + Number(t.amount);
+        for (const statement of statements) {
+            for (const t of statement.transactions) {
+                if (t.type === 'expense') {
+                    const catName = t.category?.name || 'Sem Categoria';
+                    categoryMap[catName] = (categoryMap[catName] || 0) + Number(t.amount);
+                }
             }
-        });
+        }
 
         const categoryData: CardCategoryPoint[] = Object.entries(categoryMap)
             .map(([name, value]) => ({ name, value }))
