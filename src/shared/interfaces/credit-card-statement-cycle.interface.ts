@@ -17,3 +17,9 @@ export interface CreateCreditCardStatementCycleInput {
     due_day: number;
     notes?: string;
 }
+
+export interface UpdateCreditCardStatementCycleInput {
+    closing_day: number;
+    due_day: number;
+    notes?: string;
+}

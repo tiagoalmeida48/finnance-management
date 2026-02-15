@@ -4,6 +4,7 @@ import type { CreditCardDetails } from '../interfaces/card-details.interface';
 import {
     CreateCreditCardStatementCycleInput,
     UpdateCreditCardInput,
+    UpdateCreditCardStatementCycleInput,
 } from '../interfaces';
 import { queryKeys } from '../constants/queryKeys';
 
@@ -65,6 +66,31 @@ export function useCreateCardStatementCycle(cardId: string) {
     return useMutation({
         mutationFn: (input: Omit<CreateCreditCardStatementCycleInput, 'card_id'>) =>
             cardsService.createStatementCycle({ ...input, card_id: cardId }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.cards.details(cardId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.cards.statementCycles(cardId) });
+        },
+    });
+}
+
+export function useUpdateCardStatementCycle(cardId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, updates }: { id: string; updates: UpdateCreditCardStatementCycleInput }) =>
+            cardsService.updateStatementCycle(id, updates),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.cards.details(cardId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.cards.statementCycles(cardId) });
+        },
+    });
+}
+
+export function useDeleteCardStatementCycle(cardId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: string) => cardsService.deleteStatementCycle(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
             queryClient.invalidateQueries({ queryKey: queryKeys.cards.details(cardId) });

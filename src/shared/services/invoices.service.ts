@@ -175,4 +175,104 @@ export const invoicesService = {
             await invoicesService.recalculateInvoiceTotal(invoice.id);
         }
     },
+
+    async reprocessInvoicesFromDate(cardId: string, fromDate: string) {
+        const [{ data: cardData }, { data: authData }, { data: cycles }, { data: transactions }, { data: existingInvoices }] = await Promise.all([
+            supabase.from('credit_cards').select('closing_day, due_day').eq('id', cardId).single(),
+            supabase.auth.getUser(),
+            supabase.from('credit_card_statement_cycles').select('*').eq('card_id', cardId).order('date_start', { ascending: true }),
+            supabase.from('transactions').select('id, payment_date, purchase_date, invoice_id').eq('card_id', cardId).or(`payment_date.gte.${fromDate},purchase_date.gte.${fromDate}`),
+            supabase.from('credit_card_invoices').select('*').eq('card_id', cardId),
+        ]);
+
+        if (!cardData) return;
+        const userId = authData.user?.id;
+        if (!userId) return;
+        if (!transactions || transactions.length === 0) return;
+
+        const closingDay = Number(cardData.closing_day);
+        const dueDay = Number(cardData.due_day);
+        const cardCycles = sortStatementCyclesAsc((cycles ?? []) as CreditCardStatementCycle[]);
+        const currentCycle = getCurrentStatementCycle(cardCycles);
+        const fallbackCycle = {
+            closing_day: Number(currentCycle?.closing_day ?? closingDay),
+            due_day: Number(currentCycle?.due_day ?? dueDay),
+        };
+
+        const invoicesByMonthKey = new Map<string, CreditCardInvoice>();
+        for (const inv of (existingInvoices ?? []) as CreditCardInvoice[]) {
+            invoicesByMonthKey.set(inv.month_key, inv);
+        }
+
+        const txToMonthKey = new Map<string, string>();
+        const neededMonthKeys = new Set<string>();
+
+        for (const tx of transactions) {
+            const resolved = resolveStatementMonth(
+                { purchase_date: tx.purchase_date, payment_date: tx.payment_date },
+                cardCycles,
+                fallbackCycle,
+            );
+            if (!resolved) continue;
+            txToMonthKey.set(tx.id, resolved.statementMonthKey);
+            if (!invoicesByMonthKey.has(resolved.statementMonthKey)) {
+                neededMonthKeys.add(resolved.statementMonthKey);
+            }
+        }
+
+        for (const monthKey of neededMonthKeys) {
+            const { closingDate, dueDate: dueDateVal } = buildClosingAndDueDate(monthKey, fallbackCycle.closing_day, fallbackCycle.due_day);
+            const { data: created } = await supabase
+                .from('credit_card_invoices')
+                .insert({ user_id: userId, card_id: cardId, month_key: monthKey, closing_date: closingDate, due_date: dueDateVal })
+                .select()
+                .single();
+            if (created) invoicesByMonthKey.set(monthKey, created as CreditCardInvoice);
+        }
+
+        const affectedInvoiceIds = new Set<string>();
+        const updatesByInvoiceId = new Map<string, string[]>();
+
+        for (const tx of transactions) {
+            const targetMonthKey = txToMonthKey.get(tx.id);
+            if (!targetMonthKey) continue;
+
+            const targetInvoice = invoicesByMonthKey.get(targetMonthKey);
+            if (!targetInvoice) continue;
+
+            if (tx.invoice_id === targetInvoice.id) continue;
+
+            if (tx.invoice_id) affectedInvoiceIds.add(tx.invoice_id);
+            affectedInvoiceIds.add(targetInvoice.id);
+
+            const batch = updatesByInvoiceId.get(targetInvoice.id) ?? [];
+            batch.push(tx.id);
+            updatesByInvoiceId.set(targetInvoice.id, batch);
+        }
+
+        const updatePromises = Array.from(updatesByInvoiceId.entries()).map(([invoiceId, txIds]) =>
+            supabase.from('transactions').update({ invoice_id: invoiceId }).in('id', txIds)
+        );
+        await Promise.all(updatePromises);
+
+        const recalcPromises = Array.from(affectedInvoiceIds).map((id) =>
+            invoicesService.recalculateInvoiceTotal(id)
+        );
+        await Promise.all(recalcPromises);
+
+        const invoiceIds = Array.from(invoicesByMonthKey.values()).map((inv) => inv.id);
+        if (invoiceIds.length > 0) {
+            const { data: invoicesWithTx } = await supabase
+                .from('transactions')
+                .select('invoice_id')
+                .in('invoice_id', invoiceIds);
+
+            const usedIds = new Set((invoicesWithTx ?? []).map((r) => r.invoice_id));
+            const emptyIds = invoiceIds.filter((id) => !usedIds.has(id));
+
+            if (emptyIds.length > 0) {
+                await supabase.from('credit_card_invoices').delete().in('id', emptyIds);
+            }
+        }
+    },
 };

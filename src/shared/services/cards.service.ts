@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { format, parseISO, subDays } from 'date-fns';
 import { supabase } from '@/lib/supabase/client';
 import {
     CreateCreditCardInput,
@@ -8,6 +8,7 @@ import {
     CreditCardStatementCycle,
     Transaction,
     UpdateCreditCardInput,
+    UpdateCreditCardStatementCycleInput,
 } from '../interfaces';
 import type { CreditCardDetails } from '../interfaces/card-details.interface';
 import {
@@ -17,6 +18,7 @@ import {
     sortStatementCyclesAsc,
     OPEN_CYCLE_END,
 } from './card-statement-cycle.utils';
+import { invoicesService } from './invoices.service';
 
 const TRANSACTIONS_PAGE_SIZE = 1000;
 
@@ -184,11 +186,12 @@ export const cardsService = {
         if (cyclesError) throw cyclesError;
 
         const cycleRows = (existingCycles ?? []) as CreditCardStatementCycle[];
-        if (cycleRows.length === 0) {
-            const { data: authData } = await supabase.auth.getUser();
-            const user = authData.user;
-            if (!user) throw new Error('Not authenticated');
 
+        const { data: authData } = await supabase.auth.getUser();
+        const user = authData.user;
+        if (!user) throw new Error('Not authenticated');
+
+        if (cycleRows.length === 0) {
             const { data: seededCycle, error: seedError } = await supabase
                 .from('credit_card_statement_cycles')
                 .insert({
@@ -205,6 +208,31 @@ export const cardsService = {
 
             if (seedError) throw seedError;
             return seededCycle as CreditCardStatementCycle;
+        }
+
+        const firstCycle = cycleRows[0];
+
+        if (normalizedStartDate < firstCycle.date_start) {
+            const newEnd = format(subDays(parseISO(firstCycle.date_start), 1), 'yyyy-MM-dd');
+
+            const { data: inserted, error: insertError } = await supabase
+                .from('credit_card_statement_cycles')
+                .insert({
+                    user_id: user.id,
+                    card_id: input.card_id,
+                    date_start: normalizedStartDate,
+                    date_end: newEnd,
+                    closing_day: input.closing_day,
+                    due_day: input.due_day,
+                    notes: input.notes?.trim() ? input.notes.trim() : null,
+                })
+                .select('*')
+                .single();
+
+            if (insertError) throw insertError;
+
+            await invoicesService.reprocessInvoicesFromDate(input.card_id, normalizedStartDate);
+            return inserted as CreditCardStatementCycle;
         }
 
         planCycleInsertion(cycleRows, normalizedStartDate);
@@ -224,7 +252,95 @@ export const cardsService = {
             throw new Error('Nao foi possivel criar a nova vigencia.');
         }
 
+        await invoicesService.reprocessInvoicesFromDate(input.card_id, normalizedStartDate);
+
         return inserted as CreditCardStatementCycle;
+    },
+
+    async updateStatementCycle(id: string, updates: UpdateCreditCardStatementCycleInput) {
+        const { data: cycle, error: fetchError } = await supabase
+            .from('credit_card_statement_cycles')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (fetchError) throw fetchError;
+        if (!cycle) throw new Error('Vigencia nao encontrada.');
+
+        const closingDayChanged = Number(cycle.closing_day) !== updates.closing_day;
+        const isCurrentCycle = cycle.date_end === OPEN_CYCLE_END;
+
+        const { error } = await supabase
+            .from('credit_card_statement_cycles')
+            .update({
+                closing_day: updates.closing_day,
+                due_day: updates.due_day,
+                notes: updates.notes?.trim() || null,
+            })
+            .eq('id', id);
+
+        if (error) throw error;
+
+        if (closingDayChanged && isCurrentCycle) {
+            await invoicesService.reprocessInvoicesFromDate(cycle.card_id, cycle.date_start);
+        }
+
+        const { data: updated } = await supabase
+            .from('credit_card_statement_cycles')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        return updated as CreditCardStatementCycle;
+    },
+
+    async deleteStatementCycle(id: string) {
+        const { data: cycle, error: fetchError } = await supabase
+            .from('credit_card_statement_cycles')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (fetchError) throw fetchError;
+        if (!cycle) throw new Error('Vigencia nao encontrada.');
+
+        const { data: allCycles, error: cyclesError } = await supabase
+            .from('credit_card_statement_cycles')
+            .select('*')
+            .eq('card_id', cycle.card_id)
+            .order('date_start', { ascending: true });
+
+        if (cyclesError) throw cyclesError;
+
+        const orderedCycles = (allCycles ?? []) as CreditCardStatementCycle[];
+        if (orderedCycles.length <= 1) {
+            throw new Error('Nao e possivel deletar a unica vigencia do cartao.');
+        }
+
+        const cycleIndex = orderedCycles.findIndex(c => c.id === id);
+
+        if (cycleIndex === 0) {
+            const nextCycle = orderedCycles[1];
+            await supabase
+                .from('credit_card_statement_cycles')
+                .update({ date_start: cycle.date_start })
+                .eq('id', nextCycle.id);
+        } else {
+            const prevCycle = orderedCycles[cycleIndex - 1];
+            await supabase
+                .from('credit_card_statement_cycles')
+                .update({ date_end: cycle.date_end })
+                .eq('id', prevCycle.id);
+        }
+
+        const { error: deleteError } = await supabase
+            .from('credit_card_statement_cycles')
+            .delete()
+            .eq('id', id);
+
+        if (deleteError) throw deleteError;
+
+        await invoicesService.reprocessInvoicesFromDate(cycle.card_id, cycle.date_start);
     },
 
     async getCardDetails(id: string) {

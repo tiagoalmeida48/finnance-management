@@ -11,6 +11,7 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
+    IconButton,
     Stack,
     Table,
     TableBody,
@@ -19,23 +20,29 @@ import {
     TableHead,
     TableRow,
     TextField,
+    Tooltip,
     Typography,
 } from '@mui/material';
-import { CalendarRange, Plus } from 'lucide-react';
+import { CalendarRange, Pencil, Plus, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { useCardStatementCycles, useCreateCardStatementCycle } from '@/shared/hooks/useCreditCards';
+import {
+    useCardStatementCycles,
+    useCreateCardStatementCycle,
+    useUpdateCardStatementCycle,
+    useDeleteCardStatementCycle,
+} from '@/shared/hooks/useCreditCards';
 import { CreditCardStatementCycle } from '@/shared/interfaces';
 import { OPEN_CYCLE_END } from '@/shared/services/card-statement-cycle.utils';
 import { colors } from '@/shared/theme';
 
-const createCycleSchema = z.object({
-    date_start: z.string().min(1, 'Informe a data de inicio.'),
+const cycleSchema = z.object({
+    date_start: z.string().optional(),
     closing_day: z.number().min(1, 'Dia invalido').max(31, 'Dia invalido'),
     due_day: z.number().min(1, 'Dia invalido').max(31, 'Dia invalido'),
     notes: z.string().optional(),
 });
 
-type CreateCycleFormValues = z.infer<typeof createCycleSchema>;
+type CycleFormValues = z.infer<typeof cycleSchema>;
 
 interface CardStatementCycleHistoryModalProps {
     cardId: string;
@@ -66,9 +73,15 @@ export function CardStatementCycleHistoryModal({
 }: CardStatementCycleHistoryModalProps) {
     const { data: cycles = [], isLoading } = useCardStatementCycles(cardId, open);
     const createCycle = useCreateCardStatementCycle(cardId);
+    const updateCycle = useUpdateCardStatementCycle(cardId);
+    const deleteCycle = useDeleteCardStatementCycle(cardId);
 
-    const [createDialogOpen, setCreateDialogOpen] = useState(false);
+    const [dialogMode, setDialogMode] = useState<'create' | 'edit' | null>(null);
+    const [editingCycleId, setEditingCycleId] = useState<string | null>(null);
+    const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
     const [formError, setFormError] = useState<string | null>(null);
+
+    const isMutating = createCycle.isPending || updateCycle.isPending || deleteCycle.isPending;
 
     const orderedCycles = useMemo(
         () => [...cycles].sort((a, b) => b.date_start.localeCompare(a.date_start)),
@@ -85,8 +98,8 @@ export function CardStatementCycleHistoryModal({
         handleSubmit,
         reset,
         formState: { errors },
-    } = useForm<CreateCycleFormValues>({
-        resolver: zodResolver(createCycleSchema),
+    } = useForm<CycleFormValues>({
+        resolver: zodResolver(cycleSchema),
         defaultValues: {
             date_start: format(new Date(), 'yyyy-MM-dd'),
             closing_day: fallbackClosingDay,
@@ -95,7 +108,7 @@ export function CardStatementCycleHistoryModal({
         },
     });
 
-    const handleOpenCreateDialog = () => {
+    const handleOpenCreate = () => {
         setFormError(null);
         reset({
             date_start: format(new Date(), 'yyyy-MM-dd'),
@@ -103,33 +116,70 @@ export function CardStatementCycleHistoryModal({
             due_day: currentCycle?.due_day ?? fallbackDueDay,
             notes: '',
         });
-        setCreateDialogOpen(true);
+        setDialogMode('create');
     };
 
-    const handleCloseCreateDialog = () => {
-        if (createCycle.isPending) return;
-        setCreateDialogOpen(false);
+    const handleOpenEdit = (cycle: CreditCardStatementCycle) => {
+        setFormError(null);
+        setEditingCycleId(cycle.id);
+        reset({
+            closing_day: cycle.closing_day,
+            due_day: cycle.due_day,
+            notes: cycle.notes || '',
+        });
+        setDialogMode('edit');
+    };
+
+    const handleCloseFormDialog = () => {
+        if (isMutating) return;
+        setDialogMode(null);
+        setEditingCycleId(null);
     };
 
     const handleCloseHistoryDialog = () => {
-        if (createCycle.isPending) return;
-        setCreateDialogOpen(false);
+        if (isMutating) return;
+        setDialogMode(null);
+        setEditingCycleId(null);
+        setDeleteConfirmId(null);
         setFormError(null);
         onClose();
     };
 
-    const onSubmit = async (values: CreateCycleFormValues) => {
+    const onSubmit = async (values: CycleFormValues) => {
         setFormError(null);
         try {
-            await createCycle.mutateAsync({
-                date_start: values.date_start,
-                closing_day: values.closing_day,
-                due_day: values.due_day,
-                notes: values.notes?.trim() ? values.notes.trim() : undefined,
-            });
-            setCreateDialogOpen(false);
+            if (dialogMode === 'create') {
+                await createCycle.mutateAsync({
+                    date_start: values.date_start!,
+                    closing_day: values.closing_day,
+                    due_day: values.due_day,
+                    notes: values.notes?.trim() || undefined,
+                });
+            } else if (dialogMode === 'edit' && editingCycleId) {
+                await updateCycle.mutateAsync({
+                    id: editingCycleId,
+                    updates: {
+                        closing_day: values.closing_day,
+                        due_day: values.due_day,
+                        notes: values.notes?.trim() || undefined,
+                    },
+                });
+            }
+            setDialogMode(null);
+            setEditingCycleId(null);
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Nao foi possivel salvar a vigencia.';
+            setFormError(message);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!deleteConfirmId) return;
+        try {
+            await deleteCycle.mutateAsync(deleteConfirmId);
+            setDeleteConfirmId(null);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Nao foi possivel deletar a vigencia.';
             setFormError(message);
         }
     };
@@ -170,7 +220,7 @@ export function CardStatementCycleHistoryModal({
 
                         <Button
                             startIcon={<Plus size={16} />}
-                            onClick={handleOpenCreateDialog}
+                            onClick={handleOpenCreate}
                             size="small"
                             variant="text"
                             sx={{
@@ -204,11 +254,13 @@ export function CardStatementCycleHistoryModal({
                                         <TableCell sx={headerCellSx}>Vencimento</TableCell>
                                         <TableCell sx={headerCellSx}>Status</TableCell>
                                         <TableCell sx={headerCellSx}>Observacao</TableCell>
+                                        <TableCell sx={{ ...headerCellSx, textAlign: 'center' }}>Acoes</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {orderedCycles.map((cycle) => {
                                         const isCurrent = cycle.date_end === OPEN_CYCLE_END;
+                                        const isOnlyCycle = orderedCycles.length <= 1;
                                         return (
                                             <TableRow key={cycle.id}>
                                                 <TableCell sx={bodyCellSx}>{formatCycleRange(cycle)}</TableCell>
@@ -229,12 +281,38 @@ export function CardStatementCycleHistoryModal({
                                                     )}
                                                 </TableCell>
                                                 <TableCell sx={bodyCellSx}>{cycle.notes || '-'}</TableCell>
+                                                <TableCell sx={{ ...bodyCellSx, textAlign: 'center' }}>
+                                                    <Stack direction="row" spacing={0.5} justifyContent="center">
+                                                        <Tooltip title="Editar vigencia">
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => handleOpenEdit(cycle)}
+                                                                disabled={isMutating}
+                                                                sx={{ color: colors.accent, '&:hover': { bgcolor: 'rgba(201, 168, 76, 0.12)' } }}
+                                                            >
+                                                                <Pencil size={15} />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                        <Tooltip title={isOnlyCycle ? 'Nao e possivel deletar a unica vigencia' : 'Deletar vigencia'}>
+                                                            <span>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={() => setDeleteConfirmId(cycle.id)}
+                                                                    disabled={isOnlyCycle || isMutating}
+                                                                    sx={{ color: colors.red, '&:hover': { bgcolor: 'rgba(239, 83, 80, 0.12)' } }}
+                                                                >
+                                                                    <Trash2 size={15} />
+                                                                </IconButton>
+                                                            </span>
+                                                        </Tooltip>
+                                                    </Stack>
+                                                </TableCell>
                                             </TableRow>
                                         );
                                     })}
                                     {orderedCycles.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={5} align="center" sx={{ py: 3, color: colors.textMuted }}>
+                                            <TableCell colSpan={6} align="center" sx={{ py: 3, color: colors.textMuted }}>
                                                 Nenhuma vigencia encontrada para este cartao.
                                             </TableCell>
                                         </TableRow>
@@ -260,8 +338,8 @@ export function CardStatementCycleHistoryModal({
             </Dialog>
 
             <Dialog
-                open={createDialogOpen}
-                onClose={handleCloseCreateDialog}
+                open={dialogMode !== null}
+                onClose={handleCloseFormDialog}
                 fullWidth
                 maxWidth="sm"
                 PaperProps={{
@@ -273,23 +351,27 @@ export function CardStatementCycleHistoryModal({
                 }}
             >
                 <DialogTitle sx={{ fontWeight: 700, fontSize: '20px', color: colors.textPrimary, fontFamily: 'Plus Jakarta Sans', pb: 1 }}>
-                    Nova Vigencia
+                    {dialogMode === 'edit' ? 'Editar Vigencia' : 'Nova Vigencia'}
                 </DialogTitle>
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <DialogContent sx={{ pt: 2, pb: 2.5 }}>
                         <Stack spacing={2}>
                             <Typography sx={{ fontSize: '12px', color: colors.textMuted }}>
-                                Ao salvar, o periodo que contem a data informada sera dividido automaticamente.
+                                {dialogMode === 'edit'
+                                    ? 'As faturas a partir desta vigencia serao reprocessadas automaticamente.'
+                                    : 'Ao salvar, o periodo que contem a data informada sera dividido automaticamente.'}
                             </Typography>
-                            <TextField
-                                label="Data de inicio da vigencia"
-                                type="date"
-                                fullWidth
-                                InputLabelProps={{ shrink: true }}
-                                {...register('date_start')}
-                                error={!!errors.date_start}
-                                helperText={errors.date_start?.message}
-                            />
+                            {dialogMode === 'create' && (
+                                <TextField
+                                    label="Data de inicio da vigencia"
+                                    type="date"
+                                    fullWidth
+                                    InputLabelProps={{ shrink: true }}
+                                    {...register('date_start')}
+                                    error={!!errors.date_start}
+                                    helperText={errors.date_start?.message}
+                                />
+                            )}
                             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                                 <TextField
                                     label="Dia fechamento"
@@ -326,8 +408,8 @@ export function CardStatementCycleHistoryModal({
                     </DialogContent>
                     <DialogActions sx={{ p: 3, pt: 0, gap: 1 }}>
                         <Button
-                            onClick={handleCloseCreateDialog}
-                            disabled={createCycle.isPending}
+                            onClick={handleCloseFormDialog}
+                            disabled={isMutating}
                             sx={{
                                 color: colors.textSecondary,
                                 fontWeight: 600,
@@ -339,7 +421,7 @@ export function CardStatementCycleHistoryModal({
                         </Button>
                         <Button
                             type="submit"
-                            disabled={createCycle.isPending}
+                            disabled={isMutating}
                             sx={{
                                 bgcolor: colors.accent,
                                 color: '#0A0A0F',
@@ -350,10 +432,61 @@ export function CardStatementCycleHistoryModal({
                                 '&:hover': { bgcolor: '#D4B85C' },
                             }}
                         >
-                            {createCycle.isPending ? 'Salvando...' : 'Salvar Vigencia'}
+                            {isMutating ? 'Salvando...' : 'Salvar Vigencia'}
                         </Button>
                     </DialogActions>
                 </form>
+            </Dialog>
+
+            <Dialog
+                open={deleteConfirmId !== null}
+                onClose={() => !isMutating && setDeleteConfirmId(null)}
+                maxWidth="xs"
+                PaperProps={{
+                    sx: {
+                        bgcolor: colors.bgCard,
+                        borderRadius: '20px',
+                        border: `1px solid ${colors.border}`,
+                    },
+                }}
+            >
+                <DialogTitle sx={{ fontWeight: 700, fontSize: '18px', color: colors.textPrimary, fontFamily: 'Plus Jakarta Sans' }}>
+                    Deletar Vigencia?
+                </DialogTitle>
+                <DialogContent>
+                    <Typography sx={{ fontSize: '13px', color: colors.textSecondary }}>
+                        A vigencia anterior absorvera o periodo desta. As faturas serao reprocessadas automaticamente.
+                    </Typography>
+                    {formError && (
+                        <Typography sx={{ fontSize: '12px', color: colors.red, mt: 1 }}>
+                            {formError}
+                        </Typography>
+                    )}
+                </DialogContent>
+                <DialogActions sx={{ p: 2.5, pt: 0, gap: 1 }}>
+                    <Button
+                        onClick={() => { setDeleteConfirmId(null); setFormError(null); }}
+                        disabled={isMutating}
+                        sx={{ color: colors.textSecondary, textTransform: 'none', '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' } }}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        onClick={handleDelete}
+                        disabled={isMutating}
+                        sx={{
+                            bgcolor: colors.red,
+                            color: '#fff',
+                            fontWeight: 600,
+                            textTransform: 'none',
+                            borderRadius: '10px',
+                            px: 3,
+                            '&:hover': { bgcolor: '#d32f2f' },
+                        }}
+                    >
+                        {deleteCycle.isPending ? 'Deletando...' : 'Confirmar'}
+                    </Button>
+                </DialogActions>
             </Dialog>
         </>
     );
