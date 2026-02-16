@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cardsService } from '../services/cards.service';
+import { invoicesService } from '../services/invoices.service';
 import type { CreditCardDetails } from '../interfaces/card-details.interface';
 import {
     CreateCreditCardStatementCycleInput,
@@ -95,6 +96,15 @@ export function useDeleteCardStatementCycle(cardId: string) {
             queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
             queryClient.invalidateQueries({ queryKey: queryKeys.cards.details(cardId) });
             queryClient.invalidateQueries({ queryKey: queryKeys.cards.statementCycles(cardId) });
+        },
+    });
+} export function useReprocessInvoices(cardId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (fromDate: string) => invoicesService.reprocessInvoicesFromDate(cardId, fromDate),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.cards.details(cardId) });
         },
     });
 }

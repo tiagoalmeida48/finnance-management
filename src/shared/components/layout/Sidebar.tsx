@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Avatar, Typography, Tooltip, IconButton } from '@mui/material';
+import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Avatar, Typography, Tooltip, IconButton, useTheme, useMediaQuery } from '@mui/material';
 import {
     LayoutDashboard, Wallet, Receipt, CreditCard, Tag,
     LogOut, CalendarCheck, ChevronsLeft, ChevronsRight, Calculator, Users
@@ -22,14 +22,21 @@ const baseMenuItems = [
     { label: 'Holerite', icon: Calculator, path: '/salary-simulator' },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+    mobileOpen?: boolean;
+    onMobileClose?: () => void;
+}
+
+export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const navigate = useNavigate();
     const location = useLocation();
     const { user, profile, signOut } = useAuth();
     const { siteTitle, logoImage } = useSiteBranding();
     const [isExpanded, setIsExpanded] = useState(true);
 
-    const open = isExpanded;
+    const open = isMobile ? true : isExpanded; // Mobile always "expanded" inside drawer, desktop controlled by state
     const menuItems = profile?.is_admin
         ? [...baseMenuItems, { label: 'Usuários', icon: Users, path: '/users' }]
         : baseMenuItems;
@@ -41,42 +48,49 @@ export function Sidebar() {
 
     return (
         <Box sx={{ position: 'relative', flexShrink: 0 }}>
-            <Tooltip title={open ? 'Retrair menu' : 'Expandir menu'} placement="right">
-                <IconButton
-                    size="small"
-                    onClick={() => setIsExpanded((prev) => !prev)}
-                    sx={{
-                        position: 'fixed',
-                        top: 36,
-                        left: open ? expandedWidth - 16 : collapsedWidth - 16,
-                        width: 32,
-                        height: 32,
-                        transform: 'translateY(-50%)',
-                        color: colors.textMuted,
-                        border: `1px solid ${colors.border}`,
-                        borderRadius: '50%',
-                        bgcolor: colors.bgCard,
-                        boxShadow: '0 8px 18px rgba(0,0,0,0.35)',
-                        zIndex: 1300,
-                        transition: 'left 300ms cubic-bezier(0.4, 0, 0.2, 1)',
-                        '&:hover': {
-                            color: colors.textPrimary,
-                            bgcolor: 'rgba(255,255,255,0.08)'
-                        }
-                    }}
-                >
-                    {open ? <ChevronsLeft size={14} /> : <ChevronsRight size={14} />}
-                </IconButton>
-            </Tooltip>
+            {!isMobile && (
+                <Tooltip title={open ? 'Retrair menu' : 'Expandir menu'} placement="right">
+                    <IconButton
+                        size="small"
+                        onClick={() => setIsExpanded((prev) => !prev)}
+                        sx={{
+                            position: 'fixed',
+                            top: 36,
+                            left: open ? expandedWidth - 16 : collapsedWidth - 16,
+                            width: 32,
+                            height: 32,
+                            transform: 'translateY(-50%)',
+                            color: colors.textMuted,
+                            border: `1px solid ${colors.border}`,
+                            borderRadius: '50%',
+                            bgcolor: colors.bgCard,
+                            boxShadow: '0 8px 18px rgba(0,0,0,0.35)',
+                            zIndex: 1300,
+                            transition: 'left 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+                            '&:hover': {
+                                color: colors.textPrimary,
+                                bgcolor: 'rgba(255,255,255,0.08)'
+                            }
+                        }}
+                    >
+                        {open ? <ChevronsLeft size={14} /> : <ChevronsRight size={14} />}
+                    </IconButton>
+                </Tooltip>
+            )}
 
             <Drawer
-                variant="permanent"
+                variant={isMobile ? 'temporary' : 'permanent'}
+                open={isMobile ? mobileOpen : true}
+                onClose={onMobileClose}
+                ModalProps={{
+                    keepMounted: true, // Better open performance on mobile.
+                }}
                 sx={{
-                    width: open ? expandedWidth : collapsedWidth,
+                    width: isMobile ? expandedWidth : (open ? expandedWidth : collapsedWidth),
                     flexShrink: 0,
                     transition: 'width 300ms cubic-bezier(0.4, 0, 0.2, 1)',
                     [`& .MuiDrawer-paper`]: {
-                        width: open ? expandedWidth : collapsedWidth,
+                        width: isMobile ? expandedWidth : (open ? expandedWidth : collapsedWidth),
                         overflowX: 'hidden',
                         overflowY: 'auto',
                         boxSizing: 'border-box',

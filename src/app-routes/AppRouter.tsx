@@ -15,6 +15,7 @@ const BillTrackingPage = lazy(() => import('../pages/BillTrackingPage').then((mo
 const SalarySimulatorPage = lazy(() => import('../pages/SalarySimulatorPage').then((module) => ({ default: module.SalarySimulatorPage })));
 const UsersManagementPage = lazy(() => import('../pages/UsersManagementPage').then((module) => ({ default: module.UsersManagementPage })));
 
+
 function RouteFallback() {
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
@@ -67,6 +68,7 @@ export function AppRoutes() {
                 <Route path="/" element={<Navigate to={user ? '/dashboard' : '/auth/login'} replace />} />
                 <Route path="/auth/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" />} />
                 <Route path="/auth/register" element={<Navigate to="/auth/login" replace />} />
+
 
                 <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
                 <Route path="/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />

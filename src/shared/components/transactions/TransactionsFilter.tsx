@@ -49,6 +49,7 @@ function TabButton({ active, onClick, children }: TabButtonProps) {
                 '&:hover': {
                     bgcolor: active ? colors.accent : 'rgba(255,255,255,0.04)',
                 },
+                flexShrink: 0,
             }}
         >
             {children}
@@ -98,13 +99,25 @@ export function TransactionsFilter({
     return (
         <Box sx={{
             display: 'flex',
-            alignItems: 'center',
+            flexDirection: { xs: 'column-reverse', md: 'row' },
+            alignItems: { xs: 'stretch', md: 'center' },
             justifyContent: 'space-between',
             mb: 2,
             gap: 2,
         }}>
             {/* Left: Type tabs + Status tabs */}
-            <Stack direction="row" spacing={1} alignItems="center">
+            <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+                sx={{
+                    overflowX: 'auto',
+                    pb: { xs: 1, md: 0 },
+                    '::-webkit-scrollbar': { display: 'none' }, // Hide scrollbar for Chrome/Safari
+                    msOverflowStyle: 'none', // Hide for IE/Edge
+                    scrollbarWidth: 'none', // Hide for Firefox
+                }}
+            >
                 {/* Type Tabs: Receitas | Despesas | Transf. */}
                 <Box sx={{
                     display: 'flex',
@@ -113,6 +126,7 @@ export function TransactionsFilter({
                     border: `1px solid ${colors.border}`,
                     borderRadius: '10px',
                     p: '3px',
+                    flexShrink: 0,
                 }}>
                     <TabButton
                         active={typeFilter === 'income'}
@@ -142,6 +156,7 @@ export function TransactionsFilter({
                     border: `1px solid ${colors.border}`,
                     borderRadius: '10px',
                     p: '3px',
+                    flexShrink: 0,
                 }}>
                     <TabButton
                         active={!showPendingOnly}
@@ -159,7 +174,19 @@ export function TransactionsFilter({
             </Stack>
 
             {/* Right side */}
-            <Stack direction="row" spacing={1} alignItems="center">
+            <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+                sx={{
+                    overflowX: 'auto',
+                    pb: { xs: 0.5, md: 0 }, // Small padding for scroll
+                    '::-webkit-scrollbar': { display: 'none' },
+                    msOverflowStyle: 'none',
+                    scrollbarWidth: 'none',
+                    justifyContent: { xs: 'space-between', md: 'flex-end' }
+                }}
+            >
                 {/* Toggle Credit Card Visibility */}
                 <Box
                     onClick={() => setHideCreditCards(!hideCreditCards)}
@@ -175,6 +202,7 @@ export function TransactionsFilter({
                         bgcolor: hideCreditCards ? colors.accentGlow : colors.bgCard,
                         transition: 'all 200ms ease',
                         userSelect: 'none',
+                        flexShrink: 0,
                         '&:hover': {
                             borderColor: hideCreditCards ? colors.accent : 'rgba(255,255,255,0.15)',
                         },
@@ -191,94 +219,96 @@ export function TransactionsFilter({
                     </Typography>
                 </Box>
 
-                {/* Period Tabs */}
-                <Box sx={{
-                    display: 'flex',
-                    gap: 0.5,
-                    bgcolor: colors.bgCard,
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: '10px',
-                    p: '3px',
-                }}>
-                    <TabButton
-                        active={!showAllTime && !showInstallmentsOnly}
-                        onClick={handleSelectMonthlyView}
-                    >
-                        Mês
-                    </TabButton>
-                    <TabButton
-                        active={showAllTime && !showInstallmentsOnly}
-                        onClick={handleSelectGeneralView}
-                    >
-                        Geral
-                    </TabButton>
-                    <TabButton
-                        active={showInstallmentsOnly}
-                        onClick={handleSelectInstallmentsView}
-                    >
-                        Parcelados
-                    </TabButton>
-                </Box>
-
-                {/* Date Selector */}
-                {!showAllTime && !showInstallmentsOnly && (
+                <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
+                    {/* Period Tabs */}
                     <Box sx={{
                         display: 'flex',
-                        alignItems: 'center',
                         gap: 0.5,
                         bgcolor: colors.bgCard,
                         border: `1px solid ${colors.border}`,
                         borderRadius: '10px',
-                        px: 0.5,
-                        py: '3px',
+                        p: '3px',
                     }}>
-                        <IconButton
-                            size="small"
-                            onClick={handlePrevMonth}
-                            sx={{
-                                width: 28,
-                                height: 28,
-                                borderRadius: '7px',
-                                color: colors.textSecondary,
-                                '&:hover': { bgcolor: 'rgba(255,255,255,0.06)' },
-                            }}
+                        <TabButton
+                            active={!showAllTime && !showInstallmentsOnly}
+                            onClick={handleSelectMonthlyView}
                         >
-                            <ChevronLeft size={15} />
-                        </IconButton>
-                        <Typography
-                            onClick={handleOpenMonthPicker}
-                            sx={{
-                                fontSize: '13px',
-                                fontFamily: '"Plus Jakarta Sans"',
-                                fontWeight: 600,
-                                color: colors.textPrimary,
-                                minWidth: 120,
-                                textAlign: 'center',
-                                userSelect: 'none',
-                                cursor: 'pointer',
-                                borderRadius: '6px',
-                                py: 0.25,
-                                px: 1,
-                                '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' },
-                            }}
+                            Mês
+                        </TabButton>
+                        <TabButton
+                            active={showAllTime && !showInstallmentsOnly}
+                            onClick={handleSelectGeneralView}
                         >
-                            {monthsFull[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-                        </Typography>
-                        <IconButton
-                            size="small"
-                            onClick={handleNextMonth}
-                            sx={{
-                                width: 28,
-                                height: 28,
-                                borderRadius: '7px',
-                                color: colors.textSecondary,
-                                '&:hover': { bgcolor: 'rgba(255,255,255,0.06)' },
-                            }}
+                            Geral
+                        </TabButton>
+                        <TabButton
+                            active={showInstallmentsOnly}
+                            onClick={handleSelectInstallmentsView}
                         >
-                            <ChevronRight size={15} />
-                        </IconButton>
+                            Parcelados
+                        </TabButton>
                     </Box>
-                )}
+
+                    {/* Date Selector */}
+                    {!showAllTime && !showInstallmentsOnly && (
+                        <Box sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                            bgcolor: colors.bgCard,
+                            border: `1px solid ${colors.border}`,
+                            borderRadius: '10px',
+                            px: 0.5,
+                            py: '3px',
+                        }}>
+                            <IconButton
+                                size="small"
+                                onClick={handlePrevMonth}
+                                sx={{
+                                    width: 28,
+                                    height: 28,
+                                    borderRadius: '7px',
+                                    color: colors.textSecondary,
+                                    '&:hover': { bgcolor: 'rgba(255,255,255,0.06)' },
+                                }}
+                            >
+                                <ChevronLeft size={15} />
+                            </IconButton>
+                            <Typography
+                                onClick={handleOpenMonthPicker}
+                                sx={{
+                                    fontSize: '13px',
+                                    fontFamily: '"Plus Jakarta Sans"',
+                                    fontWeight: 600,
+                                    color: colors.textPrimary,
+                                    minWidth: 120,
+                                    textAlign: 'center',
+                                    userSelect: 'none',
+                                    cursor: 'pointer',
+                                    borderRadius: '6px',
+                                    py: 0.25,
+                                    px: 1,
+                                    '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' },
+                                }}
+                            >
+                                {monthsFull[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+                            </Typography>
+                            <IconButton
+                                size="small"
+                                onClick={handleNextMonth}
+                                sx={{
+                                    width: 28,
+                                    height: 28,
+                                    borderRadius: '7px',
+                                    color: colors.textSecondary,
+                                    '&:hover': { bgcolor: 'rgba(255,255,255,0.06)' },
+                                }}
+                            >
+                                <ChevronRight size={15} />
+                            </IconButton>
+                        </Box>
+                    )}
+                </Stack>
 
                 <TransactionsMonthPickerPopover
                     open={!showAllTime && !showInstallmentsOnly && Boolean(monthAnchor)}

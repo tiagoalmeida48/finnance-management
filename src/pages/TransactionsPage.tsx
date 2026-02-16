@@ -10,7 +10,11 @@ import { ImportTransactionsModal } from '../shared/components/transactions/Impor
 import { PaymentConfirmModal } from '../shared/components/cards/PaymentConfirmModal';
 import { colors } from '@/shared/theme';
 
+import { useTheme, useMediaQuery } from '@mui/material';
+
 export function TransactionsPage() {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const {
         isLoading, summaries,
         typeFilter, setTypeFilter,
@@ -50,10 +54,16 @@ export function TransactionsPage() {
         <Box sx={{ pt: 4, pb: hasSelection ? 12 : 6 }}>
             <Container maxWidth={false} sx={{ px: { xs: 2, sm: 4, md: 6 } }}>
                 {/* Page Header */}
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
+                <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    justifyContent="space-between"
+                    alignItems={{ xs: 'flex-start', sm: 'center' }}
+                    spacing={{ xs: 2, sm: 0 }}
+                    sx={{ mb: 4 }}
+                >
                     <Box>
                         <Typography sx={{
-                            fontSize: '28px',
+                            fontSize: { xs: '24px', md: '28px' },
                             fontFamily: '"Plus Jakarta Sans"',
                             fontWeight: 700,
                             color: colors.textPrimary,
@@ -98,7 +108,7 @@ export function TransactionsPage() {
                             onClick={handleAdd}
                             sx={{
                                 borderRadius: '10px',
-                                px: 2.5,
+                                px: { xs: 1.5, sm: 2.5 },
                                 py: 1.25,
                                 fontSize: '13px',
                                 fontWeight: 600,
@@ -112,7 +122,7 @@ export function TransactionsPage() {
                                 },
                             }}
                         >
-                            Nova Transação
+                            {isMobile ? 'Novo' : 'Nova Transação'}
                         </Button>
                     </Stack>
                 </Stack>

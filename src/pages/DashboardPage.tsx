@@ -19,7 +19,7 @@ export function DashboardPage() {
             <Container maxWidth={false} sx={{ px: { xs: 2, sm: 4, md: 6 } }}>
                 <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }} sx={{ mb: 4 }} spacing={2}>
                     <Box>
-                        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>Dashboard</Typography>
+                        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1, fontSize: { xs: '24px', md: '34px' } }}>Dashboard</Typography>
                         <Typography color="text.secondary">Bem-vindo de volta! Aqui está o resumo das suas finanças.</Typography>
                     </Box>
                     <DashboardFilters

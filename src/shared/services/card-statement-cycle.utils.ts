@@ -102,8 +102,23 @@ export const resolveStatementMonth = (
     const cycle = resolveStatementCycleForDate(cycles, anchorDateKey) || fallbackCycle;
     if (!cycle) return null;
 
-    const closingMonthShift = anchorDate.getDate() > cycle.closing_day ? 1 : 0;
-    const dueMonthShift = cycle.closing_day >= cycle.due_day ? 1 : 0;
+    let effectiveClosingDay = cycle.closing_day;
+    let effectiveDueDay = cycle.due_day;
+
+    if ('date_start' in cycle && 'date_end' in cycle) {
+        const orderedCycles = sortStatementCyclesAsc(cycles);
+        const currentIdx = orderedCycles.findIndex(
+            (c) => c.date_start === (cycle as StatementCycleLike).date_start
+        );
+        const nextCycle = currentIdx >= 0 ? orderedCycles[currentIdx + 1] : undefined;
+        if (nextCycle && anchorDate.getDate() >= cycle.closing_day) {
+            effectiveClosingDay = nextCycle.closing_day;
+            effectiveDueDay = nextCycle.due_day;
+        }
+    }
+
+    const closingMonthShift = anchorDate.getDate() > effectiveClosingDay ? 1 : 0;
+    const dueMonthShift = effectiveClosingDay >= effectiveDueDay ? 1 : 0;
     const monthShift = closingMonthShift + dueMonthShift;
 
     const statementDate = addMonths(startOfMonth(anchorDate), monthShift);

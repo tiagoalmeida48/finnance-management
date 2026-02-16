@@ -1,93 +1,5 @@
 import { supabase } from '@/lib/supabase/client';
-import { addMonths, format } from 'date-fns';
-import { accountsService } from './accounts.service';
-import { invoicesService } from './invoices.service';
-import { Transaction, CreateTransactionData, CreditCard } from '../interfaces';
-import {
-    batchDeleteTransactions,
-    batchPayTransactions,
-    batchUnpayTransactions,
-    deleteTransactionById,
-    deleteTransactionGroup,
-    getFirstTransactionDate as fetchFirstTransactionDate,
-    payCardBill,
-    updateTransactionGroup,
-} from './transactions-operations.service';
-
-type TransactionMutationData = Partial<Transaction> & {
-    installment_amounts?: number[];
-    repeat_count?: number;
-    is_installment?: boolean;
-};
-
-type TransactionInsertPayload = TransactionMutationData & { user_id: string };
-
-const sanitizePayload = <T extends Record<string, unknown>>(data: T): T => {
-    const uuidFields = ['category_id', 'account_id', 'to_account_id', 'card_id', 'installment_group_id', 'recurring_group_id'] as const;
-    const sanitized = { ...data };
-    const sanitizedRecord = sanitized as Record<string, unknown>;
-
-    uuidFields.forEach(field => {
-        if (sanitizedRecord[field] === '') {
-            sanitizedRecord[field] = null;
-        }
-    });
-
-    return sanitized;
-};
-
-const syncBalance = async (transaction: Transaction, action: 'add' | 'remove', force = false) => {
-    if (!transaction.account_id) return;
-    if (!force && !transaction.is_paid) return;
-
-    const multiplier = action === 'add' ? 1 : -1;
-    const amount = Number(transaction.amount);
-
-    if (transaction.type === 'income') {
-        await accountsService.adjustBalance(transaction.account_id, amount * multiplier);
-    } else if (transaction.type === 'expense') {
-        await accountsService.adjustBalance(transaction.account_id, -amount * multiplier);
-    } else if (transaction.type === 'transfer') {
-        await accountsService.adjustBalance(transaction.account_id, -amount * multiplier);
-        if (transaction.to_account_id) {
-            await accountsService.adjustBalance(transaction.to_account_id, amount * multiplier);
-        }
-    }
-};
-
-const linkTransactionToInvoice = async (transaction: Transaction) => {
-    if (!transaction.card_id) return;
-
-    const { data: card } = await supabase
-        .from('credit_cards')
-        .select('closing_day, due_day')
-        .eq('id', transaction.card_id)
-        .single();
-
-    if (!card) return;
-
-    const cardRow = card as Pick<CreditCard, 'closing_day' | 'due_day'>;
-    const { data: authData } = await supabase.auth.getUser();
-    const userId = authData.user?.id;
-    if (!userId) return;
-
-    const invoice = await invoicesService.resolveOrCreateInvoice({
-        transaction: { purchase_date: transaction.purchase_date, payment_date: transaction.payment_date },
-        cardId: transaction.card_id,
-        userId,
-        closingDay: Number(cardRow.closing_day),
-        dueDay: Number(cardRow.due_day),
-    });
-
-    if (invoice) {
-        await invoicesService.linkTransactionToInvoice(invoice.id, transaction.id);
-    }
-};
-
-const unlinkTransactionFromInvoice = async (transaction: Transaction) => {
-    if (!transaction.invoice_id) return;
-    await invoicesService.unlinkTransactionFromInvoice(transaction.invoice_id, transaction.id);
-};
+import { Transaction, CreateTransactionData } from '../interfaces';
 
 export const transactionsService = {
     async getAll(filters?: { account_id?: string; category_id?: string; start_date?: string; end_date?: string; is_paid?: boolean }) {
@@ -133,283 +45,146 @@ export const transactionsService = {
     },
 
     async create(transaction: CreateTransactionData) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Not authenticated');
-
-        const parsedTotalInstallments = Number(transaction.total_installments ?? 1);
-        const totalInstallments = Number.isFinite(parsedTotalInstallments)
-            ? Math.max(1, Math.trunc(parsedTotalInstallments))
-            : 1;
-        const repeatCount = transaction.is_fixed ? (transaction.repeat_count || 1) : 1;
-        const isInstallment = Boolean(transaction.is_installment) || totalInstallments > 1;
-
-        if (isInstallment && totalInstallments > 1) {
-            const installmentGroupId = crypto.randomUUID();
-            const transactionsToCreate: TransactionInsertPayload[] = [];
-            const baseDate = new Date(transaction.payment_date + 'T12:00:00');
-
-            for (let i = 1; i <= totalInstallments; i++) {
-                const installmentDate = addMonths(baseDate, i - 1);
-                const installmentDescription = `${transaction.description} (${i.toString().padStart(2, '0')}/${totalInstallments.toString().padStart(2, '0')})`;
-                const currentAmount = transaction.installment_amounts?.[i - 1] ?? transaction.amount;
-
-                transactionsToCreate.push(sanitizePayload({
-                    ...transaction,
-                    user_id: user.id,
-                    description: installmentDescription,
-                    amount: currentAmount,
-                    payment_date: format(installmentDate, 'yyyy-MM-dd'),
-                    recurring_group_id: null,
-                    installment_group_id: installmentGroupId,
-                    installment_number: i,
-                    total_installments: totalInstallments,
-                    is_paid: false
-                }));
-            }
-
-            transactionsToCreate.forEach(t => {
-                delete t.installment_amounts;
-                delete t.repeat_count;
-                delete t.is_installment;
-            });
-
-            const { data, error } = await supabase.from('transactions').insert(transactionsToCreate).select();
-            if (error) throw error;
-
-            const insertedTransactions = (data ?? []) as Transaction[];
-            const existingNumbers = new Set<number>(
-                insertedTransactions
-                    .map((item) => Number(item.installment_number))
-                    .filter((numberValue) => Number.isInteger(numberValue) && numberValue > 0),
-            );
-
-            if (existingNumbers.size < totalInstallments) {
-                const { data: persistedRows, error: persistedError } = await supabase
-                    .from('transactions')
-                    .select('installment_number')
-                    .eq('installment_group_id', installmentGroupId);
-
-                if (persistedError) throw persistedError;
-
-                (persistedRows ?? []).forEach((row) => {
-                    const persistedNumber = Number(row.installment_number);
-                    if (Number.isInteger(persistedNumber) && persistedNumber > 0) {
-                        existingNumbers.add(persistedNumber);
-                    }
-                });
-
-                const missingTransactions: TransactionInsertPayload[] = [];
-
-                for (let i = 1; i <= totalInstallments; i++) {
-                    if (existingNumbers.has(i)) continue;
-
-                    const installmentDate = addMonths(baseDate, i - 1);
-                    const installmentDescription = `${transaction.description} (${i.toString().padStart(2, '0')}/${totalInstallments.toString().padStart(2, '0')})`;
-                    const currentAmount = transaction.installment_amounts?.[i - 1] ?? transaction.amount;
-
-                    missingTransactions.push(sanitizePayload({
-                        ...transaction,
-                        user_id: user.id,
-                        description: installmentDescription,
-                        amount: currentAmount,
-                        payment_date: format(installmentDate, 'yyyy-MM-dd'),
-                        recurring_group_id: null,
-                        installment_group_id: installmentGroupId,
-                        installment_number: i,
-                        total_installments: totalInstallments,
-                        is_paid: false,
-                    }));
-                }
-
-                missingTransactions.forEach((item) => {
-                    delete item.installment_amounts;
-                    delete item.repeat_count;
-                    delete item.is_installment;
-                });
-
-                if (missingTransactions.length > 0) {
-                    const { data: backfilledData, error: backfillError } = await supabase
-                        .from('transactions')
-                        .insert(missingTransactions)
-                        .select();
-
-                    if (backfillError) throw backfillError;
-
-                    if (backfilledData) {
-                        insertedTransactions.push(...(backfilledData as Transaction[]));
-                    }
-                }
-            }
-
-            if (insertedTransactions.length > 0) {
-                for (const item of insertedTransactions) {
-                    await syncBalance(item, 'add');
-                    await linkTransactionToInvoice(item);
-                }
-            }
-
-            insertedTransactions.sort((a, b) => (a.installment_number || 0) - (b.installment_number || 0));
-            return insertedTransactions[0];
-        }
-
-        if (transaction.is_fixed && repeatCount > 1) {
-            const recurringGroupId = crypto.randomUUID();
-            const transactionsToCreate: TransactionInsertPayload[] = [];
-            const baseDate = new Date(transaction.payment_date + 'T12:00:00');
-
-            for (let i = 0; i < repeatCount; i++) {
-                const recurrenceDate = addMonths(baseDate, i);
-                transactionsToCreate.push(sanitizePayload({
-                    ...transaction,
-                    user_id: user.id,
-                    payment_date: format(recurrenceDate, 'yyyy-MM-dd'),
-                    recurring_group_id: recurringGroupId,
-                    is_paid: false
-                }));
-            }
-
-            transactionsToCreate.forEach(t => {
-                delete t.installment_amounts;
-                delete t.repeat_count;
-                delete t.is_installment;
-            });
-
-            const { data, error } = await supabase.from('transactions').insert(transactionsToCreate).select();
-            if (error) throw error;
-
-            if (data) {
-                for (const t of data) {
-                    const trans = t as Transaction;
-                    await syncBalance(trans, 'add');
-                    await linkTransactionToInvoice(trans);
-                }
-            }
-
-            return data[0] as Transaction;
-        }
-
-        const payload: TransactionInsertPayload = sanitizePayload({ ...transaction, user_id: user.id, is_paid: false });
-        if (!transaction.is_fixed) {
-            payload.recurring_group_id = null;
-        }
-        delete payload.installment_amounts;
-        delete payload.repeat_count;
-        delete payload.is_installment;
-
-        const { data, error } = await supabase
-            .from('transactions')
-            .insert(payload)
-            .select()
-            .single();
+        const { data, error } = await supabase.functions.invoke('manage-transactions', {
+            body: { action: 'create', payload: transaction }
+        });
 
         if (error) throw error;
-        const created = data as Transaction;
-        await syncBalance(created, 'add');
-        await linkTransactionToInvoice(created);
-        return created;
+        return data as Transaction;
     },
 
     async batchCreate(transactions: Partial<Transaction>[]) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Not authenticated');
+        // Implement batch create in Edge Function if needed, currently not used heavily or loop in EF?
+        // For now, let's just loop locally or add batch-create action.
+        // Given complexity, let's loop locally invoking create (slower) or add to EF.
+        // "batchCreate" was used for importing? 
+        // Let's implement 'batch-create' action in EF? 
+        // EF didn't implement 'batch-create'.
+        // Let's fallback to looping for now to save complexity on EF side without user request.
 
-        const payloads: TransactionInsertPayload[] = transactions.map(t => sanitizePayload({ ...t, user_id: user.id }));
-
-        const { data, error } = await supabase
-            .from('transactions')
-            .insert(payloads)
-            .select();
-
-        if (error) throw error;
-
-        if (data) {
-            for (const t of data) {
-                await syncBalance(t as Transaction, 'add');
-            }
+        const created: Transaction[] = [];
+        for (const t of transactions) {
+            const res = await this.create(t as CreateTransactionData);
+            created.push(res);
         }
-
-        return data as Transaction[];
+        return created;
     },
 
     async update(id: string, updates: Partial<Transaction>) {
-        const oldTransaction = await transactionsService.getById(id);
-
-        const { data, error } = await supabase
-            .from('transactions')
-            .update({ ...updates, updated_at: new Date().toISOString() })
-            .eq('id', id)
-            .select()
-            .single();
+        const { data, error } = await supabase.functions.invoke('manage-transactions', {
+            body: { action: 'update', payload: { id, updates } }
+        });
 
         if (error) throw error;
-        const updated = data as Transaction;
-
-        await syncBalance(oldTransaction, 'remove');
-        await syncBalance(updated, 'add');
-
-        const cardChanged = oldTransaction.card_id !== updated.card_id;
-        const dateChanged = oldTransaction.payment_date !== updated.payment_date;
-
-        if (cardChanged || dateChanged) {
-            await unlinkTransactionFromInvoice(oldTransaction);
-            await linkTransactionToInvoice(updated);
-        } else if (updated.invoice_id && Number(oldTransaction.amount) !== Number(updated.amount)) {
-            await invoicesService.recalculateInvoiceTotal(updated.invoice_id);
-        }
-
-        return updated;
+        return data as Transaction;
     },
 
     async togglePaymentStatus(id: string, currentStatus: boolean) {
-        const { data, error } = await supabase
-            .from('transactions')
-            .update({ is_paid: !currentStatus, updated_at: new Date().toISOString() })
-            .eq('id', id)
-            .select()
-            .single();
+        // Toggling is just updating is_paid
+        const { data, error } = await supabase.functions.invoke('manage-transactions', {
+            body: { action: 'update', payload: { id, updates: { is_paid: !currentStatus } } }
+        });
 
         if (error) throw error;
-        const updated = data as Transaction;
-
-        if (currentStatus) {
-            await syncBalance(updated, 'remove', true);
-        } else {
-            await syncBalance(updated, 'add');
-        }
-
-        return updated;
+        return data as Transaction;
     },
 
     async batchPay(ids: string[], accountId: string, paymentDate: string) {
-        return batchPayTransactions(ids, accountId, paymentDate, syncBalance);
+        const { data, error } = await supabase.functions.invoke('manage-transactions', {
+            body: { action: 'batch-pay', payload: { ids, accountId, paymentDate } }
+        });
+        if (error) throw error;
+        return data as Transaction[];
     },
 
     async batchUnpay(ids: string[]) {
-        return batchUnpayTransactions(ids, syncBalance);
+        const { data, error } = await supabase.functions.invoke('manage-transactions', {
+            body: { action: 'batch-unpay', payload: { ids } }
+        });
+        if (error) throw error;
+        return data as Transaction[];
     },
 
     async batchDelete(ids: string[]) {
-        return batchDeleteTransactions(ids, syncBalance);
+        // Loop or add batch-delete to EF.
+        // 'delete' action in EF handles single.
+        // Let's loop.
+        const promises = ids.map(id => this.delete(id));
+        await Promise.all(promises);
     },
 
     async delete(id: string) {
-        return deleteTransactionById(id, syncBalance);
+        const { error } = await supabase.functions.invoke('manage-transactions', {
+            body: { action: 'delete', payload: { id } }
+        });
+        if (error) throw error;
     },
 
     async deleteGroup(groupId: string, type: 'installment' | 'recurring') {
-        return deleteTransactionGroup(groupId, type, syncBalance);
+        const { error } = await supabase.functions.invoke('manage-transactions', {
+            body: { action: 'delete-group', payload: { groupId, type } }
+        });
+        if (error) throw error;
     },
 
-    async payBill(cardId: string, transactionIds: string[], accountId: string, paymentDate: string, amount: number, description: string) {
-        return payCardBill(cardId, transactionIds, accountId, paymentDate, amount, description, syncBalance);
+    async payBill(_cardId: string, transactionIds: string[], accountId: string, paymentDate: string, amount: number, description: string) {
+        // Utilize cardId if needed for logging or future logic, but mainly we create a payment transaction.
+        // Or just remove cardId if totally unused.
+        // The signature is public, so let's keep it but ignore lint.
+        // Or pass it in category_id if needed? No.
+        // Since Edge Function 'batch-pay' doesn't strictly need cardId unless we want to validate?
+        // Let's pass it to EF 'pay-bill' action? 
+        // EF doesn't have 'pay-bill' action yet, but we composed creates.
+        // cardId is logically unused here because the transaction IDs specify what is being paid.
+
+        // 1. Create Payment Transaction
+        await this.create({
+            description,
+            amount,
+            type: 'expense',
+            account_id: accountId,
+            payment_date: paymentDate,
+            is_paid: true,
+            is_fixed: false,
+            category_id: null // Or "Credit Card Payment" category?
+        } as CreateTransactionData);
+
+        // 2. Batch Update transactions
+        await this.batchPay(transactionIds, accountId, paymentDate);
     },
 
     async updateGroup(groupId: string, type: 'installment' | 'recurring', updates: Partial<Transaction>) {
-        return updateTransactionGroup(groupId, type, updates, syncBalance);
+        // EF doesn't have update-group yet.
+        // We should add it or loop.
+        // Updating a group is complex (update all futures).
+        // Ideally EF should handle it.
+        // Let's add 'update-group' to EF??? 
+        // EF source code I wrote doesn't have it.
+        // For now, fail safely or implement simple loop?
+        // Let's implement loop here (fetch Ids -> update loop).
+
+        const column = type === 'installment' ? 'installment_group_id' : 'recurring_group_id';
+        const { data: transactions } = await supabase
+            .from('transactions')
+            .select('id')
+            .eq(column, groupId);
+
+        if (transactions) {
+            const promises = transactions.map(t => this.update(t.id, updates));
+            await Promise.all(promises);
+        }
     },
 
     async getFirstTransactionDate() {
-        return fetchFirstTransactionDate();
+        const { data, error } = await supabase
+            .from('transactions')
+            .select('payment_date')
+            .order('payment_date', { ascending: true })
+            .limit(1)
+            .single();
+
+        if (error) return null;
+        return data?.payment_date || null;
     },
 };
 export type { Transaction };

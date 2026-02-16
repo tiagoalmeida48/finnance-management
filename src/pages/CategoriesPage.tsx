@@ -55,24 +55,32 @@ export function CategoriesPage() {
                 >
                     <Box>
                         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
-                            <Typography variant="h4" sx={{ fontWeight: 700 }}>Categorias</Typography>
+                            <Typography variant="h4" sx={{ fontWeight: 700, fontSize: { xs: '24px', md: '34px' } }}>Categorias</Typography>
                             <Sparkles size={16} color={colors.accent} />
                         </Stack>
-                        <Typography color="text.secondary">Organize suas transacoes por grupos inteligentes.</Typography>
+                        <Typography color="text.secondary" sx={{ fontSize: { xs: '14px', md: '1rem' } }}>
+                            Organize suas transacoes por grupos inteligentes.
+                        </Typography>
                     </Box>
 
-                    <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mt: { xs: 2, md: 0 } }}>
                         {categories?.length === 0 && (
                             <Button
                                 variant="outlined"
                                 onClick={handleAddDefault}
                                 disabled={createCategory.isPending}
-                                sx={{ borderColor: colors.border }}
+                                sx={{ borderColor: colors.border, flex: { xs: 1, sm: 'none' } }}
                             >
                                 Adicionar padroes
                             </Button>
                         )}
-                        <Button variant="contained" startIcon={<Plus size={16} />} size="large" onClick={handleAdd}>
+                        <Button
+                            variant="contained"
+                            startIcon={<Plus size={16} />}
+                            size="large"
+                            onClick={handleAdd}
+                            sx={{ flex: { xs: 1, sm: 'none' } }}
+                        >
                             Nova Categoria
                         </Button>
                     </Stack>

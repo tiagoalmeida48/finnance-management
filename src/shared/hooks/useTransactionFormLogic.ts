@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useForm, useFieldArray, useWatch, type Resolver } from 'react-hook-form';
+import { useForm, useWatch, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAccounts } from './useAccounts';
@@ -24,8 +24,9 @@ const transactionSchema = z.object({
     notes: z.string().optional(),
     is_installment: z.boolean().default(false),
     total_installments: z.coerce.number().min(1, 'Mínimo 1').max(120, 'Máximo 120').optional(),
-    installments: z.array(z.object({ amount: z.coerce.number() })).optional(),
+    // installments: z.array(z.object({ amount: z.coerce.number() })).optional(), // Removed
 });
+
 
 export type TransactionFormValues = z.infer<typeof transactionSchema>;
 
@@ -61,14 +62,11 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
             total_installments: 1,
             account_id: '',
             category_id: '',
-            installments: [],
         },
     });
 
-    const { replace } = useFieldArray({
-        control: form.control,
-        name: "installments"
-    });
+
+
 
     const transactionType = useWatch({ control: form.control, name: 'type', defaultValue: 'expense' });
     const paymentMethod = useWatch({ control: form.control, name: 'payment_method' });
@@ -85,22 +83,6 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
         }
         return cards;
     }, [cards, paymentMethod, selectedAccountId]);
-
-    useEffect(() => {
-        if (isInstallment && totalInstallments > 0) {
-            const installmentAmount = Number((baseAmount / totalInstallments).toFixed(2));
-            const newInstallments = Array.from({ length: totalInstallments }, (_, i) => {
-                if (i === totalInstallments - 1) {
-                    const sumOfOthers = installmentAmount * (totalInstallments - 1);
-                    return { amount: Number((baseAmount - sumOfOthers).toFixed(2)) };
-                }
-                return { amount: installmentAmount };
-            });
-            replace(newInstallments);
-        } else {
-            replace([]);
-        }
-    }, [isInstallment, totalInstallments, baseAmount, replace]);
 
     const { reset } = form;
 
@@ -121,8 +103,6 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
                 card_id: transaction?.card_id || '',
                 category_id: transaction?.category_id || '',
                 payment_method: transaction?.payment_method || (transaction?.card_id ? 'credit' : 'debit'),
-                notes: transaction?.notes || '',
-                installments: [],
             });
         }
     }, [transaction, open, reset]);
@@ -139,11 +119,7 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
 
             if (!values.is_installment) {
                 delete payload.total_installments;
-                delete payload.installments;
                 payload.installment_group_id = undefined;
-            } else if (!transaction) {
-                payload.installment_amounts = values.installments?.map(i => i.amount);
-                delete payload.installments;
             }
 
             if (!values.is_fixed) {
@@ -159,8 +135,6 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
             if (transaction) {
                 delete payload.repeat_count;
                 delete payload.is_installment;
-                delete payload.installment_amounts;
-                delete payload.installments;
 
                 if (applyToGroup && values.payment_date === transaction.payment_date) {
                     delete payload.payment_date;
@@ -177,7 +151,7 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
                 const createPayload: CreateTransactionData = {
                     ...(payload as CreateTransactionData),
                     // New transactions must always start as pending.
-                    is_paid: false,
+                    is_paid: values.is_paid,
                     // Recurrence only exists when explicitly enabled.
                     is_fixed: Boolean(values.is_fixed),
                     recurring_group_id: values.is_fixed ? (payload.recurring_group_id as string | null | undefined) : null,

@@ -57,7 +57,7 @@ export function TransactionsSummary({ summaries, isLoading }: TransactionsSummar
             {summaryCards.map((card, idx) => {
                 const Icon = card.icon;
                 return (
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }} key={idx}>
+                    <Grid size={{ xs: 6, sm: 6, md: 3 }} key={idx}>
                         <Card sx={{
                             bgcolor: colors.bgCard,
                             border: `1px solid ${colors.border}`,
