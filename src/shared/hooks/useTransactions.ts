@@ -97,6 +97,17 @@ export function useBatchDeleteTransactions() {
     });
 }
 
+export function useBatchChangeTransactionDay() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ ids, day }: { ids: string[]; day: number }) =>
+            transactionsService.batchChangeDay(ids, day),
+        onSuccess: () => {
+            invalidateTransactionsAndAccounts(queryClient);
+        },
+    });
+}
+
 export function useDeleteTransaction() {
     const queryClient = useQueryClient();
     return useMutation({
@@ -112,6 +123,26 @@ export function useDeleteTransactionGroup() {
     return useMutation({
         mutationFn: ({ groupId, type }: { groupId: string; type: 'installment' | 'recurring' }) =>
             transactionsService.deleteGroup(groupId, type),
+        onSuccess: () => {
+            invalidateTransactionsAndAccounts(queryClient);
+        },
+    });
+}
+
+export function useDuplicateTransaction() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: string) => transactionsService.duplicate(id),
+        onSuccess: () => {
+            invalidateTransactionsAndAccounts(queryClient);
+        },
+    });
+}
+
+export function useInsertInstallmentBetween() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: string) => transactionsService.insertInstallmentBetween(id),
         onSuccess: () => {
             invalidateTransactionsAndAccounts(queryClient);
         },

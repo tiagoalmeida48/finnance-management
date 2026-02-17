@@ -7,7 +7,10 @@ import {
     useBatchDeleteTransactions,
     useBatchPayTransactions,
     useBatchUnpayTransactions,
-    useDeleteTransactionGroup
+    useDeleteTransactionGroup,
+    useBatchChangeTransactionDay,
+    useDuplicateTransaction,
+    useInsertInstallmentBetween
 } from './useTransactions';
 import { useAccounts } from './useAccounts';
 import { useCategories } from './useCategories';
@@ -25,6 +28,7 @@ export function useTransactionsPageLogic() {
     const [modalOpen, setModalOpen] = useState(false);
     const [importModalOpen, setImportModalOpen] = useState(false);
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+    const [changeDayModalOpen, setChangeDayModalOpen] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState<Transaction | undefined>();
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [typeFilter, setTypeFilter] = useState<string | null>(null);
@@ -68,7 +72,10 @@ export function useTransactionsPageLogic() {
     const batchDeleteTransactions = useBatchDeleteTransactions();
     const batchPayTransactions = useBatchPayTransactions();
     const batchUnpayTransactions = useBatchUnpayTransactions();
+    const batchChangeTransactionDay = useBatchChangeTransactionDay();
     const deleteTransactionGroup = useDeleteTransactionGroup();
+    const duplicateTransaction = useDuplicateTransaction();
+    const insertInstallmentBetween = useInsertInstallmentBetween();
     const togglePaymentStatus = useTogglePaymentStatus();
 
     const isLoading = transactionsLoading || accountsLoading || cardsLoading;
@@ -124,6 +131,30 @@ export function useTransactionsPageLogic() {
         if (!menuTransaction) return;
         setDeleteModalOpen(true);
         handleCloseMenu();
+    };
+
+    const handleDuplicate = async () => {
+        if (!menuTransaction) return;
+
+        try {
+            await duplicateTransaction.mutateAsync(menuTransaction.id);
+        } catch (error) {
+            console.error('Error duplicating transaction:', error);
+        } finally {
+            handleCloseMenu();
+        }
+    };
+
+    const handleInsertInstallmentBetween = async () => {
+        if (!menuTransaction?.installment_group_id) return;
+
+        try {
+            await insertInstallmentBetween.mutateAsync(menuTransaction.id);
+        } catch (error) {
+            console.error('Error inserting installment:', error);
+        } finally {
+            handleCloseMenu();
+        }
     };
 
     const handleConfirmDelete = async (type: 'single' | 'group') => {
@@ -201,6 +232,23 @@ export function useTransactionsPageLogic() {
             } catch (error) {
                 console.error('Error in batch delete:', error);
             }
+        }
+    };
+
+    const handleOpenBatchChangeDayModal = () => {
+        if (selectedIds.length === 0) return;
+        setChangeDayModalOpen(true);
+    };
+
+    const handleBatchChangeDay = async (day: number) => {
+        if (selectedIds.length === 0) return;
+
+        try {
+            await batchChangeTransactionDay.mutateAsync({ ids: selectedIds, day });
+            setSelectedIds([]);
+            setChangeDayModalOpen(false);
+        } catch (error) {
+            console.error('Error in batch change day:', error);
         }
     };
 
@@ -317,6 +365,7 @@ export function useTransactionsPageLogic() {
         modalOpen, setModalOpen,
         importModalOpen, setImportModalOpen,
         paymentModalOpen, setPaymentModalOpen,
+        changeDayModalOpen, setChangeDayModalOpen,
         selectedTransaction, setSelectedTransaction,
         deleteModalOpen, setDeleteModalOpen,
         typeFilter, setTypeFilter,
@@ -341,12 +390,15 @@ export function useTransactionsPageLogic() {
         transactions, isLoading,
         categories, accounts, cards,
         handleOpenMenu, handleCloseMenu,
-        handleEdit, handleDelete, handleConfirmDelete,
-        handleTogglePaid, handleConfirmPayment, handleBatchUnpay, handleBatchDelete,
+        handleEdit, handleDelete, handleConfirmDelete, handleDuplicate, handleInsertInstallmentBetween,
+        handleTogglePaid, handleConfirmPayment, handleBatchUnpay, handleBatchDelete, handleBatchChangeDay,
         handleOpenBatchPayModal,
+        handleOpenBatchChangeDayModal,
         handleAdd, handleImport, toggleGroup, handleSelectRow, handleSelectAll,
         handlePrevMonth, handleNextMonth, handleSort,
         filteredTransactions, summaries, groupedTransactions, paginatedGroupedTransactions,
-        togglePaymentStatus // exposes isPending etc if needed
+        duplicateTransaction, insertInstallmentBetween,
+        togglePaymentStatus, // exposes isPending etc if needed
+        batchChangeTransactionDay
     };
 }

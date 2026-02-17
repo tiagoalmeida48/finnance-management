@@ -1,4 +1,4 @@
-import { type ChangeEvent } from 'react';
+import { type ChangeEvent, type FormEvent } from 'react';
 import { Dialog, DialogContent, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -75,6 +75,12 @@ export function TransactionFormModal({ open, onClose, transaction }: Transaction
         onClose();
     };
 
+    const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+        void onSubmit(event);
+    };
+
     return (
         <Dialog
             open={open}
@@ -93,7 +99,7 @@ export function TransactionFormModal({ open, onClose, transaction }: Transaction
                 },
             }}
         >
-            <form onSubmit={onSubmit}>
+            <form onSubmit={handleFormSubmit} noValidate>
                 <LocalizationProvider
                     dateAdapter={AdapterDateFns}
                     adapterLocale={ptBR}

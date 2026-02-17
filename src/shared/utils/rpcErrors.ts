@@ -9,7 +9,11 @@ export const normalizeRpcError = (error: unknown): string => {
 
     // Handle Supabase/PostgREST errors structure
     if (typeof error === 'object' && error !== null) {
-        const err = error as any;
+        const err = error as {
+            message?: unknown;
+            details?: unknown;
+            hint?: unknown;
+        };
 
         // Sometimes Supabase returns an object with a 'message' property
         if (typeof err.message === 'string') {

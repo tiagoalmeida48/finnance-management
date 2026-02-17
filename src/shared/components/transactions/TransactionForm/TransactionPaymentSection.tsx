@@ -78,6 +78,9 @@ export function TransactionPaymentSection({
                             <MenuItem value="pix" sx={{ fontSize: '13px', py: 1.25, borderRadius: '6px', mx: 0.5 }}>
                                 📱 PIX
                             </MenuItem>
+                            <MenuItem value="bill_payment" sx={{ fontSize: '13px', py: 1.25, borderRadius: '6px', mx: 0.5 }}>
+                                🧾 Pagamento Fatura
+                            </MenuItem>
                         </Select>
                     </FormControl>
                 </Box>
@@ -232,7 +235,9 @@ export function TransactionPaymentSection({
                 )}
 
                 <Box>
-                    <Typography sx={labelStyles}>Data *</Typography>
+                    <Typography sx={labelStyles}>
+                        {paymentMethod === 'credit' ? 'Data da Compra *' : 'Data *'}
+                    </Typography>
                     <TransactionDateField control={control} />
                 </Box>
             </Box>

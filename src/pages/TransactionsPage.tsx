@@ -1,5 +1,5 @@
 import { Box, Container, Stack, Typography, Button, Menu, MenuItem, Slide } from '@mui/material';
-import { Plus, Pencil, Trash2, CheckCircle2, Clock, Upload } from 'lucide-react';
+import { Plus, Pencil, Trash2, CheckCircle2, Clock, Upload, CalendarDays } from 'lucide-react';
 import { useTransactionsPageLogic } from '../shared/hooks/useTransactionsPageLogic';
 import { TransactionsSummary } from '../shared/components/transactions/TransactionsSummary';
 import { TransactionsFilter } from '../shared/components/transactions/TransactionsFilter';
@@ -7,6 +7,7 @@ import { TransactionsTable } from '../shared/components/transactions/Transaction
 import { TransactionFormModal } from '../shared/components/transactions/TransactionFormModal';
 import { DeleteTransactionModal } from '../shared/components/transactions/DeleteTransactionModal';
 import { ImportTransactionsModal } from '../shared/components/transactions/ImportTransactionsModal';
+import { BatchChangeDayModal } from '../shared/components/transactions/BatchChangeDayModal';
 import { PaymentConfirmModal } from '../shared/components/cards/PaymentConfirmModal';
 import { colors } from '@/shared/theme';
 
@@ -34,17 +35,23 @@ export function TransactionsPage() {
         modalOpen, setModalOpen,
         importModalOpen, setImportModalOpen,
         paymentModalOpen, setPaymentModalOpen,
+        changeDayModalOpen, setChangeDayModalOpen,
         deleteModalOpen, setDeleteModalOpen,
         handleAdd, handleImport,
         groupedTransactions, paginatedGroupedTransactions, transactionsPage, setTransactionsPage,
         transactionsRowsPerPage, setTransactionsRowsPerPage, selectedIds, handleSelectAll, handleSelectRow,
         handleTogglePaid, handleOpenMenu, handleSort, sortConfig,
         expandedGroups, toggleGroup, anchorEl, handleCloseMenu,
-        menuTransaction, handleEdit, handleDelete, handleConfirmDelete,
+        menuTransaction, handleEdit, handleDelete, handleConfirmDelete, handleDuplicate, handleInsertInstallmentBetween,
         handleConfirmPayment,
         handleBatchDelete,
         handleBatchUnpay,
         handleOpenBatchPayModal,
+        handleOpenBatchChangeDayModal,
+        handleBatchChangeDay,
+        batchChangeTransactionDay,
+        duplicateTransaction,
+        insertInstallmentBetween,
         togglePaymentStatus
     } = useTransactionsPageLogic();
 
@@ -199,6 +206,22 @@ export function TransactionsPage() {
                         <Pencil size={16} style={{ marginRight: 10 }} /> Editar
                     </MenuItem>
                     <MenuItem
+                        onClick={handleDuplicate}
+                        disabled={duplicateTransaction.isPending}
+                        sx={{ fontSize: '13px', py: 1.5 }}
+                    >
+                        <Plus size={16} style={{ marginRight: 10 }} /> Duplicar
+                    </MenuItem>
+                    {menuTransaction?.installment_group_id && (
+                        <MenuItem
+                            onClick={handleInsertInstallmentBetween}
+                            disabled={insertInstallmentBetween.isPending}
+                            sx={{ fontSize: '13px', py: 1.5 }}
+                        >
+                            <CalendarDays size={16} style={{ marginRight: 10 }} /> Inserir Entre Parcelas
+                        </MenuItem>
+                    )}
+                    <MenuItem
                         onClick={() => menuTransaction && handleTogglePaid(menuTransaction)}
                         sx={{ fontSize: '13px', py: 1.5 }}
                     >
@@ -274,6 +297,25 @@ export function TransactionsPage() {
                                 </Button>
                                 <Button
                                     size="small"
+                                    startIcon={<CalendarDays size={14} />}
+                                    onClick={handleOpenBatchChangeDayModal}
+                                    sx={{
+                                        borderRadius: '8px',
+                                        px: 2,
+                                        py: 1,
+                                        fontSize: '12px',
+                                        fontWeight: 600,
+                                        bgcolor: 'rgba(59, 130, 246, 0.12)',
+                                        color: '#3B82F6',
+                                        '&:hover': {
+                                            bgcolor: 'rgba(59, 130, 246, 0.2)',
+                                        },
+                                    }}
+                                >
+                                    Trocar Dia
+                                </Button>
+                                <Button
+                                    size="small"
                                     startIcon={<Trash2 size={14} />}
                                     onClick={handleBatchDelete}
                                     sx={{
@@ -319,6 +361,14 @@ export function TransactionsPage() {
                 <ImportTransactionsModal
                     open={importModalOpen}
                     onClose={() => setImportModalOpen(false)}
+                />
+
+                <BatchChangeDayModal
+                    open={changeDayModalOpen}
+                    selectedCount={selectedIds.length}
+                    loading={batchChangeTransactionDay.isPending}
+                    onClose={() => setChangeDayModalOpen(false)}
+                    onConfirm={handleBatchChangeDay}
                 />
 
                 <PaymentConfirmModal

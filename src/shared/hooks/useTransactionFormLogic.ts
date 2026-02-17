@@ -7,6 +7,7 @@ import { useCategories } from './useCategories';
 import { useCreditCards } from './useCreditCards';
 import { useCreateTransaction, useUpdateTransaction, useUpdateTransactionGroup } from './useTransactions';
 import { Transaction, type CreateTransactionData } from '../interfaces/transaction.interface';
+import { toDateKeyIgnoringTime } from '../services/transactionsGroup.utils';
 
 const transactionSchema = z.object({
     description: z.string().min(3, 'Descrição deve ter pelo menos 3 caracteres'),
@@ -35,6 +36,39 @@ type TransactionMutationPayload = Partial<Transaction> & {
     repeat_count?: number;
     is_installment?: boolean;
     installments?: { amount: number }[];
+};
+
+const NON_TRANSACTION_FIELDS = new Set(['installment_amounts', 'repeat_count', 'is_installment', 'installments']);
+const DATE_LIKE_FIELDS = new Set<keyof Transaction>(['payment_date', 'purchase_date']);
+
+const toComparableValue = (field: keyof Transaction, value: unknown) => {
+    if (value === undefined || value === null || value === '') return null;
+
+    if (DATE_LIKE_FIELDS.has(field) && typeof value === 'string') {
+        return toDateKeyIgnoringTime(value) ?? value;
+    }
+
+    return value;
+};
+
+const buildChangedUpdates = (transaction: Transaction, updates: TransactionMutationPayload) => {
+    const changed: Partial<Transaction> = {};
+
+    for (const [key, rawValue] of Object.entries(updates)) {
+        if (NON_TRANSACTION_FIELDS.has(key)) continue;
+        if (rawValue === undefined) continue;
+
+        const field = key as keyof Transaction;
+        const currentValue = transaction[field];
+
+        if (toComparableValue(field, currentValue) === toComparableValue(field, rawValue)) {
+            continue;
+        }
+
+        (changed as Record<string, unknown>)[field] = rawValue;
+    }
+
+    return changed;
 };
 
 export function useTransactionFormLogic(open: boolean, onClose: () => void, transaction?: Transaction) {
@@ -92,7 +126,11 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
                 description: transaction?.description || '',
                 amount: transaction?.amount || 0,
                 type: transaction?.type || 'expense',
-                payment_date: transaction?.payment_date || new Date().toISOString().split('T')[0],
+                payment_date: (
+                    transaction?.card_id
+                        ? (transaction.purchase_date || transaction.payment_date)
+                        : transaction?.payment_date
+                ) || new Date().toISOString().split('T')[0],
                 is_fixed: transaction?.is_fixed || false,
                 repeat_count: 1,
                 is_paid: transaction?.is_paid ?? false,
@@ -114,12 +152,26 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
     const onSubmit = async (values: TransactionFormValues) => {
         try {
             const payload: TransactionMutationPayload = { ...values };
+            const isCreditPurchase = values.payment_method === 'credit' && Boolean(values.card_id);
             if (values.type !== 'transfer') delete payload.to_account_id;
             if (values.payment_method !== 'credit') delete payload.card_id;
 
+            if (isCreditPurchase) {
+                payload.purchase_date = values.payment_date;
+                // Keep payment_date mirrored for unpaid card transactions to preserve current UI/query behavior.
+                if (!transaction || !transaction.is_paid) {
+                    payload.payment_date = values.payment_date;
+                } else {
+                    // For paid card transactions, preserve the real payment date from bill payment flow.
+                    delete payload.payment_date;
+                }
+            } else {
+                delete payload.purchase_date;
+            }
+
             if (!values.is_installment) {
                 delete payload.total_installments;
-                payload.installment_group_id = undefined;
+                payload.installment_group_id = null;
             }
 
             if (!values.is_fixed) {
@@ -127,25 +179,27 @@ export function useTransactionFormLogic(open: boolean, onClose: () => void, tran
                 payload.repeat_count = undefined;
             }
 
-            if (payload.category_id === '') payload.category_id = undefined;
-            if (payload.account_id === '') payload.account_id = undefined;
-            if (payload.card_id === '') payload.card_id = undefined;
-            if (payload.to_account_id === '') payload.to_account_id = undefined;
+            if (payload.category_id === '') payload.category_id = null;
+            if (payload.account_id === '') payload.account_id = null;
+            if (payload.card_id === '') payload.card_id = null;
+            if (payload.to_account_id === '') payload.to_account_id = null;
 
             if (transaction) {
                 delete payload.repeat_count;
                 delete payload.is_installment;
-
-                if (applyToGroup && values.payment_date === transaction.payment_date) {
-                    delete payload.payment_date;
+                const changedUpdates = buildChangedUpdates(transaction, payload);
+                if (Object.keys(changedUpdates).length === 0) {
+                    resetUiState();
+                    onClose();
+                    return;
                 }
 
                 const groupId = transaction.installment_group_id || transaction.recurring_group_id;
                 const groupType = transaction.installment_group_id ? 'installment' : 'recurring';
                 if (applyToGroup && groupId) {
-                    await updateTransactionGroup.mutateAsync({ groupId, type: groupType, updates: payload });
+                    await updateTransactionGroup.mutateAsync({ groupId, type: groupType, updates: changedUpdates });
                 } else {
-                    await updateTransaction.mutateAsync({ id: transaction.id, updates: payload });
+                    await updateTransaction.mutateAsync({ id: transaction.id, updates: changedUpdates });
                 }
             } else {
                 const createPayload: CreateTransactionData = {

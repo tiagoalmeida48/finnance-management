@@ -73,7 +73,7 @@ src/
 - Build: `pnpm run build`
 - Testes: `pnpm run test`
 
-A CI em `.github/workflows/ci.yml` roda esses passos em pull requests e pushes.
+Recomendado configurar CI para rodar esses passos em pull requests e pushes.
 
 ## Testes incluídos
 

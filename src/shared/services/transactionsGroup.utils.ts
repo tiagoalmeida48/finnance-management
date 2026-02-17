@@ -2,12 +2,14 @@ import type { Transaction } from '../interfaces';
 
 const DISALLOWED_GROUP_FIELDS: Array<keyof Transaction> = [
     'id',
-    'payment_date',
     'installment_number',
     'installment_group_id',
     'recurring_group_id',
+    'invoice_id',
     'created_at',
+    'updated_at',
     'user_id',
+    'total_installments',
 ];
 
 export const filterGroupUpdates = (updates: Partial<Transaction>) =>
@@ -16,8 +18,10 @@ export const filterGroupUpdates = (updates: Partial<Transaction>) =>
     ) as Partial<Transaction>;
 
 const DATE_KEY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})/;
+const INSTALLMENT_SUFFIX_PATTERN = /\(\s*\d+\s*\/\s*\d+\s*\)\s*$/i;
 
 const pad = (value: number) => value.toString().padStart(2, '0');
+const normalizeWhitespace = (value: string) => value.replace(/\s+/g, ' ').trim();
 
 interface DateParts {
     year: number;
@@ -60,4 +64,47 @@ export const replaceDateDayPreservingMonth = (
     const clampedDay = Math.min(targetDay, maxDay);
 
     return `${parts.year}-${pad(parts.month)}-${pad(clampedDay)}`;
+};
+
+export const shiftDateByMonths = (
+    value: string | null | undefined,
+    monthOffset: number,
+) => {
+    const parts = parseDateParts(value);
+    if (!parts || !Number.isInteger(monthOffset)) return null;
+
+    const shiftedMonthDate = new Date(parts.year, (parts.month - 1) + monthOffset, 1);
+    if (Number.isNaN(shiftedMonthDate.getTime())) return null;
+
+    const shiftedYear = shiftedMonthDate.getFullYear();
+    const shiftedMonth = shiftedMonthDate.getMonth() + 1;
+    const maxDay = new Date(shiftedYear, shiftedMonth, 0).getDate();
+    const day = Math.min(parts.day, maxDay);
+
+    return `${shiftedYear}-${pad(shiftedMonth)}-${pad(day)}`;
+};
+
+export const toDateKeyIgnoringTime = (value?: string | null) => {
+    const parts = parseDateParts(value);
+    if (!parts) return null;
+    return `${parts.year}-${pad(parts.month)}-${pad(parts.day)}`;
+};
+
+export const stripInstallmentSuffix = (description?: string | null) => {
+    const normalized = normalizeWhitespace(description || '');
+    if (!normalized) return '';
+
+    return normalizeWhitespace(normalized.replace(INSTALLMENT_SUFFIX_PATTERN, ''));
+};
+
+export const buildInstallmentDescription = (
+    baseDescription: string,
+    installmentNumber: number,
+    totalInstallments: number,
+) => {
+    const safeBase = normalizeWhitespace(baseDescription || '');
+    const safeInstallment = Math.max(1, Math.trunc(installmentNumber || 1));
+    const safeTotal = Math.max(safeInstallment, Math.trunc(totalInstallments || 1));
+
+    return `${safeBase} (${safeInstallment.toString().padStart(2, '0')}/${safeTotal.toString().padStart(2, '0')})`;
 };

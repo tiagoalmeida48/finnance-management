@@ -1,10 +1,10 @@
 import { Box, Stack, Typography, Chip, IconButton, Collapse, Checkbox } from '@mui/material';
 import { format } from 'date-fns';
-import { TrendingUp, TrendingDown, ArrowRightLeft, MoreVertical, ChevronDown, CheckCircle2, Clock } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowRightLeft, MoreVertical, ChevronDown, CheckCircle2, Clock, Landmark } from 'lucide-react';
 import { Transaction } from '../../services/transactions.service';
 import { colors } from '@/shared/theme';
 import { TransactionGroup } from '../../hooks/transactionsPage.utils';
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 
 interface TransactionMobileCardProps {
     item: Transaction | TransactionGroup;
@@ -50,7 +50,13 @@ export function TransactionMobileCard({
         style: 'currency', currency: 'BRL'
     }).format(amount);
 
+    const isBillPayment = transaction.payment_method === 'bill_payment';
+
     const getTypeConfig = (type: string) => {
+        if (isBillPayment) {
+            return { icon: Landmark, color: colors.accent, bgColor: 'rgba(201,168,76,0.14)' };
+        }
+
         switch (type) {
             case 'income': return { icon: TrendingUp, color: colors.green, bgColor: colors.greenBg };
             case 'expense': return { icon: TrendingDown, color: colors.red, bgColor: colors.redBg };
@@ -62,6 +68,12 @@ export function TransactionMobileCard({
     const TypeIcon = typeConfig.icon;
     const displayAmount = isGroup ? group!.totalAmount : transaction.amount;
     const isPaid = isGroup ? group!.isAllPaid : transaction.is_paid;
+    const dateToDisplay = (transaction.type === 'expense' && !isBillPayment)
+        ? (transaction.purchase_date || transaction.payment_date)
+        : (transaction.payment_date || transaction.purchase_date);
+    const amountColor = isBillPayment
+        ? (isPaid ? colors.green : colors.accent)
+        : (isPaid ? colors.textPrimary : typeConfig.color);
 
     return (
         <Box sx={{
@@ -75,7 +87,7 @@ export function TransactionMobileCard({
                 {/* Header: Date + Status Badge */}
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <Typography sx={{ fontSize: '12px', color: colors.textSecondary }}>
-                        {format(new Date(transaction.payment_date + 'T12:00:00'), 'dd/MM/yyyy')}
+                        {dateToDisplay ? format(new Date(`${dateToDisplay}T12:00:00`), 'dd/MM/yyyy') : '-'}
                     </Typography>
                     <Stack direction="row" spacing={1} alignItems="center">
                         {!isGroup && !transaction.card_id && (
@@ -116,7 +128,20 @@ export function TransactionMobileCard({
                         </Typography>
 
                         <Stack direction="row" alignItems="center" flexWrap="wrap" gap={0.5}>
-                            {transaction.category?.name && (
+                            {isBillPayment && (
+                                <Chip
+                                    label="Pagamento Fatura"
+                                    size="small"
+                                    sx={{
+                                        height: 20,
+                                        fontSize: '10px',
+                                        fontWeight: 600,
+                                        bgcolor: 'rgba(201,168,76,0.14)',
+                                        color: colors.accent,
+                                    }}
+                                />
+                            )}
+                            {!isBillPayment && transaction.category?.name && (
                                 <Chip
                                     label={transaction.category.name}
                                     size="small"
@@ -138,7 +163,7 @@ export function TransactionMobileCard({
 
                         <Typography sx={{
                             fontSize: '16px', fontWeight: 700,
-                            color: isPaid ? colors.textPrimary : typeConfig.color,
+                            color: amountColor,
                             mt: 1
                         }}>
                             {formatBRL(displayAmount)}

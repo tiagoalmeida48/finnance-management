@@ -268,7 +268,7 @@ export const cardsService = {
         if (!cycle) throw new Error('Vigencia nao encontrada.');
 
         const closingDayChanged = Number(cycle.closing_day) !== updates.closing_day;
-        const isCurrentCycle = cycle.date_end === OPEN_CYCLE_END;
+        const dueDayChanged = Number(cycle.due_day) !== updates.due_day;
 
         const { error } = await supabase
             .from('credit_card_statement_cycles')
@@ -281,7 +281,7 @@ export const cardsService = {
 
         if (error) throw error;
 
-        if (closingDayChanged && isCurrentCycle) {
+        if (closingDayChanged || dueDayChanged) {
             await invoicesService.reprocessInvoicesFromDate(cycle.card_id, cycle.date_start);
         }
 

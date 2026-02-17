@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from './client';
 
 export interface Profile {
@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
 
-    const fetchProfile = async (userId: string) => {
+    const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
         try {
             const { data, error } = await supabase
                 .from('profiles')
@@ -36,57 +36,92 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             if (error) {
                 if (error.code === 'PGRST116') {
-                    // Profile doesn't exist yet, that's fine
-                    setProfile(null);
-                } else {
-                    console.error('Error fetching profile:', error);
+                    return null;
                 }
-                return;
+
+                console.error('Error fetching profile:', error);
+                return null;
             }
 
-            setProfile(data);
+            return data as Profile;
         } catch (err) {
             console.error('Unexpected error fetching profile:', err);
+            return null;
         }
-    };
-
-    const refreshProfile = async () => {
-        if (user) await fetchProfile(user.id);
-    };
-
-    useEffect(() => {
-        // Get initial session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            const currentUser = session?.user ?? null;
-            setUser(currentUser);
-
-            if (currentUser) {
-                fetchProfile(currentUser.id); // Don't await, let it load in background
-            }
-            setLoading(false);
-        });
-
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
-            const currentUser = session?.user ?? null;
-            setUser(currentUser);
-
-            if (currentUser) {
-                fetchProfile(currentUser.id); // Don't await
-            } else {
-                setProfile(null);
-            }
-
-            setLoading(false);
-        });
-
-        return () => subscription.unsubscribe();
     }, []);
 
+    const applySession = useCallback(async (
+        nextSession: Session | null,
+        isMounted: () => boolean,
+        options?: { refreshProfile?: boolean }
+    ) => {
+        if (!isMounted()) return;
+
+        setSession(nextSession);
+        const currentUser = nextSession?.user ?? null;
+        setUser(currentUser);
+
+        if (!currentUser) {
+            setProfile(null);
+            return;
+        }
+
+        if (options?.refreshProfile === false) {
+            return;
+        }
+
+        const fetchedProfile = await fetchProfile(currentUser.id);
+        if (!isMounted()) return;
+        setProfile(fetchedProfile);
+    }, [fetchProfile]);
+
+    const refreshProfile = useCallback(async () => {
+        if (!user) return;
+        const fetchedProfile = await fetchProfile(user.id);
+        setProfile(fetchedProfile);
+    }, [fetchProfile, user]);
+
+    useEffect(() => {
+        let mounted = true;
+        const isMounted = () => mounted;
+
+        const bootstrap = async () => {
+            setLoading(true);
+            const { data: { session: initialSession } } = await supabase.auth.getSession();
+            await applySession(initialSession, isMounted);
+            if (isMounted()) {
+                setLoading(false);
+            }
+        };
+
+        void bootstrap();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
+            void (async () => {
+                if (!isMounted()) return;
+
+                await applySession(nextSession, isMounted, {
+                    refreshProfile: event !== 'TOKEN_REFRESHED',
+                });
+                if (isMounted()) setLoading(false);
+            })();
+        });
+
+        return () => {
+            mounted = false;
+            subscription.unsubscribe();
+        };
+    }, [applySession]);
+
     const signOut = async () => {
-        await supabase.auth.signOut();
+        try {
+            await supabase.auth.signOut();
+        } finally {
+            setSession(null);
+            setUser(null);
+            setProfile(null);
+            setLoading(false);
+        }
     };
 
     return (

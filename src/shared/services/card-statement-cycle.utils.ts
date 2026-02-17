@@ -63,8 +63,8 @@ const toDateKeyIgnoringTime = (value?: string | null) => {
 };
 
 export const getTransactionAnchorDateKey = (transaction: TransactionDateLike) =>
-    toDateKeyIgnoringTime(transaction.payment_date)
-    || toDateKeyIgnoringTime(transaction.purchase_date)
+    toDateKeyIgnoringTime(transaction.purchase_date)
+    || toDateKeyIgnoringTime(transaction.payment_date)
     || null;
 
 export const sortStatementCyclesAsc = <T extends StatementCycleLike>(cycles: T[]) =>
@@ -102,21 +102,9 @@ export const resolveStatementMonth = (
     const cycle = resolveStatementCycleForDate(cycles, anchorDateKey) || fallbackCycle;
     if (!cycle) return null;
 
-    let effectiveClosingDay = cycle.closing_day;
-    let effectiveDueDay = cycle.due_day;
-
-    if ('date_start' in cycle && 'date_end' in cycle) {
-        const orderedCycles = sortStatementCyclesAsc(cycles);
-        const currentIdx = orderedCycles.findIndex(
-            (c) => c.date_start === (cycle as StatementCycleLike).date_start
-        );
-        const nextCycle = currentIdx >= 0 ? orderedCycles[currentIdx + 1] : undefined;
-        if (nextCycle && anchorDate.getDate() >= cycle.closing_day) {
-            effectiveClosingDay = nextCycle.closing_day;
-            effectiveDueDay = nextCycle.due_day;
-        }
-    }
-
+    const effectiveClosingDay = cycle.closing_day;
+    const effectiveDueDay = cycle.due_day;
+    // The statement includes purchases on the closing day.
     const closingMonthShift = anchorDate.getDate() > effectiveClosingDay ? 1 : 0;
     const dueMonthShift = effectiveClosingDay >= effectiveDueDay ? 1 : 0;
     const monthShift = closingMonthShift + dueMonthShift;

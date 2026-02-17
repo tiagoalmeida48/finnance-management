@@ -6,11 +6,6 @@ const MainLayout = lazy(() => import('./shared/layouts/MainLayout').then((module
 
 function App() {
   const { user } = useAuth();
-  // MainLayout is only used when user is authenticated, otherwise direct route rendering
-  // Actually, MainLayout expects children.
-  // The original App had conditional Sidebar rendering.
-  // If user is not authenticated, we probably want a different layout or just current behavior.
-  // Sidebar is only shown if user is present. MainLayout includes Sidebar.
 
   if (!user) {
     return <AppRoutes />;

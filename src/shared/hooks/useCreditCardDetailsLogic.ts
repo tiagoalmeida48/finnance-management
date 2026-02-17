@@ -93,7 +93,7 @@ export function useCreditCardDetailsLogic() {
             .slice(0, 5);
 
         return { statements, chartData, categoryData };
-    }, [card, id, isAllTime, selectedDate]);
+    }, [card, isAllTime, selectedDate]);
 
     return {
         id, navigate, card, isLoading,

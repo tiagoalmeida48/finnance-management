@@ -234,6 +234,7 @@ export function TransactionsTableHeader({
                                 <MenuItem value="debit">Débito</MenuItem>
                                 <MenuItem value="pix">PIX</MenuItem>
                                 <MenuItem value="money">Dinheiro</MenuItem>
+                                <MenuItem value="bill_payment">Pagamento Fatura</MenuItem>
                             </Select>
                         </FormControl>
                         <FormControl size="small">

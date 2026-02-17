@@ -37,6 +37,12 @@ const toComparable = (value: unknown): number | string => {
     return String(value).toLowerCase();
 };
 
+const getDisplayDateKey = (transaction: Transaction) => (
+    transaction.type === 'expense'
+        ? (transaction.purchase_date || transaction.payment_date)
+        : (transaction.payment_date || transaction.purchase_date)
+);
+
 export function getFilteredTransactionsAndSummaries({
     transactions,
     showPendingOnly,
@@ -124,6 +130,16 @@ export function getFilteredTransactionsAndSummaries({
             valB = getProgress(b);
         }
 
+        if (field === 'payment_date') {
+            const toTime = (transaction: Transaction) => {
+                const dateKey = getDisplayDateKey(transaction);
+                if (!dateKey) return 0;
+                return new Date(`${dateKey}T12:00:00`).getTime();
+            };
+            valA = toTime(a);
+            valB = toTime(b);
+        }
+
         if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
         if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
         return 0;
@@ -172,7 +188,9 @@ export function getGroupedTransactions(filteredTransactions: Transaction[], sort
 
             group.items.sort((a, b) => {
                 if (groupType === 'installment') return (a.installment_number || 0) - (b.installment_number || 0);
-                return new Date(a.payment_date + 'T12:00:00').getTime() - new Date(b.payment_date + 'T12:00:00').getTime();
+                const aDateKey = getDisplayDateKey(a) || a.payment_date;
+                const bDateKey = getDisplayDateKey(b) || b.payment_date;
+                return new Date(`${aDateKey}T12:00:00`).getTime() - new Date(`${bDateKey}T12:00:00`).getTime();
             });
             group.mainTransaction = group.items[0];
             const categoryCount = new Map<string, { count: number, name: string, color?: string }>();
@@ -194,8 +212,16 @@ export function getGroupedTransactions(filteredTransactions: Transaction[], sort
             const mostFrequentCategory = Array.from(categoryCount.values())
                 .sort((a, b) => b.count - a.count)[0];
 
-            group.categoryName = mostFrequentCategory?.name;
-            group.categoryColor = mostFrequentCategory?.color;
+            if (mostFrequentCategory) {
+                group.categoryName = mostFrequentCategory.name;
+                group.categoryColor = mostFrequentCategory.color;
+            } else if (group.mainTransaction.payment_method === 'bill_payment') {
+                group.categoryName = 'Pagamento Fatura';
+                group.categoryColor = '#C9A84C';
+            } else {
+                group.categoryName = undefined;
+                group.categoryColor = undefined;
+            }
         } else {
             groups.push(t);
         }

@@ -19,6 +19,7 @@ export function TransactionFormActions({ isSubmitting, submitLabel, onClose }: T
             }}
         >
             <Button
+                type="button"
                 onClick={onClose}
                 sx={{
                     px: 3,

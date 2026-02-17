@@ -95,7 +95,7 @@ test('resolveStatementMonth usa dia de fechamento como fronteira do ciclo', () =
     const afterClosing: TransactionDateInput = { purchase_date: '2025-02-20', payment_date: '2025-02-20' };
 
     expect(resolveStatementMonth(beforeClosing, cycle)?.statementMonthKey).toBe('2025-02');
-    expect(resolveStatementMonth(onClosing, cycle)?.statementMonthKey).toBe('2025-03');
+    expect(resolveStatementMonth(onClosing, cycle)?.statementMonthKey).toBe('2025-02');
     expect(resolveStatementMonth(afterClosing, cycle)?.statementMonthKey).toBe('2025-03');
 });
 
@@ -128,8 +128,8 @@ test('resolveStatementMonth ignora horas e considera apenas a data para fronteir
     };
 
     expect(resolveStatementMonth(atEndOfDayBeforeClosing, cycle)?.statementMonthKey).toBe('2025-02');
-    expect(resolveStatementMonth(atStartOfClosingDay, cycle)?.statementMonthKey).toBe('2025-03');
-    expect(resolveStatementMonth(atEndOfClosingDay, cycle)?.statementMonthKey).toBe('2025-03');
+    expect(resolveStatementMonth(atStartOfClosingDay, cycle)?.statementMonthKey).toBe('2025-02');
+    expect(resolveStatementMonth(atEndOfClosingDay, cycle)?.statementMonthKey).toBe('2025-02');
     expect(resolveStatementMonth(fallbackPaymentDateTimestamp, cycle)?.statementMonthKey).toBe('2025-02');
 });
 
@@ -199,42 +199,51 @@ test('planCycleInsertion impede datas fora de qualquer vigencia', () => {
     ).toThrowError(/Nao existe vigencia/);
 });
 
-test('resolveStatementMonth ajusta para o proximo ciclo quando data da transacao excede fechamento do ciclo atual', () => {
-    // Cycle 1: Closes day 27. Cycle 2: Starts Sep 01, closes day 10.
+test('resolveStatementMonth aplica regra de corte esperada para fatura de marco (28/01 a 27/02)', () => {
+    const cycle = [
+        {
+            id: 'cycle-march-example',
+            date_start: '2025-01-01',
+            date_end: '9999-12-31',
+            closing_day: 27,
+            due_day: 6,
+        },
+    ];
+
+    const jan28: TransactionDateInput = { purchase_date: '2025-01-28', payment_date: '2025-01-28' };
+    const feb27: TransactionDateInput = { purchase_date: '2025-02-27', payment_date: '2025-02-27' };
+    const feb28: TransactionDateInput = { purchase_date: '2025-02-28', payment_date: '2025-02-28' };
+
+    expect(resolveStatementMonth(jan28, cycle)?.statementMonthKey).toBe('2025-03');
+    expect(resolveStatementMonth(feb27, cycle)?.statementMonthKey).toBe('2025-03');
+    expect(resolveStatementMonth(feb28, cycle)?.statementMonthKey).toBe('2025-04');
+});
+
+test('resolveStatementMonth aplica novo corte apenas a partir da vigencia definida', () => {
     const cycles = [
         {
             id: 'cycle-1',
             date_start: '2025-01-01',
-            date_end: '2025-08-31',
+            date_end: '2025-04-30',
             closing_day: 27,
             due_day: 6,
         },
         {
             id: 'cycle-2',
-            date_start: '2025-09-01',
+            date_start: '2025-05-01',
             date_end: '9999-12-31',
-            closing_day: 10,
-            due_day: 16,
+            closing_day: 4,
+            due_day: 10,
         },
     ];
 
-    // Transaction on Aug 29th.
-    // Old logic: 29 > 27 -> shift 1 month. Aug -> Sep.
-    // BUT due_day 6 means dueMonthShift = 1 (27 >= 6).
-    // So total shift = 2. Aug -> Oct (2025-10). WRONG.
+    const beforeChange: TransactionDateInput = { purchase_date: '2025-04-30', payment_date: '2025-04-30' };
+    const onChange: TransactionDateInput = { purchase_date: '2025-05-01', payment_date: '2025-05-01' };
+    const withinNewCutoff: TransactionDateInput = { purchase_date: '2025-05-04', payment_date: '2025-05-04' };
+    const afterNewCutoff: TransactionDateInput = { purchase_date: '2025-05-05', payment_date: '2025-05-05' };
 
-    // New logic:
-    // 29 > 27 AND next cycle exists.
-    // Use next cycle closing/due days: Closing 10, Due 16.
-    // 29 > 10 -> Closing Shift = 1.
-    // 10 < 16 -> Due Shift = 0.
-    // Total Shift = 1. Aug -> Sep (2025-09). CORRECT.
-
-    const transaction: TransactionDateInput = {
-        purchase_date: '2025-08-29',
-        payment_date: '2025-08-29',
-    };
-
-    const resolved = resolveStatementMonth(transaction, cycles);
-    expect(resolved?.statementMonthKey).toBe('2025-09');
+    expect(resolveStatementMonth(beforeChange, cycles)?.statementMonthKey).toBe('2025-06');
+    expect(resolveStatementMonth(onChange, cycles)?.statementMonthKey).toBe('2025-05');
+    expect(resolveStatementMonth(withinNewCutoff, cycles)?.statementMonthKey).toBe('2025-05');
+    expect(resolveStatementMonth(afterNewCutoff, cycles)?.statementMonthKey).toBe('2025-06');
 });

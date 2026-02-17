@@ -50,6 +50,9 @@ const formatCurrency = (value: number) =>
 type StatementSortField = 'payment_date' | 'description' | 'category' | 'amount';
 type StatementSortDirection = 'asc' | 'desc';
 
+const getStatementDisplayDateKey = (transaction: StatementTransaction) =>
+    transaction.purchase_date || transaction.payment_date;
+
 export function CardStatementList({ cardId: _cardId, statements, handleOpenPayModal, onEditTransaction }: CardStatementListProps) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -59,24 +62,8 @@ export function CardStatementList({ cardId: _cardId, statements, handleOpenPayMo
     const reprocessInvoices = useReprocessInvoices(_cardId);
 
     const handleReprocess = () => {
-        // Reprocess from a safe past date (e.g., 2 years ago or just current view context)
-        // ideally getting the earliest cycle start date would be better, but a fixed reasonable date works for now
-        // or just let the backend handle "all time" if date is old enough.
-        // The service uses 45 days lookback from the date provided.
-        // Let's use the first statement's date if available, or a default.
-        const oldestStatement = statements[statements.length - 1];
-        let fromDate = new Date().toISOString().split('T')[0]; // Default to today
-
-        if (oldestStatement) {
-            // statement.month is "janeiro", "fevereiro", need to parse or use monthKey if available?
-            // statement object has monthKey "yyyy-MM"
-            fromDate = `${oldestStatement.monthKey}-01`;
-        } else {
-            // Fallback to beginning of current year
-            fromDate = `${new Date().getFullYear()}-01-01`;
-        }
-
-        reprocessInvoices.mutate(fromDate);
+        // Full reprocess to avoid missing invoices when the screen is filtered by year.
+        reprocessInvoices.mutate('1900-01-01');
     };
 
 
@@ -108,7 +95,9 @@ export function CardStatementList({ cardId: _cardId, statements, handleOpenPayMo
             let comparison = 0;
 
             if (statementSortField === 'payment_date') {
-                comparison = left.payment_date.localeCompare(right.payment_date);
+                const leftDateKey = getStatementDisplayDateKey(left) || '';
+                const rightDateKey = getStatementDisplayDateKey(right) || '';
+                comparison = leftDateKey.localeCompare(rightDateKey);
             } else if (statementSortField === 'description') {
                 comparison = left.description.localeCompare(right.description, 'pt-BR', { sensitivity: 'base' });
             } else if (statementSortField === 'category') {
@@ -154,8 +143,13 @@ export function CardStatementList({ cardId: _cardId, statements, handleOpenPayMo
                     </Typography>
                 </Stack>
                 <Button
+                    type="button"
                     startIcon={reprocessInvoices.isPending ? <RefreshCw size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-                    onClick={handleReprocess}
+                    onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        handleReprocess();
+                    }}
                     disabled={reprocessInvoices.isPending}
                     size="small"
                     sx={{
@@ -319,7 +313,10 @@ export function CardStatementList({ cardId: _cardId, statements, handleOpenPayMo
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
-                                                {statementTransactions.map((transaction) => (
+                                                {statementTransactions.map((transaction) => {
+                                                    const displayDate = getStatementDisplayDateKey(transaction);
+
+                                                    return (
                                                     <TableRow
                                                         key={transaction.id}
                                                         onClick={() => onEditTransaction?.(transaction)}
@@ -330,7 +327,7 @@ export function CardStatementList({ cardId: _cardId, statements, handleOpenPayMo
                                                         }}
                                                     >
                                                         <TableCell sx={{ borderBottom: `1px solid rgba(255,255,255,0.03)`, color: colors.textSecondary, fontSize: '13px', py: 1.5 }}>
-                                                            {format(new Date(transaction.payment_date + 'T12:00:00'), 'dd/MM')}
+                                                            {displayDate ? format(new Date(`${displayDate}T12:00:00`), 'dd/MM') : '-'}
                                                         </TableCell>
                                                         <TableCell sx={{ borderBottom: `1px solid rgba(255,255,255,0.03)`, color: colors.textPrimary, fontSize: '13px', py: 1.5 }}>
                                                             {transaction.description}
@@ -359,13 +356,17 @@ export function CardStatementList({ cardId: _cardId, statements, handleOpenPayMo
                                                             {formatCurrency(transaction.amount)}
                                                         </TableCell>
                                                     </TableRow>
-                                                ))}
+                                                    );
+                                                })}
                                             </TableBody>
                                         </Table>
                                     ) : (
                                         // MOBILE LIST VIEW
                                         <Stack spacing={0} divider={<Divider sx={{ borderColor: 'rgba(255,255,255,0.03)' }} />}>
-                                            {statementTransactions.map((transaction) => (
+                                            {statementTransactions.map((transaction) => {
+                                                const displayDate = getStatementDisplayDateKey(transaction);
+
+                                                return (
                                                 <Box
                                                     key={transaction.id}
                                                     onClick={() => onEditTransaction?.(transaction)}
@@ -399,7 +400,7 @@ export function CardStatementList({ cardId: _cardId, statements, handleOpenPayMo
                                                             </Typography>
                                                             <Stack direction="row" alignItems="center" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
                                                                 <Typography sx={{ color: colors.textMuted, fontSize: '11px' }}>
-                                                                    {format(new Date(transaction.payment_date + 'T12:00:00'), 'dd/MM', { locale: ptBR })}
+                                                                    {displayDate ? format(new Date(`${displayDate}T12:00:00`), 'dd/MM', { locale: ptBR }) : '-'}
                                                                 </Typography>
                                                                 <Box sx={{ width: 3, height: 3, borderRadius: '50%', bgcolor: colors.textMuted }} />
                                                                 <Typography sx={{ color: colors.textSecondary, fontSize: '11px' }}>
@@ -430,7 +431,8 @@ export function CardStatementList({ cardId: _cardId, statements, handleOpenPayMo
                                                         </Typography>
                                                     </Stack>
                                                 </Box>
-                                            ))}
+                                                );
+                                            })}
                                         </Stack>
                                     )}
                                 </Box>

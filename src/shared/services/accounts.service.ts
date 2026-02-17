@@ -55,18 +55,17 @@ export const accountsService = {
     async adjustBalance(id: string, delta: number) {
         const { data: account, error: fetchError } = await supabase
             .from('bank_accounts')
-            .select('current_balance')
+            .select('id')
             .eq('id', id)
             .single();
 
         if (fetchError) throw fetchError;
         if (!account) throw new Error('Account not found');
 
-        const newBalance = (Number(account.current_balance) || 0) + delta;
-        const { error: updateError } = await supabase
-            .from('bank_accounts')
-            .update({ current_balance: newBalance, updated_at: new Date().toISOString() })
-            .eq('id', id);
+        const { error: updateError } = await supabase.rpc('increment_account_balance', {
+            p_account_id: id,
+            p_amount: delta,
+        });
 
         if (updateError) throw updateError;
     }

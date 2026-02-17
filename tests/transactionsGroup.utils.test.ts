@@ -1,40 +1,48 @@
 import { expect, test } from 'vitest';
 import {
-    extractDayFromDateLike,
+    buildInstallmentDescription,
     filterGroupUpdates,
     replaceDateDayPreservingMonth,
+    shiftDateByMonths,
+    stripInstallmentSuffix,
+    toDateKeyIgnoringTime,
 } from '../src/shared/services/transactionsGroup.utils';
 
-test('filterGroupUpdates remove campos bloqueados para atualizacao em grupo', () => {
-    const updates = {
-        id: 'tx-1',
-        payment_date: '2026-02-09',
-        user_id: 'user-1',
-        description: 'Novo nome',
-        amount: 123,
-        is_paid: true,
-        notes: 'ok',
-    };
-
-    const filtered = filterGroupUpdates(updates);
-
-    expect('id' in filtered).toBe(false);
-    expect('payment_date' in filtered).toBe(false);
-    expect('user_id' in filtered).toBe(false);
-    expect(filtered.description).toBe('Novo nome');
-    expect(filtered.amount).toBe(123);
-    expect(filtered.is_paid).toBe(true);
-    expect(filtered.notes).toBe('ok');
+test('stripInstallmentSuffix remove sufixo de parcela no fim da descricao', () => {
+    expect(stripInstallmentSuffix('Supermercado (03/12)')).toBe('Supermercado');
+    expect(stripInstallmentSuffix('  Streaming   ( 1 / 6 )  ')).toBe('Streaming');
 });
 
-test('extractDayFromDateLike le dia de data simples e datetime', () => {
-    expect(extractDayFromDateLike('2026-02-09')).toBe(9);
-    expect(extractDayFromDateLike('2026-02-19T23:59:59-03:00')).toBe(19);
-    expect(extractDayFromDateLike('data-invalida')).toBeNull();
+test('buildInstallmentDescription formata numero atual e total com 2 digitos', () => {
+    expect(buildInstallmentDescription('Notebook', 2, 10)).toBe('Notebook (02/10)');
 });
 
-test('replaceDateDayPreservingMonth altera apenas o dia e respeita limite do mes', () => {
-    expect(replaceDateDayPreservingMonth('2026-02-09', 25)).toBe('2026-02-25');
-    expect(replaceDateDayPreservingMonth('2026-02-09', 31)).toBe('2026-02-28');
-    expect(replaceDateDayPreservingMonth('2026-01-09T12:34:56Z', 31)).toBe('2026-01-31');
+test('shiftDateByMonths preserva dia quando possivel e faz clamp em meses curtos', () => {
+    expect(shiftDateByMonths('2025-01-31', 1)).toBe('2025-02-28');
+    expect(shiftDateByMonths('2025-03-15', 2)).toBe('2025-05-15');
+});
+
+test('replaceDateDayPreservingMonth altera so o dia e respeita limite do mes', () => {
+    expect(replaceDateDayPreservingMonth('2025-04-10', 25)).toBe('2025-04-25');
+    expect(replaceDateDayPreservingMonth('2025-02-10', 31)).toBe('2025-02-28');
+});
+
+test('toDateKeyIgnoringTime extrai apenas a parte yyyy-MM-dd', () => {
+    expect(toDateKeyIgnoringTime('2025-09-03T23:59:59-03:00')).toBe('2025-09-03');
+});
+
+test('filterGroupUpdates remove campos proibidos para atualizacao em grupo', () => {
+    const result = filterGroupUpdates({
+        id: 'transaction-id',
+        installment_group_id: 'group-id',
+        description: 'Nova descricao',
+        amount: 100,
+        payment_date: '2025-10-15',
+    });
+
+    expect(result).toEqual({
+        description: 'Nova descricao',
+        amount: 100,
+        payment_date: '2025-10-15',
+    });
 });

@@ -46,7 +46,7 @@ export function PayBillModal({ open, onClose, cardId, cardName, statementMonth, 
                 accountId: data.bank_account_id,
                 paymentDate: data.payment_date,
                 amount: totalAmount,
-                description: `${cardName} - ${statementMonth}`
+                description: `Pgto Fatura: ${cardName} - ${statementMonth}`
             });
             handleClose();
         } catch (error) {

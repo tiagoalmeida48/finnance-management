@@ -283,7 +283,7 @@ export function ImportTransactionsModal({ open, onClose }: ImportTransactionsMod
             let installmentGroupId: string | undefined;
 
             if (totalInstallments > 1) {
-                const normalizedDescription = normalizeInstallmentDescriptionForGrouping(baseMapped.description);
+                const normalizedDescription = normalizeInstallmentDescriptionForGrouping(baseMapped.description ?? '');
                 const signature = [
                     resolvedCardId || '',
                     resolvedAccountId || '',

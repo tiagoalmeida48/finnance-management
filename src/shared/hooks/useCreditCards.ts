@@ -98,14 +98,18 @@ export function useDeleteCardStatementCycle(cardId: string) {
             queryClient.invalidateQueries({ queryKey: queryKeys.cards.statementCycles(cardId) });
         },
     });
-} export function useReprocessInvoices(cardId: string) {
+}
+
+export function useReprocessInvoices(cardId: string) {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (fromDate: string) => invoicesService.reprocessInvoicesFromDate(cardId, fromDate),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
-            queryClient.invalidateQueries({ queryKey: queryKeys.cards.details(cardId) });
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.refetchQueries({ queryKey: queryKeys.cards.details(cardId), exact: true }),
+                queryClient.refetchQueries({ queryKey: queryKeys.cards.statementCycles(cardId), exact: true }),
+                queryClient.refetchQueries({ queryKey: queryKeys.cards.all, exact: true }),
+            ]);
         },
     });
 }
-

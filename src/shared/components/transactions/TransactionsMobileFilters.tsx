@@ -1,4 +1,4 @@
-import { Box, FormControl, InputAdornment, MenuItem, Select, TextField, Stack, Typography } from '@mui/material';
+import { Box, FormControl, InputAdornment, MenuItem, Select, TextField, Stack } from '@mui/material';
 import { Search } from 'lucide-react';
 import { colors } from '@/shared/theme';
 
@@ -102,6 +102,7 @@ export function TransactionsMobileFilters({
                         <MenuItem value="debit">Débito</MenuItem>
                         <MenuItem value="pix">PIX</MenuItem>
                         <MenuItem value="money">Dinheiro</MenuItem>
+                        <MenuItem value="bill_payment">Pagamento Fatura</MenuItem>
                     </Select>
                 </FormControl>
 

@@ -339,6 +339,7 @@ export function TransactionsTable({
                                                         {group.mainTransaction.payment_method === 'debit' && 'Débito: '}
                                                         {group.mainTransaction.payment_method === 'credit' && 'Crédito: '}
                                                         {group.mainTransaction.payment_method === 'pix' && 'PIX: '}
+                                                        {group.mainTransaction.payment_method === 'bill_payment' && 'Pagamento Fatura: '}
                                                         {!group.mainTransaction.payment_method && (group.mainTransaction.card_id ? 'Cartão: ' : 'Conta: ')}
                                                         {(group.mainTransaction.credit_card?.name || group.mainTransaction.bank_account?.name) && (
                                                             <Typography
