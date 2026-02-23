@@ -31,7 +31,6 @@ export function CreditCardsPage() {
     deleteModalOpen,
     setDeleteModalOpen,
     anchorEl,
-    menuCard,
     handleOpenMenu,
     handleCloseMenu,
     handleEdit,
