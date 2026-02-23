@@ -6,7 +6,7 @@
 - **Build Tool:** rolldown-vite 7.2.5
 - **Framework:** React 19+
 - **Linguagem:** TypeScript 5.9+
-- **UI Library:** Material UI (MUI) v7
+- **UI Library:** Tailwind CSS v4 + shadcn/ui + Magic UI + Radix UI
 - **Routing:** React Router v7
 - **State Management:**
   - Zustand 5 (client state: sidebar, theme, filters)
@@ -15,7 +15,7 @@
 - **Gráficos:** Recharts 3
 - **Datas:** date-fns v4
 - **Animações:** Framer Motion 12
-- **Ícones:** Lucide React + MUI Icons Material
+- **Ícones:** Lucide React
 - **CSV:** PapaParse
 - **HTTP Client:** Supabase Client (nativo)
 
@@ -46,43 +46,34 @@ src/
     supabase/
       client.ts                # Inicialização do Supabase Client
       auth-context.tsx          # AuthProvider com user, session, profile
-  pages/                       # Páginas de rota (componentes de página)
-    AccountsPage.tsx
-    BillTrackingPage.tsx
-    CategoriesPage.tsx
-    CreditCardDetailsPage.tsx
-    CreditCardsPage.tsx
-    DashboardPage.tsx
-    LoginPage.tsx
-    ProfilePage.tsx
-    SalarySimulatorPage.tsx
-    TransactionsPage.tsx
-    UsersManagementPage.tsx
+  pages/                       # Páginas de rota organizadas em subdiretórios
+    accounts/
+    auth/
+    cards/
+    categories/
+    dashboard/
+    profile/
+    salary-simulator/
+    tracking/
+    transactions/
+    users/
   shared/
-    components/                # Componentes organizados por domínio
-      accounts/                # Componentes de contas bancárias
-      cards/                   # Componentes de cartões de crédito
-      categories/              # Componentes de categorias
-      common/                  # Componentes reutilizáveis (loaders, modais genéricos)
-      dashboard/               # Widgets e gráficos do dashboard
-      layout/                  # Header, Sidebar, MainLayout
-      profile/                 # Componentes do perfil do usuário
-      salary-simulator/        # Componentes do simulador de salário
-      tracking/                # Componentes de acompanhamento mensal
-      transactions/            # CRUD, filtros, importação CSV
-        import/                # Modal e utilitários de importação CSV
-        TransactionForm/       # Formulário de transação
-      users/                   # Gestão de usuários (admin)
+    components/                # Componentes UI organizados arquiteturalmente
+      composite/               # Componentes que unem múltiplos blocos menores
+      forms/                   # Elementos isolados de formulários com form manager
+      layout/                  # Header, Sidebar, Wrapper macro
+      ui/                      # Primitivos shadcn/ui / Design System
     constants/
       queryKeys.ts             # Chaves centralizadas do React Query
     contexts/
       site-branding-context.tsx
       site-branding-context-object.ts
-    hooks/                     # Hooks de lógica de página e dados
+    hooks/                     # Hooks customizados
+      api/                     # Centraliza funções de fetching do React Query
     interfaces/                # Tipos e interfaces TypeScript
-    services/                  # Serviços de acesso a dados (Supabase)
+    services/                  # Serviços de acesso a dados (Supabase) organizados por domínio
     theme/
-      index.ts                 # Tema MUI customizado
+      index.ts                 # Tema TypeScript derivado das variáveis CSS
     utils/                     # Utilitários e formatadores
   App.tsx
   main.tsx
@@ -128,94 +119,106 @@ full_name       TEXT
 avatar_url      TEXT
 currency        TEXT DEFAULT 'BRL'
 locale          TEXT DEFAULT 'pt-BR'
+created_at      TIMESTAMPTZ
+updated_at      TIMESTAMPTZ
 is_admin        BOOLEAN DEFAULT false
+```
+
+### Tabela: site_branding
+```
+id              INTEGER PK
+site_title      TEXT DEFAULT 'FINNANCE'
+logo_image      TEXT
 created_at      TIMESTAMPTZ
 updated_at      TIMESTAMPTZ
 ```
 
-### Tabela: accounts
+### Tabela: settings_salary
+```
+user_id                   UUID (ref auth.users)
+date_start                DATE
+date_end                  DATE
+hourly_rate               NUMERIC
+base_salary               NUMERIC
+inss_discount_percentage  NUMERIC
+admin_fee_percentage      NUMERIC
+PRIMARY KEY (user_id, date_start, date_end)
+```
+
+### Tabela: bank_accounts
 ```
 id              UUID PK
 user_id         UUID NOT NULL (ref auth.users)
-name            TEXT NOT NULL
-type            ENUM('checking','savings','investment','wallet','other')
-initial_balance DECIMAL(15,2) DEFAULT 0
-current_balance DECIMAL(15,2) DEFAULT 0
-color           TEXT
-icon            TEXT
+name            CHARACTER VARYING
+type            CHARACTER VARYING DEFAULT 'checking'
+initial_balance NUMERIC DEFAULT 0
+current_balance NUMERIC DEFAULT 0
+color           CHARACTER VARYING DEFAULT '#8b5cf6'
+icon            CHARACTER VARYING DEFAULT 'wallet'
 notes           TEXT
 is_active       BOOLEAN DEFAULT true
 created_at      TIMESTAMPTZ
 updated_at      TIMESTAMPTZ
-deleted_at      TIMESTAMPTZ
+deleted_at      TIMESTAMP WITHOUT TIME ZONE
 ```
 
 ### Tabela: categories
 ```
 id              UUID PK
 user_id         UUID NOT NULL (ref auth.users)
-name            TEXT NOT NULL
-type            ENUM('income','expense')
-icon            TEXT
+type            TEXT ('income' | 'expense')
+name            TEXT
 color           TEXT
+icon            TEXT
 is_active       BOOLEAN DEFAULT true
+deleted_at      TIMESTAMPTZ
 created_at      TIMESTAMPTZ
 updated_at      TIMESTAMPTZ
-deleted_at      TIMESTAMPTZ
 ```
 
 ### Tabela: credit_cards
 ```
 id              UUID PK
 user_id         UUID NOT NULL (ref auth.users)
-bank_account_id UUID (ref accounts)
-name            TEXT NOT NULL
-credit_limit    DECIMAL(15,2) NOT NULL
+bank_account_id UUID (ref bank_accounts)
+name            TEXT
+color           TEXT
+credit_limit    NUMERIC DEFAULT 0
 closing_day     INTEGER (1-31)
 due_day         INTEGER (1-31)
-color           TEXT
-notes           TEXT
 is_active       BOOLEAN DEFAULT true
+deleted_at      TIMESTAMPTZ
 created_at      TIMESTAMPTZ
 updated_at      TIMESTAMPTZ
-deleted_at      TIMESTAMPTZ
+notes           TEXT
 ```
 
-### Tabela: transactions
+### Tabela: credit_card_invoices
 ```
-id                    UUID PK
-user_id               UUID NOT NULL (ref auth.users)
-type                  ENUM('income','expense','transfer')
-description           TEXT NOT NULL
-amount                DECIMAL(15,2) NOT NULL
-payment_date          DATE
-purchase_date         DATE
-account_id            UUID (ref accounts)
-to_account_id         UUID (ref accounts, para transferências)
-card_id               UUID (ref credit_cards)
-category_id           UUID (ref categories)
-payment_method        TEXT
-is_fixed              BOOLEAN DEFAULT false
-is_paid               BOOLEAN DEFAULT false
-installment_group_id  UUID (agrupa parcelas)
-installment_number    INTEGER
-total_installments    INTEGER
-recurring_group_id    UUID (agrupa recorrentes)
-notes                 TEXT
-created_at            TIMESTAMPTZ
-updated_at            TIMESTAMPTZ
-deleted_at            TIMESTAMPTZ
+id              UUID PK
+user_id         UUID (ref auth.users)
+card_id         UUID (ref credit_cards)
+month_key       TEXT
+closing_date    DATE
+due_date        DATE
+total_amount    NUMERIC DEFAULT 0
+paid_amount     NUMERIC DEFAULT 0
+status          TEXT ('open', 'closed', 'paid', 'partial')
+closed_at       TIMESTAMPTZ
+paid_at         TIMESTAMPTZ
+created_at      TIMESTAMPTZ
+updated_at      TIMESTAMPTZ
 ```
 
 ### Tabela: credit_card_statement_cycles
 ```
 id              UUID PK
-user_id         UUID NOT NULL
+user_id         UUID NOT NULL (ref auth.users)
 card_id         UUID (ref credit_cards)
 date_start      DATE
-date_end        DATE
-closing_day     INTEGER
-due_day         INTEGER
+date_end        DATE DEFAULT '9999-12-31'
+closing_day     SMALLINT
+due_day         SMALLINT
 notes           TEXT
 created_at      TIMESTAMPTZ
 ```
@@ -223,37 +226,76 @@ created_at      TIMESTAMPTZ
 ### Tabela: credit_card_statement_period_ranges
 ```
 id                  UUID PK
-user_id             UUID NOT NULL
-card_id             UUID (ref credit_cards)
-period_start        DATE
-period_end          DATE
-statement_month_key TEXT
-statement_name      TEXT
+user_id             UUID NOT NULL (ref auth.users)
+card_id             UUID NOT NULL (ref credit_cards)
+period_start        DATE NOT NULL
+period_end          DATE NOT NULL
+statement_month_key TEXT NOT NULL
+statement_name      TEXT NOT NULL
 notes               TEXT
-created_at          TIMESTAMPTZ
+created_at          TIMESTAMPTZ NOT NULL
 ```
 
-### Tabela: salary_settings
+### Tabela: transactions
 ```
-user_id                   UUID (ref auth.users)
-date_start                DATE
-date_end                  DATE
-hourly_rate               DECIMAL
-base_salary               DECIMAL
-inss_discount_percentage  DECIMAL
-admin_fee_percentage      DECIMAL
+id                    UUID PK
+user_id               UUID NOT NULL (ref auth.users)
+type                  TEXT ('receita', 'despesa', 'income', 'expense', 'transfer')
+amount                NUMERIC
+payment_date          DATE
+description           TEXT
+account_id            UUID (ref bank_accounts)
+to_account_id         UUID (ref bank_accounts)
+card_id               UUID (ref credit_cards)
+category_id           UUID (ref categories)
+created_at            TIMESTAMPTZ
+updated_at            TIMESTAMPTZ
+is_fixed              BOOLEAN DEFAULT false
+notes                 TEXT
+payment_method        TEXT
+purchase_date         DATE
+installment_group_id  UUID
+installment_number    INTEGER
+total_installments    INTEGER
+recurring_group_id    UUID DEFAULT gen_random_uuid()
+is_paid               BOOLEAN
+invoice_id            UUID (ref credit_card_invoices)
 ```
 
 ---
 
-## DESIGN SYSTEM (Theme MUI)
+## DESIGN SYSTEM (Tailwind + CSS Variables)
+
+### Fonte única de estilo global
+- Arquivo central: `src/App.css`
+- Bootstrap de estilos: `src/index.css` (`@import 'tailwindcss'` + `@import './App.css'`)
+- Tema TS derivado: `src/shared/theme/index.ts` (usa `var(--color-...)`)
+
+### Regras de uso
+- Sempre priorizar tokens globais (`var(--color-...)`, `var(--font-...)`, `var(--radius-...)`).
+- Evitar novas cores hardcoded (`#hex`, `rgba(...)`) fora de casos dinâmicos inevitáveis.
+- Em `className`, preferir classes com token:
+  - `bg-[var(--color-card)]`
+  - `text-[var(--color-text-primary)]`
+  - `border-[var(--color-border)]`
+
+### Quando usar estilo inline
+- Somente para casos realmente dinâmicos (ex.: cor vinda do banco).
+- Evitar concatenação de alpha com CSS var (ex.: `var(--color-primary)40` é inválido).
+- Quando precisar fallback com alpha, usar uma cor fixa compatível para esse cálculo ou um token já com alpha.
+
+### Tokens principais e Paleta
+- Base: `--color-background`, `--color-surface`, `--color-card`, `--color-card-hover`
+- Texto: `--color-text-primary`, `--color-text-secondary`, `--color-text-muted`
+- Ação: `--color-primary`, `--color-primary-light`, `--color-primary-dark`, `--color-secondary`
+- Semânticas: `--color-success`, `--color-error`, `--color-warning`, `--color-info`
+- Auxiliares: `--color-accent`, `--color-accentGlow`, `--color-blue`, `--color-greenBg`, `--color-redBg`, `--color-purpleBg`, `--color-yellowBg`, `--color-bgSecondary`
 
 - **Modo:** Dark (ultra-dark)
 - **Fontes:** DM Sans (body) + Plus Jakarta Sans (headings)
 - **Border Radius:** 16px (cards), 10px (botões e inputs)
 - **Accent:** Gold `#C9A84C`
 
-### Paleta de Cores
 ```
 Background Primary:    #0A0A0F
 Background Secondary:  #111118
@@ -275,41 +317,43 @@ Purple:                #8B5CF6
 
 ## SERVICES
 
-| Arquivo | Responsabilidade |
+| Arquivo/Pasta | Responsabilidade |
 |---|---|
 | `accounts.service.ts` | CRUD de contas bancárias |
-| `cards.service.ts` | CRUD de cartões + cálculo de faturas e limites |
+| `cards.service.ts` | CRUD de cartões, limites e ciclos |
 | `categories.service.ts` | CRUD de categorias |
-| `transactions.service.ts` | CRUD de transações + queries por range |
-| `transactions-operations.service.ts` | Operações em lote e parcelamento |
 | `dashboard.service.ts` | Agregações para o dashboard (saldos, gráficos) |
-| `salary-settings.service.ts` | CRUD de configurações salariais e cálculos de holerite |
+| `invoice-reconciliation.service.ts` | Reconciliação de faturas |
+| `invoices.service.ts` | CRUD e pagamentos de faturas |
+| `salary-settings.service.ts` | CRUD de configurações salariais |
+| `salary-simulator.service.ts` | Cálculos e simulações de holerite |
 | `site-branding.service.ts` | Configurações de branding do site |
-| `card-statement-cycle.utils.ts` | Utilitários de ciclos de fatura |
-| `transactionsGroup.utils.ts` | Agrupamento de transações |
+| `transactions/` | Pasta contendo os serviços focados em transações |
+| `transactions-import.service.ts` | Lógica e parse de importações CSV |
+| `transactions.service.ts` | CRUD unificado de transações |
+| `users.service.ts` | Gestão de usuários do sistema |
 
 ---
 
 ## HOOKS
 
+Os hooks do sistema agora são divididos entre **API (React Query)** e **Feature Logic (Páginas)**.
+
+### `src/shared/hooks/api/` (Data Fetching / React Query)
 | Arquivo | Responsabilidade |
 |---|---|
 | `useAccounts.ts` | Query hook para contas |
-| `useAccountsPageLogic.ts` | Lógica da página de contas |
-| `useBillTrackingPageLogic.ts` | Lógica de acompanhamento mensal |
 | `useCategories.ts` | Query hook para categorias |
-| `useCategoriesPageLogic.ts` | Lógica da página de categorias |
 | `useCreditCards.ts` | Query hook para cartões |
-| `useCreditCardsPageLogic.ts` | Lógica da página de cartões |
-| `useCreditCardDetailsLogic.ts` | Lógica da página de detalhes do cartão |
-| `useDashboardPageLogic.ts` | Lógica do dashboard |
-| `useProfilePageLogic.ts` | Lógica do perfil do usuário |
+| `useInvoices.ts` | Query hook para faturas |
 | `useSalarySettings.ts` | Query hook para configurações salariais |
-| `useSalarySimulatorPageLogic.ts` | Lógica do simulador de salário |
-| `useSiteBranding.ts` | Hook de branding |
-| `useTransactionFormLogic.ts` | Lógica do formulário de transação |
+| `useSiteBranding.ts` | Query hook para branding do site |
 | `useTransactions.ts` | Query hook para transações |
-| `useTransactionsPageLogic.ts` | Lógica da página de transações |
+
+### `src/pages/*/hooks/` (Feature Logic)
+Cada módulo de página (`accounts`, `cards`, `transactions`, etc.) contém seus próprios hooks de lógica:
+Exemplo: `src/pages/accounts/hooks/useAccountsPageLogic.ts`.
+A responsabilidade destes hooks é centralizar os modais, manipulação de estado local, formatação de listagens e ligações com as queries e mutations relativas à página.
 
 ---
 

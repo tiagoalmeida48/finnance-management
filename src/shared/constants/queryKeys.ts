@@ -6,8 +6,13 @@ export interface TransactionQueryFilters {
     is_paid?: boolean;
 }
 
-const getDashboardFilterToken = (filter?: Date) =>
-    filter ? filter.toISOString().slice(0, 10) : 'all';
+type DashboardFilter = Date | { start: string; end: string };
+
+const getDashboardFilterToken = (filter?: DashboardFilter) => {
+    if (!filter) return 'all';
+    if (filter instanceof Date) return filter.toISOString().slice(0, 10);
+    return `${filter.start}_${filter.end}`;
+};
 
 export const queryKeys = {
     accounts: {
@@ -27,9 +32,9 @@ export const queryKeys = {
         firstDate: ['transactions', 'first-date'] as const,
     },
     dashboard: {
-        stats: (filter?: Date) => ['dashboard-stats', getDashboardFilterToken(filter)] as const,
-        charts: (filter?: Date) => ['dashboard-charts', getDashboardFilterToken(filter)] as const,
-        categories: (filter?: Date) => ['dashboard-categories', getDashboardFilterToken(filter)] as const,
+        stats: (filter?: DashboardFilter) => ['dashboard-stats', getDashboardFilterToken(filter)] as const,
+        charts: (filter?: DashboardFilter) => ['dashboard-charts', getDashboardFilterToken(filter)] as const,
+        categories: (filter?: DashboardFilter) => ['dashboard-categories', getDashboardFilterToken(filter)] as const,
     },
     salary: {
         history: ['salary-settings-history'] as const,

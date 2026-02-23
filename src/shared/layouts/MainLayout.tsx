@@ -1,16 +1,15 @@
 import { useState } from 'react';
-import { Box, useMediaQuery, useTheme, AppBar, Toolbar, IconButton, Typography } from '@mui/material';
+import { IconButton } from '@/shared/components/ui/icon-button';
 import { Menu } from 'lucide-react';
-import { Sidebar } from '../components/layout/Sidebar';
-import { colors } from '../theme';
+import { Sidebar } from '@/shared/components/composite/Sidebar';
+import { useMediaQuery } from '@/shared/hooks/useMediaQuery';
 
 interface MainLayoutProps {
     children: React.ReactNode;
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const isMobile = useMediaQuery('(max-width: 899px)');
     const [mobileOpen, setMobileOpen] = useState(false);
 
     const handleDrawerToggle = () => {
@@ -18,33 +17,25 @@ export function MainLayout({ children }: MainLayoutProps) {
     };
 
     return (
-        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+        <div className="flex min-h-screen bg-[var(--color-background)]">
             {/* Mobile Header */}
             {isMobile && (
-                <AppBar
-                    position="fixed"
-                    elevation={0}
-                    sx={{
-                        bgcolor: 'background.default',
-                        borderBottom: `1px solid ${colors.border}`,
-                        zIndex: theme.zIndex.drawer + 1
-                    }}
-                >
-                    <Toolbar>
+                <header className="fixed left-0 right-0 top-0 z-[1301] border-b border-[var(--color-border)] bg-[var(--color-background)]">
+                    <div className="flex h-14 items-center px-4">
                         <IconButton
                             color="inherit"
                             aria-label="open drawer"
                             edge="start"
                             onClick={handleDrawerToggle}
-                            sx={{ mr: 2, color: colors.textPrimary }}
+                            className="mr-2 text-[var(--color-text-primary)]"
                         >
                             <Menu />
                         </IconButton>
-                        <Typography variant="h6" noWrap component="div" sx={{ color: colors.textPrimary }}>
+                        <h1 className="text-base font-semibold text-[var(--color-text-primary)]">
                             Finnance
-                        </Typography>
-                    </Toolbar>
-                </AppBar>
+                        </h1>
+                    </div>
+                </header>
             )}
 
             {/* Sidebar */}
@@ -54,30 +45,14 @@ export function MainLayout({ children }: MainLayoutProps) {
             />
 
             {/* Main Content */}
-            <Box
-                component="main"
-                sx={{
-                    flexGrow: 1,
-                    p: 0,
-                    width: '100%',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    backgroundColor: '#090B12',
-                    // Global Background Styles moved from App.tsx
-                    backgroundImage: `
-                        radial-gradient(circle at 18% 12%, rgba(201, 168, 76, 0.12), transparent 38%),
-                        radial-gradient(circle at 78% 82%, rgba(59, 130, 246, 0.09), transparent 32%),
-                        linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px)
-                    `,
-                    backgroundSize: 'auto, auto, 34px 34px, 34px 34px',
-                    backgroundPosition: '0 0, 0 0, 0 0, 0 0',
-                    // Adjust padding for mobile header
-                    pt: isMobile ? 10 : 0,
-                }}
+            <main
+                className={`relative min-w-0 w-full flex-1 overflow-x-hidden bg-[var(--color-background-alt)] p-0 [background-image:radial-gradient(circle_at_18%_12%,var(--overlay-primary-12),transparent_38%),radial-gradient(circle_at_78%_82%,var(--overlay-info-09),transparent_32%),linear-gradient(var(--overlay-white-06)_1px,transparent_1px),linear-gradient(90deg,var(--overlay-white-06)_1px,transparent_1px)] [background-size:auto,auto,34px_34px,34px_34px] ${isMobile ? 'pt-20' : 'pt-0'
+                    }`}
             >
                 {children}
-            </Box>
-        </Box>
+            </main>
+        </div>
     );
 }
+
+

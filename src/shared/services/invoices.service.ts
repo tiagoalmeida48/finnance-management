@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase/client';
 import type { CreditCardInvoice } from '../interfaces';
-import { invokeSupabaseFunction } from './supabase-functions.service';
+import { reprocessInvoicesFromDate } from './invoice-reconciliation.service';
 
 export const invoicesService = {
     async getByCardId(cardId: string, filters?: { year?: string }) {
@@ -32,10 +32,8 @@ export const invoicesService = {
         if (error && error.code !== 'PGRST116') throw error;
         return (data as CreditCardInvoice) || null;
     },
+
     async reprocessInvoicesFromDate(cardId: string, fromDate: string) {
-        await invokeSupabaseFunction<{ success: true }>('manage-invoices', {
-            action: 'reprocess',
-            payload: { cardId, fromDate },
-        });
+        await reprocessInvoicesFromDate(cardId, fromDate);
     },
 };

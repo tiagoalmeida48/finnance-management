@@ -17,7 +17,7 @@ import {
     planCycleInsertion,
     sortStatementCyclesAsc,
     OPEN_CYCLE_END,
-} from './card-statement-cycle.utils';
+} from '@/shared/utils/card-statement-cycle.utils';
 import { invoicesService } from './invoices.service';
 
 const TRANSACTIONS_PAGE_SIZE = 1000;

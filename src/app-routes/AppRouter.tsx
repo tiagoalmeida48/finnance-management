@@ -1,38 +1,39 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../lib/supabase/auth-context';
-import { LoginPage } from '../pages/LoginPage';
-import { Box, CircularProgress } from '@mui/material';
+import { LoginPage } from '../pages/auth/LoginPage';
 
-const DashboardPage = lazy(() => import('../pages/DashboardPage').then((module) => ({ default: module.DashboardPage })));
-const AccountsPage = lazy(() => import('../pages/AccountsPage').then((module) => ({ default: module.AccountsPage })));
-const TransactionsPage = lazy(() => import('../pages/TransactionsPage').then((module) => ({ default: module.TransactionsPage })));
-const CategoriesPage = lazy(() => import('../pages/CategoriesPage').then((module) => ({ default: module.CategoriesPage })));
-const CreditCardsPage = lazy(() => import('../pages/CreditCardsPage').then((module) => ({ default: module.CreditCardsPage })));
-const CreditCardDetailsPage = lazy(() => import('../pages/CreditCardDetailsPage').then((module) => ({ default: module.CreditCardDetailsPage })));
-const ProfilePage = lazy(() => import('../pages/ProfilePage').then((module) => ({ default: module.ProfilePage })));
-const BillTrackingPage = lazy(() => import('../pages/BillTrackingPage').then((module) => ({ default: module.BillTrackingPage })));
-const SalarySimulatorPage = lazy(() => import('../pages/SalarySimulatorPage').then((module) => ({ default: module.SalarySimulatorPage })));
-const UsersManagementPage = lazy(() => import('../pages/UsersManagementPage').then((module) => ({ default: module.UsersManagementPage })));
+const DashboardPage = lazy(() => import('../pages/dashboard/DashboardPage').then((module) => ({ default: module.DashboardPage })));
+const AccountsPage = lazy(() => import('../pages/accounts/AccountsPage').then((module) => ({ default: module.AccountsPage })));
+const TransactionsPage = lazy(() => import('../pages/transactions/TransactionsPage').then((module) => ({ default: module.TransactionsPage })));
+const CategoriesPage = lazy(() => import('../pages/categories/CategoriesPage').then((module) => ({ default: module.CategoriesPage })));
+const CreditCardsPage = lazy(() => import('../pages/cards/CreditCardsPage').then((module) => ({ default: module.CreditCardsPage })));
+const CreditCardDetailsPage = lazy(() => import('../pages/cards/CreditCardDetailsPage').then((module) => ({ default: module.CreditCardDetailsPage })));
+const ProfilePage = lazy(() => import('../pages/profile/ProfilePage').then((module) => ({ default: module.ProfilePage })));
+const BillTrackingPage = lazy(() => import('../pages/tracking/BillTrackingPage').then((module) => ({ default: module.BillTrackingPage })));
+const SalarySimulatorPage = lazy(() => import('../pages/salary-simulator/SalarySimulatorPage').then((module) => ({ default: module.SalarySimulatorPage })));
+const UsersManagementPage = lazy(() => import('../pages/users/UsersManagementPage').then((module) => ({ default: module.UsersManagementPage })));
 
+function LoadingScreen() {
+    return (
+        <div className="flex h-screen items-center justify-center bg-[var(--color-background)]">
+            <div
+                className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-[var(--color-primary)]"
+                aria-label="Carregando"
+            />
+        </div>
+    );
+}
 
 function RouteFallback() {
-    return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
-            <CircularProgress color="primary" />
-        </Box>
-    );
+    return <LoadingScreen />;
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
 
     if (loading) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
-                <CircularProgress color="primary" />
-            </Box>
-        );
+        return <LoadingScreen />;
     }
 
     if (!user) {
@@ -46,11 +47,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
     const { user, profile, loading } = useAuth();
 
     if (loading) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
-                <CircularProgress color="primary" />
-            </Box>
-        );
+        return <LoadingScreen />;
     }
 
     if (!user) return <Navigate to="/auth/login" replace />;
