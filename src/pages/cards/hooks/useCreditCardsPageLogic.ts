@@ -13,14 +13,35 @@ export function useCreditCardsPageLogic() {
   const [selectedCard, setSelectedCard] = useState<CreditCard | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
-  const handleEdit = (card: CreditCard) => {
-    setSelectedCard(card);
-    setModalOpen(true);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [menuCard, setMenuCard] = useState<CreditCard | null>(null);
+
+  const handleOpenMenu = (
+    event: React.MouseEvent<HTMLElement>,
+    card: CreditCard,
+  ) => {
+    setAnchorEl(event.currentTarget);
+    setMenuCard(card);
   };
 
-  const handleDelete = (card: CreditCard) => {
-    setSelectedCard(card);
-    setDeleteModalOpen(true);
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+  };
+
+  const handleEdit = () => {
+    if (menuCard) {
+      setSelectedCard(menuCard);
+      setModalOpen(true);
+      handleCloseMenu();
+    }
+  };
+
+  const handleDelete = () => {
+    if (menuCard) {
+      setSelectedCard(menuCard);
+      setDeleteModalOpen(true);
+      handleCloseMenu();
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -49,6 +70,10 @@ export function useCreditCardsPageLogic() {
     setSelectedCard,
     deleteModalOpen,
     setDeleteModalOpen,
+    anchorEl,
+    menuCard,
+    handleOpenMenu,
+    handleCloseMenu,
     handleEdit,
     handleDelete,
     handleConfirmDelete,

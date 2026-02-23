@@ -28,12 +28,7 @@ interface AccountCardProps {
   navigate: NavigateFunction;
 }
 
-const currencyFormatter = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-});
-
-const formatCurrency = (value: number) => currencyFormatter.format(value);
+import { formatCurrency } from "@/shared/utils/currency";
 
 export function AccountCard({
   account,
@@ -48,7 +43,7 @@ export function AccountCard({
   const balanceColorRef = useApplyElementStyles<HTMLParagraphElement>({
     color:
       account.current_balance >= 0
-        ? account.color || "var(--color-primary)"
+        ? "var(--color-success)"
         : "var(--color-error)",
   });
 

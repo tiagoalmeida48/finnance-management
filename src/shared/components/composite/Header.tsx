@@ -1,14 +1,13 @@
 import { IconButton } from "@/shared/components/ui/icon-button";
 import { useAuth } from "@/lib/supabase/auth-context";
-import { useSiteBranding } from "@/shared/hooks/api/useSiteBranding";
 import { LogOut, User as UserIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export function Header() {
   const { user, profile, signOut } = useAuth();
-  const { siteTitle } = useSiteBranding();
   const navigate = useNavigate();
+  const siteTitle = "Gestão Financeira";
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 

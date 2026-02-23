@@ -35,11 +35,11 @@ export function PersonalInfoForm({
         </Heading>
       </Container>
 
-      <Grid className="grid-cols-12 gap-2">
-        <Container unstyled className="col-span-12 md:col-span-3">
+      <Grid className="grid-cols-1 gap-4 md:grid-cols-12 lg:gap-5">
+        <Container unstyled className="md:col-span-4 lg:col-span-3 relative">
           {photoSection}
         </Container>
-        <Container unstyled className="col-span-12 md:col-span-9">
+        <Container unstyled className="md:col-span-8 lg:col-span-9">
           <Stack className="space-y-2">
             <FormField
               label={formMessages.fullNameLabel}

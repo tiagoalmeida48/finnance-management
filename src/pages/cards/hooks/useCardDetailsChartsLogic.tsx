@@ -26,10 +26,7 @@ interface PieTooltipProps {
   payload?: ReadonlyArray<{ payload?: CardCategoryPoint }>;
 }
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-    value,
-  );
+import { formatCurrency } from "@/shared/utils/currency";
 
 const formatCompact = (value: number) => {
   if (value >= 1000) return `R$ ${(value / 1000).toFixed(1)}k`;
@@ -58,7 +55,7 @@ export function useCardDetailsChartsLogic({
     () =>
       chartData.length > 0
         ? chartData.reduce((sum, item) => sum + (item.total || 0), 0) /
-          chartData.length
+        chartData.length
         : 0,
     [chartData],
   );

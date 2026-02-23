@@ -4,29 +4,22 @@ import { messages } from "@/shared/i18n/messages";
 import { Text } from "@/shared/components/ui/Text";
 import { Heading } from "@/shared/components/ui/Heading";
 import { Container } from "@/shared/components/layout/Container";
+import { formatCurrency } from "@/shared/utils/currency";
 
 interface DashboardSummaryProps {
   stats:
-    | {
-        totalBalance: number;
-        totalLimit: number;
-        monthlyIncome: number;
-        monthlyExpenses: number;
-      }
-    | undefined;
+  | {
+    totalBalance: number;
+    totalLimit: number;
+    monthlyIncome: number;
+    monthlyExpenses: number;
+  }
+  | undefined;
   isLoading: boolean;
 }
 
 export function DashboardSummary({ stats, isLoading }: DashboardSummaryProps) {
   const summaryMessages = messages.dashboard.summary;
-  const formatBRL = (val: number) => {
-    const formatted = new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-      minimumFractionDigits: 2,
-    }).format(Math.abs(val));
-    return val < 0 ? formatted.replace("R$", "R$ -") : formatted;
-  };
 
   const cards = [
     {
@@ -93,9 +86,9 @@ export function DashboardSummary({ stats, isLoading }: DashboardSummaryProps) {
                     ) : (
                       <Heading
                         level={3}
-                        className={`font-heading text-2xl font-bold tracking-[-0.03em] ${card.isNegative ? "text-[var(--color-error)]" : "text-[var(--color-text-primary)]"}`}
+                        className={`font-heading text-2xl font-bold tracking-[-0.03em] ${card.isNegative ? "text-[var(--color-error)]" : "text-[var(--color-success)]"}`}
                       >
-                        {formatBRL(card.value)}
+                        {formatCurrency(card.value)}
                       </Heading>
                     )}
                   </Container>

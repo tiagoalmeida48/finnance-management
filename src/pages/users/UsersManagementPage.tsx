@@ -1,8 +1,10 @@
 import { useUsersManagementPageLogic } from "@/pages/users/hooks/useUsersManagementPageLogic";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
-import { Edit2, KeyRound, Plus, Trash2, Users } from "lucide-react";
+import { IconButton } from "@/shared/components/ui/icon-button";
+import { Edit2, KeyRound, Plus, Trash2, Users, MoreVertical } from "lucide-react";
 import { colors } from "@/shared/theme";
+import { ActionMenuPopover } from "@/shared/components/composite/ActionMenuPopover";
 import { UsersManagementDialogs } from "@/pages/users/components/dialogs/UsersManagementDialogs";
 import { Container } from "@/shared/components/layout/Container";
 import { Section } from "@/shared/components/layout/Section";
@@ -41,9 +43,14 @@ export function UsersManagementPage() {
     isAdmin,
     setIsAdmin,
     saving,
+    anchorEl,
+    handleOpenMenu,
+    handleCloseMenu,
+    handleMenuEdit,
+    handleMenuPassword,
+    handleMenuDelete,
     resetForm,
     handleCreate,
-    handleOpenEdit,
     handleUpdate,
     handleUpdatePassword,
     handleDelete,
@@ -76,11 +83,10 @@ export function UsersManagementPage() {
           {message && (
             <Container
               unstyled
-              className={`rounded-lg border px-3 py-2 text-sm ${
-                message.type === "success"
-                  ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-300"
-                  : "border-red-400/30 bg-red-500/10 text-red-300"
-              }`}
+              className={`rounded-lg border px-3 py-2 text-sm ${message.type === "success"
+                ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-300"
+                : "border-red-400/30 bg-red-500/10 text-red-300"
+                }`}
             >
               {message.text}
             </Container>
@@ -156,34 +162,12 @@ export function UsersManagementPage() {
                                 unstyled
                                 className="flex justify-end gap-1"
                               >
-                                <Button
+                                <IconButton
                                   size="small"
-                                  variant="outlined"
-                                  startIcon={<Edit2 size={14} />}
-                                  onClick={() => handleOpenEdit(user)}
+                                  onClick={(e) => handleOpenMenu(e, user)}
                                 >
-                                  {pageMessages.actions.edit}
-                                </Button>
-                                <Button
-                                  size="small"
-                                  variant="outlined"
-                                  startIcon={<KeyRound size={14} />}
-                                  onClick={() => {
-                                    setPasswordTarget(user);
-                                    setPassword("");
-                                  }}
-                                >
-                                  {pageMessages.actions.password}
-                                </Button>
-                                <Button
-                                  size="small"
-                                  variant="outlined"
-                                  color="error"
-                                  startIcon={<Trash2 size={14} />}
-                                  onClick={() => setDeleteTarget(user)}
-                                >
-                                  {pageMessages.actions.delete}
-                                </Button>
+                                  <MoreVertical size={16} />
+                                </IconButton>
                               </Container>
                             </TableCell>
                           </TableRow>
@@ -197,6 +181,34 @@ export function UsersManagementPage() {
           </Card>
         </Container>
       </Container>
+
+      <ActionMenuPopover
+        open={Boolean(anchorEl)}
+        onClose={handleCloseMenu}
+        anchorEl={anchorEl}
+      >
+        <button
+          type="button"
+          onClick={handleMenuEdit}
+          className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-white/5"
+        >
+          <Edit2 size={16} /> {pageMessages.actions.edit}
+        </button>
+        <button
+          type="button"
+          onClick={handleMenuPassword}
+          className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-white/5"
+        >
+          <KeyRound size={16} /> {pageMessages.actions.password}
+        </button>
+        <button
+          type="button"
+          onClick={handleMenuDelete}
+          className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm text-[var(--color-error)] hover:bg-white/5"
+        >
+          <Trash2 size={16} /> {pageMessages.actions.delete}
+        </button>
+      </ActionMenuPopover>
 
       <UsersManagementDialogs
         createOpen={createOpen}

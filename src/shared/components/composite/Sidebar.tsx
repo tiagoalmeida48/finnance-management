@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/supabase/auth-context";
-import { useSiteBranding } from "@/shared/hooks/api/useSiteBranding";
 import { SidebarMenuItem } from "./SidebarMenuItem";
 import { useMediaQuery } from "@/shared/hooks/useMediaQuery";
 
@@ -39,8 +38,9 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, profile, signOut } = useAuth();
-  const { siteTitle, logoImage } = useSiteBranding();
   const [isExpanded, setIsExpanded] = useState(true);
+
+  const siteTitle = "Gestão Financeira";
 
   const open = isMobile ? true : isExpanded;
   const menuItems = profile?.is_admin
@@ -59,32 +59,24 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
 
   const sidebarContent = (
     <div
-      className={`flex h-full flex-col justify-between border-r border-[var(--color-border)] bg-[var(--color-surface)] ${
-        isMobile ? "w-[220px]" : open ? "w-[220px]" : "w-[72px]"
-      }`}
+      className={`flex h-full flex-col justify-between border-r border-[var(--color-border)] bg-[var(--color-surface)] ${isMobile ? "w-[220px]" : open ? "w-[220px]" : "w-[72px]"
+        }`}
     >
       <div>
         <div className="flex min-h-[72px] items-center justify-start gap-1.5 border-b border-[var(--color-border)] p-2">
           <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden">
-            {logoImage ? (
-              <img
-                src={logoImage}
-                alt="Logo do site"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <span className="font-heading text-base font-bold text-[var(--color-background)]">
-                {siteTitle[0]?.toUpperCase() || "F"}
-              </span>
-            )}
+            <img
+              src="/finnance-icon.svg"
+              alt="Logo do site"
+              className="h-full w-full object-cover"
+            />
           </div>
 
           <p
-            className={`font-heading overflow-hidden whitespace-nowrap text-[15px] font-bold tracking-[-0.02em] text-[var(--color-text-primary)] transition-all duration-200 ${
-              open
+            className={`font-heading overflow-hidden whitespace-nowrap text-[15px] font-bold tracking-[-0.02em] text-[var(--color-text-primary)] transition-all duration-200 ${open
                 ? "w-auto translate-x-0 opacity-100"
                 : "w-0 -translate-x-2 opacity-0"
-            }`}
+              }`}
           >
             {siteTitle}
           </p>
@@ -170,9 +162,8 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
           size="small"
           title={open ? "Retrair menu" : "Expandir menu"}
           onClick={() => setIsExpanded((prev) => !prev)}
-          className={`fixed top-9 z-[1300] h-8 w-8 -translate-y-1/2 rounded-full border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text-muted)] shadow-[0_8px_18px_var(--overlay-black-35)] transition-[left] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-[var(--overlay-white-08)] hover:text-[var(--color-text-primary)] ${
-            open ? "left-[204px]" : "left-[56px]"
-          }`}
+          className={`fixed top-9 z-[1300] h-8 w-8 -translate-y-1/2 rounded-full border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text-muted)] shadow-[0_8px_18px_var(--overlay-black-35)] transition-[left] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-[var(--overlay-white-08)] hover:text-[var(--color-text-primary)] ${open ? "left-[204px]" : "left-[56px]"
+            }`}
         >
           {open ? <ChevronsLeft size={14} /> : <ChevronsRight size={14} />}
         </IconButton>
@@ -192,9 +183,8 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
         </div>
       ) : (
         <div
-          className={`h-full transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-            open ? "w-[220px]" : "w-[72px]"
-          }`}
+          className={`h-full transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${open ? "w-[220px]" : "w-[72px]"
+            }`}
         >
           {sidebarContent}
         </div>

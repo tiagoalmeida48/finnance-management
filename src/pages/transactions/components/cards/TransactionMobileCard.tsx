@@ -19,6 +19,7 @@ import { messages } from "@/shared/i18n/messages";
 import { Container } from "@/shared/components/layout/Container";
 import { Text } from "@/shared/components/ui/Text";
 import { Button } from "@/shared/components/ui/button";
+import { formatCurrency } from "@/shared/utils/currency";
 
 interface TransactionMobileCardProps {
   item: Transaction | TransactionGroup;
@@ -50,19 +51,12 @@ export function TransactionMobileCard({
   const toggleSelection = () => {
     if (isGroup) {
       group!.items.forEach((it) => {
-        if (!isSelected && !selectedIds.includes(it.id)) handleSelectRow(it.id);
-        if (isSelected && selectedIds.includes(it.id)) handleSelectRow(it.id);
+        handleSelectRow(it.id);
       });
     } else {
       handleSelectRow(transaction.id);
     }
   };
-
-  const formatBRL = (amount: number) =>
-    new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(amount);
 
   const isBillPayment = transaction.payment_method === "bill_payment";
   const isPaid = isGroup ? group!.isAllPaid : transaction.is_paid;
@@ -83,17 +77,13 @@ export function TransactionMobileCard({
         return {
           icon: TrendingUp,
           iconClass: "bg-[var(--color-greenBg)] text-[var(--color-success)]",
-          amountClass: isPaid
-            ? "text-[var(--color-text-primary)]"
-            : "text-[var(--color-success)]",
+          amountClass: "text-[var(--color-success)]",
         };
       case "expense":
         return {
           icon: TrendingDown,
           iconClass: "bg-[var(--color-redBg)] text-[var(--color-error)]",
-          amountClass: isPaid
-            ? "text-[var(--color-text-primary)]"
-            : "text-[var(--color-error)]",
+          amountClass: "text-[var(--color-error)]",
         };
       default:
         return {
@@ -223,7 +213,7 @@ export function TransactionMobileCard({
             <Text
               className={`mt-1 text-base font-bold ${typeConfig.amountClass}`}
             >
-              {formatBRL(displayAmount)}
+              {formatCurrency(displayAmount)}
             </Text>
           </Container>
 
@@ -239,11 +229,10 @@ export function TransactionMobileCard({
             <button
               type="button"
               onClick={toggleSelection}
-              className={`flex h-5 w-5 items-center justify-center rounded transition-all ${
-                isSelected
-                  ? "text-[var(--color-warning)] hover:brightness-75 hover:bg-[var(--color-warning)]/10"
-                  : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-white/5"
-              }`}
+              className={`flex h-5 w-5 items-center justify-center rounded transition-all ${isSelected
+                ? "text-[var(--color-warning)] hover:brightness-75 hover:bg-[var(--color-warning)]/10"
+                : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-white/5"
+                }`}
             >
               {isSelected ? <CheckCircle2 size={16} /> : <Circle size={16} />}
             </button>
@@ -260,8 +249,8 @@ export function TransactionMobileCard({
               {expanded
                 ? messages.transactions.mobileCard.hideInstallments
                 : messages.transactions.mobileCard.showInstallments(
-                    group!.items.length,
-                  )}
+                  group!.items.length,
+                )}
               <ChevronDown
                 size={14}
                 className={`ml-1 transition-transform ${expanded ? "rotate-180" : ""}`}

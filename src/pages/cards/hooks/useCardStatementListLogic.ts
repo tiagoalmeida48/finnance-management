@@ -23,10 +23,9 @@ export interface StatementStatusBadge {
 export const getStatementDisplayDateKey = (transaction: StatementTransaction) =>
   transaction.purchase_date || transaction.payment_date;
 
-export const formatCardStatementCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-    value,
-  );
+import { formatCurrency } from "@/shared/utils/currency";
+
+export const formatCardStatementCurrency = (value: number) => formatCurrency(value);
 
 interface UseCardStatementListLogicParams {
   cardId: string;

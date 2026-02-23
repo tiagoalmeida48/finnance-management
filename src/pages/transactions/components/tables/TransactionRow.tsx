@@ -18,6 +18,7 @@ import { messages } from "@/shared/i18n/messages";
 import { Container } from "@/shared/components/layout/Container";
 import { Text } from "@/shared/components/ui/Text";
 import { TableCell, TableRow } from "@/shared/components/layout/Table";
+import { formatCurrency } from "@/shared/utils/currency";
 
 interface TransactionRowProps {
   transaction: Transaction;
@@ -41,13 +42,6 @@ export function TransactionRow({
   handleOpenMenu,
   isPendingToggle,
 }: TransactionRowProps) {
-  const formatBRL = (amount: number) =>
-    new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-      minimumFractionDigits: 2,
-    }).format(amount);
-
   const isBillPayment = t.payment_method === "bill_payment";
 
   const getTypeConfig = (type: string) => {
@@ -73,7 +67,7 @@ export function TransactionRow({
       case "expense":
         return {
           icon: TrendingDown,
-          amountClass: "text-white", // Use white for expense amounts in dark mode, or text-primary
+          amountClass: "text-[var(--color-error)]",
           iconWrapClass: "bg-[var(--color-error)]/10 text-[var(--color-error)]",
         };
       default:
@@ -92,7 +86,6 @@ export function TransactionRow({
     t.type === "expense" && !isBillPayment
       ? t.purchase_date || t.payment_date
       : t.payment_date || t.purchase_date;
-  const amountPrefix = t.type === "expense" && !isBillPayment ? "-" : "";
   const setCategoryChipRef = (node: HTMLSpanElement | null, color?: string) => {
     if (!node) return;
     node.style.setProperty(
@@ -109,23 +102,21 @@ export function TransactionRow({
 
   return (
     <TableRow
-      className={`group min-h-14 border-b border-white/5 transition-all duration-200 hover:bg-white/[0.02] ${
-        selectedIds.includes(t.id)
+      className={`group min-h-14 border-b border-white/5 transition-all duration-200 hover:bg-white/[0.02] ${selectedIds.includes(t.id)
           ? "bg-[var(--color-primary)]/5"
           : isChild
             ? "bg-transparent"
             : "bg-transparent"
-      } ${isPendingToggle ? "opacity-50" : "opacity-100"}`}
+        } ${isPendingToggle ? "opacity-50" : "opacity-100"}`}
     >
       <TableCell className="px-2 py-2">
         <button
           type="button"
           onClick={() => handleSelectRow(t.id)}
-          className={`flex h-5 w-5 items-center justify-center rounded transition-all ${
-            selectedIds.includes(t.id)
+          className={`flex h-5 w-5 items-center justify-center rounded transition-all ${selectedIds.includes(t.id)
               ? "text-[var(--color-warning)] hover:brightness-75 hover:bg-[var(--color-warning)]/10"
               : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-white/5"
-          }`}
+            }`}
         >
           {selectedIds.includes(t.id) ? (
             <CheckCircle2 size={16} />
@@ -301,8 +292,7 @@ export function TransactionRow({
       <TableCell
         className={`min-w-[100px] px-2 py-2 text-right text-[13px] font-bold tracking-tight ${typeConfig.amountClass}`}
       >
-        {amountPrefix}
-        {formatBRL(t.amount)}
+        {formatCurrency(t.amount)}
       </TableCell>
       <TableCell className="w-12 px-2 py-2 text-right">
         <IconButton

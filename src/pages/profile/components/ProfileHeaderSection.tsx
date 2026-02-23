@@ -21,14 +21,14 @@ export function ProfileHeaderSection({
   return (
     <Container
       unstyled
-      className="rounded-lg border border-white/[0.08] bg-white/[0.01] p-1.5 md:p-3.5"
+      className="flex h-full w-full items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 shadow-sm"
     >
-      <Stack className="flex-row items-center justify-between gap-1.5">
+      <Stack className="flex-row items-center justify-between w-full gap-3">
         <Container unstyled className="relative">
           <Container unstyled className="relative">
             <Container
               unstyled
-              className="h-16 w-16 overflow-hidden rounded-full border-[1.5px] border-[var(--color-primary)47] bg-[var(--color-primary)] text-[var(--color-neutral-black)] shadow-[0_6px_14px_var(--overlay-black-25)]"
+              className="h-20 w-20 overflow-hidden rounded-full border-[1.5px] border-[var(--color-primary)50] bg-[var(--color-primary)] text-[var(--color-neutral-black)] shadow-md"
             >
               {avatarUrl ? (
                 <img
@@ -41,7 +41,7 @@ export function ProfileHeaderSection({
             <Container unstyled className="absolute bottom-0 right-0">
               <IconButton
                 component="label"
-                className="h-[26px] w-[26px] border-2 border-[var(--color-avatar-border-dark)] bg-[var(--color-primary)] text-[var(--color-avatar-text-dark)] shadow-[0_4px_10px_var(--overlay-black-25)] hover:bg-[var(--color-primary-dark)]"
+                className="h-[24px] w-[24px] border-[2px] border-[var(--color-avatar-border-dark)] bg-[var(--color-primary)] text-[var(--color-avatar-text-dark)] shadow-[0_4px_10px_var(--overlay-black-25)] hover:bg-[var(--color-primary-dark)]"
               >
                 <input
                   hidden
@@ -66,11 +66,11 @@ export function ProfileHeaderSection({
           component="label"
           variant="outlined"
           size="small"
-          startIcon={<Camera size={15} />}
+          startIcon={<Camera size={14} />}
           disabled={uploading}
-          className="min-w-0 rounded-[6px] border-[var(--color-primary)80] px-[5px] font-semibold text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--overlay-primary-08)]"
+          className="rounded-[6px] border-[var(--color-primary)80] px-2 py-1 text-xs font-semibold text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--overlay-primary-08)]"
         >
-          {uploading ? headerMessages.uploading : headerMessages.changePhoto}
+          {uploading ? headerMessages.uploading : "Trocar"}
           <input
             hidden
             accept="image/*"

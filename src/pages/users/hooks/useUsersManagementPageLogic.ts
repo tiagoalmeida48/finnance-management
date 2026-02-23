@@ -25,6 +25,21 @@ export function useUsersManagementPageLogic() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [menuUser, setMenuUser] = useState<ManagedUser | null>(null);
+
+  const handleOpenMenu = (
+    event: React.MouseEvent<HTMLElement>,
+    user: ManagedUser,
+  ) => {
+    setAnchorEl(event.currentTarget);
+    setMenuUser(user);
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+  };
+
   const loadUsers = useCallback(async () => {
     setLoading(true);
     setMessage(null);
@@ -70,6 +85,28 @@ export function useUsersManagementPageLogic() {
     setFullName(user.full_name ?? "");
     setEmail(user.email);
     setIsAdmin(user.is_admin);
+  };
+
+  const handleMenuEdit = () => {
+    if (menuUser) {
+      handleOpenEdit(menuUser);
+      handleCloseMenu();
+    }
+  };
+
+  const handleMenuPassword = () => {
+    if (menuUser) {
+      setPasswordTarget(menuUser);
+      setPassword("");
+      handleCloseMenu();
+    }
+  };
+
+  const handleMenuDelete = () => {
+    if (menuUser) {
+      setDeleteTarget(menuUser);
+      handleCloseMenu();
+    }
   };
 
   const handleUpdate = async () => {
@@ -145,6 +182,12 @@ export function useUsersManagementPageLogic() {
     isAdmin,
     setIsAdmin,
     saving,
+    anchorEl,
+    handleOpenMenu,
+    handleCloseMenu,
+    handleMenuEdit,
+    handleMenuPassword,
+    handleMenuDelete,
     resetForm,
     handleCreate,
     handleOpenEdit,

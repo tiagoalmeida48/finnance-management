@@ -1,6 +1,5 @@
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import { useSiteBranding } from "@/shared/hooks/api/useSiteBranding";
 import { messages } from "@/shared/i18n/messages";
 import { useLoginPageLogic } from "@/pages/auth/hooks/useLoginPageLogic";
 import { FormField } from "@/shared/components/forms/FormField";
@@ -10,7 +9,7 @@ import { FormDialog } from "@/shared/components/composite/FormDialog";
 
 export function LoginPage() {
   const loginMessages = messages.auth.login;
-  const { siteTitle } = useSiteBranding();
+  const siteTitle = "Gestão Financeira";
   const { formMethods, isLoading, error, onSubmit } = useLoginPageLogic();
   const {
     register,
@@ -26,7 +25,7 @@ export function LoginPage() {
 
       <FormDialog
         open={true}
-        onClose={() => {}}
+        onClose={() => { }}
         title={siteTitle}
         onSubmit={onSubmit}
         maxWidth="xs"

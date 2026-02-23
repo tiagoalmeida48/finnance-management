@@ -1,8 +1,7 @@
 import {
   BarChart3,
   CreditCard as CardIcon,
-  Pencil,
-  Trash2,
+  MoreVertical,
 } from "lucide-react";
 import type { NavigateFunction } from "react-router-dom";
 import { Card, CardContent } from "@/shared/components/ui/card";
@@ -19,15 +18,16 @@ import { Container } from "@/shared/components/layout/Container";
 interface CreditCardCardProps {
   card: CreditCard;
   navigate: NavigateFunction;
-  handleEdit: (card: CreditCard) => void;
-  handleDelete: (card: CreditCard) => void;
+  handleOpenMenu: (
+    event: React.MouseEvent<HTMLElement>,
+    card: CreditCard,
+  ) => void;
 }
 
 export function CreditCardCard({
   card,
   navigate,
-  handleEdit,
-  handleDelete,
+  handleOpenMenu,
 }: CreditCardCardProps) {
   const {
     cardMessages,
@@ -40,13 +40,11 @@ export function CreditCardCard({
     usageBarRef,
     summaryItems,
     handleOpenDetails,
-    handleEdit: onEdit,
-    handleDelete: onDelete,
   } = useCreditCardCardLogic({
     card,
     navigate,
-    onEditCard: handleEdit,
-    onDeleteCard: handleDelete,
+    onEditCard: () => { },
+    onDeleteCard: () => { },
   });
 
   return (
@@ -95,17 +93,10 @@ export function CreditCardCard({
             </IconButton>
             <IconButton
               size="small"
-              onClick={onEdit}
+              onClick={(e) => handleOpenMenu(e, card)}
               className="h-[34px] w-[34px] rounded-[8px] text-[var(--color-text-muted)] hover:bg-white/5 hover:text-[var(--color-text-primary)]"
             >
-              <Pencil size={18} />
-            </IconButton>
-            <IconButton
-              size="small"
-              onClick={onDelete}
-              className="h-[34px] w-[34px] rounded-[8px] text-[var(--color-text-muted)] hover:bg-white/5 hover:text-[var(--color-error)]"
-            >
-              <Trash2 size={18} />
+              <MoreVertical size={18} />
             </IconButton>
           </Row>
         </Row>
@@ -161,6 +152,6 @@ export function CreditCardCard({
           ))}
         </Grid>
       </CardContent>
-    </Card>
+    </Card >
   );
 }

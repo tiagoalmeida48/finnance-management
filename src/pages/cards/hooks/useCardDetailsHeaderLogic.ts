@@ -19,10 +19,7 @@ interface UseCardDetailsHeaderLogicParams {
   setIsAllTime: (value: boolean) => void;
 }
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-    value,
-  );
+import { formatCurrency } from "@/shared/utils/currency";
 
 export function useCardDetailsHeaderLogic({
   card,
@@ -72,7 +69,7 @@ export function useCardDetailsHeaderLogic({
         iconColor: "var(--color-text-muted)",
         label: headerMessages.totalLimit,
         value: formatCurrency(card.credit_limit || 0),
-        valueClass: "text-[var(--color-text-primary)]",
+        valueClass: "text-[var(--color-success)]",
       },
       {
         key: "available",

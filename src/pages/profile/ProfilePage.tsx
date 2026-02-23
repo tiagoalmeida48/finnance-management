@@ -5,7 +5,6 @@ import { useProfilePageLogic } from "@/pages/profile/hooks/useProfilePageLogic";
 import { ProfileHeaderSection } from "./components/ProfileHeaderSection";
 import { PersonalInfoForm } from "./components/PersonalInfoForm";
 import { SecurityForm } from "./components/SecurityForm";
-import { SiteBrandingForm } from "./components/SiteBrandingForm";
 import { Container } from "@/shared/components/layout/Container";
 import { Section } from "@/shared/components/layout/Section";
 import { Grid } from "@/shared/components/layout/Grid";
@@ -19,7 +18,6 @@ export function ProfilePage() {
   const pageMessages = messages.profile.page;
   const {
     user,
-    profile,
     loading,
     fetching,
     message,
@@ -64,8 +62,8 @@ export function ProfilePage() {
             <Container
               unstyled
               className={`rounded-lg border px-3 py-2 text-sm ${message.type === "success"
-                  ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-300"
-                  : "border-red-400/30 bg-red-500/10 text-red-300"
+                ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-300"
+                : "border-red-400/30 bg-red-500/10 text-red-300"
                 }`}
             >
               {message.text}
@@ -73,7 +71,7 @@ export function ProfilePage() {
           )}
 
           <Grid className="lg:grid-cols-12">
-            <Container unstyled className="lg:col-span-8">
+            <Container unstyled className="lg:col-span-6">
               <Card className="h-full rounded-[14px]">
                 <CardContent className="p-[18px] md:p-[22px]">
                   <Stack className="space-y-3">
@@ -98,7 +96,15 @@ export function ProfilePage() {
                         />
                       }
                     />
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Container>
 
+            <Container unstyled className="lg:col-span-6">
+              <Card className="h-full rounded-[14px]">
+                <CardContent className="p-[18px] md:p-[22px]">
+                  <Stack className="space-y-3">
                     <Container unstyled className="flex items-center gap-1">
                       <ShieldCheck size={18} color={colors.accent} />
                       <Heading level={3} className="font-heading font-bold">
@@ -120,18 +126,6 @@ export function ProfilePage() {
                 </CardContent>
               </Card>
             </Container>
-
-            {profile?.is_admin && (
-              <Container unstyled className="lg:col-span-4">
-                <Card className="h-full rounded-[14px]">
-                  <CardContent className="p-[18px] md:p-[22px]">
-                    <Container unstyled className="space-y-3">
-                      <SiteBrandingForm />
-                    </Container>
-                  </CardContent>
-                </Card>
-              </Container>
-            )}
           </Grid>
         </Stack>
       </Container>

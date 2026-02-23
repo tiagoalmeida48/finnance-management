@@ -12,10 +12,7 @@ interface UseCreditCardCardLogicParams {
   onDeleteCard: (card: CreditCard) => void;
 }
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-    value,
-  );
+import { formatCurrency } from "@/shared/utils/currency";
 
 export function useCreditCardCardLogic({
   card,
@@ -63,7 +60,7 @@ export function useCreditCardCardLogic({
         key: "invoice",
         label: cardMessages.currentInvoice,
         value: formatCurrency(card.current_invoice || 0),
-        valueClass: "text-[var(--color-warning)]",
+        valueClass: "text-[var(--color-error)]",
       },
     ],
     [

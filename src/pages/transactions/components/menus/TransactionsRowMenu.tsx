@@ -1,14 +1,14 @@
 import type { ReactNode } from "react";
 import { CalendarDays, CheckCircle2, Pencil, Plus, Trash2 } from "lucide-react";
 import type { Transaction } from "@/shared/services/transactions.service";
+import { ActionMenuPopover } from "@/shared/components/composite/ActionMenuPopover";
 import { messages } from "@/shared/i18n/messages";
 import { transactionsPageStyles } from "../../TransactionsPage.styles";
-import { Container } from "@/shared/components/layout/Container";
 import { Button } from "@/shared/components/ui/button";
 
 interface TransactionsRowMenuProps {
   open: boolean;
-  menuPositionRef: (node: HTMLDivElement | null) => void;
+  anchorEl: HTMLElement | null;
   menuTransaction: Transaction | null;
   duplicatePending: boolean;
   insertInstallmentPending: boolean;
@@ -63,7 +63,7 @@ function MenuAction({
 
 export function TransactionsRowMenu({
   open,
-  menuPositionRef,
+  anchorEl,
   menuTransaction,
   duplicatePending,
   insertInstallmentPending,
@@ -78,60 +78,45 @@ export function TransactionsRowMenu({
   const rowMenuMessages = messages.transactions.rowMenu;
 
   return (
-    <>
-      <div
-        className="fixed inset-0 z-40"
-        onClick={onClose}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          onClose();
-        }}
+    <ActionMenuPopover open={open} onClose={onClose} anchorEl={anchorEl}>
+      <MenuAction
+        onClick={onEdit}
+        icon={<Pencil size={16} />}
+        label={rowMenuMessages.edit}
       />
-      <Container
-        unstyled
-        ref={menuPositionRef}
-        className={transactionsPageStyles.rowMenu}
-      >
-        <MenuAction
-          onClick={onEdit}
-          icon={<Pencil size={16} />}
-          label={rowMenuMessages.edit}
-        />
-        <MenuAction
-          onClick={onDuplicate}
-          disabled={duplicatePending}
-          icon={<Plus size={16} />}
-          label={rowMenuMessages.duplicate}
-        />
+      <MenuAction
+        onClick={onDuplicate}
+        disabled={duplicatePending}
+        icon={<Plus size={16} />}
+        label={rowMenuMessages.duplicate}
+      />
 
-        {menuTransaction?.installment_group_id ? (
-          <MenuAction
-            onClick={onInsertInstallmentBetween}
-            disabled={insertInstallmentPending}
-            icon={<CalendarDays size={16} />}
-            label={rowMenuMessages.insertInstallmentBetween}
-          />
-        ) : null}
-
+      {menuTransaction?.installment_group_id ? (
         <MenuAction
-          onClick={onTogglePaid}
-          icon={<CheckCircle2 size={16} />}
-          label={
-            menuTransaction?.is_paid
-              ? rowMenuMessages.markPending
-              : rowMenuMessages.markPaid
-          }
-          actionColor={menuTransaction?.is_paid ? "warning" : "success"}
+          onClick={onInsertInstallmentBetween}
+          disabled={insertInstallmentPending}
+          icon={<CalendarDays size={16} />}
+          label={rowMenuMessages.insertInstallmentBetween}
         />
+      ) : null}
 
-        <MenuAction
-          onClick={onDelete}
-          icon={<Trash2 size={16} />}
-          label={rowMenuMessages.delete}
-          actionColor="danger"
-        />
-        <Button type="button" onClick={onClose} className="hidden" />
-      </Container>
-    </>
+      <MenuAction
+        onClick={onTogglePaid}
+        icon={<CheckCircle2 size={16} />}
+        label={
+          menuTransaction?.is_paid
+            ? rowMenuMessages.markPending
+            : rowMenuMessages.markPaid
+        }
+        actionColor={menuTransaction?.is_paid ? "warning" : "success"}
+      />
+
+      <MenuAction
+        onClick={onDelete}
+        icon={<Trash2 size={16} />}
+        label={rowMenuMessages.delete}
+        actionColor="danger"
+      />
+    </ActionMenuPopover>
   );
 }

@@ -25,10 +25,7 @@ interface UsePayBillModalLogicParams {
   totalAmount: number;
 }
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-    value,
-  );
+import { formatCurrency } from "@/shared/utils/currency";
 
 export function usePayBillModalLogic({
   onClose,

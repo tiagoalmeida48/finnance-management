@@ -4,7 +4,6 @@ import { TransactionsFilter } from "./components/filters/TransactionsFilter";
 import { TransactionsToolbar } from "./components/filters/TransactionsToolbar";
 import { TransactionsTable } from "./components/tables/TransactionsTable";
 import { useMediaQuery } from "@/shared/hooks/useMediaQuery";
-import { useApplyElementStyles } from "@/shared/hooks/useApplyElementStyles";
 import { transactionsPageStyles } from "./TransactionsPage.styles";
 import { TransactionsHeader } from "./components/headers/TransactionsHeader";
 import { TransactionsRowMenu } from "./components/menus/TransactionsRowMenu";
@@ -99,13 +98,6 @@ export function TransactionsPage() {
   } = useTransactionsPageLogic();
 
   const hasSelection = selectedIds.length > 0;
-  const menuRect = anchorEl
-    ? (anchorEl as HTMLElement).getBoundingClientRect()
-    : null;
-  const menuPositionRef = useApplyElementStyles<HTMLDivElement>({
-    top: menuRect ? `${menuRect.bottom + 6}px` : undefined,
-    right: menuRect ? `${window.innerWidth - menuRect.right}px` : undefined,
-  });
 
   return (
     <Section className={hasSelection ? "pb-[88px]" : "pb-6"}>
@@ -175,7 +167,7 @@ export function TransactionsPage() {
 
           <TransactionsRowMenu
             open={Boolean(anchorEl)}
-            menuPositionRef={menuPositionRef}
+            anchorEl={anchorEl as HTMLElement | null}
             menuTransaction={menuTransaction}
             duplicatePending={duplicateTransaction.isPending}
             insertInstallmentPending={insertInstallmentBetween.isPending}

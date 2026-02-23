@@ -12,6 +12,9 @@ import { messages } from "@/shared/i18n/messages";
 import { PageHeader } from "@/shared/components/composite/PageHeader";
 import { CollectionState } from "@/shared/components/composite/CollectionState";
 import { Text } from "@/shared/components/ui/Text";
+import { ActionMenuPopover } from "@/shared/components/composite/ActionMenuPopover";
+import { EditDeleteMenuActions } from "@/shared/components/composite/EditDeleteMenuActions";
+import { formatCurrency } from "@/shared/utils/currency";
 
 export function CreditCardsPage() {
   const pageMessages = messages.cards.page;
@@ -27,17 +30,15 @@ export function CreditCardsPage() {
     setSelectedCard,
     deleteModalOpen,
     setDeleteModalOpen,
+    anchorEl,
+    menuCard,
+    handleOpenMenu,
+    handleCloseMenu,
     handleEdit,
     handleDelete,
     handleConfirmDelete,
     handleAdd,
   } = useCreditCardsPageLogic();
-
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(value);
 
   const totalLimit =
     cards?.reduce((sum, c) => sum + (c.credit_limit || 0), 0) || 0;
@@ -58,9 +59,9 @@ export function CreditCardsPage() {
                 <Text className="text-[13px] text-[var(--color-text-secondary)]">
                   {pageMessages.cardCount(cards.length)}
                   <span className="mx-1 text-[var(--color-text-muted)]">•</span>
-                  {pageMessages.totalLimit}: {formatCurrency(totalLimit)}
+                  {pageMessages.totalLimit}: <span className="text-[var(--color-success)] font-medium">{formatCurrency(totalLimit)}</span>
                   <span className="mx-1 text-[var(--color-text-muted)]">•</span>
-                  {pageMessages.used}: {formatCurrency(totalUsage)}
+                  {pageMessages.used}: <span className="text-[var(--color-error)] font-medium">{formatCurrency(totalUsage)}</span>
                 </Text>
               ) : null}
             </>
@@ -102,12 +103,19 @@ export function CreditCardsPage() {
                 key={card.id}
                 card={card}
                 navigate={navigate}
-                handleEdit={handleEdit}
-                handleDelete={handleDelete}
+                handleOpenMenu={handleOpenMenu}
               />
             ))}
           </CollectionState>
         </Grid>
+
+        <ActionMenuPopover
+          open={Boolean(anchorEl)}
+          onClose={handleCloseMenu}
+          anchorEl={anchorEl}
+        >
+          <EditDeleteMenuActions onEdit={handleEdit} onDelete={handleDelete} />
+        </ActionMenuPopover>
 
         <CardFormModal
           open={modalOpen}
