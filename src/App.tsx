@@ -1,8 +1,12 @@
-import { lazy, Suspense } from 'react';
-import { useAuth } from './lib/supabase/auth-context';
-import { AppRoutes } from './app-routes/AppRouter';
+import { lazy, Suspense } from "react";
+import { useAuth } from "./lib/supabase/auth-context";
+import { AppRoutes } from "./routes/AppRouter";
 
-const MainLayout = lazy(() => import('./shared/layouts/MainLayout').then((module) => ({ default: module.MainLayout })));
+const MainLayout = lazy(() =>
+  import("./shared/layouts/MainLayout").then((module) => ({
+    default: module.MainLayout,
+  })),
+);
 
 function App() {
   const { user } = useAuth();

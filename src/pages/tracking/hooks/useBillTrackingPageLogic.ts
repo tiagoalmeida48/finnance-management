@@ -1,109 +1,129 @@
-import { useState, useMemo } from 'react';
-import { addMonths, format, startOfYear, endOfYear, eachMonthOfInterval } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { useTransactions } from '@/shared/hooks/api/useTransactions';
-import { useCreditCards } from '@/shared/hooks/api/useCreditCards';
-import { calculateTrackingSummary } from '@/shared/utils/billTracking.utils';
-import { resolveStatementMonth } from '@/shared/utils/card-statement-cycle.utils';
+import { useState, useMemo } from "react";
+import {
+  addMonths,
+  format,
+  startOfYear,
+  endOfYear,
+  eachMonthOfInterval,
+} from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { useTransactions } from "@/shared/hooks/api/useTransactions";
+import { useCreditCards } from "@/shared/hooks/api/useCreditCards";
+import { calculateTrackingSummary } from "@/shared/utils/billTracking.utils";
+import { resolveStatementMonth } from "@/shared/utils/card-statement-cycle.utils";
 
 interface TrackingItem {
-    id: string;
-    name: string;
-    total: number;
-    isPaid: boolean;
-    itemType: 'card' | 'fixed';
+  id: string;
+  name: string;
+  total: number;
+  isPaid: boolean;
+  itemType: "card" | "fixed";
 }
 
-type CardTrackingItem = Omit<TrackingItem, 'itemType'> & { itemType: 'card' };
+type CardTrackingItem = Omit<TrackingItem, "itemType"> & { itemType: "card" };
 
 export function useBillTrackingPageLogic() {
-    const [currentYear, setCurrentYear] = useState(new Date());
+  const [currentYear, setCurrentYear] = useState(new Date());
 
-    const { data: transactions, isLoading: loadingTx } = useTransactions({
-        start_date: format(addMonths(startOfYear(currentYear), -1), 'yyyy-MM-dd'),
-        end_date: format(endOfYear(currentYear), 'yyyy-MM-dd')
+  const { data: transactions, isLoading: loadingTx } = useTransactions({
+    start_date: format(addMonths(startOfYear(currentYear), -1), "yyyy-MM-dd"),
+    end_date: format(endOfYear(currentYear), "yyyy-MM-dd"),
+  });
+
+  const { data: cards, isLoading: loadingCards } = useCreditCards();
+
+  const months = useMemo(() => {
+    return eachMonthOfInterval({
+      start: startOfYear(currentYear),
+      end: endOfYear(currentYear),
     });
+  }, [currentYear]);
 
-    const { data: cards, isLoading: loadingCards } = useCreditCards();
+  const monthlyData = useMemo(() => {
+    if (!transactions || !cards) return [];
 
-    const months = useMemo(() => {
-        return eachMonthOfInterval({
-            start: startOfYear(currentYear),
-            end: endOfYear(currentYear)
-        });
-    }, [currentYear]);
+    return months.map((month) => {
+      const monthStr = format(month, "yyyy-MM");
 
-    const monthlyData = useMemo(() => {
-        if (!transactions || !cards) return [];
+      const fixedExpenses = transactions.filter(
+        (t) =>
+          t.is_fixed &&
+          format(new Date(t.payment_date + "T12:00:00"), "yyyy-MM") ===
+            monthStr &&
+          t.type === "expense",
+      );
 
-        return months.map(month => {
-            const monthStr = format(month, 'yyyy-MM');
+      const cardBills = cards
+        .map((card) => {
+          const statementCycles = card.statement_cycles ?? [];
+          const fallbackCycle = {
+            closing_day:
+              card.current_statement_cycle?.closing_day ?? card.closing_day,
+            due_day: card.current_statement_cycle?.due_day ?? card.due_day,
+          };
+          const cardTransactions = transactions.filter(
+            (t) => t.card_id === card.id,
+          );
 
-            const fixedExpenses = transactions.filter(t =>
-                t.is_fixed &&
-                format(new Date(t.payment_date + 'T12:00:00'), 'yyyy-MM') === monthStr &&
-                t.type === 'expense'
+          const billTransactions = cardTransactions.filter((t) => {
+            const resolved = resolveStatementMonth(
+              t,
+              statementCycles,
+              fallbackCycle,
             );
+            return resolved?.statementMonthKey === monthStr;
+          });
 
-            const cardBills = cards.map(card => {
-                const statementCycles = card.statement_cycles ?? [];
-                const fallbackCycle = {
-                    closing_day: card.current_statement_cycle?.closing_day ?? card.closing_day,
-                    due_day: card.current_statement_cycle?.due_day ?? card.due_day,
-                };
-                const cardTransactions = transactions.filter(t => t.card_id === card.id);
+          if (billTransactions.length === 0) return null;
 
-                const billTransactions = cardTransactions.filter(t => {
-                    const resolved = resolveStatementMonth(t, statementCycles, fallbackCycle);
-                    return resolved?.statementMonthKey === monthStr;
-                });
+          const total = billTransactions.reduce((sum, t) => {
+            const amount = Number(t.amount) || 0;
+            return t.type === "income" ? sum - amount : sum + amount;
+          }, 0);
 
-                if (billTransactions.length === 0) return null;
+          const isPaid = billTransactions.every((t) => t.is_paid);
 
-                const total = billTransactions.reduce((sum, t) => {
-                    const amount = Number(t.amount) || 0;
-                    return t.type === 'income' ? sum - amount : sum + amount;
-                }, 0);
+          return {
+            id: card.id,
+            name: card.name,
+            total,
+            isPaid,
+            itemType: "card" as const,
+          };
+        })
+        .filter((item): item is CardTrackingItem => item !== null);
 
-                const isPaid = billTransactions.every(t => t.is_paid);
+      const allItems: TrackingItem[] = [
+        ...fixedExpenses.map((t) => ({
+          id: t.id,
+          name: t.description,
+          total: t.amount,
+          isPaid: t.is_paid,
+          itemType: "fixed" as const,
+        })),
+        ...cardBills,
+      ];
 
-                return {
-                    id: card.id,
-                    name: card.name,
-                    total,
-                    isPaid,
-                    itemType: 'card' as const
-                };
-            }).filter((item): item is CardTrackingItem => item !== null);
+      const { totalItems, paidItems, progress, totalAmount } =
+        calculateTrackingSummary(allItems);
 
-            const allItems: TrackingItem[] = [
-                ...fixedExpenses.map(t => ({
-                    id: t.id,
-                    name: t.description,
-                    total: t.amount,
-                    isPaid: t.is_paid,
-                    itemType: 'fixed' as const
-                })),
-                ...cardBills
-            ];
+      return {
+        month,
+        monthName: format(month, "MMMM", { locale: ptBR }),
+        items: allItems,
+        progress,
+        totalItems,
+        paidItems,
+        totalAmount,
+      };
+    });
+  }, [months, transactions, cards]);
 
-            const { totalItems, paidItems, progress, totalAmount } = calculateTrackingSummary(allItems);
-
-            return {
-                month,
-                monthName: format(month, 'MMMM', { locale: ptBR }),
-                items: allItems,
-                progress,
-                totalItems,
-                paidItems,
-                totalAmount
-            };
-        });
-    }, [months, transactions, cards]);
-
-    return {
-        currentYear, setCurrentYear,
-        loadingTx, loadingCards,
-        monthlyData
-    };
+  return {
+    currentYear,
+    setCurrentYear,
+    loadingTx,
+    loadingCards,
+    monthlyData,
+  };
 }

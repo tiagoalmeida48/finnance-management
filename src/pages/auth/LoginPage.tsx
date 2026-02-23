@@ -1,18 +1,21 @@
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { useSiteBranding } from '@/shared/hooks/api/useSiteBranding';
-import { messages } from '@/shared/i18n/messages';
-import { useLoginPageLogic } from '@/pages/auth/hooks/useLoginPageLogic';
-import { FormField } from '@/shared/components/forms/FormField';
-import { Stack } from '@/shared/components/layout/Stack';
-import { Section } from '@/shared/components/layout/Section';
-import { FormDialog } from '@/shared/components/composite/FormDialog';
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { useSiteBranding } from "@/shared/hooks/api/useSiteBranding";
+import { messages } from "@/shared/i18n/messages";
+import { useLoginPageLogic } from "@/pages/auth/hooks/useLoginPageLogic";
+import { FormField } from "@/shared/components/forms/FormField";
+import { Stack } from "@/shared/components/layout/Stack";
+import { Section } from "@/shared/components/layout/Section";
+import { FormDialog } from "@/shared/components/composite/FormDialog";
 
 export function LoginPage() {
   const loginMessages = messages.auth.login;
   const { siteTitle } = useSiteBranding();
   const { formMethods, isLoading, error, onSubmit } = useLoginPageLogic();
-  const { register, formState: { errors } } = formMethods;
+  const {
+    register,
+    formState: { errors },
+  } = formMethods;
 
   return (
     <Section className="relative isolate flex min-h-screen items-center overflow-hidden bg-[var(--color-background-alt)] bg-[radial-gradient(circle_at_18%_12%,var(--overlay-primary-12),transparent_38%),radial-gradient(circle_at_78%_82%,var(--overlay-info-09),transparent_32%)] px-4 py-8">
@@ -23,7 +26,7 @@ export function LoginPage() {
 
       <FormDialog
         open={true}
-        onClose={() => { }}
+        onClose={() => {}}
         title={siteTitle}
         onSubmit={onSubmit}
         maxWidth="xs"
@@ -51,11 +54,7 @@ export function LoginPage() {
             label={loginMessages.emailLabel}
             errorMessage={errors.email?.message}
           >
-            <Input
-              id="login-email"
-              type="email"
-              {...register('email')}
-            />
+            <Input id="login-email" type="email" {...register("email")} />
           </FormField>
 
           <FormField
@@ -66,7 +65,7 @@ export function LoginPage() {
             <Input
               id="login-password"
               type="password"
-              {...register('password')}
+              {...register("password")}
             />
           </FormField>
         </Stack>
@@ -74,4 +73,3 @@ export function LoginPage() {
     </Section>
   );
 }
-

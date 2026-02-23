@@ -115,7 +115,11 @@ body,
 body {
   margin: 0;
   background:
-    radial-gradient(ellipse 400px 400px at top right, var(--color-accentGlow), transparent),
+    radial-gradient(
+      ellipse 400px 400px at top right,
+      var(--color-accentGlow),
+      transparent
+    ),
     var(--color-background);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
