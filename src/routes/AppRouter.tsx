@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "../lib/supabase/auth-context";
 import { LoginPage } from "../pages/auth/LoginPage";
+import { ErrorBoundary } from "@/shared/components/ui/ErrorBoundary";
 
 const DashboardPage = lazy(() =>
   import("../pages/dashboard/DashboardPage").then((module) => ({
@@ -100,6 +101,7 @@ export function AppRoutes() {
   const { user } = useAuth();
 
   return (
+    <ErrorBoundary>
     <Suspense fallback={<RouteFallback />}>
       <Routes>
         <Route
@@ -201,5 +203,6 @@ export function AppRoutes() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
+    </ErrorBoundary>
   );
 }

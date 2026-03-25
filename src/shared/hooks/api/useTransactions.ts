@@ -12,6 +12,7 @@ const invalidateTransactionsAndAccounts = (queryClient: QueryClient) => {
   queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
   queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all });
   queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
+  queryClient.invalidateQueries({ queryKey: queryKeys.transactions.recent });
 };
 
 export function useTransactions(

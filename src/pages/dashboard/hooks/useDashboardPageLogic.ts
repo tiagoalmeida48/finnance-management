@@ -1,8 +1,13 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { endOfYear, format, startOfYear } from "date-fns";
-import { dashboardService } from "@/shared/services/dashboard.service";
+import { transactionsService } from "@/shared/services/transactions.service";
 import { queryKeys } from "@/shared/constants/queryKeys";
+import {
+  useDashboardStats,
+  useDashboardCharts,
+  useDashboardCategories,
+} from "@/shared/hooks/api/useDashboard";
 
 export function useDashboardPageLogic() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -12,22 +17,16 @@ export function useDashboardPageLogic() {
     end: format(endOfYear(new Date(selectedYear, 0, 1)), "yyyy-MM-dd"),
   };
 
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: queryKeys.dashboard.stats(filter),
-    queryFn: () => dashboardService.getStats(filter),
+  const { data: stats, isLoading: statsLoading } = useDashboardStats(filter);
+  const { data: chartData, isLoading: chartLoading } = useDashboardCharts(filter);
+  const { data: categories, isLoading: categoriesLoading } = useDashboardCategories(filter);
+
+  const { data: recentTransactions, isLoading: recentLoading } = useQuery({
+    queryKey: queryKeys.transactions.recent,
+    queryFn: () => transactionsService.getRecent(6),
   });
 
-  const { data: chartData, isLoading: chartLoading } = useQuery({
-    queryKey: queryKeys.dashboard.charts(filter),
-    queryFn: () => dashboardService.getChartData(filter),
-  });
-
-  const { data: categories, isLoading: categoriesLoading } = useQuery({
-    queryKey: queryKeys.dashboard.categories(filter),
-    queryFn: () => dashboardService.getCategoryDistribution(filter),
-  });
-
-  const isLoading = statsLoading || chartLoading || categoriesLoading;
+  const isLoading = statsLoading || chartLoading || categoriesLoading || recentLoading;
 
   return {
     selectedYear,
@@ -35,6 +34,7 @@ export function useDashboardPageLogic() {
     stats,
     chartData,
     categories,
+    recentTransactions,
     isLoading,
   };
 }

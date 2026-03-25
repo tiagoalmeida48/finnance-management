@@ -33,7 +33,7 @@ import {
   extractGroupOrTransactionIds,
   mergeUniqueIds,
   removeIds,
-} from "@/shared/utils/transactionsPage.logic.helpers";
+} from "@/shared/utils/transactionsPage.helpers";
 
 export function useTransactionsPageLogic() {
   const [modalOpen, setModalOpen] = useState(false);

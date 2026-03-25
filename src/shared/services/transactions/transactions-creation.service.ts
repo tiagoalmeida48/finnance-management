@@ -12,7 +12,6 @@ import {
   normalizeToPositiveInteger,
   requireAuthenticatedUserId,
   sanitizeCreatePayload,
-  syncBalance,
 } from "./transactions-utils.service";
 
 const createSingleTransaction = async (
@@ -38,7 +37,6 @@ const createSingleTransaction = async (
   if (error) throw error;
 
   const createdTransaction = data as Transaction;
-  await syncBalance(createdTransaction, "add");
   await linkTransactionToInvoice(createdTransaction);
 
   return createdTransaction;
@@ -99,7 +97,6 @@ const createInstallmentTransactions = async (
 
   const createdTransactions = (data ?? []) as Transaction[];
   for (const createdTransaction of createdTransactions) {
-    await syncBalance(createdTransaction, "add");
     await linkTransactionToInvoice(createdTransaction);
   }
 
@@ -149,7 +146,6 @@ const createRecurringTransactions = async (
 
   const createdTransactions = (data ?? []) as Transaction[];
   for (const createdTransaction of createdTransactions) {
-    await syncBalance(createdTransaction, "add");
     await linkTransactionToInvoice(createdTransaction);
   }
 

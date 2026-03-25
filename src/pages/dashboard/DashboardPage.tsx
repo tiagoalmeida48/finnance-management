@@ -16,6 +16,7 @@ export function DashboardPage() {
     stats,
     chartData,
     categories,
+    recentTransactions,
     isLoading,
   } = useDashboardPageLogic();
 
@@ -39,7 +40,7 @@ export function DashboardPage() {
         <DashboardCharts chartData={chartData} categories={categories} />
 
         <DashboardRecentTransactions
-          transactions={stats?.transactions}
+          transactions={recentTransactions}
           isLoading={isLoading}
         />
       </Container>

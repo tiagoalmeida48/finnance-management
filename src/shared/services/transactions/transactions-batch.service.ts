@@ -18,7 +18,6 @@ import {
   requireAuthenticatedUserId,
   sanitizeCreatePayload,
   sanitizeIds,
-  syncBalance,
 } from "./transactions-utils.service";
 
 export const transactionsBatchService = {
@@ -77,7 +76,6 @@ export const transactionsBatchService = {
 
     const createdTransactions = (data ?? []) as Transaction[];
     for (const createdTransaction of createdTransactions) {
-      await syncBalance(createdTransaction, "add");
       await linkTransactionToInvoice(createdTransaction);
     }
 
@@ -112,13 +110,6 @@ export const transactionsBatchService = {
       []) as Transaction[];
     const updatedTransactions = (updatedTransactionsRaw ?? []) as Transaction[];
 
-    for (const transaction of previousTransactions) {
-      await syncBalance(transaction, "remove");
-    }
-    for (const transaction of updatedTransactions) {
-      await syncBalance(transaction, "add");
-    }
-
     await recalculateInvoicesForTransactions([
       ...previousTransactions,
       ...updatedTransactions,
@@ -152,10 +143,6 @@ export const transactionsBatchService = {
       []) as Transaction[];
     const updatedTransactions = (updatedTransactionsRaw ?? []) as Transaction[];
 
-    for (const transaction of previousTransactions) {
-      await syncBalance(transaction, "remove");
-    }
-
     await recalculateInvoicesForTransactions([
       ...previousTransactions,
       ...updatedTransactions,
@@ -175,9 +162,6 @@ export const transactionsBatchService = {
     if (fetchError) throw fetchError;
 
     const transactions = (transactionsRaw ?? []) as Transaction[];
-    for (const transaction of transactions) {
-      await syncBalance(transaction, "remove");
-    }
 
     const { error: deleteError } = await supabase
       .from("transactions")

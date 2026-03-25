@@ -4,6 +4,8 @@ export interface TransactionQueryFilters {
   start_date?: string;
   end_date?: string;
   is_paid?: boolean;
+  limit?: number;
+  offset?: number;
 }
 
 type DashboardFilter = Date | { start: string; end: string };
@@ -32,6 +34,7 @@ export const queryKeys = {
     list: (filters?: TransactionQueryFilters) =>
       ["transactions", filters ?? null] as const,
     firstDate: ["transactions", "first-date"] as const,
+    recent: ["transactions", "recent"] as const,
   },
   dashboard: {
     stats: (filter?: DashboardFilter) =>

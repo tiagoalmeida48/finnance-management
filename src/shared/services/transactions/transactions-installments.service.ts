@@ -16,7 +16,6 @@ import {
   buildSingleTransactionCreatePayload,
   hasChangedValue,
   hasOwn,
-  syncBalance,
 } from "./transactions-utils.service";
 
 export const transactionsInstallmentsService = {
@@ -31,9 +30,6 @@ export const transactionsInstallmentsService = {
     if (fetchError) throw fetchError;
 
     const transactions = (transactionsRaw ?? []) as Transaction[];
-    for (const transaction of transactions) {
-      await syncBalance(transaction, "remove");
-    }
 
     const { error: deleteError } = await supabase
       .from("transactions")

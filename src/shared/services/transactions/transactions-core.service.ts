@@ -5,10 +5,10 @@ import {
   linkTransactionToInvoice,
   recalculateInvoiceTotal,
 } from "../invoice-reconciliation.service";
-import {
-  TRANSACTION_MUTATION_PAGE_SIZE,
-  syncBalance,
-} from "./transactions-utils.service";
+import { TRANSACTION_MUTATION_PAGE_SIZE } from "./transactions-utils.service";
+
+const TRANSACTION_SELECT =
+  "*, bank_account:account_id(name), to_bank_account:to_account_id(name), category:category_id(name, color, icon), credit_card:card_id(name, color)";
 
 export const transactionsCoreService = {
   async getAll(filters?: {
@@ -17,16 +17,38 @@ export const transactionsCoreService = {
     start_date?: string;
     end_date?: string;
     is_paid?: boolean;
+    limit?: number;
+    offset?: number;
   }) {
+    // Single-page fetch when caller provides explicit pagination params
+    if (filters?.limit !== undefined) {
+      const pageOffset = filters.offset ?? 0;
+
+      let query = supabase
+        .from("transactions")
+        .select(TRANSACTION_SELECT)
+        .order("payment_date", { ascending: false })
+        .range(pageOffset, pageOffset + filters.limit - 1);
+
+      if (filters.account_id) query = query.eq("account_id", filters.account_id);
+      if (filters.category_id) query = query.eq("category_id", filters.category_id);
+      if (filters.start_date) query = query.gte("payment_date", filters.start_date);
+      if (filters.end_date) query = query.lte("payment_date", filters.end_date);
+      if (filters.is_paid !== undefined) query = query.eq("is_paid", filters.is_paid);
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data ?? []) as Transaction[];
+    }
+
+    // Legacy: accumulate all pages (backward compatible)
     let from = 0;
     const allTransactions: Transaction[] = [];
 
     while (true) {
       let query = supabase
         .from("transactions")
-        .select(
-          "*, bank_account:account_id(name), to_bank_account:to_account_id(name), category:category_id(name, color, icon), credit_card:card_id(name, color)",
-        )
+        .select(TRANSACTION_SELECT)
         .order("payment_date", { ascending: false })
         .range(from, from + TRANSACTION_MUTATION_PAGE_SIZE - 1);
 
@@ -52,6 +74,17 @@ export const transactionsCoreService = {
     }
 
     return allTransactions;
+  },
+
+  async getRecent(limit = 6) {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select(TRANSACTION_SELECT)
+      .order("payment_date", { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return (data ?? []) as Transaction[];
   },
 
   async getById(id: string) {
@@ -87,9 +120,6 @@ export const transactionsCoreService = {
     if (updateError) throw updateError;
 
     const updatedTransaction = updatedRaw as Transaction;
-
-    await syncBalance(oldTransaction, "remove");
-    await syncBalance(updatedTransaction, "add");
 
     const oldAnchorDateKey = getTransactionAnchorDateKey(oldTransaction);
     const newAnchorDateKey = getTransactionAnchorDateKey(updatedTransaction);
@@ -134,8 +164,6 @@ export const transactionsCoreService = {
 
     if (fetchError) throw fetchError;
     const transaction = transactionRaw as Transaction;
-
-    await syncBalance(transaction, "remove");
 
     const { error: deleteError } = await supabase
       .from("transactions")

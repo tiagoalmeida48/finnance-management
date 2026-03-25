@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { IconButton } from "@/shared/components/ui/icon-button";
 import { Menu } from "lucide-react";
 import { Sidebar } from "@/shared/components/composite/Sidebar";
 import { useMediaQuery } from "@/shared/hooks/useMediaQuery";
+import { useUIStore } from "@/shared/stores/ui.store";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -10,11 +10,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   const isMobile = useMediaQuery("(max-width: 899px)");
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
+  const { sidebarMobileOpen, toggleSidebarMobile } = useUIStore();
 
   return (
     <div className="flex min-h-screen bg-[var(--color-background)]">
@@ -26,7 +22,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               color="inherit"
               aria-label="open drawer"
               edge="start"
-              onClick={handleDrawerToggle}
+              onClick={toggleSidebarMobile}
               className="mr-2 text-[var(--color-text-primary)]"
             >
               <Menu />
@@ -39,7 +35,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       )}
 
       {/* Sidebar */}
-      <Sidebar mobileOpen={mobileOpen} onMobileClose={handleDrawerToggle} />
+      <Sidebar mobileOpen={sidebarMobileOpen} onMobileClose={toggleSidebarMobile} />
 
       {/* Main Content */}
       <main
