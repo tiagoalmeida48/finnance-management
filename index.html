@@ -1,75 +1,84 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/finnance-icon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gestão Financeira</title>
-    <style>
-      html, body, #root {
-        height: 100%;
-      }
 
-      body {
-        margin: 0;
-        background: #090b12;
-        color: #f5f7ff;
-        font-family: "DM Sans", sans-serif;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/finnance-icon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestão Financeira</title>
+  <style>
+    html,
+    body,
+    #root {
+      height: 100%;
+    }
 
-      .boot-splash {
-        min-height: 100%;
-        display: grid;
-        place-items: center;
-        background:
-          radial-gradient(circle at 18% 12%, rgba(201, 168, 76, 0.12), transparent 38%),
-          radial-gradient(circle at 78% 82%, rgba(59, 130, 246, 0.09), transparent 32%),
-          #090b12;
-      }
+    body {
+      margin: 0;
+      background: #090b12;
+      color: #f5f7ff;
+      font-family: "DM Sans", sans-serif;
+    }
 
-      .boot-splash__inner {
-        text-align: center;
-        display: grid;
-        gap: 10px;
-        justify-items: center;
-      }
+    .boot-splash {
+      min-height: 100%;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(201, 168, 76, 0.12), transparent 38%),
+        radial-gradient(circle at 78% 82%, rgba(59, 130, 246, 0.09), transparent 32%),
+        #090b12;
+    }
 
-      .boot-splash__spinner {
-        width: 28px;
-        height: 28px;
-        border: 3px solid rgba(255, 255, 255, 0.18);
-        border-top-color: #d4af37;
-        border-radius: 50%;
-        animation: boot-spin 0.9s linear infinite;
-      }
+    .boot-splash__inner {
+      text-align: center;
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+    }
 
-      .boot-splash__title {
-        font-size: 14px;
-        opacity: 0.9;
-        letter-spacing: 0.08em;
-      }
+    .boot-splash__spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid rgba(255, 255, 255, 0.18);
+      border-top-color: #d4af37;
+      border-radius: 50%;
+      animation: boot-spin 0.9s linear infinite;
+    }
 
-      @keyframes boot-spin {
-        to { transform: rotate(360deg); }
+    .boot-splash__title {
+      font-size: 14px;
+      opacity: 0.9;
+      letter-spacing: 0.08em;
+    }
+
+    @keyframes boot-spin {
+      to {
+        transform: rotate(360deg);
       }
-    </style>
-    
-    <!-- Google Fonts: Plus Jakarta Sans + DM Sans -->
-    <link rel="dns-prefetch" href="%VITE_SUPABASE_URL%">
-    <link rel="preconnect" href="%VITE_SUPABASE_URL%" crossorigin>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root">
-      <div class="boot-splash">
-        <div class="boot-splash__inner">
-          <div class="boot-splash__spinner" aria-hidden="true"></div>
-          <div class="boot-splash__title">Carregando...</div>
-        </div>
+    }
+  </style>
+
+  <!-- Google Fonts: Plus Jakarta Sans + DM Sans -->
+  <link rel="dns-prefetch" href="%VITE_SUPABASE_URL%">
+  <link rel="preconnect" href="%VITE_SUPABASE_URL%" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+  <div id="root">
+    <div class="boot-splash">
+      <div class="boot-splash__inner">
+        <div class="boot-splash__spinner" aria-hidden="true"></div>
+        <div class="boot-splash__title">Carregando...</div>
       </div>
     </div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  </div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>

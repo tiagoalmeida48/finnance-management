@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Dev Server",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["C:/Program Files/nvm/nodejs/node_modules/pnpm/bin/pnpm.cjs", "dev"],
+      "port": 5173
+    },
+    {
+      "name": "Preview (build)",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["preview"],
+      "port": 4173
+    }
+  ]
+}

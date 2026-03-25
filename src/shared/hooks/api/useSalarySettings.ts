@@ -1,54 +1,59 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CreateSalarySettingInput, UpdateSalarySettingInput } from '@/shared/interfaces';
-import { salarySettingsService } from '@/shared/services/salary-settings.service';
-import { queryKeys } from '@/shared/constants/queryKeys';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  CreateSalarySettingInput,
+  UpdateSalarySettingInput,
+} from "@/shared/interfaces";
+import { salarySettingsService } from "@/shared/services/salary-settings.service";
+import { queryKeys } from "@/shared/constants/queryKeys";
 
 export function useSalarySettingsHistory() {
-    return useQuery({
-        queryKey: queryKeys.salary.history,
-        queryFn: salarySettingsService.getHistory,
-    });
+  return useQuery({
+    queryKey: queryKeys.salary.history,
+    queryFn: salarySettingsService.getHistory,
+  });
 }
 
 export function useSalaryCurrentSetting() {
-    return useQuery({
-        queryKey: queryKeys.salary.current,
-        queryFn: salarySettingsService.getCurrent,
-    });
+  return useQuery({
+    queryKey: queryKeys.salary.current,
+    queryFn: salarySettingsService.getCurrent,
+  });
 }
 
 export function useCreateSalarySetting() {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: (input: CreateSalarySettingInput) => salarySettingsService.createSettingWithValidity(input),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.salary.history });
-            queryClient.invalidateQueries({ queryKey: queryKeys.salary.current });
-        },
-    });
+  return useMutation({
+    mutationFn: (input: CreateSalarySettingInput) =>
+      salarySettingsService.createSettingWithValidity(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.salary.history });
+      queryClient.invalidateQueries({ queryKey: queryKeys.salary.current });
+    },
+  });
 }
 
 export function useUpdateSalarySetting() {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: (input: UpdateSalarySettingInput) => salarySettingsService.updateSetting(input),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.salary.history });
-            queryClient.invalidateQueries({ queryKey: queryKeys.salary.current });
-        },
-    });
+  return useMutation({
+    mutationFn: (input: UpdateSalarySettingInput) =>
+      salarySettingsService.updateSetting(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.salary.history });
+      queryClient.invalidateQueries({ queryKey: queryKeys.salary.current });
+    },
+  });
 }
 
 export function useDeleteCurrentSalarySetting() {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: salarySettingsService.deleteCurrentSettingAndRestorePrevious,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.salary.history });
-            queryClient.invalidateQueries({ queryKey: queryKeys.salary.current });
-        },
-    });
+  return useMutation({
+    mutationFn: salarySettingsService.deleteCurrentSettingAndRestorePrevious,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.salary.history });
+      queryClient.invalidateQueries({ queryKey: queryKeys.salary.current });
+    },
+  });
 }
