@@ -1,6 +1,8 @@
 name: CI
 
-on: pull_request
+on:
+  pull_request:
+    branches: [main]
 
 jobs:
   ci:
@@ -11,19 +13,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24.x'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+          node-version: '20.x'
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm lint
+        run: pnpm exec eslint src
 
       - name: Test
         run: pnpm test
