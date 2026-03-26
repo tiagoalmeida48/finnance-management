@@ -1,19 +1,19 @@
-import { useTransactionsPageLogic } from "@/pages/transactions/hooks/useTransactionsPageLogic";
-import { TransactionsSummary } from "./components/summary/TransactionsSummary";
-import { TransactionsFilter } from "./components/filters/TransactionsFilter";
-import { TransactionsToolbar } from "./components/filters/TransactionsToolbar";
-import { TransactionsTable } from "./components/tables/TransactionsTable";
-import { useMediaQuery } from "@/shared/hooks/useMediaQuery";
-import { transactionsPageStyles } from "./TransactionsPage.styles";
-import { TransactionsHeader } from "./components/headers/TransactionsHeader";
-import { TransactionsRowMenu } from "./components/menus/TransactionsRowMenu";
-import { TransactionsBulkActionsBar } from "./components/filters/TransactionsBulkActionsBar";
-import { TransactionsModalsGateway } from "./components/modals/TransactionsModalsGateway";
-import { Container } from "@/shared/components/layout/Container";
-import { Section } from "@/shared/components/layout/Section";
+import { useTransactionsPageLogic } from '@/pages/transactions/hooks/useTransactionsPageLogic';
+import { TransactionsSummary } from './components/summary/TransactionsSummary';
+import { TransactionsFilter } from './components/filters/TransactionsFilter';
+import { TransactionsToolbar } from './components/filters/TransactionsToolbar';
+import { TransactionsTable } from './components/tables/TransactionsTable';
+import { useMediaQuery } from '@/shared/hooks/useMediaQuery';
+import { transactionsPageStyles } from './TransactionsPage.styles';
+import { TransactionsHeader } from './components/headers/TransactionsHeader';
+import { TransactionsRowMenu } from './components/menus/TransactionsRowMenu';
+import { TransactionsBulkActionsBar } from './components/filters/TransactionsBulkActionsBar';
+import { TransactionsModalsGateway } from './components/modals/TransactionsModalsGateway';
+import { Container } from '@/shared/components/layout/Container';
+import { Section } from '@/shared/components/layout/Section';
 
 export function TransactionsPage() {
-  const isMobile = useMediaQuery("(max-width: 599px)");
+  const isMobile = useMediaQuery('(max-width: 599px)');
   const {
     isLoading,
     summaries,
@@ -100,14 +100,10 @@ export function TransactionsPage() {
   const hasSelection = selectedIds.length > 0;
 
   return (
-    <Section className={hasSelection ? "pb-[88px]" : "pb-6"}>
+    <Section className={hasSelection ? 'pb-[88px]' : 'pb-6'}>
       <Container>
         <Container unstyled className={transactionsPageStyles.content}>
-          <TransactionsHeader
-            isMobile={isMobile}
-            onImport={handleImport}
-            onAdd={handleAdd}
-          />
+          <TransactionsHeader isMobile={isMobile} onImport={handleImport} onAdd={handleAdd} />
 
           <TransactionsSummary summaries={summaries} isLoading={isLoading} />
 

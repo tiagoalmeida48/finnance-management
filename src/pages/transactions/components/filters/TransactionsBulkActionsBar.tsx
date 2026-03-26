@@ -1,9 +1,9 @@
-import { CalendarDays, CheckCircle2, Clock, Trash2 } from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
-import { messages } from "@/shared/i18n/messages";
-import { transactionsPageStyles } from "../../TransactionsPage.styles";
-import { Container } from "@/shared/components/layout/Container";
-import { Text } from "@/shared/components/ui/Text";
+import { CalendarDays, CheckCircle2, Clock, Trash2 } from 'lucide-react';
+import { Button } from '@/shared/components/ui/button';
+import { messages } from '@/shared/i18n/messages';
+import { transactionsPageStyles } from '../../TransactionsPage.styles';
+import { Container } from '@/shared/components/layout/Container';
+import { Text } from '@/shared/components/ui/Text';
 
 interface TransactionsBulkActionsBarProps {
   selectedCount: number;

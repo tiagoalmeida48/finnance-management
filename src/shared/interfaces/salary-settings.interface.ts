@@ -1,12 +1,7 @@
-export interface SalarySetting {
-  user_id: string;
-  date_start: string;
-  date_end: string;
-  hourly_rate: number;
-  base_salary: number;
-  inss_discount_percentage: number;
-  admin_fee_percentage: number;
-}
+import { z } from 'zod';
+import { SalarySettingSchema } from '@/shared/schemas';
+
+export type SalarySetting = z.infer<typeof SalarySettingSchema>;
 
 export interface CreateSalarySettingInput {
   date_start: string;

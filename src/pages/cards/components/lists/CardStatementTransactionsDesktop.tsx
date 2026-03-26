@@ -1,7 +1,7 @@
-import { format } from "date-fns";
-import { Button } from "@/shared/components/ui/button";
-import { Container } from "@/shared/components/layout/Container";
-import { Row } from "@/shared/components/layout/Row";
+import { format } from 'date-fns';
+import { Button } from '@/shared/components/ui/button';
+import { Container } from '@/shared/components/layout/Container';
+import { Row } from '@/shared/components/layout/Row';
 import {
   Table,
   TableBody,
@@ -9,18 +9,18 @@ import {
   TableHead,
   TableHeaderCell,
   TableRow,
-} from "@/shared/components/layout/Table";
-import { Text } from "@/shared/components/ui/Text";
-import type { StatementTransaction } from "@/shared/interfaces/card-details.interface";
-import { messages } from "@/shared/i18n/messages";
+} from '@/shared/components/layout/Table';
+import { Text } from '@/shared/components/ui/Text';
+import type { StatementTransaction } from '@/shared/interfaces/card-details.interface';
+import { messages } from '@/shared/i18n/messages';
 import type {
   StatementSortDirection,
   StatementSortField,
-} from "@/pages/cards/hooks/useCardStatementListLogic";
+} from '@/pages/cards/hooks/useCardStatementListLogic';
 import {
   formatCardStatementCurrency,
   getStatementDisplayDateKey,
-} from "@/pages/cards/hooks/useCardStatementListLogic";
+} from '@/pages/cards/hooks/useCardStatementListLogic';
 
 interface CardStatementTransactionsDesktopProps {
   transactions: StatementTransaction[];
@@ -32,8 +32,7 @@ interface CardStatementTransactionsDesktopProps {
   fallbackCategoryColor: string;
 }
 
-const sortableHeaderClass =
-  "inline-flex items-center gap-1 font-bold tracking-[0.03em]";
+const sortableHeaderClass = 'inline-flex items-center gap-1 font-bold tracking-[0.03em]';
 
 export function CardStatementTransactionsDesktop({
   transactions,
@@ -51,27 +50,27 @@ export function CardStatementTransactionsDesktop({
       <TableHead>
         <TableRow className="bg-[var(--overlay-white-02)]">
           <SortHeaderCell
-            active={statementSortField === "payment_date"}
+            active={statementSortField === 'payment_date'}
             direction={statementSortDirection}
-            onClick={() => onSort("payment_date")}
+            onClick={() => onSort('payment_date')}
             label={statementMessages.dateColumn}
           />
           <SortHeaderCell
-            active={statementSortField === "description"}
+            active={statementSortField === 'description'}
             direction={statementSortDirection}
-            onClick={() => onSort("description")}
+            onClick={() => onSort('description')}
             label={statementMessages.descriptionColumn}
           />
           <SortHeaderCell
-            active={statementSortField === "category"}
+            active={statementSortField === 'category'}
             direction={statementSortDirection}
-            onClick={() => onSort("category")}
+            onClick={() => onSort('category')}
             label={statementMessages.categoryColumn}
           />
           <SortHeaderCell
-            active={statementSortField === "amount"}
+            active={statementSortField === 'amount'}
             direction={statementSortDirection}
-            onClick={() => onSort("amount")}
+            onClick={() => onSort('amount')}
             label={statementMessages.amountColumn}
             align="right"
           />
@@ -115,17 +114,12 @@ function StatementDesktopRow({
       className="cursor-pointer transition-colors hover:bg-white/5"
     >
       <TableCell>
-        {displayDate
-          ? format(new Date(`${displayDate}T12:00:00`), "dd/MM")
-          : "-"}
+        {displayDate ? format(new Date(`${displayDate}T12:00:00`), 'dd/MM') : '-'}
       </TableCell>
       <TableCell className="text-[var(--color-text-primary)]">
         {transaction.description}
         {transaction.installment_number && transaction.total_installments ? (
-          <Text
-            as="span"
-            className="ml-1 text-xs font-semibold text-[var(--color-text-muted)]"
-          >
+          <Text as="span" className="ml-1 text-xs font-semibold text-[var(--color-text-muted)]">
             {transaction.installment_number}/{transaction.total_installments}
           </Text>
         ) : null}
@@ -137,16 +131,13 @@ function StatementDesktopRow({
             ref={(node) => setCategoryDotRef(node, categoryColor)}
             className="h-2 w-2 rounded-sm"
           />
-          <Text
-            as="span"
-            className="text-sm text-[var(--color-text-secondary)]"
-          >
+          <Text as="span" className="text-sm text-[var(--color-text-secondary)]">
             {transaction.category?.name || statementMessages.noCategory}
           </Text>
         </Row>
       </TableCell>
       <TableCell
-        className={`text-right font-semibold ${transaction.type === "income" ? "text-[var(--color-success)]" : "text-[var(--color-error)]"}`}
+        className={`text-right font-semibold ${transaction.type === 'income' ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}
       >
         {formatCardStatementCurrency(transaction.amount)}
       </TableCell>
@@ -159,28 +150,22 @@ interface SortHeaderCellProps {
   direction: StatementSortDirection;
   onClick: () => void;
   label: string;
-  align?: "left" | "right";
+  align?: 'left' | 'right';
 }
 
-function SortHeaderCell({
-  active,
-  direction,
-  onClick,
-  label,
-  align,
-}: SortHeaderCellProps) {
+function SortHeaderCell({ active, direction, onClick, label, align }: SortHeaderCellProps) {
   return (
-    <TableHeaderCell className={align === "right" ? "text-right" : undefined}>
+    <TableHeaderCell className={align === 'right' ? 'text-right' : undefined}>
       <Button
         type="button"
         variant="text"
         size="small"
         onClick={onClick}
-        className={`${sortableHeaderClass} ${active ? "text-[var(--color-accent)]" : "text-[var(--color-text-muted)]"}`}
+        className={`${sortableHeaderClass} ${active ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-muted)]'}`}
       >
         {label}
-        <Text as="span" className={active ? "opacity-100" : "opacity-35"}>
-          {direction === "asc" ? "↑" : "↓"}
+        <Text as="span" className={active ? 'opacity-100' : 'opacity-35'}>
+          {direction === 'asc' ? '↑' : '↓'}
         </Text>
       </Button>
     </TableHeaderCell>

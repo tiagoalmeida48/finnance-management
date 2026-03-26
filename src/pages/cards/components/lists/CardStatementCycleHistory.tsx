@@ -1,32 +1,27 @@
-import { CalendarRange, Plus } from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@/shared/components/ui/dialog";
-import { CollectionState } from "@/shared/components/composite/CollectionState";
-import { FormDialog } from "@/shared/components/composite/FormDialog";
-import { FormField } from "@/shared/components/forms/FormField";
-import { Heading } from "@/shared/components/ui/Heading";
-import { Input } from "@/shared/components/ui/input";
-import { Row } from "@/shared/components/layout/Row";
-import { Stack } from "@/shared/components/layout/Stack";
+import { CalendarRange, Plus } from 'lucide-react';
+import { Button } from '@/shared/components/ui/button';
+import { Dialog, DialogActions, DialogContent, DialogTitle } from '@/shared/components/ui/dialog';
+import { CollectionState } from '@/shared/components/composite/CollectionState';
+import { FormDialog } from '@/shared/components/composite/FormDialog';
+import { FormField } from '@/shared/components/forms/FormField';
+import { Heading } from '@/shared/components/ui/Heading';
+import { Input } from '@/shared/components/ui/input';
+import { Row } from '@/shared/components/layout/Row';
+import { Stack } from '@/shared/components/layout/Stack';
 import {
   Table,
   TableBody,
   TableHead,
   TableHeaderCell,
   TableRow,
-} from "@/shared/components/layout/Table";
-import { Text } from "@/shared/components/ui/Text";
-import { TextareaField } from "@/shared/components/forms/TextareaField";
-import { useCardStatementCycleHistoryLogic } from "@/pages/cards/hooks/useCardStatementCycleHistoryLogic";
-import { messages } from "@/shared/i18n/messages";
-import { colors } from "@/shared/theme";
-import { CardStatementCycleHistoryRow } from "./CardStatementCycleHistoryRow";
-import { Container } from "@/shared/components/layout/Container";
+} from '@/shared/components/layout/Table';
+import { Text } from '@/shared/components/ui/Text';
+import { TextareaField } from '@/shared/components/forms/TextareaField';
+import { useCardStatementCycleHistoryLogic } from '@/pages/cards/hooks/useCardStatementCycleHistoryLogic';
+import { messages } from '@/shared/i18n/messages';
+import { colors } from '@/shared/theme';
+import { CardStatementCycleHistoryRow } from './CardStatementCycleHistoryRow';
+import { Container } from '@/shared/components/layout/Container';
 
 interface CardStatementCycleHistoryModalProps {
   cardId: string;
@@ -87,9 +82,7 @@ export function CardStatementCycleHistoryModal({
                 >
                   {cycleHistoryMessages.title}
                 </Heading>
-                <Text className="text-xs text-[var(--color-text-muted)]">
-                  {cardName}
-                </Text>
+                <Text className="text-xs text-[var(--color-text-muted)]">{cardName}</Text>
               </Stack>
             </Row>
 
@@ -187,48 +180,38 @@ export function CardStatementCycleHistoryModal({
         onClose={closeFormDialog}
         maxWidth="md"
         title={
-          dialogMode === "edit"
-            ? cycleHistoryMessages.editTitle
-            : cycleHistoryMessages.createTitle
+          dialogMode === 'edit' ? cycleHistoryMessages.editTitle : cycleHistoryMessages.createTitle
         }
         onSubmit={submitForm}
         contentClassName="pb-3 pt-2"
         actionsClassName="gap-2"
         actions={
           <>
-            <Button
-              onClick={closeFormDialog}
-              disabled={isMutating}
-              variant="ghost"
-            >
+            <Button onClick={closeFormDialog} disabled={isMutating} variant="ghost">
               {messages.common.actions.cancel}
             </Button>
             <Button type="submit" disabled={isMutating}>
-              {isMutating
-                ? cycleHistoryMessages.actions.saving
-                : cycleHistoryMessages.actions.save}
+              {isMutating ? cycleHistoryMessages.actions.saving : cycleHistoryMessages.actions.save}
             </Button>
           </>
         }
       >
         <Stack className="gap-2">
           <Text className="text-xs text-[var(--color-text-muted)]">
-            {dialogMode === "edit"
+            {dialogMode === 'edit'
               ? cycleHistoryMessages.editHint
               : cycleHistoryMessages.createHint}
           </Text>
 
-          {dialogMode === "create" ? (
+          {dialogMode === 'create' ? (
             <FormField
               label={cycleHistoryMessages.fields.startDate}
               errorMessage={errors.date_start?.message}
             >
               <Input
                 type="date"
-                {...register("date_start")}
-                className={
-                  errors.date_start ? "border-[var(--color-error)]" : ""
-                }
+                {...register('date_start')}
+                className={errors.date_start ? 'border-[var(--color-error)]' : ''}
               />
             </FormField>
           ) : null}
@@ -242,10 +225,8 @@ export function CardStatementCycleHistoryModal({
                 type="number"
                 min={1}
                 max={31}
-                {...register("closing_day", { valueAsNumber: true })}
-                className={
-                  errors.closing_day ? "border-[var(--color-error)]" : ""
-                }
+                {...register('closing_day', { valueAsNumber: true })}
+                className={errors.closing_day ? 'border-[var(--color-error)]' : ''}
               />
             </FormField>
             <FormField
@@ -256,29 +237,23 @@ export function CardStatementCycleHistoryModal({
                 type="number"
                 min={1}
                 max={31}
-                {...register("due_day", { valueAsNumber: true })}
-                className={errors.due_day ? "border-[var(--color-error)]" : ""}
+                {...register('due_day', { valueAsNumber: true })}
+                className={errors.due_day ? 'border-[var(--color-error)]' : ''}
               />
             </FormField>
           </Container>
 
           <FormField label={cycleHistoryMessages.fields.notes}>
-            <TextareaField rows={2} {...register("notes")} />
+            <TextareaField rows={2} {...register('notes')} />
           </FormField>
 
           {formError ? (
-            <Text className="text-xs text-[var(--color-error)]">
-              {formError}
-            </Text>
+            <Text className="text-xs text-[var(--color-error)]">{formError}</Text>
           ) : null}
         </Stack>
       </FormDialog>
 
-      <Dialog
-        open={deleteConfirmId !== null}
-        onClose={closeDeleteDialog}
-        maxWidth="xs"
-      >
+      <Dialog open={deleteConfirmId !== null} onClose={closeDeleteDialog} maxWidth="xs">
         <DialogTitle className="font-heading text-lg font-bold text-[var(--color-text-primary)]">
           {cycleHistoryMessages.actions.deleteConfirmTitle}
         </DialogTitle>
@@ -287,25 +262,14 @@ export function CardStatementCycleHistoryModal({
             {cycleHistoryMessages.actions.deleteConfirmDescription}
           </Text>
           {formError ? (
-            <Text className="mt-1 text-xs text-[var(--color-error)]">
-              {formError}
-            </Text>
+            <Text className="mt-1 text-xs text-[var(--color-error)]">{formError}</Text>
           ) : null}
         </DialogContent>
         <DialogActions className="gap-2">
-          <Button
-            onClick={closeDeleteDialog}
-            disabled={isMutating}
-            variant="ghost"
-          >
+          <Button onClick={closeDeleteDialog} disabled={isMutating} variant="ghost">
             {messages.common.actions.cancel}
           </Button>
-          <Button
-            onClick={handleDelete}
-            disabled={isMutating}
-            variant="contained"
-            color="error"
-          >
+          <Button onClick={handleDelete} disabled={isMutating} variant="contained" color="error">
             {isDeleting
               ? cycleHistoryMessages.actions.deleting
               : cycleHistoryMessages.actions.confirm}

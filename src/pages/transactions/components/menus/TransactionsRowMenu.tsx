@@ -1,10 +1,10 @@
-import type { ReactNode } from "react";
-import { CalendarDays, CheckCircle2, Pencil, Plus, Trash2 } from "lucide-react";
-import type { Transaction } from "@/shared/services/transactions.service";
-import { ActionMenuPopover } from "@/shared/components/composite/ActionMenuPopover";
-import { messages } from "@/shared/i18n/messages";
-import { transactionsPageStyles } from "../../TransactionsPage.styles";
-import { Button } from "@/shared/components/ui/button";
+import type { ReactNode } from 'react';
+import { CalendarDays, CheckCircle2, Pencil, Plus, Trash2 } from 'lucide-react';
+import type { Transaction } from '@/shared/services/transactions.service';
+import { ActionMenuPopover } from '@/shared/components/composite/ActionMenuPopover';
+import { messages } from '@/shared/i18n/messages';
+import { transactionsPageStyles } from '../../TransactionsPage.styles';
+import { Button } from '@/shared/components/ui/button';
 
 interface TransactionsRowMenuProps {
   open: boolean;
@@ -24,27 +24,20 @@ interface MenuActionProps {
   onClick: () => void;
   icon: ReactNode;
   label: string;
-  actionColor?: "default" | "danger" | "success" | "warning";
+  actionColor?: 'default' | 'danger' | 'success' | 'warning';
   disabled?: boolean;
 }
 
-function MenuAction({
-  onClick,
-  icon,
-  label,
-  actionColor = "default",
-  disabled,
-}: MenuActionProps) {
-  let colorClasses = "text-[var(--color-text-primary)] hover:bg-white/5";
-  if (actionColor === "danger") {
+function MenuAction({ onClick, icon, label, actionColor = 'default', disabled }: MenuActionProps) {
+  let colorClasses = 'text-[var(--color-text-primary)] hover:bg-white/5';
+  if (actionColor === 'danger') {
+    colorClasses = 'text-[var(--color-error)] hover:brightness-75 hover:bg-[var(--color-error)]/10';
+  } else if (actionColor === 'success') {
     colorClasses =
-      "text-[var(--color-error)] hover:brightness-75 hover:bg-[var(--color-error)]/10";
-  } else if (actionColor === "success") {
+      'text-[var(--color-success)] hover:brightness-75 hover:bg-[var(--color-success)]/10';
+  } else if (actionColor === 'warning') {
     colorClasses =
-      "text-[var(--color-success)] hover:brightness-75 hover:bg-[var(--color-success)]/10";
-  } else if (actionColor === "warning") {
-    colorClasses =
-      "text-[var(--color-warning)] hover:brightness-75 hover:bg-[var(--color-warning)]/10";
+      'text-[var(--color-warning)] hover:brightness-75 hover:bg-[var(--color-warning)]/10';
   }
 
   return (
@@ -79,11 +72,7 @@ export function TransactionsRowMenu({
 
   return (
     <ActionMenuPopover open={open} onClose={onClose} anchorEl={anchorEl}>
-      <MenuAction
-        onClick={onEdit}
-        icon={<Pencil size={16} />}
-        label={rowMenuMessages.edit}
-      />
+      <MenuAction onClick={onEdit} icon={<Pencil size={16} />} label={rowMenuMessages.edit} />
       <MenuAction
         onClick={onDuplicate}
         disabled={duplicatePending}
@@ -103,12 +92,8 @@ export function TransactionsRowMenu({
       <MenuAction
         onClick={onTogglePaid}
         icon={<CheckCircle2 size={16} />}
-        label={
-          menuTransaction?.is_paid
-            ? rowMenuMessages.markPending
-            : rowMenuMessages.markPaid
-        }
-        actionColor={menuTransaction?.is_paid ? "warning" : "success"}
+        label={menuTransaction?.is_paid ? rowMenuMessages.markPending : rowMenuMessages.markPaid}
+        actionColor={menuTransaction?.is_paid ? 'warning' : 'success'}
       />
 
       <MenuAction

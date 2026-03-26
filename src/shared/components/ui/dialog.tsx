@@ -1,15 +1,15 @@
-import * as React from "react";
-import { createPortal } from "react-dom";
-import { cn } from "@/lib/utils";
+import * as React from 'react';
+import { createPortal } from 'react-dom';
+import { cn } from '@/lib/utils';
 
-type DialogMaxWidth = "xs" | "sm" | "md" | "lg" | "xl";
+type DialogMaxWidth = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 const maxWidthMap: Record<DialogMaxWidth, string> = {
-  xs: "max-w-sm",
-  sm: "max-w-md",
-  md: "max-w-2xl",
-  lg: "max-w-4xl",
-  xl: "max-w-6xl",
+  xs: 'max-w-sm',
+  sm: 'max-w-md',
+  md: 'max-w-2xl',
+  lg: 'max-w-4xl',
+  xl: 'max-w-6xl',
 };
 
 interface DialogContextValue {
@@ -31,17 +31,17 @@ export function Dialog({
   open,
   onClose,
   fullWidth = false,
-  maxWidth = "sm",
+  maxWidth = 'sm',
   className,
   children,
 }: DialogProps) {
   React.useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose?.();
+      if (event.key === 'Escape') onClose?.();
     };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, [open, onClose]);
 
   if (!open) return null;
@@ -59,8 +59,8 @@ export function Dialog({
           role="dialog"
           aria-modal="true"
           className={cn(
-            "w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] shadow-2xl",
-            fullWidth && "w-full",
+            'w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] shadow-2xl',
+            fullWidth && 'w-full',
             maxWidth && maxWidthMap[maxWidth],
             className,
           )}
@@ -76,27 +76,17 @@ export function Dialog({
 export type DialogTitleProps = React.HTMLAttributes<HTMLDivElement>;
 
 export function DialogTitle({ className, ...props }: DialogTitleProps) {
-  return (
-    <div
-      className={cn("px-6 pt-6 text-lg font-semibold", className)}
-      {...props}
-    />
-  );
+  return <div className={cn('px-6 pt-6 text-lg font-semibold', className)} {...props} />;
 }
 
 export type DialogContentProps = React.HTMLAttributes<HTMLDivElement>;
 
 export function DialogContent({ className, ...props }: DialogContentProps) {
-  return <div className={cn("px-6 py-4", className)} {...props} />;
+  return <div className={cn('px-6 py-4', className)} {...props} />;
 }
 
 export type DialogActionsProps = React.HTMLAttributes<HTMLDivElement>;
 
 export function DialogActions({ className, ...props }: DialogActionsProps) {
-  return (
-    <div
-      className={cn("flex justify-end gap-2 px-6 pb-6 pt-3", className)}
-      {...props}
-    />
-  );
+  return <div className={cn('flex justify-end gap-2 px-6 pb-6 pt-3', className)} {...props} />;
 }

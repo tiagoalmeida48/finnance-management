@@ -1,23 +1,18 @@
-import { Fragment } from "react";
-import { IconButton } from "@/shared/components/ui/icon-button";
-import { ChevronDown, Circle, CheckCircle2, MinusCircle } from "lucide-react";
-import { Transaction } from "@/shared/services/transactions.service";
-import { TransactionRow } from "./TransactionRow";
-import type { TransactionGroup } from "@/shared/utils/transactionsPage.utils";
-import { colors } from "@/shared/theme";
-import { TransactionsTableHeader } from "./TransactionsTableHeader";
-import { TransactionMobileCard } from "../cards/TransactionMobileCard";
-import { useMediaQuery } from "@/shared/hooks/useMediaQuery";
-import { messages } from "@/shared/i18n/messages";
-import { PaginationBar } from "./PaginationBar";
-import { Container } from "@/shared/components/layout/Container";
-import { Text } from "@/shared/components/ui/Text";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/shared/components/layout/Table";
+import { Fragment } from 'react';
+import { IconButton } from '@/shared/components/ui/icon-button';
+import { ChevronDown, Circle, CheckCircle2, MinusCircle } from 'lucide-react';
+import { Transaction } from '@/shared/services/transactions.service';
+import { TransactionRow } from './TransactionRow';
+import type { TransactionGroup } from '@/shared/utils/transactionsPage.utils';
+import { colors } from '@/shared/theme';
+import { TransactionsTableHeader } from './TransactionsTableHeader';
+import { TransactionMobileCard } from '../cards/TransactionMobileCard';
+import { useMediaQuery } from '@/shared/hooks/useMediaQuery';
+import { messages } from '@/shared/i18n/messages';
+import { PaginationBar } from './PaginationBar';
+import { Container } from '@/shared/components/layout/Container';
+import { Text } from '@/shared/components/ui/Text';
+import { Table, TableBody, TableCell, TableRow } from '@/shared/components/layout/Table';
 
 interface TransactionsTableProps {
   groupedTransactions: (Transaction | TransactionGroup)[];
@@ -34,13 +29,13 @@ interface TransactionsTableProps {
   handleSort: (
     field:
       | keyof Transaction
-      | "amount"
-      | "payment_date"
-      | "is_paid"
-      | "payment_method"
-      | "installment_progress",
+      | 'amount'
+      | 'payment_date'
+      | 'is_paid'
+      | 'payment_method'
+      | 'installment_progress',
   ) => void;
-  sortConfig: { field: string; direction: "asc" | "desc" };
+  sortConfig: { field: string; direction: 'asc' | 'desc' };
   expandedGroups: Record<string, boolean>;
   toggleGroup: (id: string) => void;
   isPendingToggle?: (id: string) => boolean;
@@ -65,47 +60,36 @@ export function TransactionsTable({
   isPendingToggle,
 }: TransactionsTableProps) {
   const formatBRL = (amount: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
       minimumFractionDigits: 2,
     }).format(amount);
   };
 
   const visibleTransactionIds = groupedTransactions.flatMap((item) =>
-    "isGroup" in item && item.isGroup
-      ? item.items.map((transaction) => transaction.id)
-      : [item.id],
+    'isGroup' in item && item.isGroup ? item.items.map((transaction) => transaction.id) : [item.id],
   );
 
   const selectedVisibleCount = visibleTransactionIds.filter((id) =>
     selectedIds.includes(id),
   ).length;
   const selectAllChecked =
-    visibleTransactionIds.length > 0 &&
-    selectedVisibleCount === visibleTransactionIds.length;
+    visibleTransactionIds.length > 0 && selectedVisibleCount === visibleTransactionIds.length;
   const selectAllIndeterminate =
-    selectedVisibleCount > 0 &&
-    selectedVisibleCount < visibleTransactionIds.length;
+    selectedVisibleCount > 0 && selectedVisibleCount < visibleTransactionIds.length;
 
-  const isMobile = useMediaQuery("(max-width: 900px)");
-  const totalPages =
-    rowsPerPage === -1 ? 1 : Math.max(1, Math.ceil(totalItems / rowsPerPage));
+  const isMobile = useMediaQuery('(max-width: 900px)');
+  const totalPages = rowsPerPage === -1 ? 1 : Math.max(1, Math.ceil(totalItems / rowsPerPage));
   const safePage = Math.min(page, totalPages - 1);
   const setCategoryChipRef = (node: HTMLSpanElement | null, color?: string) => {
     if (!node) return;
-    node.style.setProperty(
-      "background-color",
-      color ? `${color}15` : "var(--overlay-white-05)",
-    );
-    node.style.setProperty("color", color || colors.textSecondary);
+    node.style.setProperty('background-color', color ? `${color}15` : 'var(--overlay-white-05)');
+    node.style.setProperty('color', color || colors.textSecondary);
   };
-  const setGroupProgressRef = (
-    node: HTMLDivElement | null,
-    percentage: number,
-  ) => {
+  const setGroupProgressRef = (node: HTMLDivElement | null, percentage: number) => {
     if (!node) return;
-    node.style.setProperty("width", `${percentage}%`);
+    node.style.setProperty('width', `${percentage}%`);
   };
 
   if (isMobile) {
@@ -119,7 +103,7 @@ export function TransactionsTable({
           )}
           {groupedTransactions.map((item, idx) => (
             <TransactionMobileCard
-              key={"id" in item ? item.id : idx}
+              key={'id' in item ? item.id : idx}
               item={item}
               selectedIds={selectedIds}
               handleSelectRow={handleSelectRow}
@@ -165,7 +149,7 @@ export function TransactionsTable({
             </TableRow>
           )}
           {groupedTransactions.map((item) => {
-            if ("isGroup" in item && item.isGroup) {
+            if ('isGroup' in item && item.isGroup) {
               const group = item as TransactionGroup;
               const isExpanded = Boolean(expandedGroups[group.id]);
               return (
@@ -187,17 +171,13 @@ export function TransactionsTable({
                         }}
                         className={`flex h-5 w-5 items-center justify-center rounded transition-all ${
                           group.items.some((it) => selectedIds.includes(it.id))
-                            ? "text-[var(--color-warning)] hover:brightness-75 hover:bg-[var(--color-warning)]/10"
-                            : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-white/5"
+                            ? 'text-[var(--color-warning)] hover:brightness-75 hover:bg-[var(--color-warning)]/10'
+                            : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-white/5'
                         }`}
                       >
-                        {group.items.every((it) =>
-                          selectedIds.includes(it.id),
-                        ) ? (
+                        {group.items.every((it) => selectedIds.includes(it.id)) ? (
                           <CheckCircle2 size={16} />
-                        ) : group.items.some((it) =>
-                            selectedIds.includes(it.id),
-                          ) ? (
+                        ) : group.items.some((it) => selectedIds.includes(it.id)) ? (
                           <MinusCircle size={16} />
                         ) : (
                           <Circle size={16} />
@@ -208,7 +188,7 @@ export function TransactionsTable({
                       <IconButton
                         size="small"
                         onClick={() => toggleGroup(group.id)}
-                        className={`h-7 w-7 rounded-md text-[var(--color-text-muted)] transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                        className={`h-7 w-7 rounded-md text-[var(--color-text-muted)] transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                       >
                         <ChevronDown size={14} />
                       </IconButton>
@@ -217,12 +197,12 @@ export function TransactionsTable({
                       <Text
                         as="span"
                         className={`inline-flex items-center justify-center rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                          group.type === "installment"
-                            ? "bg-[var(--color-purpleBg)] text-[var(--color-secondary)]"
-                            : "bg-[var(--color-blue)]/10 text-[var(--color-blue)]"
+                          group.type === 'installment'
+                            ? 'bg-[var(--color-purpleBg)] text-[var(--color-secondary)]'
+                            : 'bg-[var(--color-blue)]/10 text-[var(--color-blue)]'
                         }`}
                       >
-                        {group.type === "installment"
+                        {group.type === 'installment'
                           ? messages.transactions.table.groupInstallmentLabel
                           : messages.transactions.table.groupRecurringLabel}
                       </Text>
@@ -236,9 +216,7 @@ export function TransactionsTable({
                           as="span"
                           className="rounded-md bg-white/10 px-2 py-0.5 text-[10px] text-white/70"
                         >
-                          {messages.transactions.table.groupItemsCount(
-                            group.totalItemsCount,
-                          )}
+                          {messages.transactions.table.groupItemsCount(group.totalItemsCount)}
                         </Text>
                       </Container>
                     </TableCell>
@@ -246,9 +224,7 @@ export function TransactionsTable({
                       {group.categoryName ? (
                         <Text
                           as="span"
-                          ref={(node) =>
-                            setCategoryChipRef(node, group.categoryColor)
-                          }
+                          ref={(node) => setCategoryChipRef(node, group.categoryColor)}
                           className="inline-flex items-center justify-center rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
                         >
                           {group.categoryName}
@@ -266,23 +242,18 @@ export function TransactionsTable({
                       <Text className="text-[12px] font-medium leading-[20px] text-white">
                         {group.mainTransaction.credit_card?.name ||
                           group.mainTransaction.bank_account?.name ||
-                          "-"}
+                          '-'}
                       </Text>
                     </TableCell>
                     <TableCell className="border-b-0 px-2 py-2">
-                      <Container
-                        unstyled
-                        className="flex min-w-[220px] items-center gap-2"
-                      >
+                      <Container unstyled className="flex min-w-[220px] items-center gap-2">
                         <Container
                           unstyled
                           className="h-1.5 w-full max-w-[240px] overflow-hidden rounded-full bg-white/10"
                         >
                           <Container
                             unstyled
-                            ref={(node) =>
-                              setGroupProgressRef(node, group.paidItemsPercent)
-                            }
+                            ref={(node) => setGroupProgressRef(node, group.paidItemsPercent)}
                             className="h-full rounded-full bg-[var(--color-accent)]"
                           />
                         </Container>
@@ -296,7 +267,7 @@ export function TransactionsTable({
                       </Container>
                     </TableCell>
                     <TableCell
-                      className={`min-w-[100px] border-b-0 px-2 py-2 text-right text-[13px] font-bold tracking-tight ${group.isAllPaid ? "text-[var(--color-success)]" : "text-[var(--color-accent)]"}`}
+                      className={`min-w-[100px] border-b-0 px-2 py-2 text-right text-[13px] font-bold tracking-tight ${group.isAllPaid ? 'text-[var(--color-success)]' : 'text-[var(--color-accent)]'}`}
                     >
                       {formatBRL(group.totalAmount)}
                     </TableCell>

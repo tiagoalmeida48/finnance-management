@@ -1,10 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  CreateSalarySettingInput,
-  UpdateSalarySettingInput,
-} from "@/shared/interfaces";
-import { salarySettingsService } from "@/shared/services/salary-settings.service";
-import { queryKeys } from "@/shared/constants/queryKeys";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { CreateSalarySettingInput, UpdateSalarySettingInput } from '@/shared/interfaces';
+import { salarySettingsService } from '@/shared/services/salary-settings.service';
+import { queryKeys } from '@/shared/constants/queryKeys';
 
 export function useSalarySettingsHistory() {
   return useQuery({
@@ -37,8 +34,7 @@ export function useUpdateSalarySetting() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: UpdateSalarySettingInput) =>
-      salarySettingsService.updateSetting(input),
+    mutationFn: (input: UpdateSalarySettingInput) => salarySettingsService.updateSetting(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.salary.history });
       queryClient.invalidateQueries({ queryKey: queryKeys.salary.current });

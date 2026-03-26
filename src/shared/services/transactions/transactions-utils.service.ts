@@ -1,25 +1,20 @@
-import { supabase } from "@/lib/supabase/client";
-import type { Transaction, CreateTransactionData } from "../../interfaces";
+import { supabase } from '@/lib/supabase/client';
+import type { Transaction, CreateTransactionData } from '../../interfaces';
 import {
   stripInstallmentSuffix,
   toDateKeyIgnoringTime,
-} from "@/shared/utils/transactionsGroup.utils";
+} from '@/shared/utils/transactionsGroup.utils';
 
-export const DATE_LIKE_FIELDS: Array<keyof Transaction> = [
-  "payment_date",
-  "purchase_date",
-];
+export const DATE_LIKE_FIELDS: Array<keyof Transaction> = ['payment_date', 'purchase_date'];
 
 export const hasOwn = <T extends object>(value: T, key: PropertyKey) =>
   Object.prototype.hasOwnProperty.call(value, key);
 
 export const toComparableValue = (field: keyof Transaction, value: unknown) => {
-  if (value === undefined || value === null || value === "") return null;
+  if (value === undefined || value === null || value === '') return null;
 
   if (DATE_LIKE_FIELDS.includes(field)) {
-    return typeof value === "string"
-      ? (toDateKeyIgnoringTime(value) ?? value)
-      : null;
+    return typeof value === 'string' ? (toDateKeyIgnoringTime(value) ?? value) : null;
   }
 
   return value;
@@ -29,9 +24,7 @@ export const hasChangedValue = (
   field: keyof Transaction,
   currentValue: unknown,
   nextValue: unknown,
-) =>
-  toComparableValue(field, currentValue) !==
-  toComparableValue(field, nextValue);
+) => toComparableValue(field, currentValue) !== toComparableValue(field, nextValue);
 
 export const buildSingleTransactionCreatePayload = (
   transaction: Transaction,
@@ -41,9 +34,7 @@ export const buildSingleTransactionCreatePayload = (
     description: `${stripInstallmentSuffix(transaction.description) || transaction.description} (copia)`,
     amount: Number(transaction.amount) || 0,
     type: transaction.type,
-    payment_date:
-      toDateKeyIgnoringTime(transaction.payment_date) ??
-      transaction.payment_date,
+    payment_date: toDateKeyIgnoringTime(transaction.payment_date) ?? transaction.payment_date,
     purchase_date:
       toDateKeyIgnoringTime(transaction.purchase_date ?? undefined) ??
       transaction.purchase_date ??
@@ -74,13 +65,13 @@ export const buildSingleTransactionCreatePayload = (
 export const TRANSACTION_MUTATION_PAGE_SIZE = 1000;
 
 export const UUID_LIKE_FIELDS = [
-  "category_id",
-  "account_id",
-  "to_account_id",
-  "card_id",
-  "installment_group_id",
-  "recurring_group_id",
-  "invoice_id",
+  'category_id',
+  'account_id',
+  'to_account_id',
+  'card_id',
+  'installment_group_id',
+  'recurring_group_id',
+  'invoice_id',
 ] as const;
 
 export type CreatePayloadExtras = CreateTransactionData & {
@@ -92,7 +83,7 @@ export const sanitizeCreatePayload = (payload: CreatePayloadExtras) => {
   const sanitized: Record<string, unknown> = { ...payload };
 
   for (const field of UUID_LIKE_FIELDS) {
-    if (sanitized[field] === "") {
+    if (sanitized[field] === '') {
       sanitized[field] = null;
     }
   }
@@ -116,16 +107,13 @@ export const requireAuthenticatedUserId = async () => {
   const { data, error } = await supabase.auth.getUser();
   if (error) throw error;
   if (!data.user) {
-    throw new Error("Not authenticated");
+    throw new Error('Not authenticated');
   }
 
   return data.user.id;
 };
 
-export const normalizeToPositiveInteger = (
-  value: unknown,
-  fallback: number,
-) => {
+export const normalizeToPositiveInteger = (value: unknown, fallback: number) => {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return fallback;
   return Math.max(1, Math.trunc(parsed));
@@ -134,11 +122,9 @@ export const normalizeToPositiveInteger = (
 export const normalizeTargetDay = (value: unknown) => {
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed < 1 || parsed > 31) {
-    throw new Error("Dia invalido. Use um valor entre 1 e 31.");
+    throw new Error('Dia invalido. Use um valor entre 1 e 31.');
   }
   return parsed;
 };
 
-export const sanitizeIds = (ids: string[]) =>
-  Array.from(new Set(ids.filter(Boolean)));
-
+export const sanitizeIds = (ids: string[]) => Array.from(new Set(ids.filter(Boolean)));

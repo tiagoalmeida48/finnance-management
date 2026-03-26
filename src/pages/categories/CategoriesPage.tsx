@@ -1,24 +1,24 @@
-import { useMemo, useState } from "react";
-import { Card } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { Plus, Search, Sparkles } from "lucide-react";
-import { useCategoriesPageLogic } from "@/pages/categories/hooks/useCategoriesPageLogic";
-import { CategoryCard } from "./components/cards/CategoryCard";
-import { CategoryFormModal } from "./components/modals/CategoryFormModal";
-import { DeleteConfirmationModal } from "@/shared/components/composite/DeleteConfirmationModal";
-import { colors } from "@/shared/theme";
-import { ActionMenuPopover } from "@/shared/components/composite/ActionMenuPopover";
-import { EditDeleteMenuActions } from "@/shared/components/composite/EditDeleteMenuActions";
-import { Container } from "@/shared/components/layout/Container";
-import { Section } from "@/shared/components/layout/Section";
-import { Grid } from "@/shared/components/layout/Grid";
-import { messages } from "@/shared/i18n/messages";
-import { PageHeader } from "@/shared/components/composite/PageHeader";
-import { CollectionState } from "@/shared/components/composite/CollectionState";
-import { Row } from "@/shared/components/layout/Row";
-import { Heading } from "@/shared/components/ui/Heading";
-import { Text } from "@/shared/components/ui/Text";
+import { useMemo, useState } from 'react';
+import { Card } from '@/shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Plus, Search, Sparkles } from 'lucide-react';
+import { useCategoriesPageLogic } from '@/pages/categories/hooks/useCategoriesPageLogic';
+import { CategoryCard } from './components/cards/CategoryCard';
+import { CategoryFormModal } from './components/modals/CategoryFormModal';
+import { DeleteConfirmationModal } from '@/shared/components/composite/DeleteConfirmationModal';
+import { colors } from '@/shared/theme';
+import { ActionMenuPopover } from '@/shared/components/composite/ActionMenuPopover';
+import { EditDeleteMenuActions } from '@/shared/components/composite/EditDeleteMenuActions';
+import { Container } from '@/shared/components/layout/Container';
+import { Section } from '@/shared/components/layout/Section';
+import { Grid } from '@/shared/components/layout/Grid';
+import { messages } from '@/shared/i18n/messages';
+import { PageHeader } from '@/shared/components/composite/PageHeader';
+import { CollectionState } from '@/shared/components/composite/CollectionState';
+import { Row } from '@/shared/components/layout/Row';
+import { Heading } from '@/shared/components/ui/Heading';
+import { Text } from '@/shared/components/ui/Text';
 
 export function CategoriesPage() {
   const pageMessages = messages.categories.page;
@@ -45,26 +45,24 @@ export function CategoriesPage() {
     handleAdd,
   } = useCategoriesPageLogic();
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
 
   const filteredCategories = useMemo(() => {
     const base = categories || [];
     const q = searchTerm.trim().toLowerCase();
-    const filtered = q
-      ? base.filter((c) => c.name.toLowerCase().includes(q))
-      : base;
+    const filtered = q ? base.filter((c) => c.name.toLowerCase().includes(q)) : base;
 
     return [...filtered].sort((a, b) => {
       const typeOrder = (type: string) => {
-        if (type === "income") return 0;
-        if (type === "expense") return 1;
+        if (type === 'income') return 0;
+        if (type === 'expense') return 1;
         return 2;
       };
 
       const byType = typeOrder(a.type) - typeOrder(b.type);
       if (byType !== 0) return byType;
 
-      return a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" });
+      return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
     });
   }, [categories, searchTerm]);
   const isEmpty = filteredCategories.length === 0;
@@ -144,34 +142,20 @@ export function CategoriesPage() {
                 <Text className="mb-0.75 font-semibold text-[var(--color-text-primary)]">
                   {pageMessages.emptyTitle}
                 </Text>
-                <Text className="mb-2 text-white/70">
-                  {pageMessages.emptyDescription}
-                </Text>
-                <Button
-                  variant="outlined"
-                  startIcon={<Plus size={16} />}
-                  onClick={handleAdd}
-                >
+                <Text className="mb-2 text-white/70">{pageMessages.emptyDescription}</Text>
+                <Button variant="outlined" startIcon={<Plus size={16} />} onClick={handleAdd}>
                   {pageMessages.createCategory}
                 </Button>
               </Card>
             }
           >
             {filteredCategories.map((category) => (
-              <CategoryCard
-                key={category.id}
-                category={category}
-                handleOpenMenu={handleOpenMenu}
-              />
+              <CategoryCard key={category.id} category={category} handleOpenMenu={handleOpenMenu} />
             ))}
           </CollectionState>
         </Grid>
 
-        <ActionMenuPopover
-          open={Boolean(anchorEl)}
-          onClose={handleCloseMenu}
-          anchorEl={anchorEl}
-        >
+        <ActionMenuPopover open={Boolean(anchorEl)} onClose={handleCloseMenu} anchorEl={anchorEl}>
           <EditDeleteMenuActions onEdit={handleEdit} onDelete={handleDelete} />
         </ActionMenuPopover>
 

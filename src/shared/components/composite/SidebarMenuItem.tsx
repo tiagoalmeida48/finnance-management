@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from 'lucide-react';
 
 interface SidebarMenuItemProps {
   label: string;
@@ -25,8 +25,8 @@ export function SidebarMenuItem({
         onClick={() => onClick(path)}
         className={`relative flex h-11 min-h-11 w-full cursor-pointer items-center justify-start rounded-xl px-1.5 py-0 transition-all duration-200 hover:bg-white/[0.04] ${
           isActive
-            ? "bg-[var(--color-accentGlow)] text-[var(--color-accent)]"
-            : "bg-transparent text-[var(--color-text-muted)]"
+            ? 'bg-[var(--color-accentGlow)] text-[var(--color-accent)]'
+            : 'bg-transparent text-[var(--color-text-muted)]'
         }`}
       >
         {isActive && (
@@ -36,8 +36,8 @@ export function SidebarMenuItem({
           <Icon size={20} />
         </span>
         <span
-          className={`whitespace-nowrap text-[13.5px] transition-opacity duration-200 ${open ? "opacity-100" : "opacity-0"} ${
-            isActive ? "font-semibold" : "font-medium"
+          className={`whitespace-nowrap text-[13.5px] transition-opacity duration-200 ${open ? 'opacity-100' : 'opacity-0'} ${
+            isActive ? 'font-semibold' : 'font-medium'
           }`}
         >
           {label}

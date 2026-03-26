@@ -1,13 +1,13 @@
-import { useState } from "react";
-import { IconButton } from "@/shared/components/ui/icon-button";
-import { Input } from "@/shared/components/ui/input";
-import { Select } from "@/shared/components/ui/select";
-import { AlertCircle, CheckCircle2, Trash2 } from "lucide-react";
-import type { Category } from "@/shared/interfaces";
-import type { FileData, ImportPreviewRow } from "./importTransactions.types";
-import { messages } from "@/shared/i18n/messages";
-import { Container } from "@/shared/components/layout/Container";
-import { Text } from "@/shared/components/ui/Text";
+import { useState } from 'react';
+import { IconButton } from '@/shared/components/ui/icon-button';
+import { Input } from '@/shared/components/ui/input';
+import { Select } from '@/shared/components/ui/select';
+import { AlertCircle, CheckCircle2, Trash2 } from 'lucide-react';
+import type { Category } from '@/shared/interfaces';
+import type { FileData, ImportPreviewRow } from './importTransactions.types';
+import { messages } from '@/shared/i18n/messages';
+import { Container } from '@/shared/components/layout/Container';
+import { Text } from '@/shared/components/ui/Text';
 import {
   Table,
   TableBody,
@@ -15,16 +15,16 @@ import {
   TableHead,
   TableHeaderCell,
   TableRow,
-} from "@/shared/components/layout/Table";
+} from '@/shared/components/layout/Table';
 
 type ResizableColumnKey =
-  | "date"
-  | "description"
-  | "amount"
-  | "category"
-  | "installments"
-  | "paymentDate"
-  | "paymentAccount";
+  | 'date'
+  | 'description'
+  | 'amount'
+  | 'category'
+  | 'installments'
+  | 'paymentDate'
+  | 'paymentAccount';
 
 const DEFAULT_COLUMN_WIDTHS: Record<ResizableColumnKey, number> = {
   date: 115,
@@ -63,38 +63,34 @@ export function ImportTransactionsPreviewTable({
   updateRow,
   removeRow,
 }: ImportTransactionsPreviewTableProps) {
-  const [columnWidths, setColumnWidths] = useState<
-    Record<ResizableColumnKey, number>
-  >(DEFAULT_COLUMN_WIDTHS);
+  const [columnWidths, setColumnWidths] =
+    useState<Record<ResizableColumnKey, number>>(DEFAULT_COLUMN_WIDTHS);
   const previewMessages = messages.transactions.importPreview;
 
   const visibleColumns = [
-    { key: "date" as const, label: previewMessages.columns.date },
-    { key: "description" as const, label: previewMessages.columns.description },
-    { key: "amount" as const, label: previewMessages.columns.amount },
-    { key: "category" as const, label: previewMessages.columns.category },
+    { key: 'date' as const, label: previewMessages.columns.date },
+    { key: 'description' as const, label: previewMessages.columns.description },
+    { key: 'amount' as const, label: previewMessages.columns.amount },
+    { key: 'category' as const, label: previewMessages.columns.category },
     {
-      key: "installments" as const,
+      key: 'installments' as const,
       label: previewMessages.columns.installments,
     },
     ...(isCreditPayment
       ? []
       : [
           {
-            key: "paymentDate" as const,
+            key: 'paymentDate' as const,
             label: previewMessages.columns.paymentDate,
           },
           {
-            key: "paymentAccount" as const,
+            key: 'paymentAccount' as const,
             label: previewMessages.columns.paymentAccount,
           },
         ]),
   ];
 
-  const startResize = (
-    columnKey: ResizableColumnKey,
-    event: React.MouseEvent<HTMLDivElement>,
-  ) => {
+  const startResize = (columnKey: ResizableColumnKey, event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
 
@@ -103,10 +99,7 @@ export function ImportTransactionsPreviewTable({
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const delta = moveEvent.clientX - startX;
-      const nextWidth = Math.max(
-        MIN_COLUMN_WIDTHS[columnKey],
-        Math.round(startWidth + delta),
-      );
+      const nextWidth = Math.max(MIN_COLUMN_WIDTHS[columnKey], Math.round(startWidth + delta));
 
       setColumnWidths((previousWidths) => {
         if (previousWidths[columnKey] === nextWidth) return previousWidths;
@@ -115,25 +108,22 @@ export function ImportTransactionsPreviewTable({
     };
 
     const finishResize = () => {
-      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener('mousemove', handleMouseMove);
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", finishResize, { once: true });
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', finishResize, { once: true });
   };
 
   return (
     <>
-      <Container
-        unstyled
-        className="flex flex-wrap items-center justify-between gap-2"
-      >
+      <Container unstyled className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-bold text-[var(--color-text-primary)]">
           {previewMessages.title}
         </h3>
         <ValidationChip
           label={previewMessages.validRowsLabel(totalValid, mappedData.length)}
-          color={totalValid === mappedData.length ? "success" : "warning"}
+          color={totalValid === mappedData.length ? 'success' : 'warning'}
         />
       </Container>
 
@@ -171,37 +161,29 @@ export function ImportTransactionsPreviewTable({
               <TableRow key={idx} className="hover:bg-white/5">
                 <TableCell className="border-b border-[var(--color-border)] p-1">
                   <Input
-                    value={row.original.Data || ""}
-                    onChange={(event) =>
-                      updateRow(idx, "Data", event.target.value)
-                    }
-                    className={`h-8 text-xs ${row.errors.date ? "border-[var(--color-error)]" : ""}`}
+                    value={row.original.Data || ''}
+                    onChange={(event) => updateRow(idx, 'Data', event.target.value)}
+                    className={`h-8 text-xs ${row.errors.date ? 'border-[var(--color-error)]' : ''}`}
                   />
                 </TableCell>
                 <TableCell className="border-b border-[var(--color-border)] p-1">
                   <Input
-                    value={row.original.Descrição || ""}
-                    onChange={(event) =>
-                      updateRow(idx, "Descrição", event.target.value)
-                    }
+                    value={row.original.Descrição || ''}
+                    onChange={(event) => updateRow(idx, 'Descrição', event.target.value)}
                     className="h-8 text-xs"
                   />
                 </TableCell>
                 <TableCell className="border-b border-[var(--color-border)] p-1">
                   <Input
-                    value={row.original.Valor || ""}
-                    onChange={(event) =>
-                      updateRow(idx, "Valor", event.target.value)
-                    }
-                    className={`h-8 text-xs font-bold ${row.errors.amount ? "border-[var(--color-error)]" : ""} ${row.mapped.type === "income" ? "text-[var(--color-success)]" : "text-[var(--color-error)]"}`}
+                    value={row.original.Valor || ''}
+                    onChange={(event) => updateRow(idx, 'Valor', event.target.value)}
+                    className={`h-8 text-xs font-bold ${row.errors.amount ? 'border-[var(--color-error)]' : ''} ${row.mapped.type === 'income' ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}
                   />
                 </TableCell>
                 <TableCell className="border-b border-[var(--color-border)] p-1">
                   <Select
-                    value={row.original.Categoria || ""}
-                    onChange={(event) =>
-                      updateRow(idx, "Categoria", event.target.value)
-                    }
+                    value={row.original.Categoria || ''}
+                    onChange={(event) => updateRow(idx, 'Categoria', event.target.value)}
                     className="h-8 text-xs"
                   >
                     <option value="">{previewMessages.noCategory}</option>
@@ -216,21 +198,17 @@ export function ImportTransactionsPreviewTable({
                 </TableCell>
                 <TableCell className="border-b border-[var(--color-border)] p-1">
                   <Input
-                    value={row.original.Parcelas || ""}
-                    onChange={(event) =>
-                      updateRow(idx, "Parcelas", event.target.value)
-                    }
+                    value={row.original.Parcelas || ''}
+                    onChange={(event) => updateRow(idx, 'Parcelas', event.target.value)}
                     placeholder={previewMessages.installmentsPlaceholder}
-                    className={`h-8 text-xs ${row.errors.installments ? "border-[var(--color-error)]" : ""}`}
+                    className={`h-8 text-xs ${row.errors.installments ? 'border-[var(--color-error)]' : ''}`}
                   />
                 </TableCell>
                 {!isCreditPayment && (
                   <TableCell className="border-b border-[var(--color-border)] p-1">
                     <Input
-                      value={row.original["Data de pagamento"] || ""}
-                      onChange={(event) =>
-                        updateRow(idx, "Data de pagamento", event.target.value)
-                      }
+                      value={row.original['Data de pagamento'] || ''}
+                      onChange={(event) => updateRow(idx, 'Data de pagamento', event.target.value)}
                       className="h-8 text-xs"
                     />
                   </TableCell>
@@ -238,10 +216,8 @@ export function ImportTransactionsPreviewTable({
                 {!isCreditPayment && (
                   <TableCell className="border-b border-[var(--color-border)] p-1">
                     <Input
-                      value={row.original["Conta de pagamento"] || ""}
-                      onChange={(event) =>
-                        updateRow(idx, "Conta de pagamento", event.target.value)
-                      }
+                      value={row.original['Conta de pagamento'] || ''}
+                      onChange={(event) => updateRow(idx, 'Conta de pagamento', event.target.value)}
                       className="h-8 text-xs"
                     />
                   </TableCell>
@@ -276,20 +252,14 @@ export function ImportTransactionsPreviewTable({
   );
 }
 
-function ValidationChip({
-  label,
-  color,
-}: {
-  label: string;
-  color: "success" | "warning";
-}) {
+function ValidationChip({ label, color }: { label: string; color: 'success' | 'warning' }) {
   return (
     <Container
       unstyled
       className={`rounded-full border px-2 py-1 text-xs font-bold ${
-        color === "success"
-          ? "border-[var(--color-success)] bg-[var(--overlay-success-alt-10)] text-[var(--color-success)]"
-          : "border-[var(--color-warning-alt)] bg-[var(--overlay-warning-alt-10)] text-[var(--color-warning-alt)]"
+        color === 'success'
+          ? 'border-[var(--color-success)] bg-[var(--overlay-success-alt-10)] text-[var(--color-success)]'
+          : 'border-[var(--color-warning-alt)] bg-[var(--overlay-warning-alt-10)] text-[var(--color-warning-alt)]'
       }`}
     >
       {label}

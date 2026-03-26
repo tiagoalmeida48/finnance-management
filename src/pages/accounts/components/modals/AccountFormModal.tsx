@@ -1,19 +1,19 @@
-import { Controller } from "react-hook-form";
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { Select } from "@/shared/components/ui/select";
-import { ColorPickerField } from "@/shared/components/forms/ColorPickerField";
-import { CurrencyInputField } from "@/shared/components/forms/CurrencyInputField";
-import { FormField } from "@/shared/components/forms/FormField";
-import { FormDialog } from "@/shared/components/composite/FormDialog";
-import { PrefixedInputField } from "@/shared/components/forms/PrefixedInputField";
-import { Row } from "@/shared/components/layout/Row";
-import { Stack } from "@/shared/components/layout/Stack";
-import { TextareaField } from "@/shared/components/forms/TextareaField";
-import { ACCOUNT_TYPE_OPTIONS } from "@/shared/constants/accountTypes";
-import { useAccountFormModalLogic } from "@/pages/accounts/hooks/useAccountFormModalLogic";
-import { Account } from "@/shared/interfaces/account.interface";
-import { messages } from "@/shared/i18n/messages";
+import { Controller } from 'react-hook-form';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Select } from '@/shared/components/ui/select';
+import { ColorPickerField } from '@/shared/components/forms/ColorPickerField';
+import { CurrencyInputField } from '@/shared/components/forms/CurrencyInputField';
+import { FormField } from '@/shared/components/forms/FormField';
+import { FormDialog } from '@/shared/components/composite/FormDialog';
+import { PrefixedInputField } from '@/shared/components/forms/PrefixedInputField';
+import { Row } from '@/shared/components/layout/Row';
+import { Stack } from '@/shared/components/layout/Stack';
+import { TextareaField } from '@/shared/components/forms/TextareaField';
+import { ACCOUNT_TYPE_OPTIONS } from '@/shared/constants/accountTypes';
+import { useAccountFormModalLogic } from '@/pages/accounts/hooks/useAccountFormModalLogic';
+import { Account } from '@/shared/interfaces/account.interface';
+import { messages } from '@/shared/i18n/messages';
 
 interface AccountFormModalProps {
   open: boolean;
@@ -21,38 +21,23 @@ interface AccountFormModalProps {
   account?: Account;
 }
 
-export function AccountFormModal({
-  open,
-  onClose,
-  account,
-}: AccountFormModalProps) {
+export function AccountFormModal({ open, onClose, account }: AccountFormModalProps) {
   const accountFormMessages = messages.accounts.form;
   const commonMessages = messages.common;
 
-  const {
-    control,
-    register,
-    handleSubmit,
-    errors,
-    onSubmit,
-    isSaving,
-    getFieldClass,
-  } = useAccountFormModalLogic({
-    open,
-    onClose,
-    account,
-  });
+  const { control, register, handleSubmit, errors, onSubmit, isSaving, getFieldClass } =
+    useAccountFormModalLogic({
+      open,
+      onClose,
+      account,
+    });
 
   return (
     <FormDialog
       open={open}
       onClose={onClose}
       maxWidth="xs"
-      title={
-        account
-          ? accountFormMessages.modal.editTitle
-          : accountFormMessages.modal.createTitle
-      }
+      title={account ? accountFormMessages.modal.editTitle : accountFormMessages.modal.createTitle}
       onSubmit={handleSubmit(onSubmit)}
       actionsClassName="p-3 pt-0"
       actions={
@@ -77,7 +62,7 @@ export function AccountFormModal({
             id="account-name"
             placeholder={accountFormMessages.fields.namePlaceholder}
             className={getFieldClass(Boolean(errors.name))}
-            {...register("name")}
+            {...register('name')}
           />
         </FormField>
         <FormField
@@ -89,7 +74,7 @@ export function AccountFormModal({
           <Select
             id="account-type"
             className={getFieldClass(Boolean(errors.type))}
-            {...register("type")}
+            {...register('type')}
           >
             {ACCOUNT_TYPE_OPTIONS.map((typeOption) => (
               <option key={typeOption.value} value={typeOption.value}>
@@ -113,9 +98,7 @@ export function AccountFormModal({
               render={({ field }) => (
                 <CurrencyInputField
                   id="account-initial"
-                  placeholder={
-                    accountFormMessages.fields.initialBalancePlaceholder
-                  }
+                  placeholder={accountFormMessages.fields.initialBalancePlaceholder}
                   value={field.value}
                   onValueChange={field.onChange}
                   onBlur={field.onBlur}
@@ -136,7 +119,7 @@ export function AccountFormModal({
                 className={getFieldClass(false)}
                 type="number"
                 step="0.01"
-                {...register("current_balance", { valueAsNumber: true })}
+                {...register('current_balance', { valueAsNumber: true })}
               />
             </FormField>
           ) : null}
@@ -154,7 +137,7 @@ export function AccountFormModal({
             id="account-notes"
             rows={3}
             placeholder={accountFormMessages.fields.notesPlaceholder}
-            {...register("notes")}
+            {...register('notes')}
           />
         </FormField>
         <Controller

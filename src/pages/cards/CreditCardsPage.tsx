@@ -1,20 +1,20 @@
-import { Button } from "@/shared/components/ui/button";
-import { Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useCreditCardsPageLogic } from "@/pages/cards/hooks/useCreditCardsPageLogic";
-import { CreditCardCard } from "./components/cards/CreditCardCard";
-import { CardFormModal } from "./components/modals/CardFormModal";
-import { DeleteConfirmationModal } from "@/shared/components/composite/DeleteConfirmationModal";
-import { Container } from "@/shared/components/layout/Container";
-import { Section } from "@/shared/components/layout/Section";
-import { Grid } from "@/shared/components/layout/Grid";
-import { messages } from "@/shared/i18n/messages";
-import { PageHeader } from "@/shared/components/composite/PageHeader";
-import { CollectionState } from "@/shared/components/composite/CollectionState";
-import { Text } from "@/shared/components/ui/Text";
-import { ActionMenuPopover } from "@/shared/components/composite/ActionMenuPopover";
-import { EditDeleteMenuActions } from "@/shared/components/composite/EditDeleteMenuActions";
-import { formatCurrency } from "@/shared/utils/currency";
+import { Button } from '@/shared/components/ui/button';
+import { Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useCreditCardsPageLogic } from '@/pages/cards/hooks/useCreditCardsPageLogic';
+import { CreditCardCard } from './components/cards/CreditCardCard';
+import { CardFormModal } from './components/modals/CardFormModal';
+import { DeleteConfirmationModal } from '@/shared/components/composite/DeleteConfirmationModal';
+import { Container } from '@/shared/components/layout/Container';
+import { Section } from '@/shared/components/layout/Section';
+import { Grid } from '@/shared/components/layout/Grid';
+import { messages } from '@/shared/i18n/messages';
+import { PageHeader } from '@/shared/components/composite/PageHeader';
+import { CollectionState } from '@/shared/components/composite/CollectionState';
+import { Text } from '@/shared/components/ui/Text';
+import { ActionMenuPopover } from '@/shared/components/composite/ActionMenuPopover';
+import { EditDeleteMenuActions } from '@/shared/components/composite/EditDeleteMenuActions';
+import { formatCurrency } from '@/shared/utils/currency';
 
 export function CreditCardsPage() {
   const pageMessages = messages.cards.page;
@@ -39,8 +39,7 @@ export function CreditCardsPage() {
     handleAdd,
   } = useCreditCardsPageLogic();
 
-  const totalLimit =
-    cards?.reduce((sum, c) => sum + (c.credit_limit || 0), 0) || 0;
+  const totalLimit = cards?.reduce((sum, c) => sum + (c.credit_limit || 0), 0) || 0;
   const totalUsage = cards?.reduce((sum, c) => sum + (c.usage || 0), 0) || 0;
   const isEmpty = !cards || cards.length === 0;
 
@@ -58,9 +57,15 @@ export function CreditCardsPage() {
                 <Text className="text-[13px] text-[var(--color-text-secondary)]">
                   {pageMessages.cardCount(cards.length)}
                   <span className="mx-1 text-[var(--color-text-muted)]">•</span>
-                  {pageMessages.totalLimit}: <span className="text-[var(--color-success)] font-medium">{formatCurrency(totalLimit)}</span>
+                  {pageMessages.totalLimit}:{' '}
+                  <span className="text-[var(--color-success)] font-medium">
+                    {formatCurrency(totalLimit)}
+                  </span>
                   <span className="mx-1 text-[var(--color-text-muted)]">•</span>
-                  {pageMessages.used}: <span className="text-[var(--color-error)] font-medium">{formatCurrency(totalUsage)}</span>
+                  {pageMessages.used}:{' '}
+                  <span className="text-[var(--color-error)] font-medium">
+                    {formatCurrency(totalUsage)}
+                  </span>
                 </Text>
               ) : null}
             </>
@@ -91,9 +96,7 @@ export function CreditCardsPage() {
             }
             emptyFallback={
               <div className="col-span-full rounded-[16px] border border-[var(--color-border)] bg-[var(--color-card)] py-8 text-center">
-                <Text className="text-[var(--color-text-secondary)]">
-                  {pageMessages.empty}
-                </Text>
+                <Text className="text-[var(--color-text-secondary)]">{pageMessages.empty}</Text>
               </div>
             }
           >
@@ -108,11 +111,7 @@ export function CreditCardsPage() {
           </CollectionState>
         </Grid>
 
-        <ActionMenuPopover
-          open={Boolean(anchorEl)}
-          onClose={handleCloseMenu}
-          anchorEl={anchorEl}
-        >
+        <ActionMenuPopover open={Boolean(anchorEl)} onClose={handleCloseMenu} anchorEl={anchorEl}>
           <EditDeleteMenuActions onEdit={handleEdit} onDelete={handleDelete} />
         </ActionMenuPopover>
 

@@ -1,5 +1,5 @@
-import type { Transaction } from "../services/transactions.service";
-import type { TransactionGroup } from "./transactionsPage.utils";
+import type { Transaction } from '../services/transactions.service';
+import type { TransactionGroup } from './transactionsPage.utils';
 
 export const clearContextMenuState = (
   setAnchorEl: (value: null) => void,
@@ -17,11 +17,7 @@ export const removeIds = (baseIds: string[], idsToRemove: string[]) => {
   return baseIds.filter((id) => !idsToRemoveSet.has(id));
 };
 
-export const extractGroupOrTransactionIds = (
-  rows: Array<Transaction | TransactionGroup>,
-) =>
+export const extractGroupOrTransactionIds = (rows: Array<Transaction | TransactionGroup>) =>
   rows.flatMap((item) =>
-    "isGroup" in item && item.isGroup
-      ? item.items.map((transaction) => transaction.id)
-      : [item.id],
+    'isGroup' in item && item.isGroup ? item.items.map((transaction) => transaction.id) : [item.id],
   );

@@ -1,30 +1,27 @@
-import { createElement, useEffect } from "react";
-import { useForm, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { Coins } from "lucide-react";
-import {
-  useCreateCategory,
-  useUpdateCategory,
-} from "@/shared/hooks/api/useCategories";
-import { Category } from "@/shared/interfaces/category.interface";
-import { colors } from "@/shared/theme";
-import { categoryIconOptions, getCategoryIcon } from "../categoryIcons";
-import { useApplyElementStyles } from "@/shared/hooks/useApplyElementStyles";
-import { ColorPickerField } from "@/shared/components/forms/ColorPickerField";
-import { Row } from "@/shared/components/layout/Row";
-import { Stack } from "@/shared/components/layout/Stack";
-import { messages } from "@/shared/i18n/messages";
-import { FormDialog } from "@/shared/components/composite/FormDialog";
-import { FormField } from "@/shared/components/forms/FormField";
-import { Text } from "@/shared/components/ui/Text";
-import { Container } from "@/shared/components/layout/Container";
+import { createElement, useEffect } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Coins } from 'lucide-react';
+import { useCreateCategory, useUpdateCategory } from '@/shared/hooks/api/useCategories';
+import { Category } from '@/shared/interfaces/category.interface';
+import { colors } from '@/shared/theme';
+import { categoryIconOptions, getCategoryIcon } from '../categoryIcons';
+import { useApplyElementStyles } from '@/shared/hooks/useApplyElementStyles';
+import { ColorPickerField } from '@/shared/components/forms/ColorPickerField';
+import { Row } from '@/shared/components/layout/Row';
+import { Stack } from '@/shared/components/layout/Stack';
+import { messages } from '@/shared/i18n/messages';
+import { FormDialog } from '@/shared/components/composite/FormDialog';
+import { FormField } from '@/shared/components/forms/FormField';
+import { Text } from '@/shared/components/ui/Text';
+import { Container } from '@/shared/components/layout/Container';
 
 const categorySchema = z.object({
   name: z.string().min(3, messages.categories.form.validation.nameMin),
-  type: z.enum(["income", "expense"]),
+  type: z.enum(['income', 'expense']),
   icon: z.string(),
   color: z.string(),
 });
@@ -35,14 +32,14 @@ interface CategoryFormModalProps {
   open: boolean;
   onClose: () => void;
   category?: Category;
-  defaultType?: "income" | "expense";
+  defaultType?: 'income' | 'expense';
 }
 
 export function CategoryFormModal({
   open,
   onClose,
   category,
-  defaultType = "expense",
+  defaultType = 'expense',
 }: CategoryFormModalProps) {
   const formMessages = messages.categories.form;
   const createCategory = useCreateCategory();
@@ -61,16 +58,16 @@ export function CategoryFormModal({
 
   const selectedColor = useWatch({
     control,
-    name: "color",
-    defaultValue: "#c9a84c",
+    name: 'color',
+    defaultValue: '#c9a84c',
   });
-  const selectedIcon = useWatch({ control, name: "icon", defaultValue: "tag" });
+  const selectedIcon = useWatch({ control, name: 'icon', defaultValue: 'tag' });
   const selectedType = useWatch({
     control,
-    name: "type",
+    name: 'type',
     defaultValue: defaultType,
   });
-  const categoryName = useWatch({ control, name: "name", defaultValue: "" });
+  const categoryName = useWatch({ control, name: 'name', defaultValue: '' });
 
   const previewIconElement = createElement(getCategoryIcon(selectedIcon), {
     size: 19,
@@ -82,10 +79,10 @@ export function CategoryFormModal({
   useEffect(() => {
     if (open) {
       reset({
-        name: category?.name || "",
+        name: category?.name || '',
         type: category?.type || defaultType,
-        icon: category?.icon || "tag",
-        color: category?.color || "#c9a84c",
+        icon: category?.icon || 'tag',
+        color: category?.color || '#c9a84c',
       });
     }
   }, [category, open, reset, defaultType]);
@@ -98,8 +95,8 @@ export function CategoryFormModal({
         await createCategory.mutateAsync(values);
       }
       onClose();
-    } catch (error) {
-      console.error("Error saving category:", error);
+    } catch {
+      // erro tratado pelo onError global do QueryClient
     }
   };
 
@@ -112,9 +109,7 @@ export function CategoryFormModal({
       maxWidth="sm"
       fullWidth
       className="w-[95vw] max-w-[500px] border border-white/10 bg-[var(--color-bgSecondary)] shadow-[0_24px_64px_var(--overlay-black-50)]"
-      title={
-        category ? formMessages.modal.editTitle : formMessages.modal.createTitle
-      }
+      title={category ? formMessages.modal.editTitle : formMessages.modal.createTitle}
       titleClassName="pb-1 font-bold text-[22px] text-white"
       onSubmit={handleSubmit(onSubmit)}
       contentClassName="pt-[14px] px-6"
@@ -163,7 +158,7 @@ export function CategoryFormModal({
               {categoryName?.trim() || formMessages.preview.defaultName}
             </Text>
             <Text className="text-[13px] text-[var(--color-text-secondary)]">
-              {selectedType === "expense"
+              {selectedType === 'expense'
                 ? formMessages.preview.expense
                 : formMessages.preview.income}
             </Text>
@@ -180,7 +175,7 @@ export function CategoryFormModal({
             id="category-name"
             placeholder={formMessages.fields.namePlaceholder}
             className="rounded-xl bg-white/[0.03]"
-            {...register("name")}
+            {...register('name')}
           />
         </FormField>
 
@@ -191,15 +186,15 @@ export function CategoryFormModal({
           <Row className="w-full gap-2">
             <Button
               type="button"
-              onClick={() => setValue("type", "expense", { shouldDirty: true })}
-              className={`flex-1 rounded-lg py-2 font-semibold transition-all ${selectedType === "expense" ? "bg-[var(--color-error)] text-white shadow-sm hover:bg-[var(--color-error)] hover:brightness-90" : "bg-white/10 text-white hover:bg-white/20"}`}
+              onClick={() => setValue('type', 'expense', { shouldDirty: true })}
+              className={`flex-1 rounded-lg py-2 font-semibold transition-all ${selectedType === 'expense' ? 'bg-[var(--color-error)] text-white shadow-sm hover:bg-[var(--color-error)] hover:brightness-90' : 'bg-white/10 text-white hover:bg-white/20'}`}
             >
               {formMessages.fields.expense}
             </Button>
             <Button
               type="button"
-              onClick={() => setValue("type", "income", { shouldDirty: true })}
-              className={`flex-1 rounded-lg py-2 font-semibold transition-all ${selectedType === "income" ? "bg-[var(--color-success)] text-white shadow-sm hover:bg-[var(--color-success)] hover:brightness-90" : "bg-white/10 text-white hover:bg-white/20"}`}
+              onClick={() => setValue('type', 'income', { shouldDirty: true })}
+              className={`flex-1 rounded-lg py-2 font-semibold transition-all ${selectedType === 'income' ? 'bg-[var(--color-success)] text-white shadow-sm hover:bg-[var(--color-success)] hover:brightness-90' : 'bg-white/10 text-white hover:bg-white/20'}`}
             >
               {formMessages.fields.income}
             </Button>
@@ -218,15 +213,13 @@ export function CategoryFormModal({
                 <button
                   key={iconName}
                   type="button"
-                  onClick={() =>
-                    setValue("icon", iconName, { shouldDirty: true })
-                  }
+                  onClick={() => setValue('icon', iconName, { shouldDirty: true })}
                   className={`flex aspect-square items-center justify-center rounded-lg border transition-all ${
                     isSelected
-                      ? "border-transparent bg-[var(--color-accent)] text-black shadow-sm"
-                      : "border-white/5 bg-white/[0.02] text-white/70 hover:border-white/10 hover:bg-white/[0.06] hover:text-white"
+                      ? 'border-transparent bg-[var(--color-accent)] text-black shadow-sm'
+                      : 'border-white/5 bg-white/[0.02] text-white/70 hover:border-white/10 hover:bg-white/[0.06] hover:text-white'
                   }`}
-                  title={iconName.replace("-", " ")}
+                  title={iconName.replace('-', ' ')}
                 >
                   <IconComponent size={20} />
                 </button>
@@ -236,15 +229,15 @@ export function CategoryFormModal({
         </Container>
 
         <ColorPickerField
-          value={selectedColor || "#c9a84c"}
-          onChange={(value) => setValue("color", value, { shouldDirty: true })}
+          value={selectedColor || '#c9a84c'}
+          onChange={(value) => setValue('color', value, { shouldDirty: true })}
           title={formMessages.colorPicker.title}
           description={formMessages.colorPicker.description}
         />
 
-        <input type="hidden" {...register("type")} />
-        <input type="hidden" {...register("icon")} />
-        <input type="hidden" {...register("color")} />
+        <input type="hidden" {...register('type')} />
+        <input type="hidden" {...register('icon')} />
+        <input type="hidden" {...register('color')} />
       </Stack>
     </FormDialog>
   );

@@ -1,20 +1,20 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { endOfYear, format, startOfYear } from "date-fns";
-import { transactionsService } from "@/shared/services/transactions.service";
-import { queryKeys } from "@/shared/constants/queryKeys";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { endOfYear, format, startOfYear } from 'date-fns';
+import { transactionsService } from '@/shared/services/transactions.service';
+import { queryKeys } from '@/shared/constants/queryKeys';
 import {
   useDashboardStats,
   useDashboardCharts,
   useDashboardCategories,
-} from "@/shared/hooks/api/useDashboard";
+} from '@/shared/hooks/api/useDashboard';
 
 export function useDashboardPageLogic() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   const filter = {
-    start: format(startOfYear(new Date(selectedYear, 0, 1)), "yyyy-MM-dd"),
-    end: format(endOfYear(new Date(selectedYear, 0, 1)), "yyyy-MM-dd"),
+    start: format(startOfYear(new Date(selectedYear, 0, 1)), 'yyyy-MM-dd'),
+    end: format(endOfYear(new Date(selectedYear, 0, 1)), 'yyyy-MM-dd'),
   };
 
   const { data: stats, isLoading: statsLoading } = useDashboardStats(filter);

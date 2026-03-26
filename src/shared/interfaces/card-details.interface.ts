@@ -1,7 +1,7 @@
-import type { CreditCard } from "./credit-card.interface";
-import type { CreditCardInvoice } from "./credit-card-invoice.interface";
-import type { CreditCardStatementCycle } from "./credit-card-statement-cycle.interface";
-import type { Transaction } from "./transaction.interface";
+import type { CreditCard } from './credit-card.interface';
+import type { CreditCardInvoice } from './credit-card-invoice.interface';
+import type { CreditCardStatementCycle } from './credit-card-statement-cycle.interface';
+import type { Transaction } from './transaction.interface';
 
 export interface CreditCardDetails extends CreditCard {
   transactions: Transaction[];

@@ -1,9 +1,9 @@
-import { useMemo } from "react";
-import type { MouseEvent } from "react";
-import type { NavigateFunction } from "react-router-dom";
-import { useApplyElementStyles } from "@/shared/hooks/useApplyElementStyles";
-import type { CreditCard } from "@/shared/interfaces/credit-card.interface";
-import { messages } from "@/shared/i18n/messages";
+import { useMemo } from 'react';
+import type { MouseEvent } from 'react';
+import type { NavigateFunction } from 'react-router-dom';
+import { useApplyElementStyles } from '@/shared/hooks/useApplyElementStyles';
+import type { CreditCard } from '@/shared/interfaces/credit-card.interface';
+import { messages } from '@/shared/i18n/messages';
 
 interface UseCreditCardCardLogicParams {
   card: CreditCard;
@@ -12,7 +12,7 @@ interface UseCreditCardCardLogicParams {
   onDeleteCard: (card: CreditCard) => void;
 }
 
-import { formatCurrency } from "@/shared/utils/currency";
+import { formatCurrency } from '@/shared/utils/currency';
 
 export function useCreditCardCardLogic({
   card,
@@ -21,27 +21,24 @@ export function useCreditCardCardLogic({
   onDeleteCard,
 }: UseCreditCardCardLogicParams) {
   const cardMessages = messages.cards.cardItem;
-  const cardColor = card.color || "var(--color-primary)";
+  const cardColor = card.color || 'var(--color-primary)';
   const dueDay = card.current_statement_cycle?.due_day ?? card.due_day;
-  const closingDay =
-    card.current_statement_cycle?.closing_day ?? card.closing_day;
+  const closingDay = card.current_statement_cycle?.closing_day ?? card.closing_day;
 
   const usagePercent =
-    card.credit_limit > 0
-      ? Math.min(((card.usage || 0) / card.credit_limit) * 100, 100)
-      : 0;
+    card.credit_limit > 0 ? Math.min(((card.usage || 0) / card.credit_limit) * 100, 100) : 0;
 
   const progressColor =
     usagePercent >= 80
-      ? "var(--color-error)"
+      ? 'var(--color-error)'
       : usagePercent >= 50
-        ? "var(--color-warning)"
+        ? 'var(--color-warning)'
         : cardColor;
 
   const cardRootRef = useApplyElementStyles<HTMLDivElement>({
-    "border-left": `3px solid ${cardColor}`,
-    "--card-color": cardColor,
-    "--progress-color": progressColor,
+    'border-left': `3px solid ${cardColor}`,
+    '--card-color': cardColor,
+    '--progress-color': progressColor,
   });
 
   const usageBarRef = useApplyElementStyles<HTMLDivElement>({
@@ -51,16 +48,16 @@ export function useCreditCardCardLogic({
   const summaryItems = useMemo(
     () => [
       {
-        key: "available",
+        key: 'available',
         label: cardMessages.available,
         value: formatCurrency(card.available_limit || 0),
-        valueClass: "text-[var(--color-success)]",
+        valueClass: 'text-[var(--color-success)]',
       },
       {
-        key: "invoice",
+        key: 'invoice',
         label: cardMessages.currentInvoice,
         value: formatCurrency(card.current_invoice || 0),
-        valueClass: "text-[var(--color-error)]",
+        valueClass: 'text-[var(--color-error)]',
       },
     ],
     [

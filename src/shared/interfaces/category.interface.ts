@@ -1,14 +1,5 @@
-export type CategoryType = "income" | "expense";
+import { z } from 'zod';
+import { CategorySchema, CategoryTypeSchema } from '@/shared/schemas';
 
-export interface Category {
-  id: string;
-  user_id: string;
-  name: string;
-  type: CategoryType;
-  icon: string;
-  color: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  deleted_at?: string;
-}
+export type CategoryType = z.infer<typeof CategoryTypeSchema>;
+export type Category = z.infer<typeof CategorySchema>;

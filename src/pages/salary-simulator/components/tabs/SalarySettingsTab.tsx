@@ -1,14 +1,14 @@
-import { useMemo, useState } from "react";
-import { Card, CardContent } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
-import { Select } from "@/shared/components/ui/select";
-import { History } from "lucide-react";
-import type { SalarySetting } from "@/shared/interfaces";
-import { colors } from "@/shared/theme";
-import { formatDateBR, formatCurrency } from "../salarySimulator.helpers";
-import { messages } from "@/shared/i18n/messages";
-import { Container } from "@/shared/components/layout/Container";
-import { Text } from "@/shared/components/ui/Text";
+import { useMemo, useState } from 'react';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { Select } from '@/shared/components/ui/select';
+import { History } from 'lucide-react';
+import type { SalarySetting } from '@/shared/interfaces';
+import { colors } from '@/shared/theme';
+import { formatDateBR, formatCurrency } from '../salarySimulator.helpers';
+import { messages } from '@/shared/i18n/messages';
+import { Container } from '@/shared/components/layout/Container';
+import { Text } from '@/shared/components/ui/Text';
 import {
   Table,
   TableBody,
@@ -16,7 +16,7 @@ import {
   TableHead,
   TableHeaderCell,
   TableRow,
-} from "@/shared/components/layout/Table";
+} from '@/shared/components/layout/Table';
 
 interface SalarySettingsTabProps {
   loadingHistory: boolean;
@@ -37,9 +37,7 @@ export function SalarySettingsTab({
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(100);
   const showingAllRows = rowsPerPage === -1;
-  const maxPage = showingAllRows
-    ? 0
-    : Math.max(0, Math.ceil(history.length / rowsPerPage) - 1);
+  const maxPage = showingAllRows ? 0 : Math.max(0, Math.ceil(history.length / rowsPerPage) - 1);
   const safePage = Math.min(page, maxPage);
 
   const paginatedHistory = useMemo(() => {
@@ -50,10 +48,7 @@ export function SalarySettingsTab({
     return history.slice(startIndex, startIndex + rowsPerPage);
   }, [history, safePage, rowsPerPage, showingAllRows]);
 
-  const totalPages =
-    rowsPerPage === -1
-      ? 1
-      : Math.max(1, Math.ceil(history.length / rowsPerPage));
+  const totalPages = rowsPerPage === -1 ? 1 : Math.max(1, Math.ceil(history.length / rowsPerPage));
 
   return (
     <Container unstyled className="col-span-12">
@@ -62,9 +57,7 @@ export function SalarySettingsTab({
           <Container unstyled className="flex flex-col gap-2">
             <Container unstyled className="flex items-center gap-2">
               <History size={18} color={colors.accent} />
-              <Text className="font-heading font-bold">
-                {tabMessages.title}
-              </Text>
+              <Text className="font-heading font-bold">{tabMessages.title}</Text>
             </Container>
 
             {loadingHistory ? (
@@ -85,49 +78,36 @@ export function SalarySettingsTab({
                       <TableHeaderCell className={headerCellClass}>
                         {tabMessages.columns.validity}
                       </TableHeaderCell>
-                      <TableHeaderCell
-                        className={`${headerCellClass} text-right`}
-                      >
+                      <TableHeaderCell className={`${headerCellClass} text-right`}>
                         {tabMessages.columns.hourValue}
                       </TableHeaderCell>
-                      <TableHeaderCell
-                        className={`${headerCellClass} text-right`}
-                      >
+                      <TableHeaderCell className={`${headerCellClass} text-right`}>
                         {tabMessages.columns.proLabore}
                       </TableHeaderCell>
-                      <TableHeaderCell
-                        className={`${headerCellClass} text-right`}
-                      >
+                      <TableHeaderCell className={`${headerCellClass} text-right`}>
                         {tabMessages.columns.inss}
                       </TableHeaderCell>
-                      <TableHeaderCell
-                        className={`${headerCellClass} text-right`}
-                      >
+                      <TableHeaderCell className={`${headerCellClass} text-right`}>
                         {tabMessages.columns.adminFee}
                       </TableHeaderCell>
-                      <TableHeaderCell
-                        className={`${headerCellClass} text-center`}
-                      >
+                      <TableHeaderCell className={`${headerCellClass} text-center`}>
                         {tabMessages.columns.status}
                       </TableHeaderCell>
-                      <TableHeaderCell
-                        className={`${headerCellClass} text-center`}
-                      >
+                      <TableHeaderCell className={`${headerCellClass} text-center`}>
                         {tabMessages.columns.actions}
                       </TableHeaderCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {paginatedHistory.map((setting) => {
-                      const isCurrent = setting.date_end === "9999-12-31";
+                      const isCurrent = setting.date_end === '9999-12-31';
                       return (
                         <TableRow
                           key={`${setting.user_id}-${setting.date_start}-${setting.date_end}`}
-                          className={`hover:bg-white/5 ${isCurrent ? "bg-[var(--overlay-primary-08)]" : ""}`}
+                          className={`hover:bg-white/5 ${isCurrent ? 'bg-[var(--overlay-primary-08)]' : ''}`}
                         >
                           <TableCell className={bodyCellClass}>
-                            {formatDateBR(setting.date_start)} ate{" "}
-                            {formatDateBR(setting.date_end)}
+                            {formatDateBR(setting.date_start)} ate {formatDateBR(setting.date_end)}
                           </TableCell>
                           <TableCell className={`${bodyCellClass} text-right`}>
                             {formatCurrency(Number(setting.hourly_rate))}
@@ -136,9 +116,7 @@ export function SalarySettingsTab({
                             {formatCurrency(Number(setting.base_salary))}
                           </TableCell>
                           <TableCell className={`${bodyCellClass} text-right`}>
-                            {Number(setting.inss_discount_percentage).toFixed(
-                              2,
-                            )}
+                            {Number(setting.inss_discount_percentage).toFixed(2)}
                           </TableCell>
                           <TableCell className={`${bodyCellClass} text-right`}>
                             {Number(setting.admin_fee_percentage).toFixed(2)}
@@ -152,14 +130,11 @@ export function SalarySettingsTab({
                                 {tabMessages.current}
                               </Text>
                             ) : (
-                              "-"
+                              '-'
                             )}
                           </TableCell>
                           <TableCell className="py-1.5 text-center">
-                            <Container
-                              unstyled
-                              className="flex justify-center gap-1"
-                            >
+                            <Container unstyled className="flex justify-center gap-1">
                               <Button
                                 size="small"
                                 variant="text"
@@ -235,9 +210,7 @@ export function SalarySettingsTab({
                   </Button>
                   <Button
                     type="button"
-                    onClick={() =>
-                      setPage((prev) => Math.min(totalPages - 1, prev + 1))
-                    }
+                    onClick={() => setPage((prev) => Math.min(totalPages - 1, prev + 1))}
                     disabled={safePage >= totalPages - 1}
                     className="rounded border border-[var(--color-border)] px-2 py-1 disabled:opacity-40"
                   >
@@ -254,5 +227,5 @@ export function SalarySettingsTab({
 }
 
 const headerCellClass =
-  "py-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--color-text-muted)]";
-const bodyCellClass = "py-1.5 text-[13px] text-[var(--color-text-secondary)]";
+  'py-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--color-text-muted)]';
+const bodyCellClass = 'py-1.5 text-[13px] text-[var(--color-text-secondary)]';

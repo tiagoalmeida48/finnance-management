@@ -1,30 +1,20 @@
-import { CustomSelect } from "@/shared/components/ui/custom-select";
+import { CustomSelect } from '@/shared/components/ui/custom-select';
 import {
   Controller,
   type Control,
   type FieldErrors,
   type UseFormRegister,
   type UseFormWatch,
-} from "react-hook-form";
-import type {
-  Account,
-  Category,
-  CreditCard,
-  Transaction,
-} from "@/shared/interfaces";
-import type { TransactionFormValues } from "@/pages/transactions/hooks/useTransactionFormLogic";
-import { TransactionDateField } from "./TransactionDateField";
-import { messages } from "@/shared/i18n/messages";
-import {
-  Banknote,
-  CreditCard as CreditCardIcon,
-  ScanBarcode,
-  ArrowRightLeft,
-} from "lucide-react";
-import { getCategoryIcon } from "@/pages/categories/components/categoryIcons";
-import { getAccountTypeIcon } from "@/shared/constants/accountTypes";
-import { Container } from "@/shared/components/layout/Container";
-import { Text } from "@/shared/components/ui/Text";
+} from 'react-hook-form';
+import type { Account, Category, CreditCard, Transaction } from '@/shared/interfaces';
+import type { TransactionFormValues } from '@/pages/transactions/hooks/useTransactionFormLogic';
+import { TransactionDateField } from './TransactionDateField';
+import { messages } from '@/shared/i18n/messages';
+import { Banknote, CreditCard as CreditCardIcon, ScanBarcode, ArrowRightLeft } from 'lucide-react';
+import { getCategoryIcon } from '@/pages/categories/components/categoryIcons';
+import { getAccountTypeIcon } from '@/shared/constants/accountTypes';
+import { Container } from '@/shared/components/layout/Container';
+import { Text } from '@/shared/components/ui/Text';
 
 interface TransactionPaymentSectionProps {
   isMobile: boolean;
@@ -50,39 +40,39 @@ export function TransactionPaymentSection({
   cards,
 }: TransactionPaymentSectionProps) {
   const labelClass =
-    "mb-1 block text-[11px] font-medium uppercase tracking-wider text-[var(--color-text-secondary)]";
+    'mb-1 block text-[11px] font-medium uppercase tracking-wider text-[var(--color-text-secondary)]';
 
-  const paymentMethod = watch("payment_method");
+  const paymentMethod = watch('payment_method');
 
   const paymentGridClass = isMobile
-    ? "grid-cols-1"
-    : paymentMethod === "credit"
-      ? "grid-cols-3"
-      : "grid-cols-2";
+    ? 'grid-cols-1'
+    : paymentMethod === 'credit'
+      ? 'grid-cols-3'
+      : 'grid-cols-2';
 
   const paymentMethodOptions = [
     {
-      value: "money",
+      value: 'money',
       label: messages.transactions.form.payment.methodMoney,
       icon: <Banknote size={16} />,
     },
     {
-      value: "debit",
+      value: 'debit',
       label: messages.transactions.form.payment.methodDebit,
       icon: <CreditCardIcon size={16} />,
     },
     {
-      value: "credit",
+      value: 'credit',
       label: messages.transactions.form.payment.methodCredit,
       icon: <CreditCardIcon size={16} />,
     },
     {
-      value: "pix",
+      value: 'pix',
       label: messages.transactions.form.payment.methodPix,
       icon: <ArrowRightLeft size={16} />,
     },
     {
-      value: "bill_payment",
+      value: 'bill_payment',
       label: messages.transactions.form.payment.methodBillPayment,
       icon: <ScanBarcode size={16} />,
     },
@@ -94,10 +84,7 @@ export function TransactionPaymentSection({
         {messages.transactions.form.payment.sectionTitle}
       </Text>
 
-      <Container
-        unstyled
-        className={`mb-2 flex gap-2 ${isMobile ? "flex-col" : "flex-row"}`}
-      >
+      <Container unstyled className={`mb-2 flex gap-2 ${isMobile ? 'flex-col' : 'flex-row'}`}>
         <Container unstyled className="flex-[1.5]">
           <label className={labelClass}>
             {messages.transactions.form.payment.paymentMethodLabel}
@@ -117,9 +104,7 @@ export function TransactionPaymentSection({
         </Container>
 
         <Container unstyled className="flex-1">
-          <label className={labelClass}>
-            {messages.transactions.form.payment.categoryLabel}
-          </label>
+          <label className={labelClass}>{messages.transactions.form.payment.categoryLabel}</label>
           <Controller
             name="category_id"
             control={control}
@@ -136,12 +121,10 @@ export function TransactionPaymentSection({
 
               return (
                 <CustomSelect
-                  value={field.value || ""}
+                  value={field.value || ''}
                   onChange={field.onChange}
                   options={categoryOptions}
-                  placeholder={
-                    messages.transactions.form.payment.selectPlaceholder
-                  }
+                  placeholder={messages.transactions.form.payment.selectPlaceholder}
                 />
               );
             }}
@@ -151,9 +134,7 @@ export function TransactionPaymentSection({
 
       <Container unstyled className={`grid gap-2 ${paymentGridClass}`}>
         <Container unstyled>
-          <label className={labelClass}>
-            {messages.transactions.form.payment.accountLabel}
-          </label>
+          <label className={labelClass}>{messages.transactions.form.payment.accountLabel}</label>
           <Controller
             name="account_id"
             control={control}
@@ -170,12 +151,10 @@ export function TransactionPaymentSection({
 
               return (
                 <CustomSelect
-                  value={field.value || ""}
+                  value={field.value || ''}
                   onChange={field.onChange}
                   options={accountOptions}
-                  placeholder={
-                    messages.transactions.form.payment.selectWithDotsPlaceholder
-                  }
+                  placeholder={messages.transactions.form.payment.selectWithDotsPlaceholder}
                   error={!!errors.account_id}
                 />
               );
@@ -183,16 +162,14 @@ export function TransactionPaymentSection({
           />
           {errors.account_id && (
             <Text className="mt-1 text-xs text-[var(--color-error)]">
-              {String(errors.account_id.message ?? "")}
+              {String(errors.account_id.message ?? '')}
             </Text>
           )}
         </Container>
 
-        {paymentMethod === "credit" && (
+        {paymentMethod === 'credit' && (
           <Container unstyled>
-            <label className={labelClass}>
-              {messages.transactions.form.payment.cardLabel}
-            </label>
+            <label className={labelClass}>{messages.transactions.form.payment.cardLabel}</label>
             <Controller
               name="card_id"
               control={control}
@@ -206,14 +183,11 @@ export function TransactionPaymentSection({
 
                 return (
                   <CustomSelect
-                    value={field.value || ""}
+                    value={field.value || ''}
                     onChange={field.onChange}
                     options={cardOptions}
-                    disabled={!watch("account_id")}
-                    placeholder={
-                      messages.transactions.form.payment
-                        .selectWithDotsPlaceholder
-                    }
+                    disabled={!watch('account_id')}
+                    placeholder={messages.transactions.form.payment.selectWithDotsPlaceholder}
                     error={!!errors.card_id}
                   />
                 );
@@ -224,7 +198,7 @@ export function TransactionPaymentSection({
 
         <Container unstyled>
           <label className={labelClass}>
-            {paymentMethod === "credit"
+            {paymentMethod === 'credit'
               ? messages.transactions.form.payment.purchaseDateLabel
               : messages.transactions.form.payment.dateLabel}
           </label>

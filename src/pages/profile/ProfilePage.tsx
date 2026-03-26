@@ -1,18 +1,18 @@
-import { Card, CardContent } from "@/shared/components/ui/card";
-import { ShieldCheck, UserRound } from "lucide-react";
-import { colors } from "@/shared/theme";
-import { useProfilePageLogic } from "@/pages/profile/hooks/useProfilePageLogic";
-import { ProfileHeaderSection } from "./components/ProfileHeaderSection";
-import { PersonalInfoForm } from "./components/PersonalInfoForm";
-import { SecurityForm } from "./components/SecurityForm";
-import { Container } from "@/shared/components/layout/Container";
-import { Section } from "@/shared/components/layout/Section";
-import { Grid } from "@/shared/components/layout/Grid";
-import { messages } from "@/shared/i18n/messages";
-import { PageHeader } from "@/shared/components/composite/PageHeader";
-import { Stack } from "@/shared/components/layout/Stack";
-import { Heading } from "@/shared/components/ui/Heading";
-import { Text } from "@/shared/components/ui/Text";
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { ShieldCheck, UserRound } from 'lucide-react';
+import { colors } from '@/shared/theme';
+import { useProfilePageLogic } from '@/pages/profile/hooks/useProfilePageLogic';
+import { ProfileHeaderSection } from './components/ProfileHeaderSection';
+import { PersonalInfoForm } from './components/PersonalInfoForm';
+import { SecurityForm } from './components/SecurityForm';
+import { Container } from '@/shared/components/layout/Container';
+import { Section } from '@/shared/components/layout/Section';
+import { Grid } from '@/shared/components/layout/Grid';
+import { messages } from '@/shared/i18n/messages';
+import { PageHeader } from '@/shared/components/composite/PageHeader';
+import { Stack } from '@/shared/components/layout/Stack';
+import { Heading } from '@/shared/components/ui/Heading';
+import { Text } from '@/shared/components/ui/Text';
 
 export function ProfilePage() {
   const pageMessages = messages.profile.page;
@@ -61,10 +61,11 @@ export function ProfilePage() {
           {message && (
             <Container
               unstyled
-              className={`rounded-lg border px-3 py-2 text-sm ${message.type === "success"
-                ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-300"
-                : "border-red-400/30 bg-red-500/10 text-red-300"
-                }`}
+              className={`rounded-lg border px-3 py-2 text-sm ${
+                message.type === 'success'
+                  ? 'border-emerald-400/30 bg-emerald-500/10 text-emerald-300'
+                  : 'border-red-400/30 bg-red-500/10 text-red-300'
+              }`}
             >
               {message.text}
             </Container>

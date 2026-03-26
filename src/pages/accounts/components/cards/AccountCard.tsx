@@ -1,50 +1,36 @@
-import { createElement } from "react";
-import { Card, CardContent } from "@/shared/components/ui/card";
-import { IconButton } from "@/shared/components/ui/icon-button";
-import { Button } from "@/shared/components/ui/button";
-import { MoreVertical, CreditCard } from "lucide-react";
-import type { NavigateFunction } from "react-router-dom";
-import { Account } from "@/shared/interfaces/account.interface";
-import { CreditCard as CardInterface } from "@/shared/interfaces/credit-card.interface";
-import { useApplyElementStyles } from "@/shared/hooks/useApplyElementStyles";
-import {
-  getAccountTypeIcon,
-  getAccountTypeLabel,
-} from "@/shared/constants/accountTypes";
-import { Row } from "@/shared/components/layout/Row";
-import { Stack } from "@/shared/components/layout/Stack";
-import { Divider } from "@/shared/components/ui/Divider";
-import { Text } from "@/shared/components/ui/Text";
-import { Heading } from "@/shared/components/ui/Heading";
-import { messages } from "@/shared/i18n/messages";
+import { createElement } from 'react';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { IconButton } from '@/shared/components/ui/icon-button';
+import { Button } from '@/shared/components/ui/button';
+import { MoreVertical, CreditCard } from 'lucide-react';
+import type { NavigateFunction } from 'react-router-dom';
+import { Account } from '@/shared/interfaces/account.interface';
+import { CreditCard as CardInterface } from '@/shared/interfaces/credit-card.interface';
+import { useApplyElementStyles } from '@/shared/hooks/useApplyElementStyles';
+import { getAccountTypeIcon, getAccountTypeLabel } from '@/shared/constants/accountTypes';
+import { Row } from '@/shared/components/layout/Row';
+import { Stack } from '@/shared/components/layout/Stack';
+import { Divider } from '@/shared/components/ui/Divider';
+import { Text } from '@/shared/components/ui/Text';
+import { Heading } from '@/shared/components/ui/Heading';
+import { messages } from '@/shared/i18n/messages';
 
 interface AccountCardProps {
   account: Account;
-  handleOpenMenu: (
-    event: React.MouseEvent<HTMLElement>,
-    account: Account,
-  ) => void;
+  handleOpenMenu: (event: React.MouseEvent<HTMLElement>, account: Account) => void;
   cards: CardInterface[] | undefined;
   navigate: NavigateFunction;
 }
 
-import { formatCurrency } from "@/shared/utils/currency";
+import { formatCurrency } from '@/shared/utils/currency';
 
-export function AccountCard({
-  account,
-  handleOpenMenu,
-  cards,
-  navigate,
-}: AccountCardProps) {
+export function AccountCard({ account, handleOpenMenu, cards, navigate }: AccountCardProps) {
   const accountCardMessages = messages.accounts.card;
   const iconBgRef = useApplyElementStyles<HTMLDivElement>({
-    "background-color": `${account.color || "var(--color-primary)"}1A`,
+    'background-color': `${account.color || 'var(--color-primary)'}1A`,
   });
   const balanceColorRef = useApplyElementStyles<HTMLParagraphElement>({
-    color:
-      account.current_balance >= 0
-        ? "var(--color-success)"
-        : "var(--color-error)",
+    color: account.current_balance >= 0 ? 'var(--color-success)' : 'var(--color-error)',
   });
 
   const accountTypeIcon = getAccountTypeIcon(account.type);
@@ -57,7 +43,7 @@ export function AccountCard({
           <Stack ref={iconBgRef} className="mb-2 rounded-lg p-1.5">
             {createElement(accountTypeIcon, {
               size: 24,
-              color: account.color || "var(--color-primary)",
+              color: account.color || 'var(--color-primary)',
             })}
           </Stack>
           <IconButton size="small" onClick={(e) => handleOpenMenu(e, account)}>

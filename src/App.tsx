@@ -1,10 +1,16 @@
-import { lazy, Suspense } from "react";
-import { useAuth } from "./lib/supabase/auth-context";
-import { AppRoutes } from "./routes/AppRouter";
+import { lazy, Suspense } from 'react';
+import { useAuth } from './lib/supabase/auth-context';
+import { AppRoutes } from './routes/AppRouter';
 
 const MainLayout = lazy(() =>
-  import("./shared/layouts/MainLayout").then((module) => ({
+  import('./shared/layouts/MainLayout').then((module) => ({
     default: module.MainLayout,
+  })),
+);
+
+const LazyToastProvider = lazy(() =>
+  import('./shared/contexts/ToastContext').then((module) => ({
+    default: module.ToastProvider,
   })),
 );
 
@@ -17,9 +23,11 @@ function App() {
 
   return (
     <Suspense fallback={null}>
-      <MainLayout>
-        <AppRoutes />
-      </MainLayout>
+      <LazyToastProvider>
+        <MainLayout>
+          <AppRoutes />
+        </MainLayout>
+      </LazyToastProvider>
     </Suspense>
   );
 }

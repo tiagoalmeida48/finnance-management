@@ -1,5 +1,5 @@
-import { IconButton } from "@/shared/components/ui/icon-button";
-import { format } from "date-fns";
+import { IconButton } from '@/shared/components/ui/icon-button';
+import { format } from 'date-fns';
 import {
   TrendingUp,
   TrendingDown,
@@ -10,16 +10,16 @@ import {
   Clock,
   Landmark,
   Circle,
-} from "lucide-react";
-import { Transaction } from "@/shared/services/transactions.service";
-import { colors } from "@/shared/theme";
-import { TransactionGroup } from "@/shared/utils/transactionsPage.utils";
-import { useState } from "react";
-import { messages } from "@/shared/i18n/messages";
-import { Container } from "@/shared/components/layout/Container";
-import { Text } from "@/shared/components/ui/Text";
-import { Button } from "@/shared/components/ui/button";
-import { formatCurrency } from "@/shared/utils/currency";
+} from 'lucide-react';
+import { Transaction } from '@/shared/services/transactions.service';
+import { colors } from '@/shared/theme';
+import { TransactionGroup } from '@/shared/utils/transactionsPage.utils';
+import { useState } from 'react';
+import { messages } from '@/shared/i18n/messages';
+import { Container } from '@/shared/components/layout/Container';
+import { Text } from '@/shared/components/ui/Text';
+import { Button } from '@/shared/components/ui/button';
+import { formatCurrency } from '@/shared/utils/currency';
 
 interface TransactionMobileCardProps {
   item: Transaction | TransactionGroup;
@@ -40,7 +40,7 @@ export function TransactionMobileCard({
 }: TransactionMobileCardProps) {
   const [expanded, setExpanded] = useState(false);
 
-  const isGroup = "isGroup" in item && item.isGroup;
+  const isGroup = 'isGroup' in item && item.isGroup;
   const group = isGroup ? (item as TransactionGroup) : null;
   const transaction = isGroup ? group!.mainTransaction : (item as Transaction);
 
@@ -58,40 +58,36 @@ export function TransactionMobileCard({
     }
   };
 
-  const isBillPayment = transaction.payment_method === "bill_payment";
+  const isBillPayment = transaction.payment_method === 'bill_payment';
   const isPaid = isGroup ? group!.isAllPaid : transaction.is_paid;
 
   const getTypeConfig = (type: string) => {
     if (isBillPayment) {
       return {
         icon: Landmark,
-        iconClass: "bg-[var(--overlay-primary-14)] text-[var(--color-accent)]",
-        amountClass: isPaid
-          ? "text-[var(--color-success)]"
-          : "text-[var(--color-accent)]",
+        iconClass: 'bg-[var(--overlay-primary-14)] text-[var(--color-accent)]',
+        amountClass: isPaid ? 'text-[var(--color-success)]' : 'text-[var(--color-accent)]',
       };
     }
 
     switch (type) {
-      case "income":
+      case 'income':
         return {
           icon: TrendingUp,
-          iconClass: "bg-[var(--color-greenBg)] text-[var(--color-success)]",
-          amountClass: "text-[var(--color-success)]",
+          iconClass: 'bg-[var(--color-greenBg)] text-[var(--color-success)]',
+          amountClass: 'text-[var(--color-success)]',
         };
-      case "expense":
+      case 'expense':
         return {
           icon: TrendingDown,
-          iconClass: "bg-[var(--color-redBg)] text-[var(--color-error)]",
-          amountClass: "text-[var(--color-error)]",
+          iconClass: 'bg-[var(--color-redBg)] text-[var(--color-error)]',
+          amountClass: 'text-[var(--color-error)]',
         };
       default:
         return {
           icon: ArrowRightLeft,
-          iconClass: "bg-[var(--color-yellowBg)] text-[var(--color-warning)]",
-          amountClass: isPaid
-            ? "text-[var(--color-text-primary)]"
-            : "text-[var(--color-warning)]",
+          iconClass: 'bg-[var(--color-yellowBg)] text-[var(--color-warning)]',
+          amountClass: isPaid ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-warning)]',
         };
     }
   };
@@ -100,21 +96,16 @@ export function TransactionMobileCard({
   const TypeIcon = typeConfig.icon;
   const displayAmount = isGroup ? group!.totalAmount : transaction.amount;
   const dateToDisplay =
-    transaction.type === "expense" && !isBillPayment
+    transaction.type === 'expense' && !isBillPayment
       ? transaction.purchase_date || transaction.payment_date
       : transaction.payment_date || transaction.purchase_date;
   const setCategoryChipRef = (node: HTMLSpanElement | null) => {
     if (!node) return;
     node.style.setProperty(
-      "background-color",
-      transaction.category?.color
-        ? `${transaction.category.color}15`
-        : "var(--overlay-white-05)",
+      'background-color',
+      transaction.category?.color ? `${transaction.category.color}15` : 'var(--overlay-white-05)',
     );
-    node.style.setProperty(
-      "color",
-      transaction.category?.color || colors.textSecondary,
-    );
+    node.style.setProperty('color', transaction.category?.color || colors.textSecondary);
   };
   return (
     <Container
@@ -124,9 +115,7 @@ export function TransactionMobileCard({
       <Container unstyled className="flex flex-col gap-2">
         <Container unstyled className="flex items-center justify-between">
           <Text className="text-xs text-[var(--color-text-secondary)]">
-            {dateToDisplay
-              ? format(new Date(`${dateToDisplay}T12:00:00`), "dd/MM/yyyy")
-              : "-"}
+            {dateToDisplay ? format(new Date(`${dateToDisplay}T12:00:00`), 'dd/MM/yyyy') : '-'}
           </Text>
           <Container unstyled className="flex items-center gap-2">
             {!isGroup && !transaction.card_id && (
@@ -145,11 +134,9 @@ export function TransactionMobileCard({
                 )}
                 <Text
                   as="span"
-                  className={`text-[11px] ${isPaid ? "text-[var(--color-primary)]" : "text-[var(--color-text-muted)]"}`}
+                  className={`text-[11px] ${isPaid ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`}
                 >
-                  {isPaid
-                    ? messages.transactions.row.paid
-                    : messages.transactions.row.pending}
+                  {isPaid ? messages.transactions.row.paid : messages.transactions.row.pending}
                 </Text>
               </Button>
             )}
@@ -203,16 +190,14 @@ export function TransactionMobileCard({
                   as="span"
                   className="rounded bg-[var(--color-purpleBg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-secondary)]"
                 >
-                  {group!.type === "installment"
+                  {group!.type === 'installment'
                     ? messages.transactions.table.groupInstallmentLabel
                     : messages.transactions.table.groupRecurringLabel}
                 </Text>
               )}
             </Container>
 
-            <Text
-              className={`mt-1 text-base font-bold ${typeConfig.amountClass}`}
-            >
+            <Text className={`mt-1 text-base font-bold ${typeConfig.amountClass}`}>
               {formatCurrency(displayAmount)}
             </Text>
           </Container>
@@ -229,10 +214,11 @@ export function TransactionMobileCard({
             <button
               type="button"
               onClick={toggleSelection}
-              className={`flex h-5 w-5 items-center justify-center rounded transition-all ${isSelected
-                ? "text-[var(--color-warning)] hover:brightness-75 hover:bg-[var(--color-warning)]/10"
-                : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-white/5"
-                }`}
+              className={`flex h-5 w-5 items-center justify-center rounded transition-all ${
+                isSelected
+                  ? 'text-[var(--color-warning)] hover:brightness-75 hover:bg-[var(--color-warning)]/10'
+                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-white/5'
+              }`}
             >
               {isSelected ? <CheckCircle2 size={16} /> : <Circle size={16} />}
             </button>
@@ -248,12 +234,10 @@ export function TransactionMobileCard({
             >
               {expanded
                 ? messages.transactions.mobileCard.hideInstallments
-                : messages.transactions.mobileCard.showInstallments(
-                  group!.items.length,
-                )}
+                : messages.transactions.mobileCard.showInstallments(group!.items.length)}
               <ChevronDown
                 size={14}
-                className={`ml-1 transition-transform ${expanded ? "rotate-180" : ""}`}
+                className={`ml-1 transition-transform ${expanded ? 'rotate-180' : ''}`}
               />
             </Button>
 

@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
-import { dashboardService } from "@/shared/services/dashboard.service";
-import { queryKeys } from "@/shared/constants/queryKeys";
+import { useQuery } from '@tanstack/react-query';
+import { dashboardService } from '@/shared/services/dashboard.service';
+import { queryKeys } from '@/shared/constants/queryKeys';
 
 type DashboardFilter = Date | { start: string; end: string };
 

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo } from 'react';
 
 type StyleValue = string | number | null | undefined;
 
@@ -7,9 +7,7 @@ const toCssValue = (value: StyleValue) => {
   return String(value);
 };
 
-export function useApplyElementStyles<T extends HTMLElement>(
-  styles: Record<string, StyleValue>,
-) {
+export function useApplyElementStyles<T extends HTMLElement>(styles: Record<string, StyleValue>) {
   const entries = useMemo(
     () =>
       Object.entries(styles).map(

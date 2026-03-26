@@ -1,11 +1,6 @@
-import { Button } from "@/shared/components/ui/button";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@/shared/components/ui/dialog";
-import { AlertTriangle, Trash2 } from "lucide-react";
+import { Button } from '@/shared/components/ui/button';
+import { Dialog, DialogActions, DialogContent, DialogTitle } from '@/shared/components/ui/dialog';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 
 interface DeleteConfirmationModalProps {
   open: boolean;
@@ -61,7 +56,7 @@ export function DeleteConfirmationModal({
           disabled={loading}
           className="px-3 font-bold shadow-none hover:shadow-none"
         >
-          {loading ? "Excluindo..." : "Confirmar Exclusão"}
+          {loading ? 'Excluindo...' : 'Confirmar Exclusão'}
         </Button>
       </DialogActions>
     </Dialog>

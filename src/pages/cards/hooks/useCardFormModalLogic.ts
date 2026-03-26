@@ -1,24 +1,19 @@
-import { useEffect, useMemo } from "react";
-import type { ChangeEvent } from "react";
-import { useForm, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import {
-  useCreateCreditCard,
-  useUpdateCreditCard,
-} from "@/shared/hooks/api/useCreditCards";
-import { useAccounts } from "@/shared/hooks/api/useAccounts";
-import type { CreditCard } from "@/shared/interfaces/credit-card.interface";
-import { OPEN_CYCLE_END } from "@/shared/utils/card-statement-cycle.utils";
-import { messages } from "@/shared/i18n/messages";
+import { useEffect, useMemo } from 'react';
+import type { ChangeEvent } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useCreateCreditCard, useUpdateCreditCard } from '@/shared/hooks/api/useCreditCards';
+import { useAccounts } from '@/shared/hooks/api/useAccounts';
+import type { CreditCard } from '@/shared/interfaces/credit-card.interface';
+import { OPEN_CYCLE_END } from '@/shared/utils/card-statement-cycle.utils';
+import { messages } from '@/shared/i18n/messages';
 
-const DEFAULT_CARD_COLOR = "#c9a84c";
+const DEFAULT_CARD_COLOR = '#c9a84c';
 
 const cardSchema = z.object({
   name: z.string().min(3, messages.cards.form.validation.nameMin),
-  bank_account_id: z
-    .string()
-    .min(1, messages.cards.form.validation.accountRequired),
+  bank_account_id: z.string().min(1, messages.cards.form.validation.accountRequired),
   credit_limit: z.number().min(0, messages.cards.form.validation.positiveLimit),
   closing_day: z.number().min(1).max(31),
   due_day: z.number().min(1).max(31),
@@ -35,25 +30,21 @@ interface UseCardFormModalLogicParams {
 }
 
 const formatCycleDateLabel = (value?: string) => {
-  if (!value) return "-";
+  if (!value) return '-';
   const parsed = new Date(`${value}T12:00:00`);
-  if (Number.isNaN(parsed.getTime())) return "-";
-  return parsed.toLocaleDateString("pt-BR");
+  if (Number.isNaN(parsed.getTime())) return '-';
+  return parsed.toLocaleDateString('pt-BR');
 };
 
 const formatMoneyInputValue = (raw: string) => {
-  const numericValue = parseInt(raw || "0", 10) / 100;
-  return new Intl.NumberFormat("pt-BR", {
+  const numericValue = parseInt(raw || '0', 10) / 100;
+  return new Intl.NumberFormat('pt-BR', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(numericValue);
 };
 
-export function useCardFormModalLogic({
-  open,
-  onClose,
-  card,
-}: UseCardFormModalLogicParams) {
+export function useCardFormModalLogic({ open, onClose, card }: UseCardFormModalLogicParams) {
   const formMessages = messages.cards.form;
   const createCard = useCreateCreditCard();
   const updateCard = useUpdateCreditCard();
@@ -69,38 +60,37 @@ export function useCardFormModalLogic({
   } = useForm<CardFormValues>({
     resolver: zodResolver(cardSchema),
     defaultValues: {
-      name: "",
-      bank_account_id: "",
+      name: '',
+      bank_account_id: '',
       credit_limit: 0,
       closing_day: 1,
       due_day: 10,
       color: DEFAULT_CARD_COLOR,
-      notes: "",
+      notes: '',
     },
   });
 
   const currentColor = useWatch({
     control,
-    name: "color",
+    name: 'color',
     defaultValue: DEFAULT_CARD_COLOR,
   });
 
   const creditLimit = useWatch({
     control,
-    name: "credit_limit",
+    name: 'credit_limit',
     defaultValue: 0,
   });
 
   const selectedAccountId = useWatch({
     control,
-    name: "bank_account_id",
-    defaultValue: "",
+    name: 'bank_account_id',
+    defaultValue: '',
   });
 
   const currentCycle = card?.current_statement_cycle ?? null;
-  const activeClosingDay =
-    currentCycle?.closing_day ?? card?.closing_day ?? "-";
-  const activeDueDay = currentCycle?.due_day ?? card?.due_day ?? "-";
+  const activeClosingDay = currentCycle?.closing_day ?? card?.closing_day ?? '-';
+  const activeDueDay = currentCycle?.due_day ?? card?.due_day ?? '-';
 
   const cyclePeriodLabel = useMemo(() => {
     if (!currentCycle) return null;
@@ -117,31 +107,31 @@ export function useCardFormModalLogic({
     const cardColor = card?.color || DEFAULT_CARD_COLOR;
     const limitValue = Number(card?.credit_limit) || 0;
     reset({
-      name: card?.name || "",
-      bank_account_id: card?.bank_account_id || "",
+      name: card?.name || '',
+      bank_account_id: card?.bank_account_id || '',
       credit_limit: limitValue,
       closing_day: card?.closing_day || 1,
       due_day: card?.due_day || 10,
       color: cardColor,
-      notes: card?.notes || "",
+      notes: card?.notes || '',
     });
   }, [card, open, reset]);
 
   const setBankAccountId = (value: string) => {
-    setValue("bank_account_id", value, {
+    setValue('bank_account_id', value, {
       shouldDirty: true,
       shouldValidate: true,
     });
   };
 
   const setCardColor = (value: string) => {
-    setValue("color", value, { shouldDirty: true });
+    setValue('color', value, { shouldDirty: true });
   };
 
   const handleMoneyInput = (event: ChangeEvent<HTMLInputElement>) => {
-    const digits = event.target.value.replace(/\D/g, "");
-    const numericValue = parseInt(digits || "0", 10) / 100;
-    setValue("credit_limit", numericValue, {
+    const digits = event.target.value.replace(/\D/g, '');
+    const numericValue = parseInt(digits || '0', 10) / 100;
+    setValue('credit_limit', numericValue, {
       shouldDirty: true,
       shouldValidate: true,
     });
@@ -171,8 +161,8 @@ export function useCardFormModalLogic({
         });
       }
       onClose();
-    } catch (error) {
-      console.error("Error saving credit card:", error);
+    } catch {
+      // erro tratado pelo onError global do QueryClient
     }
   });
 

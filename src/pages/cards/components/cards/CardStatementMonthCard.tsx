@@ -1,21 +1,21 @@
-import { ChevronDown, ChevronRight } from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
-import { Row } from "@/shared/components/layout/Row";
-import { Text } from "@/shared/components/ui/Text";
-import { messages } from "@/shared/i18n/messages";
+import { ChevronDown, ChevronRight } from 'lucide-react';
+import { Button } from '@/shared/components/ui/button';
+import { Row } from '@/shared/components/layout/Row';
+import { Text } from '@/shared/components/ui/Text';
+import { messages } from '@/shared/i18n/messages';
 import type {
   CardStatement,
   StatementTransaction,
-} from "@/shared/interfaces/card-details.interface";
+} from '@/shared/interfaces/card-details.interface';
 import type {
   StatementSortDirection,
   StatementSortField,
   StatementStatusBadge,
-} from "@/pages/cards/hooks/useCardStatementListLogic";
-import { formatCardStatementCurrency } from "@/pages/cards/hooks/useCardStatementListLogic";
-import { CardStatementTransactionsDesktop } from "../lists/CardStatementTransactionsDesktop";
-import { CardStatementTransactionsMobile } from "../lists/CardStatementTransactionsMobile";
-import { Container } from "@/shared/components/layout/Container";
+} from '@/pages/cards/hooks/useCardStatementListLogic';
+import { formatCardStatementCurrency } from '@/pages/cards/hooks/useCardStatementListLogic';
+import { CardStatementTransactionsDesktop } from '../lists/CardStatementTransactionsDesktop';
+import { CardStatementTransactionsMobile } from '../lists/CardStatementTransactionsMobile';
+import { Container } from '@/shared/components/layout/Container';
 
 interface CardStatementMonthCardProps {
   statement: CardStatement;
@@ -64,26 +64,16 @@ export function CardStatementMonthCard({
         onClick={onToggleExpand}
         className="flex w-full items-center p-4 text-left transition-colors hover:bg-white/5 data-[state=open]:bg-white/5"
       >
-        <Container
-          unstyled
-          className="grid w-full items-center gap-3 md:grid-cols-12"
-        >
+        <Container unstyled className="grid w-full items-center gap-3 md:grid-cols-12">
           <Container unstyled className="md:col-span-4">
             <Row className="items-center gap-3">
               <Container
                 unstyled
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-[var(--color-text-secondary)] transition-transform duration-300 group-hover/card:bg-white/10 group-hover/card:text-white"
               >
-                {isExpanded ? (
-                  <ChevronDown size={18} />
-                ) : (
-                  <ChevronRight size={18} />
-                )}
+                {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
               </Container>
-              <Text
-                as="span"
-                className="text-[16px] font-heading font-bold capitalize text-white"
-              >
+              <Text as="span" className="text-[16px] font-heading font-bold capitalize text-white">
                 {statement.month}
               </Text>
               <Text
@@ -93,10 +83,7 @@ export function CardStatementMonthCard({
                 {status.label}
               </Text>
               {!isMobile ? (
-                <Text
-                  as="span"
-                  className="text-xs text-[var(--color-text-muted)]"
-                >
+                <Text as="span" className="text-xs text-[var(--color-text-muted)]">
                   {statementMessages.items(statement.transactions?.length || 0)}
                 </Text>
               ) : null}
@@ -106,10 +93,7 @@ export function CardStatementMonthCard({
           <Container unstyled className="md:col-span-8">
             <Row className="items-center justify-between gap-3 md:justify-end">
               {isMobile ? (
-                <Text
-                  as="span"
-                  className="text-[13px] font-medium text-[var(--color-text-muted)]"
-                >
+                <Text as="span" className="text-[13px] font-medium text-[var(--color-text-muted)]">
                   {statementMessages.items(statement.transactions?.length || 0)}
                 </Text>
               ) : null}
@@ -117,7 +101,7 @@ export function CardStatementMonthCard({
               <Row className="items-center gap-4">
                 <Text
                   as="span"
-                  className={`font-heading text-[18px] font-black tracking-tight ${statement.unpaidTotal > 0 ? "text-white" : "text-[var(--color-success)] drop-shadow-[0_0_8px_rgba(0,200,83,0.3)]"}`}
+                  className={`font-heading text-[18px] font-black tracking-tight ${statement.unpaidTotal > 0 ? 'text-white' : 'text-[var(--color-success)] drop-shadow-[0_0_8px_rgba(0,200,83,0.3)]'}`}
                 >
                   {formatCardStatementCurrency(statement.total)}
                 </Text>
@@ -140,10 +124,7 @@ export function CardStatementMonthCard({
       </Button>
 
       {isExpanded ? (
-        <Container
-          unstyled
-          className="border-t border-white/5 bg-white/[0.01] p-0"
-        >
+        <Container unstyled className="border-t border-white/5 bg-white/[0.01] p-0">
           {isMobile ? (
             <CardStatementTransactionsMobile
               transactions={transactions}

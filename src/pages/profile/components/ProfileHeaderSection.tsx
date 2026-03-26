@@ -1,10 +1,10 @@
-import { IconButton } from "@/shared/components/ui/icon-button";
-import { Button } from "@/shared/components/ui/button";
-import { Camera } from "lucide-react";
-import { messages } from "@/shared/i18n/messages";
-import { Stack } from "@/shared/components/layout/Stack";
-import { Container } from "@/shared/components/layout/Container";
-import { Text } from "@/shared/components/ui/Text";
+import { IconButton } from '@/shared/components/ui/icon-button';
+import { Button } from '@/shared/components/ui/button';
+import { Camera } from 'lucide-react';
+import { messages } from '@/shared/i18n/messages';
+import { Stack } from '@/shared/components/layout/Stack';
+import { Container } from '@/shared/components/layout/Container';
+import { Text } from '@/shared/components/ui/Text';
 
 interface ProfileHeaderSectionProps {
   avatarUrl: string | null;
@@ -70,14 +70,8 @@ export function ProfileHeaderSection({
           disabled={uploading}
           className="rounded-[6px] border-[var(--color-primary)80] px-2 py-1 text-xs font-semibold text-[var(--color-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--overlay-primary-08)]"
         >
-          {uploading ? headerMessages.uploading : "Trocar"}
-          <input
-            hidden
-            accept="image/*"
-            type="file"
-            onChange={uploadAvatar}
-            disabled={uploading}
-          />
+          {uploading ? headerMessages.uploading : 'Trocar'}
+          <input hidden accept="image/*" type="file" onChange={uploadAvatar} disabled={uploading} />
         </Button>
       </Stack>
     </Container>

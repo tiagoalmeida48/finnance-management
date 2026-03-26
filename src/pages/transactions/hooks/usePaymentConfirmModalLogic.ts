@@ -1,8 +1,8 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useAccounts } from "@/shared/hooks/api/useAccounts";
-import { messages } from "@/shared/i18n/messages";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useAccounts } from '@/shared/hooks/api/useAccounts';
+import { messages } from '@/shared/i18n/messages';
 
 const paymentConfirmMessages = messages.transactions.paymentConfirmModal;
 
@@ -17,9 +17,7 @@ interface UsePaymentConfirmModalLogicParams {
   onConfirm: (data: ConfirmPaymentValues) => void;
 }
 
-export function usePaymentConfirmModalLogic({
-  onConfirm,
-}: UsePaymentConfirmModalLogicParams) {
+export function usePaymentConfirmModalLogic({ onConfirm }: UsePaymentConfirmModalLogicParams) {
   const commonMessages = messages.common;
   const { data: accounts } = useAccounts();
 
@@ -30,8 +28,8 @@ export function usePaymentConfirmModalLogic({
   } = useForm<ConfirmPaymentValues>({
     resolver: zodResolver(confirmPaymentSchema),
     defaultValues: {
-      payment_date: new Date().toISOString().split("T")[0],
-      account_id: "",
+      payment_date: new Date().toISOString().split('T')[0],
+      account_id: '',
     },
   });
 

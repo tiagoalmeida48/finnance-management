@@ -1,15 +1,15 @@
-import { IconButton } from "@/shared/components/ui/icon-button";
-import { CalendarCheck, ChevronLeft, ChevronRight } from "lucide-react";
-import { format, addMonths } from "date-fns";
-import { useBillTrackingPageLogic } from "@/pages/tracking/hooks/useBillTrackingPageLogic";
-import { MonthlyTrackingCard } from "./components/MonthlyTrackingCard";
-import { Container } from "@/shared/components/layout/Container";
-import { Section } from "@/shared/components/layout/Section";
-import { Grid } from "@/shared/components/layout/Grid";
-import { messages } from "@/shared/i18n/messages";
-import { PageHeader } from "@/shared/components/composite/PageHeader";
-import { Row } from "@/shared/components/layout/Row";
-import { Text } from "@/shared/components/ui/Text";
+import { IconButton } from '@/shared/components/ui/icon-button';
+import { CalendarCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { format, addMonths } from 'date-fns';
+import { useBillTrackingPageLogic } from '@/pages/tracking/hooks/useBillTrackingPageLogic';
+import { MonthlyTrackingCard } from './components/MonthlyTrackingCard';
+import { Container } from '@/shared/components/layout/Container';
+import { Section } from '@/shared/components/layout/Section';
+import { Grid } from '@/shared/components/layout/Grid';
+import { messages } from '@/shared/i18n/messages';
+import { PageHeader } from '@/shared/components/composite/PageHeader';
+import { Row } from '@/shared/components/layout/Row';
+import { Text } from '@/shared/components/ui/Text';
 
 export function BillTrackingPage() {
   const pageMessages = messages.tracking.page;
@@ -58,7 +58,7 @@ export function BillTrackingPage() {
                 <ChevronLeft size={18} />
               </IconButton>
               <Text className="font-heading min-w-[62px] text-center font-bold">
-                {format(currentYear, "yyyy")}
+                {format(currentYear, 'yyyy')}
               </Text>
               <IconButton
                 size="small"

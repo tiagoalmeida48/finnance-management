@@ -1,16 +1,13 @@
-import { messages } from "@/shared/i18n/messages";
-import { Row } from "@/shared/components/layout/Row";
-import { Container } from "@/shared/components/layout/Container";
+import { messages } from '@/shared/i18n/messages';
+import { Row } from '@/shared/components/layout/Row';
+import { Container } from '@/shared/components/layout/Container';
 
 interface DashboardFiltersProps {
   selectedYear: number;
   setSelectedYear: (year: number) => void;
 }
 
-export function DashboardFilters({
-  selectedYear,
-  setSelectedYear,
-}: DashboardFiltersProps) {
+export function DashboardFilters({ selectedYear, setSelectedYear }: DashboardFiltersProps) {
   const filtersMessages = messages.dashboard.filters;
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 8 }, (_, i) => currentYear - 4 + i);

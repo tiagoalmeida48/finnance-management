@@ -1,7 +1,7 @@
-import { Button } from "@/shared/components/ui/button";
-import { DialogActions } from "@/shared/components/ui/dialog";
-import { messages } from "@/shared/i18n/messages";
-import { Text } from "@/shared/components/ui/Text";
+import { Button } from '@/shared/components/ui/button';
+import { DialogActions } from '@/shared/components/ui/dialog';
+import { messages } from '@/shared/i18n/messages';
+import { Text } from '@/shared/components/ui/Text';
 
 interface TransactionFormActionsProps {
   isSubmitting: boolean;

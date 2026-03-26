@@ -1,15 +1,15 @@
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { messages } from "@/shared/i18n/messages";
-import { useLoginPageLogic } from "@/pages/auth/hooks/useLoginPageLogic";
-import { FormField } from "@/shared/components/forms/FormField";
-import { Stack } from "@/shared/components/layout/Stack";
-import { Section } from "@/shared/components/layout/Section";
-import { FormDialog } from "@/shared/components/composite/FormDialog";
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { messages } from '@/shared/i18n/messages';
+import { useLoginPageLogic } from '@/pages/auth/hooks/useLoginPageLogic';
+import { FormField } from '@/shared/components/forms/FormField';
+import { Stack } from '@/shared/components/layout/Stack';
+import { Section } from '@/shared/components/layout/Section';
+import { FormDialog } from '@/shared/components/composite/FormDialog';
 
 export function LoginPage() {
   const loginMessages = messages.auth.login;
-  const siteTitle = "Gestão Financeira";
+  const siteTitle = 'Gestão Financeira';
   const { formMethods, isLoading, error, onSubmit } = useLoginPageLogic();
   const {
     register,
@@ -25,18 +25,12 @@ export function LoginPage() {
 
       <FormDialog
         open={true}
-        onClose={() => { }}
+        onClose={() => {}}
         title={siteTitle}
         onSubmit={onSubmit}
         maxWidth="xs"
         actions={
-          <Button
-            fullWidth
-            variant="contained"
-            size="large"
-            type="submit"
-            disabled={isLoading}
-          >
+          <Button fullWidth variant="contained" size="large" type="submit" disabled={isLoading}>
             {isLoading ? loginMessages.loading : loginMessages.submit}
           </Button>
         }
@@ -53,7 +47,7 @@ export function LoginPage() {
             label={loginMessages.emailLabel}
             errorMessage={errors.email?.message}
           >
-            <Input id="login-email" type="email" {...register("email")} />
+            <Input id="login-email" type="email" {...register('email')} />
           </FormField>
 
           <FormField
@@ -61,11 +55,7 @@ export function LoginPage() {
             label={loginMessages.passwordLabel}
             errorMessage={errors.password?.message}
           >
-            <Input
-              id="login-password"
-              type="password"
-              {...register("password")}
-            />
+            <Input id="login-password" type="password" {...register('password')} />
           </FormField>
         </Stack>
       </FormDialog>

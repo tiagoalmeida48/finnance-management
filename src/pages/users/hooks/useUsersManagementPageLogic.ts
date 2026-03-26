@@ -1,37 +1,33 @@
-import { useState, useCallback, useEffect } from "react";
-import type { ManagedUser } from "@/shared/interfaces/user-management.interface";
-import { usersService } from "@/shared/services/users.service";
-import { messages } from "@/shared/i18n/messages";
+import { useState, useCallback, useEffect } from 'react';
+import type { ManagedUser } from '@/shared/interfaces/user-management.interface';
+import { usersService } from '@/shared/services/users.service';
+import { messages } from '@/shared/i18n/messages';
+import { normalizeRpcError } from '@/shared/utils/rpcErrors';
 
 export function useUsersManagementPageLogic() {
   const pageMessages = messages.users.page;
   const [users, setUsers] = useState<ManagedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<{
-    type: "success" | "error";
+    type: 'success' | 'error';
     text: string;
   } | null>(null);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<ManagedUser | null>(null);
-  const [passwordTarget, setPasswordTarget] = useState<ManagedUser | null>(
-    null,
-  );
+  const [passwordTarget, setPasswordTarget] = useState<ManagedUser | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ManagedUser | null>(null);
 
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [menuUser, setMenuUser] = useState<ManagedUser | null>(null);
 
-  const handleOpenMenu = (
-    event: React.MouseEvent<HTMLElement>,
-    user: ManagedUser,
-  ) => {
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, user: ManagedUser) => {
     setAnchorEl(event.currentTarget);
     setMenuUser(user);
   };
@@ -46,8 +42,8 @@ export function useUsersManagementPageLogic() {
     try {
       const data = await usersService.listUsers();
       setUsers(data);
-    } catch (error: any) {
-      setMessage({ type: "error", text: error.message });
+    } catch (error: unknown) {
+      setMessage({ type: 'error', text: normalizeRpcError(error) });
     } finally {
       setLoading(false);
     }
@@ -58,9 +54,9 @@ export function useUsersManagementPageLogic() {
   }, [loadUsers]);
 
   const resetForm = () => {
-    setFullName("");
-    setEmail("");
-    setPassword("");
+    setFullName('');
+    setEmail('');
+    setPassword('');
     setIsAdmin(false);
   };
 
@@ -71,10 +67,10 @@ export function useUsersManagementPageLogic() {
       await usersService.createUser(email, password, fullName, isAdmin);
       setCreateOpen(false);
       resetForm();
-      setMessage({ type: "success", text: pageMessages.feedback.created });
+      setMessage({ type: 'success', text: pageMessages.feedback.created });
       await loadUsers();
-    } catch (error: any) {
-      setMessage({ type: "error", text: error.message });
+    } catch (error: unknown) {
+      setMessage({ type: 'error', text: normalizeRpcError(error) });
     } finally {
       setSaving(false);
     }
@@ -82,7 +78,7 @@ export function useUsersManagementPageLogic() {
 
   const handleOpenEdit = (user: ManagedUser) => {
     setEditTarget(user);
-    setFullName(user.full_name ?? "");
+    setFullName(user.full_name ?? '');
     setEmail(user.email);
     setIsAdmin(user.is_admin);
   };
@@ -97,7 +93,7 @@ export function useUsersManagementPageLogic() {
   const handleMenuPassword = () => {
     if (menuUser) {
       setPasswordTarget(menuUser);
-      setPassword("");
+      setPassword('');
       handleCloseMenu();
     }
   };
@@ -116,10 +112,10 @@ export function useUsersManagementPageLogic() {
     try {
       await usersService.updateUser(editTarget.id, email, fullName, isAdmin);
       setEditTarget(null);
-      setMessage({ type: "success", text: pageMessages.feedback.updated });
+      setMessage({ type: 'success', text: pageMessages.feedback.updated });
       await loadUsers();
-    } catch (error: any) {
-      setMessage({ type: "error", text: error.message });
+    } catch (error: unknown) {
+      setMessage({ type: 'error', text: normalizeRpcError(error) });
     } finally {
       setSaving(false);
     }
@@ -132,13 +128,13 @@ export function useUsersManagementPageLogic() {
     try {
       await usersService.updatePassword(passwordTarget.id, password);
       setPasswordTarget(null);
-      setPassword("");
+      setPassword('');
       setMessage({
-        type: "success",
+        type: 'success',
         text: pageMessages.feedback.passwordUpdated,
       });
-    } catch (error: any) {
-      setMessage({ type: "error", text: error.message });
+    } catch (error: unknown) {
+      setMessage({ type: 'error', text: normalizeRpcError(error) });
     } finally {
       setSaving(false);
     }
@@ -151,10 +147,10 @@ export function useUsersManagementPageLogic() {
     try {
       await usersService.deleteUser(deleteTarget.id);
       setDeleteTarget(null);
-      setMessage({ type: "success", text: pageMessages.feedback.removed });
+      setMessage({ type: 'success', text: pageMessages.feedback.removed });
       await loadUsers();
-    } catch (error: any) {
-      setMessage({ type: "error", text: error.message });
+    } catch (error: unknown) {
+      setMessage({ type: 'error', text: normalizeRpcError(error) });
     } finally {
       setSaving(false);
     }

@@ -1,18 +1,13 @@
-import { Button } from "@/shared/components/ui/button";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@/shared/components/ui/dialog";
-import { Input } from "@/shared/components/ui/input";
-import type { ManagedUser } from "@/shared/interfaces/user-management.interface";
-import { messages } from "@/shared/i18n/messages";
-import { FormDialog } from "@/shared/components/composite/FormDialog";
-import { FormField } from "@/shared/components/forms/FormField";
-import { Row } from "@/shared/components/layout/Row";
-import { Stack } from "@/shared/components/layout/Stack";
-import { Text } from "@/shared/components/ui/Text";
+import { Button } from '@/shared/components/ui/button';
+import { Dialog, DialogActions, DialogContent, DialogTitle } from '@/shared/components/ui/dialog';
+import { Input } from '@/shared/components/ui/input';
+import type { ManagedUser } from '@/shared/interfaces/user-management.interface';
+import { messages } from '@/shared/i18n/messages';
+import { FormDialog } from '@/shared/components/composite/FormDialog';
+import { FormField } from '@/shared/components/forms/FormField';
+import { Row } from '@/shared/components/layout/Row';
+import { Stack } from '@/shared/components/layout/Stack';
+import { Text } from '@/shared/components/ui/Text';
 
 interface UsersManagementDialogsProps {
   createOpen: boolean;
@@ -78,31 +73,21 @@ export function UsersManagementDialogs({
             <Button onClick={() => setCreateOpen(false)} disabled={saving}>
               {messages.common.actions.cancel}
             </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={saving || !email || !password}
-            >
+            <Button type="submit" variant="contained" disabled={saving || !email || !password}>
               {dialogMessages.create}
             </Button>
           </>
         }
       >
         <Stack className="mt-0.5 gap-1.5">
-          <FormField
-            htmlFor="user-create-full-name"
-            label={dialogMessages.fullNameLabel}
-          >
+          <FormField htmlFor="user-create-full-name" label={dialogMessages.fullNameLabel}>
             <Input
               id="user-create-full-name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
             />
           </FormField>
-          <FormField
-            htmlFor="user-create-email"
-            label={dialogMessages.emailLabel}
-          >
+          <FormField htmlFor="user-create-email" label={dialogMessages.emailLabel}>
             <Input
               id="user-create-email"
               type="email"
@@ -110,10 +95,7 @@ export function UsersManagementDialogs({
               onChange={(e) => setEmail(e.target.value)}
             />
           </FormField>
-          <FormField
-            htmlFor="user-create-password"
-            label={dialogMessages.initialPasswordLabel}
-          >
+          <FormField htmlFor="user-create-password" label={dialogMessages.initialPasswordLabel}>
             <Input
               id="user-create-password"
               type="password"
@@ -153,31 +135,21 @@ export function UsersManagementDialogs({
             <Button onClick={() => setEditTarget(null)} disabled={saving}>
               {messages.common.actions.cancel}
             </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={saving || !email}
-            >
+            <Button type="submit" variant="contained" disabled={saving || !email}>
               {dialogMessages.save}
             </Button>
           </>
         }
       >
         <Stack className="mt-0.5 gap-1.5">
-          <FormField
-            htmlFor="user-edit-full-name"
-            label={dialogMessages.fullNameLabel}
-          >
+          <FormField htmlFor="user-edit-full-name" label={dialogMessages.fullNameLabel}>
             <Input
               id="user-edit-full-name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
             />
           </FormField>
-          <FormField
-            htmlFor="user-edit-email"
-            label={dialogMessages.emailLabel}
-          >
+          <FormField htmlFor="user-edit-email" label={dialogMessages.emailLabel}>
             <Input
               id="user-edit-email"
               type="email"
@@ -217,21 +189,14 @@ export function UsersManagementDialogs({
             <Button onClick={() => setPasswordTarget(null)} disabled={saving}>
               {messages.common.actions.cancel}
             </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={saving || !password}
-            >
+            <Button type="submit" variant="contained" disabled={saving || !password}>
               {dialogMessages.save}
             </Button>
           </>
         }
       >
         <Stack className="mt-0.5">
-          <FormField
-            htmlFor="user-password"
-            label={dialogMessages.newPasswordLabel}
-          >
+          <FormField htmlFor="user-password" label={dialogMessages.newPasswordLabel}>
             <Input
               id="user-password"
               type="password"
@@ -242,26 +207,16 @@ export function UsersManagementDialogs({
         </Stack>
       </FormDialog>
 
-      <Dialog
-        open={Boolean(deleteTarget)}
-        onClose={() => !saving && setDeleteTarget(null)}
-      >
+      <Dialog open={Boolean(deleteTarget)} onClose={() => !saving && setDeleteTarget(null)}>
         <DialogTitle>{dialogMessages.deleteTitle}</DialogTitle>
         <DialogContent>
-          <Text>
-            {dialogMessages.deleteDescription(deleteTarget?.email ?? "-")}
-          </Text>
+          <Text>{dialogMessages.deleteDescription(deleteTarget?.email ?? '-')}</Text>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteTarget(null)} disabled={saving}>
             {messages.common.actions.cancel}
           </Button>
-          <Button
-            onClick={handleDelete}
-            color="error"
-            variant="contained"
-            disabled={saving}
-          >
+          <Button onClick={handleDelete} color="error" variant="contained" disabled={saving}>
             {messages.common.actions.delete}
           </Button>
         </DialogActions>

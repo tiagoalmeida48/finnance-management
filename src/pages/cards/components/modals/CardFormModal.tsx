@@ -1,18 +1,18 @@
-import { Button } from "@/shared/components/ui/button";
-import { ColorPickerField } from "@/shared/components/forms/ColorPickerField";
-import { FormDialog } from "@/shared/components/composite/FormDialog";
-import { FormField } from "@/shared/components/forms/FormField";
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
-import { Row } from "@/shared/components/layout/Row";
-import { Stack } from "@/shared/components/layout/Stack";
-import { Text } from "@/shared/components/ui/Text";
-import { TextareaField } from "@/shared/components/forms/TextareaField";
-import { useCardFormModalLogic } from "@/pages/cards/hooks/useCardFormModalLogic";
-import type { CreditCard } from "@/shared/interfaces/credit-card.interface";
-import { messages } from "@/shared/i18n/messages";
-import { CardLinkedAccountSelect } from "./cardFormFields";
-import { Container } from "@/shared/components/layout/Container";
+import { Button } from '@/shared/components/ui/button';
+import { ColorPickerField } from '@/shared/components/forms/ColorPickerField';
+import { FormDialog } from '@/shared/components/composite/FormDialog';
+import { FormField } from '@/shared/components/forms/FormField';
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
+import { Row } from '@/shared/components/layout/Row';
+import { Stack } from '@/shared/components/layout/Stack';
+import { Text } from '@/shared/components/ui/Text';
+import { TextareaField } from '@/shared/components/forms/TextareaField';
+import { useCardFormModalLogic } from '@/pages/cards/hooks/useCardFormModalLogic';
+import type { CreditCard } from '@/shared/interfaces/credit-card.interface';
+import { messages } from '@/shared/i18n/messages';
+import { CardLinkedAccountSelect } from './cardFormFields';
+import { Container } from '@/shared/components/layout/Container';
 
 interface CardFormModalProps {
   open: boolean;
@@ -48,23 +48,14 @@ export function CardFormModal({ open, onClose, card }: CardFormModalProps) {
       maxWidth="sm"
       fullWidth
       className="max-w-[540px] rounded-[20px] border border-[var(--color-border)] bg-[var(--color-card)]"
-      title={
-        isEditing
-          ? formMessages.modal.editTitle
-          : formMessages.modal.createTitle
-      }
+      title={isEditing ? formMessages.modal.editTitle : formMessages.modal.createTitle}
       titleClassName="font-heading pb-1 text-[20px] font-bold text-[var(--color-text-primary)]"
       onSubmit={onSubmit}
       contentClassName="pb-3 pt-2"
       actionsClassName="gap-1 p-3 pt-0"
       actions={
         <>
-          <Button
-            type="button"
-            onClick={onClose}
-            variant="ghost"
-            size="default"
-          >
+          <Button type="button" onClick={onClose} variant="ghost" size="default">
             {cancelLabel}
           </Button>
           <Button
@@ -92,10 +83,7 @@ export function CardFormModal({ open, onClose, card }: CardFormModalProps) {
             errorMessage={errors.name?.message}
             className="flex-1"
           >
-            <Input
-              placeholder={formMessages.fields.cardNamePlaceholder}
-              {...register("name")}
-            />
+            <Input placeholder={formMessages.fields.cardNamePlaceholder} {...register('name')} />
           </FormField>
 
           <FormField
@@ -131,15 +119,12 @@ export function CardFormModal({ open, onClose, card }: CardFormModalProps) {
 
         {!isEditing ? (
           <Row className="gap-2">
-            <FormField
-              label={formMessages.fields.closingDay}
-              className="flex-1"
-            >
+            <FormField label={formMessages.fields.closingDay} className="flex-1">
               <Input
                 type="number"
                 min={1}
                 max={31}
-                {...register("closing_day", { valueAsNumber: true })}
+                {...register('closing_day', { valueAsNumber: true })}
               />
             </FormField>
             <FormField label={formMessages.fields.dueDay} className="flex-1">
@@ -147,7 +132,7 @@ export function CardFormModal({ open, onClose, card }: CardFormModalProps) {
                 type="number"
                 min={1}
                 max={31}
-                {...register("due_day", { valueAsNumber: true })}
+                {...register('due_day', { valueAsNumber: true })}
               />
             </FormField>
           </Row>
@@ -163,7 +148,7 @@ export function CardFormModal({ open, onClose, card }: CardFormModalProps) {
           <TextareaField
             rows={2}
             placeholder={formMessages.fields.notesPlaceholder}
-            {...register("notes")}
+            {...register('notes')}
           />
         </FormField>
 
@@ -188,18 +173,12 @@ interface StatementCycleNoticeProps {
   cyclePeriodLabel: string | null;
 }
 
-function StatementCycleNotice({
-  closingDay,
-  dueDay,
-  cyclePeriodLabel,
-}: StatementCycleNoticeProps) {
+function StatementCycleNotice({ closingDay, dueDay, cyclePeriodLabel }: StatementCycleNoticeProps) {
   const cycleMessages = messages.cards.form.cycleNotice;
 
   return (
     <Stack className="rounded-[10px] border border-[var(--color-border)] bg-[var(--overlay-primary-08)] p-1.5">
-      <Text className="mb-1 text-xs text-[var(--color-text-secondary)]">
-        {cycleMessages.title}
-      </Text>
+      <Text className="mb-1 text-xs text-[var(--color-text-secondary)]">{cycleMessages.title}</Text>
       <Row className="mb-1 flex-col gap-1 sm:flex-row">
         <Text
           as="span"
@@ -215,9 +194,7 @@ function StatementCycleNotice({
         </Text>
       </Row>
       <Text className="text-[11px] text-[var(--color-text-muted)]">
-        {cyclePeriodLabel
-          ? cycleMessages.period(cyclePeriodLabel)
-          : cycleMessages.periodFallback}
+        {cyclePeriodLabel ? cycleMessages.period(cyclePeriodLabel) : cycleMessages.periodFallback}
       </Text>
       <Text className="mt-0.75 text-[11px] text-[var(--color-text-muted)]">
         {cycleMessages.hint}

@@ -1,22 +1,5 @@
-export type AccountType =
-  | "checking"
-  | "savings"
-  | "investment"
-  | "wallet"
-  | "other";
+import { z } from 'zod';
+import { AccountSchema, AccountTypeSchema } from '@/shared/schemas';
 
-export interface Account {
-  id: string;
-  user_id: string;
-  name: string;
-  type: AccountType;
-  initial_balance: number;
-  current_balance: number;
-  color: string;
-  icon: string;
-  notes?: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  deleted_at?: string;
-}
+export type AccountType = z.infer<typeof AccountTypeSchema>;
+export type Account = z.infer<typeof AccountSchema>;

@@ -1,17 +1,12 @@
-import { Card, CardContent } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
-import {
-  TrendingUp,
-  TrendingDown,
-  ArrowRightLeft,
-  ArrowRight,
-} from "lucide-react";
-import { Transaction } from "@/shared/interfaces";
-import { messages } from "@/shared/i18n/messages";
-import { Text } from "@/shared/components/ui/Text";
-import { Container } from "@/shared/components/layout/Container";
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { TrendingUp, TrendingDown, ArrowRightLeft, ArrowRight } from 'lucide-react';
+import { Transaction } from '@/shared/interfaces';
+import { messages } from '@/shared/i18n/messages';
+import { Text } from '@/shared/components/ui/Text';
+import { Container } from '@/shared/components/layout/Container';
 
 interface DashboardRecentTransactionsProps {
   transactions: Transaction[] | undefined;
@@ -26,34 +21,34 @@ export function DashboardRecentTransactions({
   const navigate = useNavigate();
 
   const formatBRL = (val: number) =>
-    new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
+    new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
       minimumFractionDigits: 2,
     }).format(val);
 
   const getTypeConfig = (type: string) => {
     switch (type) {
-      case "income":
+      case 'income':
         return {
           icon: TrendingUp,
-          iconClass: "bg-[var(--color-greenBg)] text-[var(--color-success)]",
-          textClass: "text-[var(--color-success)]",
-          prefix: "+",
+          iconClass: 'bg-[var(--color-greenBg)] text-[var(--color-success)]',
+          textClass: 'text-[var(--color-success)]',
+          prefix: '+',
         };
-      case "expense":
+      case 'expense':
         return {
           icon: TrendingDown,
-          iconClass: "bg-[var(--color-redBg)] text-[var(--color-error)]",
-          textClass: "text-[var(--color-error)]",
-          prefix: "-",
+          iconClass: 'bg-[var(--color-redBg)] text-[var(--color-error)]',
+          textClass: 'text-[var(--color-error)]',
+          prefix: '-',
         };
       default:
         return {
           icon: ArrowRightLeft,
-          iconClass: "bg-[var(--color-accentGlow)] text-[var(--color-accent)]",
-          textClass: "text-[var(--color-accent)]",
-          prefix: "",
+          iconClass: 'bg-[var(--color-accentGlow)] text-[var(--color-accent)]',
+          textClass: 'text-[var(--color-accent)]',
+          prefix: '',
         };
     }
   };
@@ -68,7 +63,7 @@ export function DashboardRecentTransactions({
           <Button
             size="small"
             endIcon={<ArrowRight size={14} />}
-            onClick={() => navigate("/transactions")}
+            onClick={() => navigate('/transactions')}
             className="bg-transparent text-xs text-[var(--color-text-secondary)] hover:bg-transparent hover:text-[var(--color-primary)]"
           >
             {recentMessages.viewAll}
@@ -81,7 +76,7 @@ export function DashboardRecentTransactions({
                 <Container
                   unstyled
                   key={i}
-                  className={`py-1.5 ${i < 4 ? "border-b border-[var(--color-border)]" : ""}`}
+                  className={`py-1.5 ${i < 4 ? 'border-b border-[var(--color-border)]' : ''}`}
                 >
                   <Container unstyled className="flex items-center gap-2">
                     <Container
@@ -93,15 +88,9 @@ export function DashboardRecentTransactions({
                         unstyled
                         className="mb-1 h-4 w-3/5 animate-pulse rounded bg-white/5"
                       />
-                      <Container
-                        unstyled
-                        className="h-4 w-2/5 animate-pulse rounded bg-white/5"
-                      />
+                      <Container unstyled className="h-4 w-2/5 animate-pulse rounded bg-white/5" />
                     </Container>
-                    <Container
-                      unstyled
-                      className="h-4 w-20 animate-pulse rounded bg-white/5"
-                    />
+                    <Container unstyled className="h-4 w-20 animate-pulse rounded bg-white/5" />
                   </Container>
                 </Container>
               ))
@@ -112,7 +101,7 @@ export function DashboardRecentTransactions({
                   <Container
                     unstyled
                     key={t.id}
-                    className={`py-1.5 transition-all duration-200 hover:bg-white/[0.02] hover:pl-0.5 ${idx < 5 ? "border-b border-[var(--color-border)]" : ""}`}
+                    className={`py-1.5 transition-all duration-200 hover:bg-white/[0.02] hover:pl-0.5 ${idx < 5 ? 'border-b border-[var(--color-border)]' : ''}`}
                   >
                     <Container unstyled className="flex items-center gap-2">
                       <Container
@@ -126,10 +115,7 @@ export function DashboardRecentTransactions({
                           {t.description}
                         </Text>
                         <Text className="text-xs text-[var(--color-text-muted)]">
-                          {format(
-                            new Date(t.payment_date + "T12:00:00"),
-                            "dd/MM/yyyy",
-                          )}
+                          {format(new Date(t.payment_date + 'T12:00:00'), 'dd/MM/yyyy')}
                           {t.category?.name && ` • ${t.category.name}`}
                         </Text>
                       </Container>

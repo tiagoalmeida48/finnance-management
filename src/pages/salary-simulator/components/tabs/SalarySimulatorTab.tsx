@@ -1,15 +1,15 @@
-import { Card, CardContent } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
-import { Select } from "@/shared/components/ui/select";
-import { Input } from "@/shared/components/ui/input";
-import { Clock3 } from "lucide-react";
-import type { SalarySetting } from "@/shared/interfaces";
-import { calculatePayroll } from "@/shared/utils/payroll-calculations";
-import { colors } from "@/shared/theme";
-import { salarySimulatorService } from "@/shared/services/salary-simulator.service";
-import { messages } from "@/shared/i18n/messages";
-import { Container } from "@/shared/components/layout/Container";
-import { Text } from "@/shared/components/ui/Text";
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { Select } from '@/shared/components/ui/select';
+import { Input } from '@/shared/components/ui/input';
+import { Clock3 } from 'lucide-react';
+import type { SalarySetting } from '@/shared/interfaces';
+import { calculatePayroll } from '@/shared/utils/payroll-calculations';
+import { colors } from '@/shared/theme';
+import { salarySimulatorService } from '@/shared/services/salary-simulator.service';
+import { messages } from '@/shared/i18n/messages';
+import { Container } from '@/shared/components/layout/Container';
+import { Text } from '@/shared/components/ui/Text';
 
 interface SalarySimulatorTabProps {
   availableSettings: SalarySetting[];
@@ -62,9 +62,7 @@ export function SalarySimulatorTab({
           <Container unstyled className="flex flex-col gap-2">
             <Container unstyled className="flex items-center gap-2">
               <Clock3 size={18} color={colors.accent} />
-              <Text className="font-heading font-bold">
-                {tabMessages.title}
-              </Text>
+              <Text className="font-heading font-bold">{tabMessages.title}</Text>
             </Container>
 
             <Container unstyled className="flex flex-col gap-2">
@@ -74,24 +72,18 @@ export function SalarySimulatorTab({
                 </label>
                 <Select
                   value={selectedSettingInputKey}
-                  onChange={(event) =>
-                    onSelectedSettingChange(event.target.value)
-                  }
+                  onChange={(event) => onSelectedSettingChange(event.target.value)}
                 >
                   {availableSettings.map((setting) => {
                     const key = salarySimulatorService.buildSettingKey(setting);
                     const isCurrent = currentSetting
-                      ? key ===
-                        salarySimulatorService.buildSettingKey(currentSetting)
+                      ? key === salarySimulatorService.buildSettingKey(currentSetting)
                       : false;
                     return (
                       <option key={`setting-${key}`} value={key}>
-                        {salarySimulatorService.formatDateBR(
-                          setting.date_start,
-                        )}{" "}
-                        ate{" "}
+                        {salarySimulatorService.formatDateBR(setting.date_start)} ate{' '}
                         {salarySimulatorService.formatDateBR(setting.date_end)}
-                        {isCurrent ? tabMessages.currentSuffix : ""}
+                        {isCurrent ? tabMessages.currentSuffix : ''}
                       </option>
                     );
                   })}
@@ -106,8 +98,7 @@ export function SalarySimulatorTab({
                   type="number"
                   value={totalHours}
                   onChange={(event) =>
-                    event.target.value.length <= 5 &&
-                    onHoursChange(event.target.value)
+                    event.target.value.length <= 5 && onHoursChange(event.target.value)
                   }
                   onFocus={(event) => event.target.select()}
                   onBlur={onHoursBlur}
@@ -129,7 +120,7 @@ export function SalarySimulatorTab({
                   {tabMessages.paycheck.net}
                 </Text>
                 <Text
-                  className={`text-3xl font-black tracking-tight ${isNetNegative ? "text-[var(--color-danger-soft)]" : "text-[var(--color-accent)]"}`}
+                  className={`text-3xl font-black tracking-tight ${isNetNegative ? 'text-[var(--color-danger-soft)]' : 'text-[var(--color-accent)]'}`}
                 >
                   {salarySimulatorService.formatCurrency(payroll.netPay)}
                 </Text>
@@ -154,14 +145,9 @@ export function SalarySimulatorTab({
                 </Text>
                 <Text className="text-xs text-[var(--color-text-secondary)]">
                   {tabMessages.temporaryCalc.description} <br />
-                  Vigência simulada:{" "}
-                  {salarySimulatorService.formatDateBR(
-                    calculationSetting.date_start,
-                  )}{" "}
-                  à{" "}
-                  {salarySimulatorService.formatDateBR(
-                    calculationSetting.date_end,
-                  )}
+                  Vigência simulada:{' '}
+                  {salarySimulatorService.formatDateBR(calculationSetting.date_start)} à{' '}
+                  {salarySimulatorService.formatDateBR(calculationSetting.date_end)}
                 </Text>
               </Container>
             )}
@@ -172,13 +158,11 @@ export function SalarySimulatorTab({
       <Card className="h-full rounded-[14px]">
         <CardContent className="p-3">
           <Container unstyled className="flex flex-col gap-2">
-            <Text className="font-heading font-bold">
-              {tabMessages.summaryTitle}
-            </Text>
+            <Text className="font-heading font-bold">{tabMessages.summaryTitle}</Text>
 
             <SummaryRow
               label={tabMessages.summaryLabels.validityInCalculation}
-              value={`${salarySimulatorService.formatDateBR(calculationSetting?.date_start ?? today)} ate ${salarySimulatorService.formatDateBR(calculationSetting?.date_end ?? "9999-12-31")}`}
+              value={`${salarySimulatorService.formatDateBR(calculationSetting?.date_start ?? today)} ate ${salarySimulatorService.formatDateBR(calculationSetting?.date_end ?? '9999-12-31')}`}
             />
             <SummaryRow
               label={tabMessages.summaryLabels.hourValue}
@@ -196,9 +180,7 @@ export function SalarySimulatorTab({
             />
             <SummaryRow
               label={tabMessages.summaryLabels.profitAdvance}
-              value={salarySimulatorService.formatCurrency(
-                payroll.profitAdvance,
-              )}
+              value={salarySimulatorService.formatCurrency(payroll.profitAdvance)}
               valueColor={colors.green}
               strong
             />
@@ -217,9 +199,7 @@ export function SalarySimulatorTab({
 
             <SummaryRow
               label={tabMessages.summaryLabels.totalDiscounts}
-              value={salarySimulatorService.formatCurrency(
-                Math.abs(payroll.totalDiscounts),
-              )}
+              value={salarySimulatorService.formatCurrency(Math.abs(payroll.totalDiscounts))}
               strong
             />
           </Container>
@@ -242,26 +222,20 @@ function SummaryRow({
 }) {
   const valueClass =
     valueColor === colors.green
-      ? "text-[var(--color-success)]"
+      ? 'text-[var(--color-success)]'
       : valueColor === colors.red
-        ? "text-[var(--color-error)]"
-        : "text-[var(--color-text-primary)]";
+        ? 'text-[var(--color-error)]'
+        : 'text-[var(--color-text-primary)]';
 
   return (
     <Container
       unstyled
       className="flex items-center justify-between border-b border-[var(--color-border)]/50 py-1.5 last:border-0"
     >
-      <Text
-        className={`${strong ? "font-bold" : ""} text-[var(--color-text-secondary)]`}
-      >
+      <Text className={`${strong ? 'font-bold' : ''} text-[var(--color-text-secondary)]`}>
         {label}
       </Text>
-      <Text
-        className={`${strong ? "font-bold" : "font-semibold"} ${valueClass}`}
-      >
-        {value}
-      </Text>
+      <Text className={`${strong ? 'font-bold' : 'font-semibold'} ${valueClass}`}>{value}</Text>
     </Container>
   );
 }

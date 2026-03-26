@@ -1,15 +1,15 @@
-import type { Account, Transaction } from "@/shared/interfaces";
-import type { TransactionFormValues } from "@/pages/transactions/hooks/useTransactionFormLogic";
-import type { FieldErrors, UseFormRegister } from "react-hook-form";
-import { CustomSelect } from "@/shared/components/ui/custom-select";
-import { getAccountTypeIcon } from "@/shared/constants/accountTypes";
-import { Label } from "@/shared/components/ui/label";
-import { Controller } from "react-hook-form";
-import { TransactionDateField } from "./TransactionDateField";
-import type { Control } from "react-hook-form";
-import { messages } from "@/shared/i18n/messages";
-import { Container } from "@/shared/components/layout/Container";
-import { Text } from "@/shared/components/ui/Text";
+import type { Account, Transaction } from '@/shared/interfaces';
+import type { TransactionFormValues } from '@/pages/transactions/hooks/useTransactionFormLogic';
+import type { FieldErrors, UseFormRegister } from 'react-hook-form';
+import { CustomSelect } from '@/shared/components/ui/custom-select';
+import { getAccountTypeIcon } from '@/shared/constants/accountTypes';
+import { Label } from '@/shared/components/ui/label';
+import { Controller } from 'react-hook-form';
+import { TransactionDateField } from './TransactionDateField';
+import type { Control } from 'react-hook-form';
+import { messages } from '@/shared/i18n/messages';
+import { Container } from '@/shared/components/layout/Container';
+import { Text } from '@/shared/components/ui/Text';
 
 interface TransactionTransferSectionProps {
   isMobile: boolean;
@@ -26,7 +26,7 @@ export function TransactionTransferSection({
   errors,
   control,
 }: TransactionTransferSectionProps) {
-  const transferGridClass = isMobile ? "grid-cols-1" : "grid-cols-3";
+  const transferGridClass = isMobile ? 'grid-cols-1' : 'grid-cols-3';
 
   const accountOptions = accounts.map((account) => {
     const Icon = getAccountTypeIcon(account.type);
@@ -53,12 +53,10 @@ export function TransactionTransferSection({
             control={control}
             render={({ field }) => (
               <CustomSelect
-                value={field.value || ""}
+                value={field.value || ''}
                 onChange={field.onChange}
                 options={accountOptions}
-                placeholder={
-                  messages.transactions.form.transfer.selectWithDotsPlaceholder
-                }
+                placeholder={messages.transactions.form.transfer.selectWithDotsPlaceholder}
                 error={!!errors.account_id}
               />
             )}
@@ -73,14 +71,12 @@ export function TransactionTransferSection({
             control={control}
             render={({ field }) => (
               <CustomSelect
-                value={field.value || ""}
+                value={field.value || ''}
                 onChange={field.onChange}
                 options={accountOptions.filter(
                   (acc) => acc.value !== control._formValues.account_id,
                 )}
-                placeholder={
-                  messages.transactions.form.transfer.selectWithDotsPlaceholder
-                }
+                placeholder={messages.transactions.form.transfer.selectWithDotsPlaceholder}
                 error={!!errors.to_account_id}
               />
             )}
