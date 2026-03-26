@@ -1,9 +1,9 @@
-import { Text } from "@/shared/components/ui/Text";
-import type { Account } from "@/shared/interfaces/account.interface";
-import { messages } from "@/shared/i18n/messages";
-import { Container } from "@/shared/components/layout/Container";
-import { CustomSelect } from "@/shared/components/ui/custom-select";
-import { getAccountTypeIcon } from "@/shared/constants/accountTypes";
+import { Text } from '@/shared/components/ui/Text';
+import type { Account } from '@/shared/interfaces/account.interface';
+import { messages } from '@/shared/i18n/messages';
+import { Container } from '@/shared/components/layout/Container';
+import { CustomSelect } from '@/shared/components/ui/custom-select';
+import { getAccountTypeIcon } from '@/shared/constants/accountTypes';
 
 interface CardLinkedAccountSelectProps {
   accounts: Account[] | undefined;
@@ -40,9 +40,7 @@ export function CardLinkedAccountSelect({
         error={!!errorMessage}
       />
       {errorMessage ? (
-        <Text className="mt-1 text-xs text-[var(--color-error)]">
-          {errorMessage}
-        </Text>
+        <Text className="mt-1 text-xs text-[var(--color-error)]">{errorMessage}</Text>
       ) : null}
     </Container>
   );

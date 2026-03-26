@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { useAccounts, useDeleteAccount } from "@/shared/hooks/api/useAccounts";
-import { Account } from "@/shared/interfaces/account.interface";
+import { useState } from 'react';
+import { useAccounts, useDeleteAccount } from '@/shared/hooks/api/useAccounts';
+import { Account } from '@/shared/interfaces/account.interface';
 
 export function useAccountsPageLogic() {
   const { data: accounts, isLoading } = useAccounts();
@@ -13,10 +13,7 @@ export function useAccountsPageLogic() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [menuAccount, setMenuAccount] = useState<Account | null>(null);
 
-  const handleOpenMenu = (
-    event: React.MouseEvent<HTMLElement>,
-    account: Account,
-  ) => {
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, account: Account) => {
     setAnchorEl(event.currentTarget);
     setMenuAccount(account);
   };
@@ -43,8 +40,8 @@ export function useAccountsPageLogic() {
       await deleteAccount.mutateAsync(menuAccount.id);
       setDeleteModalOpen(false);
       setMenuAccount(null);
-    } catch (error) {
-      console.error("Error deleting account:", error);
+    } catch {
+      // erro tratado pelo onError global do QueryClient
     }
   };
 

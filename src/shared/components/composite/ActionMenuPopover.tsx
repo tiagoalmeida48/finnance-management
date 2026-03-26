@@ -1,4 +1,4 @@
-import type { ReactNode, Ref } from "react";
+import type { ReactNode, Ref } from 'react';
 
 interface ActionMenuPopoverProps {
   open: boolean;
@@ -36,7 +36,7 @@ export function ActionMenuPopover({
               }
             : undefined
         }
-        className={`fixed z-[1200] min-w-[150px] rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-1 shadow-lg ${className ?? ""}`.trim()}
+        className={`fixed z-[1200] min-w-[150px] rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-1 shadow-lg ${className ?? ''}`.trim()}
       >
         {children}
       </div>

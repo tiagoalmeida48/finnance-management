@@ -1,12 +1,12 @@
-import { useDashboardPageLogic } from "@/pages/dashboard/hooks/useDashboardPageLogic";
-import { DashboardSummary } from "./components/DashboardSummary";
-import { DashboardCharts } from "./components/DashboardCharts";
-import { DashboardRecentTransactions } from "./components/DashboardRecentTransactions";
-import { DashboardFilters } from "./components/DashboardFilters";
-import { Container } from "@/shared/components/layout/Container";
-import { Section } from "@/shared/components/layout/Section";
-import { messages } from "@/shared/i18n/messages";
-import { PageHeader } from "@/shared/components/composite/PageHeader";
+import { useDashboardPageLogic } from '@/pages/dashboard/hooks/useDashboardPageLogic';
+import { DashboardSummary } from './components/DashboardSummary';
+import { DashboardCharts } from './components/DashboardCharts';
+import { DashboardRecentTransactions } from './components/DashboardRecentTransactions';
+import { DashboardFilters } from './components/DashboardFilters';
+import { Container } from '@/shared/components/layout/Container';
+import { Section } from '@/shared/components/layout/Section';
+import { messages } from '@/shared/i18n/messages';
+import { PageHeader } from '@/shared/components/composite/PageHeader';
 
 export function DashboardPage() {
   const pageMessages = messages.dashboard.page;
@@ -27,10 +27,7 @@ export function DashboardPage() {
           title={pageMessages.title}
           subtitle={pageMessages.subtitle}
           actions={
-            <DashboardFilters
-              selectedYear={selectedYear}
-              setSelectedYear={setSelectedYear}
-            />
+            <DashboardFilters selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
           }
           className="w-full flex-col items-start md:flex-row md:items-center"
         />
@@ -39,10 +36,7 @@ export function DashboardPage() {
 
         <DashboardCharts chartData={chartData} categories={categories} />
 
-        <DashboardRecentTransactions
-          transactions={recentTransactions}
-          isLoading={isLoading}
-        />
+        <DashboardRecentTransactions transactions={recentTransactions} isLoading={isLoading} />
       </Container>
     </Section>
   );

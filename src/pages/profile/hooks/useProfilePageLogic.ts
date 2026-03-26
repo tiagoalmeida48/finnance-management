@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "@/lib/supabase/auth-context";
-import { supabase } from "@/lib/supabase/client";
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/supabase/auth-context';
+import { supabase } from '@/lib/supabase/client';
 
-type FeedbackMessage = { type: "success" | "error"; text: string } | null;
+type FeedbackMessage = { type: 'success' | 'error'; text: string } | null;
 
 const getErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error ? error.message : fallback;
@@ -12,18 +12,18 @@ export function useProfilePageLogic() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [message, setMessage] = useState<FeedbackMessage>(null);
-  const [fullName, setFullName] = useState("");
+  const [fullName, setFullName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [pwdLoading, setPwdLoading] = useState(false);
 
   useEffect(() => {
     if (profile && fetching) {
-      setFullName(profile.full_name || "");
+      setFullName(profile.full_name || '');
       setAvatarUrl(profile.avatar_url || null);
       setFetching(false);
     } else if (user && fetching) {
@@ -41,7 +41,7 @@ export function useProfilePageLogic() {
     setMessage(null);
 
     try {
-      const { error } = await supabase.from("profiles").upsert({
+      const { error } = await supabase.from('profiles').upsert({
         id: user.id,
         full_name: fullName,
         updated_at: new Date().toISOString(),
@@ -49,11 +49,11 @@ export function useProfilePageLogic() {
 
       if (error) throw error;
       await refreshProfile();
-      setMessage({ type: "success", text: "Nome atualizado com sucesso!" });
+      setMessage({ type: 'success', text: 'Nome atualizado com sucesso!' });
     } catch (error: unknown) {
       setMessage({
-        type: "error",
-        text: getErrorMessage(error, "Erro ao atualizar perfil."),
+        type: 'error',
+        text: getErrorMessage(error, 'Erro ao atualizar perfil.'),
       });
     } finally {
       setLoading(false);
@@ -66,25 +66,23 @@ export function useProfilePageLogic() {
       setMessage(null);
 
       if (!event.target.files || event.target.files.length === 0) {
-        throw new Error("Você deve selecionar uma imagem para o avatar.");
+        throw new Error('Você deve selecionar uma imagem para o avatar.');
       }
 
       const file = event.target.files[0];
-      const fileExt = file.name.split(".").pop();
+      const fileExt = file.name.split('.').pop();
       const fileName = `${user?.id}-${Math.random()}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file);
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const {
         data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(filePath);
+      } = supabase.storage.from('avatars').getPublicUrl(filePath);
 
-      const { error: updateError } = await supabase.from("profiles").upsert({
+      const { error: updateError } = await supabase.from('profiles').upsert({
         id: user?.id,
         avatar_url: publicUrl,
         updated_at: new Date().toISOString(),
@@ -93,11 +91,11 @@ export function useProfilePageLogic() {
       if (updateError) throw updateError;
 
       await refreshProfile();
-      setMessage({ type: "success", text: "Foto do perfil atualizada!" });
+      setMessage({ type: 'success', text: 'Foto do perfil atualizada!' });
     } catch (error: unknown) {
       setMessage({
-        type: "error",
-        text: getErrorMessage(error, "Erro ao carregar avatar."),
+        type: 'error',
+        text: getErrorMessage(error, 'Erro ao carregar avatar.'),
       });
     } finally {
       setUploading(false);
@@ -107,11 +105,11 @@ export function useProfilePageLogic() {
   async function handlePasswordUpdate() {
     if (!user) return;
     if (!password) {
-      setMessage({ type: "error", text: "A senha não pode estar vazia." });
+      setMessage({ type: 'error', text: 'A senha não pode estar vazia.' });
       return;
     }
     if (password !== confirmPassword) {
-      setMessage({ type: "error", text: "As senhas não coincidem." });
+      setMessage({ type: 'error', text: 'As senhas não coincidem.' });
       return;
     }
 
@@ -125,13 +123,13 @@ export function useProfilePageLogic() {
 
       if (error) throw error;
 
-      setMessage({ type: "success", text: "Senha atualizada com sucesso!" });
-      setPassword("");
-      setConfirmPassword("");
+      setMessage({ type: 'success', text: 'Senha atualizada com sucesso!' });
+      setPassword('');
+      setConfirmPassword('');
     } catch (error: unknown) {
       setMessage({
-        type: "error",
-        text: getErrorMessage(error, "Erro ao atualizar senha."),
+        type: 'error',
+        text: getErrorMessage(error, 'Erro ao atualizar senha.'),
       });
     } finally {
       setPwdLoading(false);

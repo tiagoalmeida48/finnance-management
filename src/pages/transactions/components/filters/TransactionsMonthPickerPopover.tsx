@@ -1,10 +1,10 @@
-import { IconButton } from "@/shared/components/ui/icon-button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useApplyElementStyles } from "@/shared/hooks/useApplyElementStyles";
-import { messages } from "@/shared/i18n/messages";
-import { Container } from "@/shared/components/layout/Container";
-import { Text } from "@/shared/components/ui/Text";
-import { Button } from "@/shared/components/ui/button";
+import { IconButton } from '@/shared/components/ui/icon-button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useApplyElementStyles } from '@/shared/hooks/useApplyElementStyles';
+import { messages } from '@/shared/i18n/messages';
+import { Container } from '@/shared/components/layout/Container';
+import { Text } from '@/shared/components/ui/Text';
+import { Button } from '@/shared/components/ui/button';
 
 const months = messages.transactions.filters.monthsShort;
 
@@ -30,29 +30,20 @@ export function TransactionsMonthPickerPopover({
   const anchorRect = monthAnchor?.getBoundingClientRect();
   const popoverPositionRef = useApplyElementStyles<HTMLDivElement>({
     top: anchorRect ? `${anchorRect.bottom + 8}px` : undefined,
-    left: anchorRect
-      ? `${anchorRect.left + anchorRect.width / 2 - 140}px`
-      : undefined,
+    left: anchorRect ? `${anchorRect.left + anchorRect.width / 2 - 140}px` : undefined,
   });
 
   if (!open || !anchorRect) return null;
 
   return (
     <>
-      <Container
-        unstyled
-        className="fixed inset-0 z-[1199]"
-        onClick={() => setMonthAnchor(null)}
-      />
+      <Container unstyled className="fixed inset-0 z-[1199]" onClick={() => setMonthAnchor(null)} />
       <Container
         unstyled
         ref={popoverPositionRef}
         className="fixed z-[1200] w-[280px] rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-2"
       >
-        <Container
-          unstyled
-          className="mb-1.5 flex items-center justify-between"
-        >
+        <Container unstyled className="mb-1.5 flex items-center justify-between">
           <IconButton
             size="small"
             onClick={() => setPickerYear((y) => y - 1)}
@@ -75,11 +66,9 @@ export function TransactionsMonthPickerPopover({
         <Container unstyled className="grid grid-cols-4 gap-0.5">
           {months.map((monthLabel, index) => {
             const isCurrentMonth =
-              currentMonth.getMonth() === index &&
-              currentMonth.getFullYear() === pickerYear;
+              currentMonth.getMonth() === index && currentMonth.getFullYear() === pickerYear;
             const isToday =
-              new Date().getMonth() === index &&
-              new Date().getFullYear() === pickerYear;
+              new Date().getMonth() === index && new Date().getFullYear() === pickerYear;
 
             return (
               <Button
@@ -87,9 +76,9 @@ export function TransactionsMonthPickerPopover({
                 onClick={() => onSelectMonth(index)}
                 className={`rounded-lg border px-0.5 py-1 text-xs transition-all duration-150 ${
                   isCurrentMonth
-                    ? "bg-[var(--color-primary)] font-semibold text-[var(--color-background)]"
-                    : "bg-transparent font-medium text-[var(--color-text-secondary)]"
-                } ${isToday && !isCurrentMonth ? "border-[var(--color-border)]" : "border-transparent"}`}
+                    ? 'bg-[var(--color-primary)] font-semibold text-[var(--color-background)]'
+                    : 'bg-transparent font-medium text-[var(--color-text-secondary)]'
+                } ${isToday && !isCurrentMonth ? 'border-[var(--color-border)]' : 'border-transparent'}`}
               >
                 {monthLabel}
               </Button>

@@ -1,15 +1,15 @@
-import type { Transaction } from "../interfaces";
+import type { Transaction } from '../interfaces';
 
 const DISALLOWED_GROUP_FIELDS: Array<keyof Transaction> = [
-  "id",
-  "installment_number",
-  "installment_group_id",
-  "recurring_group_id",
-  "invoice_id",
-  "created_at",
-  "updated_at",
-  "user_id",
-  "total_installments",
+  'id',
+  'installment_number',
+  'installment_group_id',
+  'recurring_group_id',
+  'invoice_id',
+  'created_at',
+  'updated_at',
+  'user_id',
+  'total_installments',
 ];
 
 export const filterGroupUpdates = (updates: Partial<Transaction>) =>
@@ -22,9 +22,8 @@ export const filterGroupUpdates = (updates: Partial<Transaction>) =>
 const DATE_KEY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})/;
 const INSTALLMENT_SUFFIX_PATTERN = /\(\s*\d+\s*\/\s*\d+\s*\)\s*$/i;
 
-const pad = (value: number) => value.toString().padStart(2, "0");
-const normalizeWhitespace = (value: string) =>
-  value.replace(/\s+/g, " ").trim();
+const pad = (value: number) => value.toString().padStart(2, '0');
+const normalizeWhitespace = (value: string) => value.replace(/\s+/g, ' ').trim();
 
 interface DateParts {
   year: number;
@@ -41,12 +40,7 @@ const parseDateParts = (value?: string | null): DateParts | null => {
   const month = Number(match[2]);
   const day = Number(match[3]);
 
-  if (
-    !Number.isInteger(year) ||
-    !Number.isInteger(month) ||
-    !Number.isInteger(day)
-  )
-    return null;
+  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) return null;
   if (month < 1 || month > 12) return null;
 
   const maxDay = new Date(year, month, 0).getDate();
@@ -66,8 +60,7 @@ export const replaceDateDayPreservingMonth = (
 ) => {
   const parts = parseDateParts(value);
   if (!parts) return null;
-  if (!Number.isInteger(targetDay) || targetDay < 1 || targetDay > 31)
-    return null;
+  if (!Number.isInteger(targetDay) || targetDay < 1 || targetDay > 31) return null;
 
   const maxDay = new Date(parts.year, parts.month, 0).getDate();
   const clampedDay = Math.min(targetDay, maxDay);
@@ -75,18 +68,11 @@ export const replaceDateDayPreservingMonth = (
   return `${parts.year}-${pad(parts.month)}-${pad(clampedDay)}`;
 };
 
-export const shiftDateByMonths = (
-  value: string | null | undefined,
-  monthOffset: number,
-) => {
+export const shiftDateByMonths = (value: string | null | undefined, monthOffset: number) => {
   const parts = parseDateParts(value);
   if (!parts || !Number.isInteger(monthOffset)) return null;
 
-  const shiftedMonthDate = new Date(
-    parts.year,
-    parts.month - 1 + monthOffset,
-    1,
-  );
+  const shiftedMonthDate = new Date(parts.year, parts.month - 1 + monthOffset, 1);
   if (Number.isNaN(shiftedMonthDate.getTime())) return null;
 
   const shiftedYear = shiftedMonthDate.getFullYear();
@@ -104,12 +90,10 @@ export const toDateKeyIgnoringTime = (value?: string | null) => {
 };
 
 export const stripInstallmentSuffix = (description?: string | null) => {
-  const normalized = normalizeWhitespace(description || "");
-  if (!normalized) return "";
+  const normalized = normalizeWhitespace(description || '');
+  if (!normalized) return '';
 
-  return normalizeWhitespace(
-    normalized.replace(INSTALLMENT_SUFFIX_PATTERN, ""),
-  );
+  return normalizeWhitespace(normalized.replace(INSTALLMENT_SUFFIX_PATTERN, ''));
 };
 
 export const buildInstallmentDescription = (
@@ -117,12 +101,9 @@ export const buildInstallmentDescription = (
   installmentNumber: number,
   totalInstallments: number,
 ) => {
-  const safeBase = normalizeWhitespace(baseDescription || "");
+  const safeBase = normalizeWhitespace(baseDescription || '');
   const safeInstallment = Math.max(1, Math.trunc(installmentNumber || 1));
-  const safeTotal = Math.max(
-    safeInstallment,
-    Math.trunc(totalInstallments || 1),
-  );
+  const safeTotal = Math.max(safeInstallment, Math.trunc(totalInstallments || 1));
 
-  return `${safeBase} (${safeInstallment.toString().padStart(2, "0")}/${safeTotal.toString().padStart(2, "0")})`;
+  return `${safeBase} (${safeInstallment.toString().padStart(2, '0')}/${safeTotal.toString().padStart(2, '0')})`;
 };

@@ -1,13 +1,9 @@
-import { Button } from "@/shared/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/shared/components/ui/dialog";
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
-import { messages } from "@/shared/i18n/messages";
-import { Container } from "@/shared/components/layout/Container";
+import { Button } from '@/shared/components/ui/button';
+import { Dialog, DialogContent, DialogTitle } from '@/shared/components/ui/dialog';
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
+import { messages } from '@/shared/i18n/messages';
+import { Container } from '@/shared/components/layout/Container';
 
 interface SalaryCreateSettingDialogProps {
   open: boolean;
@@ -112,9 +108,7 @@ export function SalaryCreateSettingDialog({
               <Input
                 type="number"
                 value={adminFeePercentage}
-                onChange={(event) =>
-                  onAdminFeePercentageChange(event.target.value)
-                }
+                onChange={(event) => onAdminFeePercentageChange(event.target.value)}
                 min={0}
                 max={100}
                 step="0.01"
@@ -123,10 +117,7 @@ export function SalaryCreateSettingDialog({
           </Container>
 
           <Container unstyled className="col-span-12">
-            <Container
-              unstyled
-              className="flex flex-col-reverse justify-end gap-1 sm:flex-row"
-            >
+            <Container unstyled className="flex flex-col-reverse justify-end gap-1 sm:flex-row">
               <Button variant="text" onClick={onClose} disabled={isSaving}>
                 {messages.common.actions.cancel}
               </Button>

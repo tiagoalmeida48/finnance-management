@@ -1,11 +1,11 @@
-import { Pencil, Trash2 } from "lucide-react";
-import { IconButton } from "@/shared/components/ui/icon-button";
-import { Row } from "@/shared/components/layout/Row";
-import { TableCell, TableRow } from "@/shared/components/layout/Table";
-import { Text } from "@/shared/components/ui/Text";
-import type { CreditCardStatementCycle } from "@/shared/interfaces";
-import { OPEN_CYCLE_END } from "@/shared/utils/card-statement-cycle.utils";
-import { messages } from "@/shared/i18n/messages";
+import { Pencil, Trash2 } from 'lucide-react';
+import { IconButton } from '@/shared/components/ui/icon-button';
+import { Row } from '@/shared/components/layout/Row';
+import { TableCell, TableRow } from '@/shared/components/layout/Table';
+import { Text } from '@/shared/components/ui/Text';
+import type { CreditCardStatementCycle } from '@/shared/interfaces';
+import { OPEN_CYCLE_END } from '@/shared/utils/card-statement-cycle.utils';
+import { messages } from '@/shared/i18n/messages';
 
 interface CardStatementCycleHistoryRowProps {
   cycle: CreditCardStatementCycle;
@@ -33,9 +33,7 @@ export function CardStatementCycleHistoryRow({
       <TableCell className="text-[13px]">
         {cycleHistoryMessages.dayLabel(cycle.closing_day)}
       </TableCell>
-      <TableCell className="text-[13px]">
-        {cycleHistoryMessages.dayLabel(cycle.due_day)}
-      </TableCell>
+      <TableCell className="text-[13px]">{cycleHistoryMessages.dayLabel(cycle.due_day)}</TableCell>
       <TableCell className="text-[13px]">
         {isCurrent ? (
           <Text
@@ -53,7 +51,7 @@ export function CardStatementCycleHistoryRow({
           </Text>
         )}
       </TableCell>
-      <TableCell className="text-[13px]">{cycle.notes || "-"}</TableCell>
+      <TableCell className="text-[13px]">{cycle.notes || '-'}</TableCell>
       <TableCell className="text-center text-[13px]">
         <Row className="justify-center gap-1">
           <IconButton

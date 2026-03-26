@@ -1,38 +1,37 @@
-import { useMemo, useState, useCallback } from "react";
-import { useAccounts } from "@/shared/hooks/api/useAccounts";
-import { useCategories } from "@/shared/hooks/api/useCategories";
-import { useCreditCards } from "@/shared/hooks/api/useCreditCards";
-import { useBatchCreateTransactions } from "@/shared/hooks/api/useTransactions";
-import { messages } from "@/shared/i18n/messages";
-import type { FileData } from "./importTransactions.types";
-import { validateAndMapImportData } from "@/shared/services/transactions-import.service";
-import { useCsvParser } from "../../../hooks/useCsvParser";
+import { useMemo, useState, useCallback } from 'react';
+import { useAccounts } from '@/shared/hooks/api/useAccounts';
+import { useCategories } from '@/shared/hooks/api/useCategories';
+import { useCreditCards } from '@/shared/hooks/api/useCreditCards';
+import { useBatchCreateTransactions } from '@/shared/hooks/api/useTransactions';
+import { messages } from '@/shared/i18n/messages';
+import type { FileData } from './importTransactions.types';
+import { validateAndMapImportData } from '@/shared/services/transactions-import.service';
+import { useCsvParser } from '../../../hooks/useCsvParser';
 
-export type ImportPaymentMethod = "pix" | "debit" | "credit" | "money";
+export type ImportPaymentMethod = 'pix' | 'debit' | 'credit' | 'money';
 
 const importMessages = messages.transactions.import;
 
 const normalizeCsvRow = (row: Record<string, string>): FileData => ({
-  Data: row.Data || "",
-  Descrição: row["Descrição"] || row.Descricao || "",
-  Valor: row.Valor || "",
-  Categoria: row.Categoria || "",
-  Parcelas: row.Parcelas || "",
-  "Data de pagamento": row["Data de pagamento"] || "",
-  "Conta de pagamento": row["Conta de pagamento"] || "",
-  Notas: row.Notas || "",
+  Data: row.Data || '',
+  Descrição: row['Descrição'] || row.Descricao || '',
+  Valor: row.Valor || '',
+  Categoria: row.Categoria || '',
+  Parcelas: row.Parcelas || '',
+  'Data de pagamento': row['Data de pagamento'] || '',
+  'Conta de pagamento': row['Conta de pagamento'] || '',
+  Notas: row.Notas || '',
 });
 
 const getAccountNameById = (
   accounts: Array<{ id: string; name: string }> | undefined,
   accountId: string,
-) => accounts?.find((account) => account.id === accountId)?.name || "";
+) => accounts?.find((account) => account.id === accountId)?.name || '';
 
 export function useImportTransactionsModalLogic(onClose: () => void) {
-  const [paymentMethod, setPaymentMethod] =
-    useState<ImportPaymentMethod>("debit");
-  const [selectedAccountId, setSelectedAccountId] = useState("");
-  const [selectedCardId, setSelectedCardId] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<ImportPaymentMethod>('debit');
+  const [selectedAccountId, setSelectedAccountId] = useState('');
+  const [selectedCardId, setSelectedCardId] = useState('');
 
   const { data: accounts } = useAccounts();
   const { data: categories } = useCategories();
@@ -47,22 +46,19 @@ export function useImportTransactionsModalLogic(onClose: () => void) {
 
   const transformRow = useCallback(
     (row: FileData): FileData => {
-      if (paymentMethod === "credit") {
+      if (paymentMethod === 'credit') {
         return {
           ...row,
-          "Data de pagamento": "",
-          "Conta de pagamento": "",
+          'Data de pagamento': '',
+          'Conta de pagamento': '',
         };
       }
 
-      const selectedAccountName = getAccountNameById(
-        accounts,
-        selectedAccountId,
-      );
+      const selectedAccountName = getAccountNameById(accounts, selectedAccountId);
       if (selectedAccountName) {
         return {
           ...row,
-          "Conta de pagamento": selectedAccountName,
+          'Conta de pagamento': selectedAccountName,
         };
       }
 
@@ -87,9 +83,7 @@ export function useImportTransactionsModalLogic(onClose: () => void) {
 
   const removeRow = useCallback(
     (index: number) => {
-      setPreviewData((previousRows) =>
-        previousRows.filter((_, rowIndex) => rowIndex !== index),
-      );
+      setPreviewData((previousRows) => previousRows.filter((_, rowIndex) => rowIndex !== index));
     },
     [setPreviewData],
   );
@@ -98,12 +92,12 @@ export function useImportTransactionsModalLogic(onClose: () => void) {
     (nextMethod: ImportPaymentMethod) => {
       setPaymentMethod(nextMethod);
 
-      if (nextMethod === "credit") {
+      if (nextMethod === 'credit') {
         setPreviewData((previousRows) =>
           previousRows.map((row) => ({
             ...row,
-            "Data de pagamento": "",
-            "Conta de pagamento": "",
+            'Data de pagamento': '',
+            'Conta de pagamento': '',
           })),
         );
         return;
@@ -114,11 +108,11 @@ export function useImportTransactionsModalLogic(onClose: () => void) {
         setPreviewData((previousRows) =>
           previousRows.map((row) => ({
             ...row,
-            "Conta de pagamento": accountName,
+            'Conta de pagamento': accountName,
           })),
         );
       }
-      setSelectedCardId("");
+      setSelectedCardId('');
     },
     [accounts, selectedAccountId, setPreviewData],
   );
@@ -126,14 +120,14 @@ export function useImportTransactionsModalLogic(onClose: () => void) {
   const handleAccountChange = useCallback(
     (accountId: string) => {
       setSelectedAccountId(accountId);
-      setSelectedCardId("");
+      setSelectedCardId('');
 
-      if (paymentMethod !== "credit") {
+      if (paymentMethod !== 'credit') {
         const accountName = getAccountNameById(accounts, accountId);
         setPreviewData((previousRows) =>
           previousRows.map((row) => ({
             ...row,
-            "Conta de pagamento": accountName,
+            'Conta de pagamento': accountName,
           })),
         );
       }
@@ -167,9 +161,9 @@ export function useImportTransactionsModalLogic(onClose: () => void) {
 
   const handleClose = useCallback(() => {
     resetFile();
-    setPaymentMethod("debit");
-    setSelectedAccountId("");
-    setSelectedCardId("");
+    setPaymentMethod('debit');
+    setSelectedAccountId('');
+    setSelectedCardId('');
     onClose();
   }, [resetFile, onClose]);
 

@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState } from 'react';
 import {
   useCategories,
   useCreateCategory,
   useDeleteCategory,
-} from "@/shared/hooks/api/useCategories";
-import { Category } from "@/shared/interfaces/category.interface";
-import { DEFAULT_CATEGORY_SEED } from "@/shared/constants/categoryColors";
+} from '@/shared/hooks/api/useCategories';
+import { Category } from '@/shared/interfaces/category.interface';
+import { DEFAULT_CATEGORY_SEED } from '@/shared/constants/categoryColors';
 
 export function useCategoriesPageLogic() {
   const { data: categories, isLoading } = useCategories();
@@ -13,9 +13,7 @@ export function useCategoriesPageLogic() {
   const deleteCategory = useDeleteCategory();
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<
-    Category | undefined
-  >();
+  const [selectedCategory, setSelectedCategory] = useState<Category | undefined>();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [menuCategory, setMenuCategory] = useState<Category | null>(null);
@@ -30,10 +28,7 @@ export function useCategoriesPageLogic() {
     }
   };
 
-  const handleOpenMenu = (
-    event: React.MouseEvent<HTMLElement>,
-    category: Category,
-  ) => {
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, category: Category) => {
     setAnchorEl(event.currentTarget);
     setMenuCategory(category);
   };
@@ -55,8 +50,8 @@ export function useCategoriesPageLogic() {
       await deleteCategory.mutateAsync(selectedCategory.id);
       setDeleteModalOpen(false);
       setSelectedCategory(undefined);
-    } catch (error) {
-      console.error("Error deleting category:", error);
+    } catch {
+      // erro tratado pelo onError global do QueryClient
     }
   };
 

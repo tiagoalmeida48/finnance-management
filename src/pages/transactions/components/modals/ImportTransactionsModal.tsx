@@ -1,30 +1,22 @@
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@/shared/components/ui/dialog";
-import { IconButton } from "@/shared/components/ui/icon-button";
-import { Button } from "@/shared/components/ui/button";
-import { Select } from "@/shared/components/ui/select";
-import { AlertCircle, CheckCircle2, FileText, X } from "lucide-react";
-import { ImportTransactionsUploadArea } from "./import/ImportTransactionsUploadArea";
-import { ImportTransactionsPreviewTable } from "./import/ImportTransactionsPreviewTable";
-import { useImportTransactionsModalLogic } from "./import/useImportTransactionsModalLogic";
-import type { ImportPaymentMethod } from "./import/useImportTransactionsModalLogic";
-import { messages } from "@/shared/i18n/messages";
-import { Container } from "@/shared/components/layout/Container";
-import { Text } from "@/shared/components/ui/Text";
+import { Dialog, DialogActions, DialogContent, DialogTitle } from '@/shared/components/ui/dialog';
+import { IconButton } from '@/shared/components/ui/icon-button';
+import { Button } from '@/shared/components/ui/button';
+import { Select } from '@/shared/components/ui/select';
+import { AlertCircle, CheckCircle2, FileText, X } from 'lucide-react';
+import { ImportTransactionsUploadArea } from './import/ImportTransactionsUploadArea';
+import { ImportTransactionsPreviewTable } from './import/ImportTransactionsPreviewTable';
+import { useImportTransactionsModalLogic } from './import/useImportTransactionsModalLogic';
+import type { ImportPaymentMethod } from './import/useImportTransactionsModalLogic';
+import { messages } from '@/shared/i18n/messages';
+import { Container } from '@/shared/components/layout/Container';
+import { Text } from '@/shared/components/ui/Text';
 
 interface ImportTransactionsModalProps {
   open: boolean;
   onClose: () => void;
 }
 
-export function ImportTransactionsModal({
-  open,
-  onClose,
-}: ImportTransactionsModalProps) {
+export function ImportTransactionsModal({ open, onClose }: ImportTransactionsModalProps) {
   const commonMessages = messages.common;
   const importMessages = messages.transactions.import;
 
@@ -87,28 +79,17 @@ export function ImportTransactionsModal({
           />
         ) : (
           <Container unstyled className="flex flex-col gap-3">
-            <Container
-              unstyled
-              className="flex items-center gap-2 rounded-md bg-white/5 p-2"
-            >
+            <Container unstyled className="flex items-center gap-2 rounded-md bg-white/5 p-2">
               <FileText size={24} color="var(--color-primary)" />
               <Container unstyled className="flex-1">
                 <Text className="text-sm font-semibold text-[var(--color-text-primary)]">
                   {file.name}
                 </Text>
                 <Text className="text-xs text-[var(--color-text-secondary)]">
-                  {importMessages.fileSummary(
-                    (file.size / 1024).toFixed(1),
-                    previewData.length,
-                  )}
+                  {importMessages.fileSummary((file.size / 1024).toFixed(1), previewData.length)}
                 </Text>
               </Container>
-              <Button
-                size="small"
-                variant="text"
-                color="error"
-                onClick={handleResetFile}
-              >
+              <Button size="small" variant="text" color="error" onClick={handleResetFile}>
                 {importMessages.changeFileButton}
               </Button>
             </Container>
@@ -121,21 +102,13 @@ export function ImportTransactionsModal({
                 <Select
                   value={paymentMethod}
                   onChange={(event) => {
-                    handlePaymentMethodChange(
-                      event.target.value as ImportPaymentMethod,
-                    );
+                    handlePaymentMethodChange(event.target.value as ImportPaymentMethod);
                   }}
                 >
                   <option value="pix">{importMessages.paymentMethodPix}</option>
-                  <option value="debit">
-                    {importMessages.paymentMethodDebit}
-                  </option>
-                  <option value="credit">
-                    {importMessages.paymentMethodCredit}
-                  </option>
-                  <option value="money">
-                    {importMessages.paymentMethodMoney}
-                  </option>
+                  <option value="debit">{importMessages.paymentMethodDebit}</option>
+                  <option value="credit">{importMessages.paymentMethodCredit}</option>
+                  <option value="money">{importMessages.paymentMethodMoney}</option>
                 </Select>
 
                 <Select
@@ -157,7 +130,7 @@ export function ImportTransactionsModal({
                 <Select
                   value={selectedCardId}
                   onChange={(event) => handleCardChange(event.target.value)}
-                  disabled={paymentMethod !== "credit"}
+                  disabled={paymentMethod !== 'credit'}
                 >
                   <option value="" disabled>
                     {importMessages.cardPlaceholder}
@@ -170,7 +143,7 @@ export function ImportTransactionsModal({
                 </Select>
               </Container>
 
-              {paymentMethod === "credit" && (
+              {paymentMethod === 'credit' && (
                 <Text className="mt-1 text-xs text-[var(--color-text-secondary)]">
                   {importMessages.creditHint}
                 </Text>
@@ -192,7 +165,7 @@ export function ImportTransactionsModal({
                 mappedData={mappedData}
                 totalValid={totalValidRows}
                 categories={categories}
-                isCreditPayment={paymentMethod === "credit"}
+                isCreditPayment={paymentMethod === 'credit'}
                 updateRow={updateRow}
                 removeRow={removeRow}
               />
@@ -208,9 +181,7 @@ export function ImportTransactionsModal({
         <Button
           variant="contained"
           onClick={handleImport}
-          disabled={
-            !file || totalTransactionsToImport === 0 || batchCreate.isPending
-          }
+          disabled={!file || totalTransactionsToImport === 0 || batchCreate.isPending}
           startIcon={
             batchCreate.isPending ? (
               <Text

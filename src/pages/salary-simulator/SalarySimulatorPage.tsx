@@ -1,19 +1,19 @@
-import { Card } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
-import { Plus } from "lucide-react";
-import { SalaryCreateSettingDialog } from "@/pages/salary-simulator/components/dialogs/SalaryCreateSettingDialog";
-import { SalaryDeleteDialog } from "@/pages/salary-simulator/components/dialogs/SalaryDeleteDialog";
-import { SalaryEditSettingDialog } from "@/pages/salary-simulator/components/dialogs/SalaryEditSettingDialog";
-import { SalaryLaunchDialog } from "@/pages/salary-simulator/components/dialogs/SalaryLaunchDialog";
-import { SalarySettingsTab } from "@/pages/salary-simulator/components/tabs/SalarySettingsTab";
-import { SalarySimulatorTab } from "@/pages/salary-simulator/components/tabs/SalarySimulatorTab";
-import type { EditSettingForm } from "@/pages/salary-simulator/components/salarySimulator.helpers";
-import { useSalarySimulatorPageLogic } from "@/pages/salary-simulator/hooks/useSalarySimulatorPageLogic";
-import { Container } from "@/shared/components/layout/Container";
-import { Section } from "@/shared/components/layout/Section";
-import { messages } from "@/shared/i18n/messages";
-import { PageHeader } from "@/shared/components/composite/PageHeader";
-import { Text } from "@/shared/components/ui/Text";
+import { Card } from '@/shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { Plus } from 'lucide-react';
+import { SalaryCreateSettingDialog } from '@/pages/salary-simulator/components/dialogs/SalaryCreateSettingDialog';
+import { SalaryDeleteDialog } from '@/pages/salary-simulator/components/dialogs/SalaryDeleteDialog';
+import { SalaryEditSettingDialog } from '@/pages/salary-simulator/components/dialogs/SalaryEditSettingDialog';
+import { SalaryLaunchDialog } from '@/pages/salary-simulator/components/dialogs/SalaryLaunchDialog';
+import { SalarySettingsTab } from '@/pages/salary-simulator/components/tabs/SalarySettingsTab';
+import { SalarySimulatorTab } from '@/pages/salary-simulator/components/tabs/SalarySimulatorTab';
+import type { EditSettingForm } from '@/pages/salary-simulator/components/salarySimulator.helpers';
+import { useSalarySimulatorPageLogic } from '@/pages/salary-simulator/hooks/useSalarySimulatorPageLogic';
+import { Container } from '@/shared/components/layout/Container';
+import { Section } from '@/shared/components/layout/Section';
+import { messages } from '@/shared/i18n/messages';
+import { PageHeader } from '@/shared/components/composite/PageHeader';
+import { Text } from '@/shared/components/ui/Text';
 
 export function SalarySimulatorPage() {
   const pageMessages = messages.salarySimulator.page;
@@ -53,9 +53,9 @@ export function SalarySimulatorPage() {
             <Container
               unstyled
               className={`rounded border p-2 text-sm ${
-                logic.message.type === "error"
-                  ? "border-[var(--color-error)] bg-[var(--overlay-error-08)] text-[var(--color-error)]"
-                  : "border-[var(--color-primary)] bg-[var(--overlay-primary-08)] text-[var(--color-text-primary)]"
+                logic.message.type === 'error'
+                  ? 'border-[var(--color-error)] bg-[var(--overlay-error-08)] text-[var(--color-error)]'
+                  : 'border-[var(--color-primary)] bg-[var(--overlay-primary-08)] text-[var(--color-text-primary)]'
               }`}
             >
               {logic.message.text}
@@ -78,22 +78,22 @@ export function SalarySimulatorPage() {
             >
               <Button
                 type="button"
-                onClick={() => logic.setActiveTab("simulator")}
+                onClick={() => logic.setActiveTab('simulator')}
                 className={`flex-1 rounded-[10px] px-6 py-2 text-sm transition-all duration-200 sm:flex-none ${
-                  logic.activeTab === "simulator"
-                    ? "bg-[var(--color-primary)] font-bold text-[var(--color-background)] shadow-md"
-                    : "bg-transparent font-medium text-[var(--color-text-secondary)] hover:bg-[var(--overlay-white-05)] hover:text-[var(--color-text-primary)]"
+                  logic.activeTab === 'simulator'
+                    ? 'bg-[var(--color-primary)] font-bold text-[var(--color-background)] shadow-md'
+                    : 'bg-transparent font-medium text-[var(--color-text-secondary)] hover:bg-[var(--overlay-white-05)] hover:text-[var(--color-text-primary)]'
                 }`}
               >
                 {pageMessages.tabSimulator}
               </Button>
               <Button
                 type="button"
-                onClick={() => logic.setActiveTab("settings")}
+                onClick={() => logic.setActiveTab('settings')}
                 className={`flex-1 rounded-[10px] px-6 py-2 text-sm transition-all duration-200 sm:flex-none ${
-                  logic.activeTab === "settings"
-                    ? "bg-[var(--color-primary)] font-bold text-[var(--color-background)] shadow-md"
-                    : "bg-transparent font-medium text-[var(--color-text-secondary)] hover:bg-[var(--overlay-white-05)] hover:text-[var(--color-text-primary)]"
+                  logic.activeTab === 'settings'
+                    ? 'bg-[var(--color-primary)] font-bold text-[var(--color-background)] shadow-md'
+                    : 'bg-transparent font-medium text-[var(--color-text-secondary)] hover:bg-[var(--overlay-white-05)] hover:text-[var(--color-text-primary)]'
                 }`}
               >
                 {pageMessages.tabSettings}
@@ -101,7 +101,7 @@ export function SalarySimulatorPage() {
             </Container>
 
             <Container unstyled className="grid gap-2">
-              {logic.activeTab === "simulator" && (
+              {logic.activeTab === 'simulator' && (
                 <SalarySimulatorTab
                   availableSettings={logic.availableSettings}
                   currentSetting={logic.currentSetting}
@@ -125,7 +125,7 @@ export function SalarySimulatorPage() {
                 />
               )}
 
-              {logic.activeTab === "settings" && (
+              {logic.activeTab === 'settings' && (
                 <SalarySettingsTab
                   loadingHistory={logic.loadingHistory}
                   history={logic.history ?? []}
@@ -160,9 +160,7 @@ export function SalarySimulatorPage() {
             onClose={logic.handleCloseEdit}
             onSave={logic.handleSaveEdit}
             onFieldChange={(field: keyof EditSettingForm, value: string) =>
-              logic.setEditForm((prev) =>
-                prev ? { ...prev, [field]: value } : prev,
-              )
+              logic.setEditForm((prev) => (prev ? { ...prev, [field]: value } : prev))
             }
           />
 

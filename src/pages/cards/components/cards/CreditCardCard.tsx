@@ -1,34 +1,23 @@
-import {
-  BarChart3,
-  CreditCard as CardIcon,
-  MoreVertical,
-} from "lucide-react";
-import type { NavigateFunction } from "react-router-dom";
-import { Card, CardContent } from "@/shared/components/ui/card";
-import { Grid } from "@/shared/components/layout/Grid";
-import { Heading } from "@/shared/components/ui/Heading";
-import { IconButton } from "@/shared/components/ui/icon-button";
-import { Row } from "@/shared/components/layout/Row";
-import { Stack } from "@/shared/components/layout/Stack";
-import { Text } from "@/shared/components/ui/Text";
-import { useCreditCardCardLogic } from "@/pages/cards/hooks/useCreditCardCardLogic";
-import type { CreditCard } from "@/shared/interfaces/credit-card.interface";
-import { Container } from "@/shared/components/layout/Container";
+import { BarChart3, CreditCard as CardIcon, MoreVertical } from 'lucide-react';
+import type { NavigateFunction } from 'react-router-dom';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { Grid } from '@/shared/components/layout/Grid';
+import { Heading } from '@/shared/components/ui/Heading';
+import { IconButton } from '@/shared/components/ui/icon-button';
+import { Row } from '@/shared/components/layout/Row';
+import { Stack } from '@/shared/components/layout/Stack';
+import { Text } from '@/shared/components/ui/Text';
+import { useCreditCardCardLogic } from '@/pages/cards/hooks/useCreditCardCardLogic';
+import type { CreditCard } from '@/shared/interfaces/credit-card.interface';
+import { Container } from '@/shared/components/layout/Container';
 
 interface CreditCardCardProps {
   card: CreditCard;
   navigate: NavigateFunction;
-  handleOpenMenu: (
-    event: React.MouseEvent<HTMLElement>,
-    card: CreditCard,
-  ) => void;
+  handleOpenMenu: (event: React.MouseEvent<HTMLElement>, card: CreditCard) => void;
 }
 
-export function CreditCardCard({
-  card,
-  navigate,
-  handleOpenMenu,
-}: CreditCardCardProps) {
+export function CreditCardCard({ card, navigate, handleOpenMenu }: CreditCardCardProps) {
   const {
     cardMessages,
     dueDay,
@@ -43,8 +32,8 @@ export function CreditCardCard({
   } = useCreditCardCardLogic({
     card,
     navigate,
-    onEditCard: () => { },
-    onDeleteCard: () => { },
+    onEditCard: () => {},
+    onDeleteCard: () => {},
   });
 
   return (
@@ -69,12 +58,12 @@ export function CreditCardCard({
                 {card.name}
               </Heading>
               <Text className="text-[13px] text-[var(--color-text-secondary)]">
-                {cardMessages.dueShort}:{" "}
+                {cardMessages.dueShort}:{' '}
                 <Text as="span" className="font-semibold">
                   {dueDay}
                 </Text>
-                {" • "}
-                {cardMessages.closeShort}:{" "}
+                {' • '}
+                {cardMessages.closeShort}:{' '}
                 <Text as="span" className="font-semibold">
                   {closingDay}
                 </Text>
@@ -113,14 +102,8 @@ export function CreditCardCard({
               {cardMessages.of} {creditLimitLabel}
             </Text>
           </Row>
-          <Container
-            unstyled
-            className="flex items-center gap-1.5 text-[var(--progress-color)]"
-          >
-            <Container
-              unstyled
-              className="h-2 flex-1 overflow-hidden rounded bg-white/5"
-            >
+          <Container unstyled className="flex items-center gap-1.5 text-[var(--progress-color)]">
+            <Container unstyled className="h-2 flex-1 overflow-hidden rounded bg-white/5">
               <Container
                 unstyled
                 ref={usageBarRef}
@@ -143,15 +126,13 @@ export function CreditCardCard({
               <Text className="mb-0.5 text-[11px] font-medium uppercase text-[var(--color-text-muted)]">
                 {item.label}
               </Text>
-              <Text
-                className={`font-heading text-base font-bold ${item.valueClass}`}
-              >
+              <Text className={`font-heading text-base font-bold ${item.valueClass}`}>
                 {item.value}
               </Text>
             </Container>
           ))}
         </Grid>
       </CardContent>
-    </Card >
+    </Card>
   );
 }

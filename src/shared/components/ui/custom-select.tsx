@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect, ReactNode } from "react";
-import { ChevronDown } from "lucide-react";
-import { Container } from "@/shared/components/layout/Container";
-import { Text } from "@/shared/components/ui/Text";
+import { useState, useRef, useEffect, ReactNode } from 'react';
+import { ChevronDown } from 'lucide-react';
+import { Container } from '@/shared/components/layout/Container';
+import { Text } from '@/shared/components/ui/Text';
 
 export interface CustomSelectOption {
   value: string;
@@ -24,8 +24,8 @@ export function CustomSelect({
   value,
   onChange,
   options,
-  placeholder = "Selecione...",
-  className = "",
+  placeholder = 'Selecione...',
+  className = '',
   disabled,
   error,
 }: CustomSelectProps) {
@@ -42,19 +42,16 @@ export function CustomSelect({
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen]);
 
@@ -66,8 +63,8 @@ export function CustomSelect({
         onClick={() => !disabled && setIsOpen(!isOpen)}
         className={`group flex h-10 w-full items-center justify-between rounded-[10px] border bg-[var(--overlay-white-04)] px-3 py-2 text-sm text-[var(--color-text-primary)] transition-colors focus-visible:border-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50 ${
           error
-            ? "border-[var(--color-error)]"
-            : "border-[var(--overlay-white-10)] hover:border-[var(--overlay-white-20)]"
+            ? 'border-[var(--color-error)]'
+            : 'border-[var(--overlay-white-10)] hover:border-[var(--overlay-white-20)]'
         } ${className}`}
       >
         <Container unstyled className="flex items-center gap-2 truncate">
@@ -77,26 +74,22 @@ export function CustomSelect({
               style={
                 selectedOption.color
                   ? { color: selectedOption.color }
-                  : { color: "var(--color-text-secondary)" }
+                  : { color: 'var(--color-text-secondary)' }
               }
             >
               {selectedOption.icon}
             </span>
           )}
           <Text
-            className={`truncate ${!selectedOption ? "text-[var(--color-text-muted)]" : "font-medium"}`}
-            style={
-              selectedOption?.color
-                ? { color: selectedOption.color }
-                : undefined
-            }
+            className={`truncate ${!selectedOption ? 'text-[var(--color-text-muted)]' : 'font-medium'}`}
+            style={selectedOption?.color ? { color: selectedOption.color } : undefined}
           >
             {selectedOption ? selectedOption.label : placeholder}
           </Text>
         </Container>
         <ChevronDown
           size={14}
-          className={`shrink-0 text-[var(--color-text-secondary)] transition-transform ${isOpen ? "rotate-180" : "group-hover:text-white"}`}
+          className={`shrink-0 text-[var(--color-text-secondary)] transition-transform ${isOpen ? 'rotate-180' : 'group-hover:text-white'}`}
         />
       </button>
 
@@ -107,11 +100,11 @@ export function CustomSelect({
         >
           <button
             type="button"
-            onClick={() => handleSelect("")}
+            onClick={() => handleSelect('')}
             className={`mb-1 flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm transition-colors hover:bg-white/5 ${
               !value
-                ? "bg-[var(--color-primary)] text-black font-semibold hover:bg-[var(--color-primary)]/90"
-                : "text-white/70"
+                ? 'bg-[var(--color-primary)] text-black font-semibold hover:bg-[var(--color-primary)]/90'
+                : 'text-white/70'
             }`}
           >
             {placeholder}
@@ -124,19 +117,17 @@ export function CustomSelect({
                 type="button"
                 onClick={() => handleSelect(option.value)}
                 className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors ${
-                  isSelected
-                    ? "font-semibold"
-                    : "hover:bg-white/10 hover:text-white"
+                  isSelected ? 'font-semibold' : 'hover:bg-white/10 hover:text-white'
                 }`}
                 style={{
                   ...(isSelected
                     ? {
                         backgroundColor: option.color
                           ? `${option.color}1A`
-                          : "var(--color-primary-10, rgba(200, 255, 0, 0.1))",
-                        color: option.color || "var(--color-primary)",
+                          : 'var(--color-primary-10, rgba(200, 255, 0, 0.1))',
+                        color: option.color || 'var(--color-primary)',
                       }
-                    : { color: option.color || "var(--color-text-primary)" }),
+                    : { color: option.color || 'var(--color-text-primary)' }),
                 }}
               >
                 {option.icon && (
@@ -144,10 +135,9 @@ export function CustomSelect({
                     className="flex shrink-0 items-center justify-center"
                     style={
                       isSelected
-                        ? { color: option.color || "var(--color-primary)" }
+                        ? { color: option.color || 'var(--color-primary)' }
                         : {
-                            color:
-                              option.color || "var(--color-text-secondary)",
+                            color: option.color || 'var(--color-text-secondary)',
                           }
                     }
                   >

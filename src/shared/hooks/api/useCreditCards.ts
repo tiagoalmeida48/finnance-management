@@ -1,13 +1,14 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { cardsService } from "@/shared/services/cards.service";
-import { invoicesService } from "@/shared/services/invoices.service";
-import type { CreditCardDetails } from "@/shared/interfaces/card-details.interface";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { cardsService } from '@/shared/services/cards.service';
+import { invoicesService } from '@/shared/services/invoices.service';
+import type { CreditCardDetails } from '@/shared/interfaces/card-details.interface';
 import {
   CreateCreditCardStatementCycleInput,
   UpdateCreditCardInput,
   UpdateCreditCardStatementCycleInput,
-} from "@/shared/interfaces";
-import { queryKeys } from "@/shared/constants/queryKeys";
+} from '@/shared/interfaces';
+import { queryKeys } from '@/shared/constants/queryKeys';
+import { useToast } from '@/shared/contexts/useToast';
 
 export function useCreditCards() {
   return useQuery({
@@ -18,9 +19,11 @@ export function useCreditCards() {
 
 export function useCreateCreditCard() {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: cardsService.create,
     onSuccess: () => {
+      toast.success('Cartão criado com sucesso!');
       queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
     },
   });
@@ -28,15 +31,12 @@ export function useCreateCreditCard() {
 
 export function useUpdateCreditCard() {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
-    mutationFn: ({
-      id,
-      updates,
-    }: {
-      id: string;
-      updates: UpdateCreditCardInput;
-    }) => cardsService.update(id, updates),
+    mutationFn: ({ id, updates }: { id: string; updates: UpdateCreditCardInput }) =>
+      cardsService.update(id, updates),
     onSuccess: () => {
+      toast.success('Cartão atualizado com sucesso!');
       queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
     },
   });
@@ -44,9 +44,11 @@ export function useUpdateCreditCard() {
 
 export function useDeleteCreditCard() {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
     mutationFn: cardsService.delete,
     onSuccess: () => {
+      toast.success('Cartão removido com sucesso!');
       queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
     },
   });
@@ -71,7 +73,7 @@ export function useCardStatementCycles(id: string, enabled = true) {
 export function useCreateCardStatementCycle(cardId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: Omit<CreateCreditCardStatementCycleInput, "card_id">) =>
+    mutationFn: (input: Omit<CreateCreditCardStatementCycleInput, 'card_id'>) =>
       cardsService.createStatementCycle({ ...input, card_id: cardId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
@@ -88,13 +90,8 @@ export function useCreateCardStatementCycle(cardId: string) {
 export function useUpdateCardStatementCycle(cardId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      id,
-      updates,
-    }: {
-      id: string;
-      updates: UpdateCreditCardStatementCycleInput;
-    }) => cardsService.updateStatementCycle(id, updates),
+    mutationFn: ({ id, updates }: { id: string; updates: UpdateCreditCardStatementCycleInput }) =>
+      cardsService.updateStatementCycle(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
       queryClient.invalidateQueries({
@@ -126,8 +123,7 @@ export function useDeleteCardStatementCycle(cardId: string) {
 export function useReprocessInvoices(cardId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (fromDate: string) =>
-      invoicesService.reprocessInvoicesFromDate(cardId, fromDate),
+    mutationFn: (fromDate: string) => invoicesService.reprocessInvoicesFromDate(cardId, fromDate),
     onSuccess: async () => {
       await Promise.all([
         queryClient.refetchQueries({

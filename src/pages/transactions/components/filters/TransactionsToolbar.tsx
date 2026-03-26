@@ -1,9 +1,9 @@
-import { Search } from "lucide-react";
-import { colors } from "@/shared/theme";
-import { Input } from "@/shared/components/ui/input";
-import { Select } from "@/shared/components/ui/select";
-import { messages } from "@/shared/i18n/messages";
-import { Container } from "@/shared/components/layout/Container";
+import { Search } from 'lucide-react';
+import { colors } from '@/shared/theme';
+import { Input } from '@/shared/components/ui/input';
+import { Select } from '@/shared/components/ui/select';
+import { messages } from '@/shared/i18n/messages';
+import { Container } from '@/shared/components/layout/Container';
 
 interface TransactionsToolbarProps {
   searchQuery: string;
@@ -63,16 +63,12 @@ export function TransactionsToolbar({
       >
         <Select
           className={`h-10 min-w-[0] rounded-xl border-white/10 bg-black/40 text-[13px] md:h-9 md:min-w-[140px] md:text-[12px] ${
-            categoryFilter !== "all"
-              ? "text-[var(--color-accent)]"
-              : "text-white/60"
+            categoryFilter !== 'all' ? 'text-[var(--color-accent)]' : 'text-white/60'
           }`}
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
         >
-          <option value="all">
-            {messages.transactions.tableHeader.allCategories}
-          </option>
+          <option value="all">{messages.transactions.tableHeader.allCategories}</option>
           {categories?.map((category) => (
             <option key={category.id} value={category.id}>
               {category.name}
@@ -82,28 +78,16 @@ export function TransactionsToolbar({
 
         <Select
           className={`h-10 min-w-[0] rounded-xl border-white/10 bg-black/40 text-[13px] md:h-9 md:min-w-[140px] md:text-[12px] ${
-            paymentMethodFilter !== "all"
-              ? "text-[var(--color-accent)]"
-              : "text-white/60"
+            paymentMethodFilter !== 'all' ? 'text-[var(--color-accent)]' : 'text-white/60'
           }`}
           value={paymentMethodFilter}
           onChange={(e) => setPaymentMethodFilter(e.target.value)}
         >
-          <option value="all">
-            {messages.transactions.tableHeader.allPayments}
-          </option>
-          <option value="credit">
-            {messages.transactions.form.payment.methodCredit}
-          </option>
-          <option value="debit">
-            {messages.transactions.form.payment.methodDebit}
-          </option>
-          <option value="pix">
-            {messages.transactions.form.payment.methodPix}
-          </option>
-          <option value="money">
-            {messages.transactions.form.payment.methodMoney}
-          </option>
+          <option value="all">{messages.transactions.tableHeader.allPayments}</option>
+          <option value="credit">{messages.transactions.form.payment.methodCredit}</option>
+          <option value="debit">{messages.transactions.form.payment.methodDebit}</option>
+          <option value="pix">{messages.transactions.form.payment.methodPix}</option>
+          <option value="money">{messages.transactions.form.payment.methodMoney}</option>
           <option value="bill_payment">
             {messages.transactions.form.payment.methodBillPayment}
           </option>
@@ -111,16 +95,12 @@ export function TransactionsToolbar({
 
         <Select
           className={`h-10 min-w-[0] rounded-xl border-white/10 bg-black/40 text-[13px] md:h-9 md:min-w-[140px] md:text-[12px] ${
-            accountFilter !== "all"
-              ? "text-[var(--color-accent)]"
-              : "text-white/60"
+            accountFilter !== 'all' ? 'text-[var(--color-accent)]' : 'text-white/60'
           }`}
           value={accountFilter}
           onChange={(e) => setAccountFilter(e.target.value)}
         >
-          <option value="all">
-            {messages.transactions.tableHeader.allAccounts}
-          </option>
+          <option value="all">{messages.transactions.tableHeader.allAccounts}</option>
           {accounts?.map((account) => (
             <option key={account.id} value={account.id}>
               {account.name}
@@ -130,16 +110,12 @@ export function TransactionsToolbar({
 
         <Select
           className={`h-10 min-w-[0] rounded-xl border-white/10 bg-black/40 text-[13px] md:h-9 md:min-w-[140px] md:text-[12px] ${
-            cardFilter !== "all"
-              ? "text-[var(--color-accent)]"
-              : "text-white/60"
+            cardFilter !== 'all' ? 'text-[var(--color-accent)]' : 'text-white/60'
           }`}
           value={cardFilter}
           onChange={(e) => setCardFilter(e.target.value)}
         >
-          <option value="all">
-            {messages.transactions.tableHeader.allCards}
-          </option>
+          <option value="all">{messages.transactions.tableHeader.allCards}</option>
           {cards?.map((card) => (
             <option key={card.id} value={card.id}>
               {card.name}

@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
-import { Label } from "@/shared/components/ui/label";
+import type { ReactNode } from 'react';
+import { cn } from '@/lib/utils';
+import { Label } from '@/shared/components/ui/label';
 
 interface FormFieldProps {
   htmlFor?: string;
@@ -30,31 +30,22 @@ export function FormField({
   children,
 }: FormFieldProps) {
   return (
-    <div className={cn("space-y-1", className)}>
+    <div className={cn('space-y-1', className)}>
       {label ? (
         <Label htmlFor={htmlFor} className={labelClassName}>
           {label}
-          {required ? (
-            <span className="text-[var(--color-error)]"> *</span>
-          ) : null}
+          {required ? <span className="text-[var(--color-error)]"> *</span> : null}
           {labelSuffix ? <span> {labelSuffix}</span> : null}
         </Label>
       ) : null}
       {children}
       {helperText ? (
-        <p
-          className={cn(
-            "text-xs text-[var(--color-text-muted)]",
-            helperTextClassName,
-          )}
-        >
+        <p className={cn('text-xs text-[var(--color-text-muted)]', helperTextClassName)}>
           {helperText}
         </p>
       ) : null}
       {errorMessage ? (
-        <p className={cn("text-xs text-red-400", errorClassName)}>
-          {errorMessage}
-        </p>
+        <p className={cn('text-xs text-red-400', errorClassName)}>{errorMessage}</p>
       ) : null}
     </div>
   );

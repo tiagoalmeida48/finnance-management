@@ -1,5 +1,7 @@
-import { supabase } from "@/lib/supabase/client";
-import type { Transaction } from "../../interfaces";
+import { z } from 'zod';
+import { supabase } from '@/lib/supabase/client';
+import type { Transaction } from '../../interfaces';
+import { TransactionSchema } from '../../schemas';
 import {
   buildInstallmentDescription,
   extractDayFromDateLike,
@@ -8,33 +10,29 @@ import {
   shiftDateByMonths,
   stripInstallmentSuffix,
   toDateKeyIgnoringTime,
-} from "@/shared/utils/transactionsGroup.utils";
-import { recalculateInvoicesForTransactions } from "../invoice-reconciliation.service";
-import { transactionsCoreService } from "./transactions-core.service";
-import { transactionsCreationService } from "./transactions-creation.service";
+} from '@/shared/utils/transactionsGroup.utils';
+import { recalculateInvoicesForTransactions } from '../invoice-reconciliation.service';
+import { transactionsCoreService } from './transactions-core.service';
+import { transactionsCreationService } from './transactions-creation.service';
 import {
   buildSingleTransactionCreatePayload,
   hasChangedValue,
   hasOwn,
-} from "./transactions-utils.service";
+} from './transactions-utils.service';
 
 export const transactionsInstallmentsService = {
-  async deleteGroup(groupId: string, type: "installment" | "recurring") {
-    const column =
-      type === "installment" ? "installment_group_id" : "recurring_group_id";
+  async deleteGroup(groupId: string, type: 'installment' | 'recurring') {
+    const column = type === 'installment' ? 'installment_group_id' : 'recurring_group_id';
     const { data: transactionsRaw, error: fetchError } = await supabase
-      .from("transactions")
-      .select("*")
+      .from('transactions')
+      .select('*')
       .eq(column, groupId);
 
     if (fetchError) throw fetchError;
 
-    const transactions = (transactionsRaw ?? []) as Transaction[];
+    const transactions = z.array(TransactionSchema).parse(transactionsRaw ?? []);
 
-    const { error: deleteError } = await supabase
-      .from("transactions")
-      .delete()
-      .eq(column, groupId);
+    const { error: deleteError } = await supabase.from('transactions').delete().eq(column, groupId);
 
     if (deleteError) throw deleteError;
 
@@ -46,41 +44,36 @@ export const transactionsInstallmentsService = {
     const installmentGroupId = selectedTransaction.installment_group_id;
 
     if (!installmentGroupId) {
-      throw new Error(
-        "A transacao selecionada nao pertence a um grupo de parcelas.",
-      );
+      throw new Error('A transacao selecionada nao pertence a um grupo de parcelas.');
     }
 
-    const { data: groupTransactionsRaw, error: fetchGroupError } =
-      await supabase
-        .from("transactions")
-        .select("*")
-        .eq("installment_group_id", installmentGroupId);
+    const { data: groupTransactionsRaw, error: fetchGroupError } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('installment_group_id', installmentGroupId);
 
     if (fetchGroupError) throw fetchGroupError;
 
-    const groupTransactions = (
-      (groupTransactionsRaw ?? []) as Transaction[]
-    ).sort((a, b) => (a.installment_number ?? 0) - (b.installment_number ?? 0));
+    const groupTransactions = z
+      .array(TransactionSchema)
+      .parse(groupTransactionsRaw ?? [])
+      .sort((a, b) => (a.installment_number ?? 0) - (b.installment_number ?? 0));
 
     if (groupTransactions.length === 0) {
-      throw new Error("Nao foi possivel localizar as parcelas do grupo.");
+      throw new Error('Nao foi possivel localizar as parcelas do grupo.');
     }
 
     const selectedInstallmentNumber =
       selectedTransaction.installment_number ??
-      groupTransactions.findIndex(
-        (transaction) => transaction.id === selectedTransaction.id,
-      ) + 1;
+      groupTransactions.findIndex((transaction) => transaction.id === selectedTransaction.id) + 1;
 
     if (!selectedInstallmentNumber || selectedInstallmentNumber < 1) {
-      throw new Error("Nao foi possivel identificar a parcela selecionada.");
+      throw new Error('Nao foi possivel identificar a parcela selecionada.');
     }
 
     const currentTotalInstallments = Math.max(
       ...groupTransactions.map(
-        (transaction) =>
-          transaction.total_installments ?? transaction.installment_number ?? 1,
+        (transaction) => transaction.total_installments ?? transaction.installment_number ?? 1,
       ),
       groupTransactions.length,
     );
@@ -90,24 +83,20 @@ export const transactionsInstallmentsService = {
       currentTotalInstallments + 1,
     );
     const updatedTotalInstallments = currentTotalInstallments + 1;
-    const baseDescription =
-      stripInstallmentSuffix(selectedTransaction.description) || "Parcela";
+    const baseDescription = stripInstallmentSuffix(selectedTransaction.description) || 'Parcela';
 
     const nextInstallment = groupTransactions.find(
-      (transaction) =>
-        (transaction.installment_number ?? 0) === insertionInstallmentNumber,
+      (transaction) => (transaction.installment_number ?? 0) === insertionInstallmentNumber,
     );
 
     const insertedPaymentDate = nextInstallment?.payment_date
-      ? (toDateKeyIgnoringTime(nextInstallment.payment_date) ??
-        nextInstallment.payment_date)
+      ? (toDateKeyIgnoringTime(nextInstallment.payment_date) ?? nextInstallment.payment_date)
       : (shiftDateByMonths(selectedTransaction.payment_date, 1) ??
         toDateKeyIgnoringTime(selectedTransaction.payment_date) ??
         selectedTransaction.payment_date);
 
     const insertedPurchaseDate = nextInstallment?.purchase_date
-      ? (toDateKeyIgnoringTime(nextInstallment.purchase_date) ??
-        nextInstallment.purchase_date)
+      ? (toDateKeyIgnoringTime(nextInstallment.purchase_date) ?? nextInstallment.purchase_date)
       : (shiftDateByMonths(selectedTransaction.purchase_date, 1) ??
         toDateKeyIgnoringTime(selectedTransaction.purchase_date ?? undefined) ??
         selectedTransaction.purchase_date ??
@@ -189,51 +178,46 @@ export const transactionsInstallmentsService = {
 
   async updateGroup(
     groupId: string,
-    type: "installment" | "recurring",
+    type: 'installment' | 'recurring',
     updates: Partial<Transaction>,
   ) {
     const groupUpdates = filterGroupUpdates(updates);
     if (Object.keys(groupUpdates).length === 0) return [];
 
-    const column =
-      type === "installment" ? "installment_group_id" : "recurring_group_id";
+    const column = type === 'installment' ? 'installment_group_id' : 'recurring_group_id';
     const { data: transactionsRaw, error: fetchGroupError } = await supabase
-      .from("transactions")
-      .select("*")
+      .from('transactions')
+      .select('*')
       .eq(column, groupId);
 
     if (fetchGroupError) throw fetchGroupError;
 
-    const transactions = (transactionsRaw ?? []) as Transaction[];
+    const transactions = z.array(TransactionSchema).parse(transactionsRaw ?? []);
     if (transactions.length === 0) return [];
 
     const sortedTransactions = [...transactions].sort((a, b) => {
-      if (type === "installment") {
+      if (type === 'installment') {
         return (a.installment_number ?? 0) - (b.installment_number ?? 0);
       }
-      return (a.payment_date || "").localeCompare(b.payment_date || "");
+      return (a.payment_date || '').localeCompare(b.payment_date || '');
     });
 
-    const hasPaymentDate = hasOwn(groupUpdates, "payment_date");
-    const hasPurchaseDate = hasOwn(groupUpdates, "purchase_date");
-    const hasDescription = hasOwn(groupUpdates, "description");
+    const hasPaymentDate = hasOwn(groupUpdates, 'payment_date');
+    const hasPurchaseDate = hasOwn(groupUpdates, 'purchase_date');
+    const hasDescription = hasOwn(groupUpdates, 'description');
 
     const paymentDay = hasPaymentDate
-      ? extractDayFromDateLike(
-          groupUpdates.payment_date as string | null | undefined,
-        )
+      ? extractDayFromDateLike(groupUpdates.payment_date as string | null | undefined)
       : null;
 
     const purchaseDay = hasPurchaseDate
-      ? extractDayFromDateLike(
-          groupUpdates.purchase_date as string | null | undefined,
-        )
+      ? extractDayFromDateLike(groupUpdates.purchase_date as string | null | undefined)
       : null;
 
     const baseDescription =
-      hasDescription && typeof groupUpdates.description === "string"
+      hasDescription && typeof groupUpdates.description === 'string'
         ? stripInstallmentSuffix(groupUpdates.description)
-        : "";
+        : '';
 
     const sharedRawUpdates: Partial<Transaction> = { ...groupUpdates };
     delete sharedRawUpdates.payment_date;
@@ -252,8 +236,7 @@ export const transactionsInstallmentsService = {
             transaction.payment_date,
             paymentDay,
           );
-          if (nextPaymentDate)
-            perTransactionUpdates.payment_date = nextPaymentDate;
+          if (nextPaymentDate) perTransactionUpdates.payment_date = nextPaymentDate;
         }
       }
 
@@ -265,24 +248,19 @@ export const transactionsInstallmentsService = {
             transaction.purchase_date,
             purchaseDay,
           );
-          if (nextPurchaseDate)
-            perTransactionUpdates.purchase_date = nextPurchaseDate;
+          if (nextPurchaseDate) perTransactionUpdates.purchase_date = nextPurchaseDate;
         }
       }
 
       if (hasDescription) {
-        if (type === "installment") {
+        if (type === 'installment') {
           perTransactionUpdates.description = buildInstallmentDescription(
-            baseDescription ||
-              stripInstallmentSuffix(transaction.description) ||
-              "Parcela",
+            baseDescription || stripInstallmentSuffix(transaction.description) || 'Parcela',
             transaction.installment_number ?? 1,
             transaction.total_installments ?? sortedTransactions.length,
           );
         } else {
-          perTransactionUpdates.description = String(
-            groupUpdates.description ?? "",
-          );
+          perTransactionUpdates.description = String(groupUpdates.description ?? '');
         }
       }
 

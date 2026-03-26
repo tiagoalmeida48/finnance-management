@@ -1,12 +1,12 @@
-import { IconButton } from "@/shared/components/ui/icon-button";
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { Lock, Eye, EyeOff, ShieldCheck } from "lucide-react";
-import { messages } from "@/shared/i18n/messages";
-import { Stack } from "@/shared/components/layout/Stack";
-import { Heading } from "@/shared/components/ui/Heading";
-import { FormField } from "@/shared/components/forms/FormField";
-import { Container } from "@/shared/components/layout/Container";
+import { IconButton } from '@/shared/components/ui/icon-button';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Lock, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { messages } from '@/shared/i18n/messages';
+import { Stack } from '@/shared/components/layout/Stack';
+import { Heading } from '@/shared/components/ui/Heading';
+import { FormField } from '@/shared/components/forms/FormField';
+import { Container } from '@/shared/components/layout/Container';
 
 interface SecurityFormProps {
   password: string;
@@ -38,10 +38,7 @@ export function SecurityForm({
         </Heading>
       </Container>
 
-      <FormField
-        label={formMessages.newPasswordLabel}
-        htmlFor="profile-password"
-      >
+      <FormField label={formMessages.newPasswordLabel} htmlFor="profile-password">
         <Container unstyled className="relative">
           <Lock
             size={17}
@@ -50,7 +47,7 @@ export function SecurityForm({
           <Input
             id="profile-password"
             className="pl-9 pr-9"
-            type={showPassword ? "text" : "password"}
+            type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -64,10 +61,7 @@ export function SecurityForm({
         </Container>
       </FormField>
 
-      <FormField
-        label={formMessages.confirmPasswordLabel}
-        htmlFor="profile-password-confirm"
-      >
+      <FormField label={formMessages.confirmPasswordLabel} htmlFor="profile-password-confirm">
         <Container unstyled className="relative">
           <Lock
             size={17}
@@ -76,7 +70,7 @@ export function SecurityForm({
           <Input
             id="profile-password-confirm"
             className="pl-9"
-            type={showPassword ? "text" : "password"}
+            type={showPassword ? 'text' : 'password'}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />

@@ -1,6 +1,6 @@
-import { Container } from "@/shared/components/layout/Container";
-import { DashboardCashFlowChart } from "./charts/DashboardCashFlowChart";
-import { DashboardCategoriesChart } from "./charts/DashboardCategoriesChart";
+import { Container } from '@/shared/components/layout/Container';
+import { DashboardCashFlowChart } from './charts/DashboardCashFlowChart';
+import { DashboardCategoriesChart } from './charts/DashboardCategoriesChart';
 
 export interface DashboardChartPoint {
   name: string;
@@ -19,10 +19,7 @@ interface DashboardChartsProps {
   categories: DashboardCategoryPoint[] | undefined;
 }
 
-export function DashboardCharts({
-  chartData,
-  categories,
-}: DashboardChartsProps) {
+export function DashboardCharts({ chartData, categories }: DashboardChartsProps) {
   const safeChartData = chartData ?? [];
   const safeCategories = categories ?? [];
 

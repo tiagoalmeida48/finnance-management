@@ -1,4 +1,4 @@
-import type { Transaction, TransactionType } from "@/shared/interfaces";
+import type { Transaction, TransactionType } from '@/shared/interfaces';
 
 export interface FileData {
   Data: string;
@@ -6,14 +6,14 @@ export interface FileData {
   Valor: string;
   Categoria?: string;
   Parcelas?: string;
-  "Data de pagamento"?: string;
-  "Conta de pagamento"?: string;
+  'Data de pagamento'?: string;
+  'Conta de pagamento'?: string;
   Notas?: string;
 }
 
 export type NormalizedImportTransaction = Omit<
   Partial<Transaction>,
-  "type" | "purchase_date" | "payment_date"
+  'type' | 'purchase_date' | 'payment_date'
 > & {
   type: TransactionType;
   purchase_date?: string;

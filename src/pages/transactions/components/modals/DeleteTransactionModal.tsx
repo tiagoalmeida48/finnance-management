@@ -1,21 +1,16 @@
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@/shared/components/ui/dialog";
-import { Button } from "@/shared/components/ui/button";
-import { AlertTriangle, Trash2 } from "lucide-react";
-import { useState } from "react";
-import { Transaction } from "@/shared/services/transactions.service";
-import { messages } from "@/shared/i18n/messages";
-import { Container } from "@/shared/components/layout/Container";
-import { Text } from "@/shared/components/ui/Text";
+import { Dialog, DialogActions, DialogContent, DialogTitle } from '@/shared/components/ui/dialog';
+import { Button } from '@/shared/components/ui/button';
+import { AlertTriangle, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { Transaction } from '@/shared/services/transactions.service';
+import { messages } from '@/shared/i18n/messages';
+import { Container } from '@/shared/components/layout/Container';
+import { Text } from '@/shared/components/ui/Text';
 
 interface DeleteTransactionModalProps {
   open: boolean;
   onClose: () => void;
-  onConfirm: (deleteType: "single" | "group") => void;
+  onConfirm: (deleteType: 'single' | 'group') => void;
   transaction: Transaction | null;
   loading?: boolean;
 }
@@ -27,21 +22,19 @@ export function DeleteTransactionModal({
   transaction,
   loading = false,
 }: DeleteTransactionModalProps) {
-  const [deleteType, setDeleteType] = useState<"single" | "group">("single");
+  const [deleteType, setDeleteType] = useState<'single' | 'group'>('single');
   const commonMessages = messages.common;
   const deleteModalMessages = messages.transactions.deleteModal;
 
   if (!transaction) return null;
 
-  const isPartOfGroup = !!(
-    transaction.installment_group_id || transaction.recurring_group_id
-  );
+  const isPartOfGroup = !!(transaction.installment_group_id || transaction.recurring_group_id);
   const groupLabel = transaction.installment_group_id
     ? deleteModalMessages.groupLabelInstallment
     : deleteModalMessages.groupLabelRecurring;
 
   const handleConfirm = () => {
-    onConfirm(isPartOfGroup ? deleteType : "single");
+    onConfirm(isPartOfGroup ? deleteType : 'single');
   };
 
   return (
@@ -71,11 +64,11 @@ export function DeleteTransactionModal({
               {transaction.description}
             </Text>
             <Text className="text-xs text-[var(--color-text-secondary)]">
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(transaction.amount)}{" "}
-              • {new Date(transaction.payment_date).toLocaleDateString("pt-BR")}
+              {new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+              }).format(transaction.amount)}{' '}
+              • {new Date(transaction.payment_date).toLocaleDateString('pt-BR')}
             </Text>
           </Container>
 
@@ -90,10 +83,8 @@ export function DeleteTransactionModal({
                     type="radio"
                     name="delete-type"
                     value="single"
-                    checked={deleteType === "single"}
-                    onChange={(e) =>
-                      setDeleteType(e.target.value as "single" | "group")
-                    }
+                    checked={deleteType === 'single'}
+                    onChange={(e) => setDeleteType(e.target.value as 'single' | 'group')}
                     className="mt-0.5"
                   />
                   <Text as="span">
@@ -103,10 +94,7 @@ export function DeleteTransactionModal({
                     >
                       {deleteModalMessages.deleteSingleTitle}
                     </Text>
-                    <Text
-                      as="span"
-                      className="text-xs text-[var(--color-text-secondary)]"
-                    >
+                    <Text as="span" className="text-xs text-[var(--color-text-secondary)]">
                       {deleteModalMessages.deleteSingleDescription}
                     </Text>
                   </Text>
@@ -116,10 +104,8 @@ export function DeleteTransactionModal({
                     type="radio"
                     name="delete-type"
                     value="group"
-                    checked={deleteType === "group"}
-                    onChange={(e) =>
-                      setDeleteType(e.target.value as "single" | "group")
-                    }
+                    checked={deleteType === 'group'}
+                    onChange={(e) => setDeleteType(e.target.value as 'single' | 'group')}
                     className="mt-0.5"
                   />
                   <Text as="span">
@@ -129,10 +115,7 @@ export function DeleteTransactionModal({
                     >
                       {deleteModalMessages.deleteGroupTitle}
                     </Text>
-                    <Text
-                      as="span"
-                      className="text-xs text-[var(--color-text-secondary)]"
-                    >
+                    <Text as="span" className="text-xs text-[var(--color-text-secondary)]">
                       {deleteModalMessages.deleteGroupDescription}
                     </Text>
                   </Text>
@@ -160,9 +143,7 @@ export function DeleteTransactionModal({
           disabled={loading}
           className="px-3 font-bold"
         >
-          {loading
-            ? commonMessages.states.deleting
-            : deleteModalMessages.confirmButton}
+          {loading ? commonMessages.states.deleting : deleteModalMessages.confirmButton}
         </Button>
       </DialogActions>
     </Dialog>

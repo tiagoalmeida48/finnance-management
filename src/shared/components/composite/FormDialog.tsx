@@ -1,13 +1,8 @@
-import type { FormEventHandler, ReactNode } from "react";
-import { cn } from "@/lib/utils";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@/shared/components/ui/dialog";
+import type { FormEventHandler, ReactNode } from 'react';
+import { cn } from '@/lib/utils';
+import { Dialog, DialogActions, DialogContent, DialogTitle } from '@/shared/components/ui/dialog';
 
-type DialogMaxWidth = "xs" | "sm" | "md" | "lg" | "xl";
+type DialogMaxWidth = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 interface FormDialogProps {
   open: boolean;
@@ -33,7 +28,7 @@ export function FormDialog({
   children,
   actions,
   fullWidth = true,
-  maxWidth = "xs",
+  maxWidth = 'xs',
   className,
   titleClassName,
   contentClassName,
@@ -48,9 +43,7 @@ export function FormDialog({
       maxWidth={maxWidth}
       className={className}
     >
-      <DialogTitle className={cn("font-bold", titleClassName)}>
-        {title}
-      </DialogTitle>
+      <DialogTitle className={cn('font-bold', titleClassName)}>{title}</DialogTitle>
       <form onSubmit={onSubmit} className={formClassName}>
         <DialogContent className={contentClassName}>{children}</DialogContent>
         <DialogActions className={actionsClassName}>{actions}</DialogActions>

@@ -1,17 +1,13 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useAccounts } from "@/shared/hooks/api/useAccounts";
-import { usePayBill } from "@/shared/hooks/api/useTransactions";
-import { messages } from "@/shared/i18n/messages";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useAccounts } from '@/shared/hooks/api/useAccounts';
+import { usePayBill } from '@/shared/hooks/api/useTransactions';
+import { messages } from '@/shared/i18n/messages';
 
 const payBillSchema = z.object({
-  bank_account_id: z
-    .string()
-    .min(1, messages.cards.payBill.validation.accountRequired),
-  payment_date: z
-    .string()
-    .min(1, messages.cards.payBill.validation.dateRequired),
+  bank_account_id: z.string().min(1, messages.cards.payBill.validation.accountRequired),
+  payment_date: z.string().min(1, messages.cards.payBill.validation.dateRequired),
 });
 
 export type PayBillFormValues = z.infer<typeof payBillSchema>;
@@ -25,7 +21,7 @@ interface UsePayBillModalLogicParams {
   totalAmount: number;
 }
 
-import { formatCurrency } from "@/shared/utils/currency";
+import { formatCurrency } from '@/shared/utils/currency';
 
 export function usePayBillModalLogic({
   onClose,
@@ -48,8 +44,8 @@ export function usePayBillModalLogic({
   } = useForm<PayBillFormValues>({
     resolver: zodResolver(payBillSchema),
     defaultValues: {
-      bank_account_id: "",
-      payment_date: new Date().toISOString().split("T")[0],
+      bank_account_id: '',
+      payment_date: new Date().toISOString().split('T')[0],
     },
   });
 
@@ -66,14 +62,11 @@ export function usePayBillModalLogic({
         accountId: values.bank_account_id,
         paymentDate: values.payment_date,
         amount: totalAmount,
-        description: payBillMessages.paymentDescription(
-          cardName,
-          statementMonth,
-        ),
+        description: payBillMessages.paymentDescription(cardName, statementMonth),
       });
       handleClose();
-    } catch (error) {
-      console.error("Error paying bill:", error);
+    } catch {
+      // erro tratado pelo onError global do QueryClient
     }
   });
 

@@ -1,20 +1,20 @@
-import { Card, CardContent } from "@/shared/components/ui/card";
-import { Wallet, CreditCard, TrendingUp, TrendingDown } from "lucide-react";
-import { messages } from "@/shared/i18n/messages";
-import { Text } from "@/shared/components/ui/Text";
-import { Heading } from "@/shared/components/ui/Heading";
-import { Container } from "@/shared/components/layout/Container";
-import { formatCurrency } from "@/shared/utils/currency";
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { Wallet, CreditCard, TrendingUp, TrendingDown } from 'lucide-react';
+import { messages } from '@/shared/i18n/messages';
+import { Text } from '@/shared/components/ui/Text';
+import { Heading } from '@/shared/components/ui/Heading';
+import { Container } from '@/shared/components/layout/Container';
+import { formatCurrency } from '@/shared/utils/currency';
 
 interface DashboardSummaryProps {
   stats:
-  | {
-    totalBalance: number;
-    totalLimit: number;
-    monthlyIncome: number;
-    monthlyExpenses: number;
-  }
-  | undefined;
+    | {
+        totalBalance: number;
+        totalLimit: number;
+        monthlyIncome: number;
+        monthlyExpenses: number;
+      }
+    | undefined;
   isLoading: boolean;
 }
 
@@ -26,31 +26,29 @@ export function DashboardSummary({ stats, isLoading }: DashboardSummaryProps) {
       title: summaryMessages.totalBalance,
       value: stats?.totalBalance || 0,
       icon: Wallet,
-      iconClass: "bg-[var(--color-accentGlow)] text-[var(--color-accent)]",
-      topClass: "bg-[linear-gradient(90deg,var(--color-accent),transparent)]",
+      iconClass: 'bg-[var(--color-accentGlow)] text-[var(--color-accent)]',
+      topClass: 'bg-[linear-gradient(90deg,var(--color-accent),transparent)]',
     },
     {
       title: summaryMessages.availableLimit,
       value: stats?.totalLimit || 0,
       icon: CreditCard,
-      iconClass:
-        "bg-[var(--overlay-secondary-10)] text-[var(--color-secondary)]",
-      topClass:
-        "bg-[linear-gradient(90deg,var(--color-secondary),transparent)]",
+      iconClass: 'bg-[var(--overlay-secondary-10)] text-[var(--color-secondary)]',
+      topClass: 'bg-[linear-gradient(90deg,var(--color-secondary),transparent)]',
     },
     {
       title: summaryMessages.income,
       value: stats?.monthlyIncome || 0,
       icon: TrendingUp,
-      iconClass: "bg-[var(--color-greenBg)] text-[var(--color-success)]",
-      topClass: "bg-[linear-gradient(90deg,var(--color-success),transparent)]",
+      iconClass: 'bg-[var(--color-greenBg)] text-[var(--color-success)]',
+      topClass: 'bg-[linear-gradient(90deg,var(--color-success),transparent)]',
     },
     {
       title: summaryMessages.expense,
       value: stats?.monthlyExpenses || 0,
       icon: TrendingDown,
-      iconClass: "bg-[var(--color-redBg)] text-[var(--color-error)]",
-      topClass: "bg-[linear-gradient(90deg,var(--color-error),transparent)]",
+      iconClass: 'bg-[var(--color-redBg)] text-[var(--color-error)]',
+      topClass: 'bg-[linear-gradient(90deg,var(--color-error),transparent)]',
       isNegative: true,
     },
   ];
@@ -86,7 +84,7 @@ export function DashboardSummary({ stats, isLoading }: DashboardSummaryProps) {
                     ) : (
                       <Heading
                         level={3}
-                        className={`font-heading text-2xl font-bold tracking-[-0.03em] ${card.isNegative ? "text-[var(--color-error)]" : "text-[var(--color-success)]"}`}
+                        className={`font-heading text-2xl font-bold tracking-[-0.03em] ${card.isNegative ? 'text-[var(--color-error)]' : 'text-[var(--color-success)]'}`}
                       >
                         {formatCurrency(card.value)}
                       </Heading>

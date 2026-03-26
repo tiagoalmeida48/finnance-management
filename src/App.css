@@ -21,6 +21,11 @@
   --color-error: #ef4444;
   --color-warning: #f5a623;
   --color-info: #3b82f6;
+
+  /* Transaction type tokens */
+  --color-income: #10b981;
+  --color-expense: #ef4444;
+  --color-transfer: #3b82f6;
   --color-success-light: #34d399;
   --color-warning-alt: #ed6c02;
   --color-card-elevated: #1e1e2a;
@@ -44,8 +49,8 @@
   --radius-md: 10px;
   --radius-lg: 16px;
 
-  --font-sans: "DM Sans", system-ui, sans-serif;
-  --font-heading: "Plus Jakarta Sans", "DM Sans", system-ui, sans-serif;
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif;
 
   --overlay-white-01: rgba(255, 255, 255, 0.01);
   --overlay-white-015: rgba(255, 255, 255, 0.015);
@@ -115,11 +120,7 @@ body,
 body {
   margin: 0;
   background:
-    radial-gradient(
-      ellipse 400px 400px at top right,
-      var(--color-accentGlow),
-      transparent
-    ),
+    radial-gradient(ellipse 400px 400px at top right, var(--color-accentGlow), transparent),
     var(--color-background);
   color: var(--color-text-primary);
   font-family: var(--font-sans);

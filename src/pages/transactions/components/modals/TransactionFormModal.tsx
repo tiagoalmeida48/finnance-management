@@ -1,16 +1,16 @@
-import { type ChangeEvent, type FormEvent } from "react";
-import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
-import { useTransactionFormLogic } from "@/pages/transactions/hooks/useTransactionFormLogic";
-import type { Transaction } from "@/shared/interfaces/transaction.interface";
-import { TransactionAdvancedSection } from "../TransactionForm/TransactionAdvancedSection";
-import { TransactionBasicFields } from "../TransactionForm/TransactionBasicFields";
-import { TransactionFormActions } from "../TransactionForm/TransactionFormActions";
-import { TransactionPaymentSection } from "../TransactionForm/TransactionPaymentSection";
-import { TransactionTransferSection } from "../TransactionForm/TransactionTransferSection";
-import { TransactionTypeSelector } from "../TransactionForm/TransactionTypeSelector";
-import { getTypeConfig } from "../TransactionForm/transactionFormStyles";
-import { useMediaQuery } from "@/shared/hooks/useMediaQuery";
-import { messages } from "@/shared/i18n/messages";
+import { type ChangeEvent, type FormEvent } from 'react';
+import { Dialog, DialogContent } from '@/shared/components/ui/dialog';
+import { useTransactionFormLogic } from '@/pages/transactions/hooks/useTransactionFormLogic';
+import type { Transaction } from '@/shared/interfaces/transaction.interface';
+import { TransactionAdvancedSection } from '../TransactionForm/TransactionAdvancedSection';
+import { TransactionBasicFields } from '../TransactionForm/TransactionBasicFields';
+import { TransactionFormActions } from '../TransactionForm/TransactionFormActions';
+import { TransactionPaymentSection } from '../TransactionForm/TransactionPaymentSection';
+import { TransactionTransferSection } from '../TransactionForm/TransactionTransferSection';
+import { TransactionTypeSelector } from '../TransactionForm/TransactionTypeSelector';
+import { getTypeConfig } from '../TransactionForm/transactionFormStyles';
+import { useMediaQuery } from '@/shared/hooks/useMediaQuery';
+import { messages } from '@/shared/i18n/messages';
 
 interface TransactionFormModalProps {
   open: boolean;
@@ -19,19 +19,15 @@ interface TransactionFormModalProps {
 }
 
 const formatDisplayValue = (raw: string) => {
-  const numericValue = parseInt(raw || "0", 10) / 100;
-  return new Intl.NumberFormat("pt-BR", {
+  const numericValue = parseInt(raw || '0', 10) / 100;
+  return new Intl.NumberFormat('pt-BR', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(numericValue);
 };
 
-export function TransactionFormModal({
-  open,
-  onClose,
-  transaction,
-}: TransactionFormModalProps) {
-  const isMobile = useMediaQuery("(max-width: 599px)");
+export function TransactionFormModal({ open, onClose, transaction }: TransactionFormModalProps) {
+  const isMobile = useMediaQuery('(max-width: 599px)');
 
   const {
     form,
@@ -56,24 +52,20 @@ export function TransactionFormModal({
     formState: { errors, isSubmitting },
   } = form;
 
-  const amount = watch("amount") || 0;
-  const totalInstallments = watch("total_installments") || 1;
+  const amount = watch('amount') || 0;
+  const totalInstallments = watch('total_installments') || 1;
   const handleMoneyInput = (event: ChangeEvent<HTMLInputElement>) => {
-    const digits = event.target.value.replace(/\D/g, "");
-    setValue("amount", parseInt(digits || "0", 10) / 100);
+    const digits = event.target.value.replace(/\D/g, '');
+    setValue('amount', parseInt(digits || '0', 10) / 100);
   };
 
   const submitLabel = isSubmitting
     ? messages.transactions.form.submit.saving
     : transaction
       ? messages.transactions.form.submit.save
-      : messages.transactions.form.submit.create(
-          getTypeConfig(transactionType).label,
-        );
+      : messages.transactions.form.submit.create(getTypeConfig(transactionType).label);
 
-  const filteredCategories = categories.filter(
-    (category) => category.type === transactionType,
-  );
+  const filteredCategories = categories.filter((category) => category.type === transactionType);
   const handleCloseModal = () => {
     resetUiState();
     onClose();
@@ -91,11 +83,11 @@ export function TransactionFormModal({
       onClose={handleCloseModal}
       maxWidth={false}
       className={`border border-white/10 bg-[var(--color-bgSecondary)] shadow-[0_24px_64px_var(--overlay-black-50)] ${
-        isMobile ? "w-[95vw] max-w-[95vw]" : "w-[640px] max-w-[95vw]"
+        isMobile ? 'w-[95vw] max-w-[95vw]' : 'w-[640px] max-w-[95vw]'
       }`}
     >
       <form onSubmit={handleFormSubmit} noValidate>
-        <DialogContent className={isMobile ? "p-[24px_20px]" : "p-[32px_28px]"}>
+        <DialogContent className={isMobile ? 'p-[24px_20px]' : 'p-[32px_28px]'}>
           <h2 className="font-heading mb-2.5 text-[22px] font-bold text-[var(--color-text-primary)]">
             {transaction
               ? messages.transactions.form.modal.editTitle
@@ -113,7 +105,7 @@ export function TransactionFormModal({
             onMoneyInput={handleMoneyInput}
           />
 
-          {transactionType !== "transfer" ? (
+          {transactionType !== 'transfer' ? (
             <TransactionPaymentSection
               isMobile={isMobile}
               transaction={transaction}

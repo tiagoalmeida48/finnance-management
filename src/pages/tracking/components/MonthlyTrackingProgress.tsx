@@ -1,6 +1,6 @@
-import { Container } from "@/shared/components/layout/Container";
-import { Text } from "@/shared/components/ui/Text";
-import { useApplyElementStyles } from "@/shared/hooks/useApplyElementStyles";
+import { Container } from '@/shared/components/layout/Container';
+import { Text } from '@/shared/components/ui/Text';
+import { useApplyElementStyles } from '@/shared/hooks/useApplyElementStyles';
 
 interface MonthlyTrackingProgressProps {
   progress: number;
@@ -20,14 +20,10 @@ export function MonthlyTrackingProgress({
   return (
     <Container unstyled className="mb-1.5">
       <Container unstyled className="mb-1 flex items-center justify-between">
-        <Text className="text-[11px] text-[var(--color-text-secondary)]">
-          {progressText}
-        </Text>
+        <Text className="text-[11px] text-[var(--color-text-secondary)]">{progressText}</Text>
         <Text
           className={`text-[11px] font-bold ${
-            isSettled
-              ? "text-[var(--color-success)]"
-              : "text-[var(--color-warning)]"
+            isSettled ? 'text-[var(--color-success)]' : 'text-[var(--color-warning)]'
           }`}
         >
           {progress}%
@@ -42,8 +38,8 @@ export function MonthlyTrackingProgress({
           ref={progressBarRef}
           className={`h-full rounded-full ${
             isSettled
-              ? "bg-[linear-gradient(90deg,var(--color-success)_0%,var(--color-success-light)_100%)]"
-              : "bg-[linear-gradient(90deg,var(--color-warning)_0%,var(--color-primary)_100%)]"
+              ? 'bg-[linear-gradient(90deg,var(--color-success)_0%,var(--color-success-light)_100%)]'
+              : 'bg-[linear-gradient(90deg,var(--color-warning)_0%,var(--color-primary)_100%)]'
           }`}
         />
       </Container>

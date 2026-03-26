@@ -1,23 +1,14 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { registerToastBridge } from "@/shared/utils/toastBridge";
-import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle, XCircle, AlertCircle, X } from "lucide-react";
-
-type ToastType = "success" | "error" | "warning";
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { registerToastBridge } from '@/shared/utils/toastBridge';
+import { AnimatePresence, motion } from 'framer-motion';
+import { CheckCircle, XCircle, AlertCircle, X } from 'lucide-react';
+import { ToastContext, type ToastType, type ToastContextValue } from './toast-context';
 
 interface Toast {
   id: string;
   message: string;
   type: ToastType;
 }
-
-interface ToastContextValue {
-  success: (message: string) => void;
-  error: (message: string) => void;
-  warning: (message: string) => void;
-}
-
-const ToastContext = createContext<ToastContextValue | null>(null);
 
 const ICONS: Record<ToastType, React.ReactNode> = {
   success: <CheckCircle className="size-4 shrink-0" />,
@@ -26,9 +17,9 @@ const ICONS: Record<ToastType, React.ReactNode> = {
 };
 
 const STYLES: Record<ToastType, string> = {
-  success: "bg-[var(--color-success)] text-white",
-  error: "bg-[var(--color-error)] text-white",
-  warning: "bg-[var(--color-warning)] text-white",
+  success: 'bg-[var(--color-success)] text-white',
+  error: 'bg-[var(--color-error)] text-white',
+  warning: 'bg-[var(--color-warning)] text-white',
 };
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
@@ -46,15 +37,18 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const value: ToastContextValue = {
-    success: (msg) => add(msg, "success"),
-    error: (msg) => add(msg, "error"),
-    warning: (msg) => add(msg, "warning"),
-  };
+  const value = useMemo<ToastContextValue>(
+    () => ({
+      success: (msg) => add(msg, 'success'),
+      error: (msg) => add(msg, 'error'),
+      warning: (msg) => add(msg, 'warning'),
+    }),
+    [add],
+  );
 
   useEffect(() => {
     registerToastBridge(value);
-  }, []);
+  }, [value]);
 
   return (
     <ToastContext.Provider value={value}>
@@ -87,8 +81,3 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useToast() {
-  const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error("useToast must be used within ToastProvider");
-  return ctx;
-}

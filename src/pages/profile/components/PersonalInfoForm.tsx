@@ -1,13 +1,13 @@
-import { ReactNode } from "react";
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { User as UserIcon, Mail, Save } from "lucide-react";
-import { messages } from "@/shared/i18n/messages";
-import { Stack } from "@/shared/components/layout/Stack";
-import { Heading } from "@/shared/components/ui/Heading";
-import { FormField } from "@/shared/components/forms/FormField";
-import { Grid } from "@/shared/components/layout/Grid";
-import { Container } from "@/shared/components/layout/Container";
+import { ReactNode } from 'react';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { User as UserIcon, Mail, Save } from 'lucide-react';
+import { messages } from '@/shared/i18n/messages';
+import { Stack } from '@/shared/components/layout/Stack';
+import { Heading } from '@/shared/components/ui/Heading';
+import { FormField } from '@/shared/components/forms/FormField';
+import { Grid } from '@/shared/components/layout/Grid';
+import { Container } from '@/shared/components/layout/Container';
 
 interface PersonalInfoFormProps {
   fullName: string;
@@ -41,10 +41,7 @@ export function PersonalInfoForm({
         </Container>
         <Container unstyled className="md:col-span-8 lg:col-span-9">
           <Stack className="space-y-2">
-            <FormField
-              label={formMessages.fullNameLabel}
-              htmlFor="profile-fullname"
-            >
+            <FormField label={formMessages.fullNameLabel} htmlFor="profile-fullname">
               <Container unstyled className="relative">
                 <UserIcon
                   size={17}
@@ -65,12 +62,7 @@ export function PersonalInfoForm({
                   size={17}
                   className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 opacity-65"
                 />
-                <Input
-                  id="profile-email"
-                  className="pl-9"
-                  disabled
-                  value={email || ""}
-                />
+                <Input id="profile-email" className="pl-9" disabled value={email || ''} />
               </Container>
             </FormField>
           </Stack>

@@ -1,5 +1,5 @@
-import { Container } from "@/shared/components/layout/Container";
-import { Text } from "@/shared/components/ui/Text";
+import { Container } from '@/shared/components/layout/Container';
+import { Text } from '@/shared/components/ui/Text';
 
 interface MonthlyTrackingHeaderProps {
   monthName: string;
@@ -26,9 +26,7 @@ export function MonthlyTrackingHeader({
         </Text>
         <Text
           className={`text-sm font-bold ${
-            isSettled
-              ? "text-[var(--color-success)]"
-              : "text-[var(--color-primary)]"
+            isSettled ? 'text-[var(--color-success)]' : 'text-[var(--color-primary)]'
           }`}
         >
           {formatCurrency(totalAmount || 0)}
@@ -39,8 +37,8 @@ export function MonthlyTrackingHeader({
         as="span"
         className={`inline-flex h-[22px] items-center rounded-full border px-2 text-[11px] font-bold ${
           isSettled
-            ? "border-[var(--overlay-success-35)] bg-[var(--color-greenBg)] text-[var(--color-success)]"
-            : "border-[var(--overlay-warning-35)] bg-[var(--color-yellowBg)] text-[var(--color-warning)]"
+            ? 'border-[var(--overlay-success-35)] bg-[var(--color-greenBg)] text-[var(--color-success)]'
+            : 'border-[var(--overlay-warning-35)] bg-[var(--color-yellowBg)] text-[var(--color-warning)]'
         }`}
       >
         {isSettled ? settledText : pendingText}

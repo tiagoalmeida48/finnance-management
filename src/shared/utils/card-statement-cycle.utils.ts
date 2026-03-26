@@ -1,18 +1,11 @@
-import {
-  addMonths,
-  format,
-  isValid,
-  parseISO,
-  startOfMonth,
-  subDays,
-} from "date-fns";
-import type { CreditCardStatementCycle, Transaction } from "../interfaces";
+import { addMonths, format, isValid, parseISO, startOfMonth, subDays } from 'date-fns';
+import type { CreditCardStatementCycle, Transaction } from '../interfaces';
 
-export const OPEN_CYCLE_END = "9999-12-31";
+export const OPEN_CYCLE_END = '9999-12-31';
 
 type StatementCycleLike = Pick<
   CreditCardStatementCycle,
-  "date_start" | "date_end" | "closing_day" | "due_day"
+  'date_start' | 'date_end' | 'closing_day' | 'due_day'
 >;
 type StatementCycleWithOptionalId = StatementCycleLike & { id?: string };
 
@@ -46,9 +39,9 @@ export interface CycleInsertionPlan {
 export const normalizeDateKey = (value: string) => {
   const parsed = parseISO(value);
   if (!isValid(parsed)) {
-    throw new Error("Data invalida.");
+    throw new Error('Data invalida.');
   }
-  return format(parsed, "yyyy-MM-dd");
+  return format(parsed, 'yyyy-MM-dd');
 };
 
 const toDateAtNoon = (value: string) => {
@@ -67,7 +60,7 @@ const toDateKeyIgnoringTime = (value?: string | null) => {
 
   const parsed = parseISO(value);
   if (!isValid(parsed)) return null;
-  return format(parsed, "yyyy-MM-dd");
+  return format(parsed, 'yyyy-MM-dd');
 };
 
 export const getTransactionAnchorDateKey = (transaction: TransactionDateLike) =>
@@ -75,9 +68,8 @@ export const getTransactionAnchorDateKey = (transaction: TransactionDateLike) =>
   toDateKeyIgnoringTime(transaction.payment_date) ||
   null;
 
-export const sortStatementCyclesAsc = <T extends StatementCycleLike>(
-  cycles: T[],
-) => [...cycles].sort((a, b) => a.date_start.localeCompare(b.date_start));
+export const sortStatementCyclesAsc = <T extends StatementCycleLike>(cycles: T[]) =>
+  [...cycles].sort((a, b) => a.date_start.localeCompare(b.date_start));
 
 export const resolveStatementCycleForDate = <T extends StatementCycleLike>(
   cycles: T[],
@@ -85,27 +77,23 @@ export const resolveStatementCycleForDate = <T extends StatementCycleLike>(
 ) => {
   const orderedCycles = sortStatementCyclesAsc(cycles);
   return (
-    orderedCycles.find(
-      (cycle) => dateKey >= cycle.date_start && dateKey <= cycle.date_end,
-    ) || null
+    orderedCycles.find((cycle) => dateKey >= cycle.date_start && dateKey <= cycle.date_end) || null
   );
 };
 
 export const getCurrentStatementCycle = <T extends StatementCycleLike>(
   cycles: T[],
-  referenceDate: string = format(new Date(), "yyyy-MM-dd"),
+  referenceDate: string = format(new Date(), 'yyyy-MM-dd'),
 ) => {
   const byReference = resolveStatementCycleForDate(cycles, referenceDate);
   if (byReference) return byReference;
 
   const orderedCycles = sortStatementCyclesAsc(cycles);
-  return (
-    orderedCycles.find((cycle) => cycle.date_end === OPEN_CYCLE_END) || null
-  );
+  return orderedCycles.find((cycle) => cycle.date_end === OPEN_CYCLE_END) || null;
 };
 
 export const resolveStatementMonth = (
-  transaction: Pick<Transaction, "purchase_date" | "payment_date">,
+  transaction: Pick<Transaction, 'purchase_date' | 'payment_date'>,
   cycles: StatementCycleLike[],
   fallbackCycle?: StatementCycleFallback,
 ): ResolvedStatementMonth | null => {
@@ -115,8 +103,7 @@ export const resolveStatementMonth = (
   const anchorDate = toDateAtNoon(anchorDateKey);
   if (!anchorDate) return null;
 
-  const cycle =
-    resolveStatementCycleForDate(cycles, anchorDateKey) || fallbackCycle;
+  const cycle = resolveStatementCycleForDate(cycles, anchorDateKey) || fallbackCycle;
   if (!cycle) return null;
 
   const effectiveClosingDay = cycle.closing_day;
@@ -127,7 +114,7 @@ export const resolveStatementMonth = (
   const monthShift = closingMonthShift + dueMonthShift;
 
   const statementDate = addMonths(startOfMonth(anchorDate), monthShift);
-  const statementMonthKey = format(statementDate, "yyyy-MM");
+  const statementMonthKey = format(statementDate, 'yyyy-MM');
 
   return {
     anchorDate,
@@ -146,39 +133,29 @@ export const planCycleInsertion = (
   const orderedCycles = sortStatementCyclesAsc(cycles);
 
   if (orderedCycles.length === 0) {
-    throw new Error("Nao existe vigencia cadastrada para este cartao.");
+    throw new Error('Nao existe vigencia cadastrada para este cartao.');
   }
 
   const firstCycle = orderedCycles[0];
   if (normalizedStart < firstCycle.date_start) {
-    throw new Error(
-      `A data de inicio nao pode ser anterior a ${firstCycle.date_start}.`,
-    );
+    throw new Error(`A data de inicio nao pode ser anterior a ${firstCycle.date_start}.`);
   }
 
   const targetCycle = orderedCycles.find(
-    (cycle) =>
-      normalizedStart >= cycle.date_start && normalizedStart <= cycle.date_end,
+    (cycle) => normalizedStart >= cycle.date_start && normalizedStart <= cycle.date_end,
   );
   if (!targetCycle) {
-    throw new Error("Nao existe vigencia que contenha a data informada.");
+    throw new Error('Nao existe vigencia que contenha a data informada.');
   }
 
   if (normalizedStart <= targetCycle.date_start) {
-    throw new Error(
-      `A data de inicio deve ser maior que ${targetCycle.date_start}.`,
-    );
+    throw new Error(`A data de inicio deve ser maior que ${targetCycle.date_start}.`);
   }
 
   const normalizedStartDate = parseISO(normalizedStart);
-  const previousCycleNewEnd = format(
-    subDays(normalizedStartDate, 1),
-    "yyyy-MM-dd",
-  );
+  const previousCycleNewEnd = format(subDays(normalizedStartDate, 1), 'yyyy-MM-dd');
   if (previousCycleNewEnd < targetCycle.date_start) {
-    throw new Error(
-      "Nao foi possivel dividir a vigencia atual com a data informada.",
-    );
+    throw new Error('Nao foi possivel dividir a vigencia atual com a data informada.');
   }
 
   return {

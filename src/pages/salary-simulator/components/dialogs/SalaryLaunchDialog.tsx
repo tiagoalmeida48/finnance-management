@@ -1,16 +1,11 @@
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@/shared/components/ui/dialog";
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { Select } from "@/shared/components/ui/select";
-import type { Account, Category } from "@/shared/interfaces";
-import { formatCurrency } from "../salarySimulator.helpers";
-import { messages } from "@/shared/i18n/messages";
-import { Container } from "@/shared/components/layout/Container";
+import { Dialog, DialogActions, DialogContent, DialogTitle } from '@/shared/components/ui/dialog';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Select } from '@/shared/components/ui/select';
+import type { Account, Category } from '@/shared/interfaces';
+import { formatCurrency } from '../salarySimulator.helpers';
+import { messages } from '@/shared/i18n/messages';
+import { Container } from '@/shared/components/layout/Container';
 
 interface SalaryLaunchDialogProps {
   open: boolean;
@@ -30,7 +25,7 @@ interface SalaryLaunchDialogProps {
   onPaymentDateChange: (value: string) => void;
 }
 
-const labelClass = "mb-1 block text-xs text-[var(--color-text-secondary)]";
+const labelClass = 'mb-1 block text-xs text-[var(--color-text-secondary)]';
 
 export function SalaryLaunchDialog({
   open,
@@ -56,9 +51,7 @@ export function SalaryLaunchDialog({
       <DialogContent>
         <Container unstyled className="mt-1 flex flex-col gap-2">
           <Container unstyled>
-            <label className={labelClass}>
-              {dialogMessages.labels.description}
-            </label>
+            <label className={labelClass}>{dialogMessages.labels.description}</label>
             <Input
               value={description}
               onChange={(event) => onDescriptionChange(event.target.value)}
@@ -67,13 +60,8 @@ export function SalaryLaunchDialog({
 
           <Container unstyled className="grid gap-2 sm:grid-cols-2">
             <Container unstyled>
-              <label className={labelClass}>
-                {dialogMessages.labels.account}
-              </label>
-              <Select
-                value={accountId}
-                onChange={(event) => onAccountChange(event.target.value)}
-              >
+              <label className={labelClass}>{dialogMessages.labels.account}</label>
+              <Select value={accountId} onChange={(event) => onAccountChange(event.target.value)}>
                 {accounts.map((account) => (
                   <option key={account.id} value={account.id}>
                     {account.name}
@@ -97,18 +85,14 @@ export function SalaryLaunchDialog({
               <Input value={dialogMessages.typeIncome} disabled />
             </Container>
             <Container unstyled>
-              <label className={labelClass}>
-                {dialogMessages.labels.paymentMethod}
-              </label>
+              <label className={labelClass}>{dialogMessages.labels.paymentMethod}</label>
               <Input value={dialogMessages.paymentMethodDebit} disabled />
             </Container>
           </Container>
 
           <Container unstyled className="grid gap-2 sm:grid-cols-2">
             <Container unstyled>
-              <label className={labelClass}>
-                {dialogMessages.labels.category}
-              </label>
+              <label className={labelClass}>{dialogMessages.labels.category}</label>
               <Select
                 value={categoryId}
                 onChange={(event) => onCategoryChange(event.target.value)}
@@ -122,9 +106,7 @@ export function SalaryLaunchDialog({
               </Select>
             </Container>
             <Container unstyled>
-              <label className={labelClass}>
-                {dialogMessages.labels.amount}
-              </label>
+              <label className={labelClass}>{dialogMessages.labels.amount}</label>
               <Input value={formatCurrency(netPay)} disabled />
             </Container>
           </Container>

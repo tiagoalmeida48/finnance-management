@@ -1,15 +1,15 @@
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { ShoppingBag } from "lucide-react";
-import type { StatementTransaction } from "@/shared/interfaces/card-details.interface";
-import { Row } from "@/shared/components/layout/Row";
-import { Text } from "@/shared/components/ui/Text";
-import { messages } from "@/shared/i18n/messages";
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { ShoppingBag } from 'lucide-react';
+import type { StatementTransaction } from '@/shared/interfaces/card-details.interface';
+import { Row } from '@/shared/components/layout/Row';
+import { Text } from '@/shared/components/ui/Text';
+import { messages } from '@/shared/i18n/messages';
 import {
   formatCardStatementCurrency,
   getStatementDisplayDateKey,
-} from "@/pages/cards/hooks/useCardStatementListLogic";
-import { Container } from "@/shared/components/layout/Container";
+} from '@/pages/cards/hooks/useCardStatementListLogic';
+import { Container } from '@/shared/components/layout/Container';
 
 interface CardStatementTransactionsMobileProps {
   transactions: StatementTransaction[];
@@ -82,34 +82,20 @@ function StatementMobileRow({
           <Row className="flex-wrap items-center gap-1">
             <Text as="span" className="text-xs text-[var(--color-text-muted)]">
               {displayDate
-                ? format(new Date(`${displayDate}T12:00:00`), "dd/MM", {
+                ? format(new Date(`${displayDate}T12:00:00`), 'dd/MM', {
                     locale: ptBR,
                   })
-                : "-"}
+                : '-'}
             </Text>
-            <Container
-              unstyled
-              className="h-1 w-1 rounded-full bg-[var(--color-text-muted)]"
-            />
-            <Text
-              as="span"
-              className="text-xs text-[var(--color-text-secondary)]"
-            >
+            <Container unstyled className="h-1 w-1 rounded-full bg-[var(--color-text-muted)]" />
+            <Text as="span" className="text-xs text-[var(--color-text-secondary)]">
               {transaction.category?.name || noCategoryLabel}
             </Text>
-            {transaction.installment_number &&
-            transaction.total_installments ? (
+            {transaction.installment_number && transaction.total_installments ? (
               <>
-                <Container
-                  unstyled
-                  className="h-1 w-1 rounded-full bg-[var(--color-text-muted)]"
-                />
-                <Text
-                  as="span"
-                  className="text-xs font-semibold text-[var(--color-text-muted)]"
-                >
-                  {transaction.installment_number}/
-                  {transaction.total_installments}
+                <Container unstyled className="h-1 w-1 rounded-full bg-[var(--color-text-muted)]" />
+                <Text as="span" className="text-xs font-semibold text-[var(--color-text-muted)]">
+                  {transaction.installment_number}/{transaction.total_installments}
                 </Text>
               </>
             ) : null}
@@ -119,9 +105,9 @@ function StatementMobileRow({
         <Text
           as="span"
           className={`whitespace-nowrap text-sm font-semibold ${
-            transaction.type === "income"
-              ? "text-[var(--color-success)]"
-              : "text-[var(--color-error)]"
+            transaction.type === 'income'
+              ? 'text-[var(--color-success)]'
+              : 'text-[var(--color-error)]'
           }`}
         >
           {formatCardStatementCurrency(transaction.amount)}

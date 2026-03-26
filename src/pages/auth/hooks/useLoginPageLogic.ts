@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase/client";
-import { messages } from "@/shared/i18n/messages";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/lib/supabase/client';
+import { messages } from '@/shared/i18n/messages';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -21,8 +21,8 @@ export function useLoginPageLogic() {
   const formMethods = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
@@ -37,12 +37,11 @@ export function useLoginPageLogic() {
       });
 
       if (authError) {
-        console.error("Login error:", authError);
         throw authError;
       }
 
-      navigate("/dashboard");
-    } catch (err: any) {
+      navigate('/dashboard');
+    } catch {
       // Usa mensagem genérica de erro ou a do Supabase se disponível/seguro
       const errorMessage = messages.auth.login.error;
       setError(errorMessage);

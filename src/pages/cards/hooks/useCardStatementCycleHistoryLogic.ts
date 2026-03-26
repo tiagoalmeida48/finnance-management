@@ -1,17 +1,17 @@
-import { useCallback, useMemo, useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
+import { useCallback, useMemo, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { format } from 'date-fns';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
 import {
   useCardStatementCycles,
   useCreateCardStatementCycle,
   useDeleteCardStatementCycle,
   useUpdateCardStatementCycle,
-} from "@/shared/hooks/api/useCreditCards";
-import type { CreditCardStatementCycle } from "@/shared/interfaces";
-import { OPEN_CYCLE_END } from "@/shared/utils/card-statement-cycle.utils";
-import { messages } from "@/shared/i18n/messages";
+} from '@/shared/hooks/api/useCreditCards';
+import type { CreditCardStatementCycle } from '@/shared/interfaces';
+import { OPEN_CYCLE_END } from '@/shared/utils/card-statement-cycle.utils';
+import { messages } from '@/shared/i18n/messages';
 
 const cycleHistoryMessages = messages.cards.cycleHistory;
 
@@ -29,7 +29,7 @@ const cycleSchema = z.object({
 });
 
 type CycleFormValues = z.infer<typeof cycleSchema>;
-type CycleDialogMode = "create" | "edit" | null;
+type CycleDialogMode = 'create' | 'edit' | null;
 
 interface UseCardStatementCycleHistoryLogicParams {
   cardId: string;
@@ -39,8 +39,7 @@ interface UseCardStatementCycleHistoryLogicParams {
   onClose: () => void;
 }
 
-const formatDateBR = (value: string) =>
-  format(new Date(`${value}T12:00:00`), "dd/MM/yyyy");
+const formatDateBR = (value: string) => format(new Date(`${value}T12:00:00`), 'dd/MM/yyyy');
 
 const formatCycleRange = (cycle: CreditCardStatementCycle) => {
   const start = formatDateBR(cycle.date_start);
@@ -67,8 +66,7 @@ export function useCardStatementCycleHistoryLogic({
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const isMutating =
-    createCycle.isPending || updateCycle.isPending || deleteCycle.isPending;
+  const isMutating = createCycle.isPending || updateCycle.isPending || deleteCycle.isPending;
 
   const orderedCycles = useMemo(
     () => [...cycles].sort((a, b) => b.date_start.localeCompare(a.date_start)),
@@ -76,8 +74,7 @@ export function useCardStatementCycleHistoryLogic({
   );
 
   const currentCycle = useMemo(
-    () =>
-      orderedCycles.find((cycle) => cycle.date_end === OPEN_CYCLE_END) || null,
+    () => orderedCycles.find((cycle) => cycle.date_end === OPEN_CYCLE_END) || null,
     [orderedCycles],
   );
 
@@ -89,22 +86,22 @@ export function useCardStatementCycleHistoryLogic({
   } = useForm<CycleFormValues>({
     resolver: zodResolver(cycleSchema),
     defaultValues: {
-      date_start: format(new Date(), "yyyy-MM-dd"),
+      date_start: format(new Date(), 'yyyy-MM-dd'),
       closing_day: fallbackClosingDay,
       due_day: fallbackDueDay,
-      notes: "",
+      notes: '',
     },
   });
 
   const handleOpenCreate = useCallback(() => {
     setFormError(null);
     reset({
-      date_start: format(new Date(), "yyyy-MM-dd"),
+      date_start: format(new Date(), 'yyyy-MM-dd'),
       closing_day: currentCycle?.closing_day ?? fallbackClosingDay,
       due_day: currentCycle?.due_day ?? fallbackDueDay,
-      notes: "",
+      notes: '',
     });
-    setDialogMode("create");
+    setDialogMode('create');
   }, [currentCycle, fallbackClosingDay, fallbackDueDay, reset]);
 
   const handleOpenEdit = useCallback(
@@ -114,9 +111,9 @@ export function useCardStatementCycleHistoryLogic({
       reset({
         closing_day: cycle.closing_day,
         due_day: cycle.due_day,
-        notes: cycle.notes || "",
+        notes: cycle.notes || '',
       });
-      setDialogMode("edit");
+      setDialogMode('edit');
     },
     [reset],
   );
@@ -150,14 +147,14 @@ export function useCardStatementCycleHistoryLogic({
     setFormError(null);
 
     try {
-      if (dialogMode === "create") {
+      if (dialogMode === 'create') {
         await createCycle.mutateAsync({
-          date_start: values.date_start || format(new Date(), "yyyy-MM-dd"),
+          date_start: values.date_start || format(new Date(), 'yyyy-MM-dd'),
           closing_day: values.closing_day,
           due_day: values.due_day,
           notes: values.notes?.trim() || undefined,
         });
-      } else if (dialogMode === "edit" && editingCycleId) {
+      } else if (dialogMode === 'edit' && editingCycleId) {
         await updateCycle.mutateAsync({
           id: editingCycleId,
           updates: {
@@ -172,9 +169,7 @@ export function useCardStatementCycleHistoryLogic({
       setEditingCycleId(null);
     } catch (error) {
       const message =
-        error instanceof Error
-          ? error.message
-          : cycleHistoryMessages.errors.saveFailed;
+        error instanceof Error ? error.message : cycleHistoryMessages.errors.saveFailed;
       setFormError(message);
     }
   });
@@ -187,9 +182,7 @@ export function useCardStatementCycleHistoryLogic({
       setDeleteConfirmId(null);
     } catch (error) {
       const message =
-        error instanceof Error
-          ? error.message
-          : cycleHistoryMessages.errors.deleteFailed;
+        error instanceof Error ? error.message : cycleHistoryMessages.errors.deleteFailed;
       setFormError(message);
     }
   }, [deleteConfirmId, deleteCycle]);

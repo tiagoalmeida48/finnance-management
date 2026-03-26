@@ -1,25 +1,22 @@
-import { useState, useMemo, useEffect } from "react";
-import { useForm, useWatch, type Resolver } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useAccounts } from "@/shared/hooks/api/useAccounts";
-import { useCategories } from "@/shared/hooks/api/useCategories";
-import { useCreditCards } from "@/shared/hooks/api/useCreditCards";
+import { useState, useMemo, useEffect } from 'react';
+import { useForm, useWatch, type Resolver } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useAccounts } from '@/shared/hooks/api/useAccounts';
+import { useCategories } from '@/shared/hooks/api/useCategories';
+import { useCreditCards } from '@/shared/hooks/api/useCreditCards';
 import {
   useCreateTransaction,
   useUpdateTransaction,
   useUpdateTransactionGroup,
-} from "@/shared/hooks/api/useTransactions";
-import {
-  Transaction,
-  type CreateTransactionData,
-} from "@/shared/interfaces/transaction.interface";
-import { toDateKeyIgnoringTime } from "@/shared/utils/transactionsGroup.utils";
+} from '@/shared/hooks/api/useTransactions';
+import { Transaction, type CreateTransactionData } from '@/shared/interfaces/transaction.interface';
+import { toDateKeyIgnoringTime } from '@/shared/utils/transactionsGroup.utils';
 
 const transactionSchema = z.object({
-  description: z.string().min(3, "Descrição deve ter pelo menos 3 caracteres"),
-  amount: z.coerce.number().positive("Valor deve ser positivo"),
-  type: z.enum(["income", "expense", "transfer"]),
+  description: z.string().min(3, 'Descrição deve ter pelo menos 3 caracteres'),
+  amount: z.coerce.number().positive('Valor deve ser positivo'),
+  type: z.enum(['income', 'expense', 'transfer']),
   payment_date: z.string(),
   account_id: z.string().optional(),
   to_account_id: z.string().optional(),
@@ -31,11 +28,7 @@ const transactionSchema = z.object({
   payment_method: z.string().optional(),
   notes: z.string().optional(),
   is_installment: z.boolean().default(false),
-  total_installments: z.coerce
-    .number()
-    .min(1, "Mínimo 1")
-    .max(120, "Máximo 120")
-    .optional(),
+  total_installments: z.coerce.number().min(1, 'Mínimo 1').max(120, 'Máximo 120').optional(),
   // installments: z.array(z.object({ amount: z.coerce.number() })).optional(), // Removed
 });
 
@@ -49,30 +42,24 @@ type TransactionMutationPayload = Partial<Transaction> & {
 };
 
 const NON_TRANSACTION_FIELDS = new Set([
-  "installment_amounts",
-  "repeat_count",
-  "is_installment",
-  "installments",
+  'installment_amounts',
+  'repeat_count',
+  'is_installment',
+  'installments',
 ]);
-const DATE_LIKE_FIELDS = new Set<keyof Transaction>([
-  "payment_date",
-  "purchase_date",
-]);
+const DATE_LIKE_FIELDS = new Set<keyof Transaction>(['payment_date', 'purchase_date']);
 
 const toComparableValue = (field: keyof Transaction, value: unknown) => {
-  if (value === undefined || value === null || value === "") return null;
+  if (value === undefined || value === null || value === '') return null;
 
-  if (DATE_LIKE_FIELDS.has(field) && typeof value === "string") {
+  if (DATE_LIKE_FIELDS.has(field) && typeof value === 'string') {
     return toDateKeyIgnoringTime(value) ?? value;
   }
 
   return value;
 };
 
-const buildChangedUpdates = (
-  transaction: Transaction,
-  updates: TransactionMutationPayload,
-) => {
+const buildChangedUpdates = (transaction: Transaction, updates: TransactionMutationPayload) => {
   const changed: Partial<Transaction> = {};
 
   for (const [key, rawValue] of Object.entries(updates)) {
@@ -82,10 +69,7 @@ const buildChangedUpdates = (
     const field = key as keyof Transaction;
     const currentValue = transaction[field];
 
-    if (
-      toComparableValue(field, currentValue) ===
-      toComparableValue(field, rawValue)
-    ) {
+    if (toComparableValue(field, currentValue) === toComparableValue(field, rawValue)) {
       continue;
     }
 
@@ -113,55 +97,54 @@ export function useTransactionFormLogic(
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema) as Resolver<TransactionFormValues>,
     defaultValues: {
-      description: "",
+      description: '',
       amount: 0,
-      type: "expense",
-      payment_date: new Date().toISOString().split("T")[0],
+      type: 'expense',
+      payment_date: new Date().toISOString().split('T')[0],
       is_fixed: false,
       repeat_count: 1,
       is_paid: false,
       is_installment: false,
       total_installments: 1,
-      account_id: "",
-      category_id: "",
+      account_id: '',
+      category_id: '',
     },
   });
 
   const transactionType = useWatch({
     control: form.control,
-    name: "type",
-    defaultValue: "expense",
+    name: 'type',
+    defaultValue: 'expense',
   });
   const paymentMethod = useWatch({
     control: form.control,
-    name: "payment_method",
+    name: 'payment_method',
   });
   const isInstallment = useWatch({
     control: form.control,
-    name: "is_installment",
+    name: 'is_installment',
     defaultValue: false,
   });
   const isFixed = useWatch({
     control: form.control,
-    name: "is_fixed",
+    name: 'is_fixed',
     defaultValue: false,
   });
   const totalInstallments =
     useWatch({
       control: form.control,
-      name: "total_installments",
+      name: 'total_installments',
       defaultValue: 1,
     }) || 1;
-  const baseAmount =
-    useWatch({ control: form.control, name: "amount", defaultValue: 0 }) || 0;
+  const baseAmount = useWatch({ control: form.control, name: 'amount', defaultValue: 0 }) || 0;
   const selectedAccountId = useWatch({
     control: form.control,
-    name: "account_id",
+    name: 'account_id',
   });
 
   const filteredCards = useMemo(() => {
     if (!cards) return [];
-    if (paymentMethod === "credit" && selectedAccountId) {
+    if (paymentMethod === 'credit' && selectedAccountId) {
       return cards.filter((c) => c.bank_account_id === selectedAccountId);
     }
     return cards;
@@ -172,26 +155,23 @@ export function useTransactionFormLogic(
   useEffect(() => {
     if (open) {
       reset({
-        description: transaction?.description || "",
+        description: transaction?.description || '',
         amount: transaction?.amount || 0,
-        type: transaction?.type || "expense",
+        type: transaction?.type || 'expense',
         payment_date:
           (transaction?.card_id
             ? transaction.purchase_date || transaction.payment_date
-            : transaction?.payment_date) ||
-          new Date().toISOString().split("T")[0],
+            : transaction?.payment_date) || new Date().toISOString().split('T')[0],
         is_fixed: transaction?.is_fixed || false,
         repeat_count: 1,
         is_paid: transaction?.is_paid ?? false,
         is_installment: !!transaction?.installment_group_id,
         total_installments: transaction?.total_installments || 1,
-        account_id: transaction?.account_id || "",
-        to_account_id: transaction?.to_account_id || "",
-        card_id: transaction?.card_id || "",
-        category_id: transaction?.category_id || "",
-        payment_method:
-          transaction?.payment_method ||
-          (transaction?.card_id ? "credit" : "debit"),
+        account_id: transaction?.account_id || '',
+        to_account_id: transaction?.to_account_id || '',
+        card_id: transaction?.card_id || '',
+        category_id: transaction?.category_id || '',
+        payment_method: transaction?.payment_method || (transaction?.card_id ? 'credit' : 'debit'),
       });
     }
   }, [transaction, open, reset]);
@@ -203,10 +183,9 @@ export function useTransactionFormLogic(
   const onSubmit = async (values: TransactionFormValues) => {
     try {
       const payload: TransactionMutationPayload = { ...values };
-      const isCreditPurchase =
-        values.payment_method === "credit" && Boolean(values.card_id);
-      if (values.type !== "transfer") delete payload.to_account_id;
-      if (values.payment_method !== "credit") delete payload.card_id;
+      const isCreditPurchase = values.payment_method === 'credit' && Boolean(values.card_id);
+      if (values.type !== 'transfer') delete payload.to_account_id;
+      if (values.payment_method !== 'credit') delete payload.card_id;
 
       if (isCreditPurchase) {
         payload.purchase_date = values.payment_date;
@@ -231,10 +210,10 @@ export function useTransactionFormLogic(
         payload.repeat_count = undefined;
       }
 
-      if (payload.category_id === "") payload.category_id = null;
-      if (payload.account_id === "") payload.account_id = null;
-      if (payload.card_id === "") payload.card_id = null;
-      if (payload.to_account_id === "") payload.to_account_id = null;
+      if (payload.category_id === '') payload.category_id = null;
+      if (payload.account_id === '') payload.account_id = null;
+      if (payload.card_id === '') payload.card_id = null;
+      if (payload.to_account_id === '') payload.to_account_id = null;
 
       if (transaction) {
         delete payload.repeat_count;
@@ -246,11 +225,8 @@ export function useTransactionFormLogic(
           return;
         }
 
-        const groupId =
-          transaction.installment_group_id || transaction.recurring_group_id;
-        const groupType = transaction.installment_group_id
-          ? "installment"
-          : "recurring";
+        const groupId = transaction.installment_group_id || transaction.recurring_group_id;
+        const groupType = transaction.installment_group_id ? 'installment' : 'recurring';
         if (applyToGroup && groupId) {
           await updateTransactionGroup.mutateAsync({
             groupId,
@@ -280,8 +256,8 @@ export function useTransactionFormLogic(
       }
       resetUiState();
       onClose();
-    } catch (error) {
-      console.error("Error saving transaction:", error);
+    } catch {
+      // erro tratado pelo onError global do QueryClient
     }
   };
 

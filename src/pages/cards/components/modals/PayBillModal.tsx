@@ -1,13 +1,13 @@
-import { CreditCard as CardIcon, Landmark, X } from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
-import { Container } from "@/shared/components/layout/Container";
-import { FormDialog } from "@/shared/components/composite/FormDialog";
-import { FormField } from "@/shared/components/forms/FormField";
-import { IconButton } from "@/shared/components/ui/icon-button";
-import { Input } from "@/shared/components/ui/input";
-import { Select } from "@/shared/components/ui/select";
-import { Text } from "@/shared/components/ui/Text";
-import { usePayBillModalLogic } from "@/pages/transactions/hooks/usePayBillModalLogic";
+import { CreditCard as CardIcon, Landmark, X } from 'lucide-react';
+import { Button } from '@/shared/components/ui/button';
+import { Container } from '@/shared/components/layout/Container';
+import { FormDialog } from '@/shared/components/composite/FormDialog';
+import { FormField } from '@/shared/components/forms/FormField';
+import { IconButton } from '@/shared/components/ui/icon-button';
+import { Input } from '@/shared/components/ui/input';
+import { Select } from '@/shared/components/ui/select';
+import { Text } from '@/shared/components/ui/Text';
+import { usePayBillModalLogic } from '@/pages/transactions/hooks/usePayBillModalLogic';
 
 interface PayBillModalProps {
   open: boolean;
@@ -61,10 +61,7 @@ export function PayBillModal({
       onClose={handleClose}
       maxWidth="xs"
       title={
-        <Container
-          unstyled
-          className="flex items-center justify-between font-bold"
-        >
+        <Container unstyled className="flex items-center justify-between font-bold">
           {payBillMessages.title}
           <IconButton onClick={handleClose} size="small">
             <X size={20} />
@@ -84,9 +81,7 @@ export function PayBillModal({
             disabled={isSubmitting}
             startIcon={isSubmitting ? loadingSpinner : undefined}
           >
-            {isSubmitting
-              ? payBillMessages.processing
-              : payBillMessages.confirmPayment}
+            {isSubmitting ? payBillMessages.processing : payBillMessages.confirmPayment}
           </Button>
         </>
       }
@@ -117,11 +112,7 @@ export function PayBillModal({
               size={18}
               className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 opacity-50"
             />
-            <Select
-              id="paybill-account"
-              className="pl-9"
-              {...register("bank_account_id")}
-            >
+            <Select id="paybill-account" className="pl-9" {...register('bank_account_id')}>
               <option value="">{payBillMessages.accountPlaceholder}</option>
               {accounts?.map((account) => (
                 <option key={account.id} value={account.id}>
@@ -137,7 +128,7 @@ export function PayBillModal({
           label={payBillMessages.paymentDateLabel}
           errorMessage={errors.payment_date?.message}
         >
-          <Input id="paybill-date" type="date" {...register("payment_date")} />
+          <Input id="paybill-date" type="date" {...register('payment_date')} />
         </FormField>
       </Container>
     </FormDialog>

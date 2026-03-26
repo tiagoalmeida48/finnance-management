@@ -1,19 +1,19 @@
-import { useState } from "react";
-import type { SalarySetting } from "@/shared/interfaces";
+import { useState } from 'react';
+import type { SalarySetting } from '@/shared/interfaces';
 import {
   useCreateSalarySetting,
   useUpdateSalarySetting,
   useDeleteCurrentSalarySetting,
-} from "@/shared/hooks/api/useSalarySettings";
+} from '@/shared/hooks/api/useSalarySettings';
 import {
   buildSettingKey,
   formatDateBR,
   getErrorMessage,
   type EditSettingForm,
   toNumber,
-} from "@/pages/salary-simulator/components/salarySimulator.helpers";
+} from '@/pages/salary-simulator/components/salarySimulator.helpers';
 
-type MessageState = { type: "success" | "error"; text: string } | null;
+type MessageState = { type: 'success' | 'error'; text: string } | null;
 
 export function useSettingsTabLogic(
   setMessage: (msg: MessageState) => void,
@@ -24,22 +24,22 @@ export function useSettingsTabLogic(
   const updateSetting = useUpdateSalarySetting();
   const deleteCurrentSetting = useDeleteCurrentSalarySetting();
 
-  const [newDateStart, setNewDateStart] = useState("");
-  const [newHourlyRate, setNewHourlyRate] = useState("");
-  const [newBaseSalary, setNewBaseSalary] = useState("");
-  const [newInssPercentage, setNewInssPercentage] = useState("");
-  const [newAdminFeePercentage, setNewAdminFeePercentage] = useState("");
+  const [newDateStart, setNewDateStart] = useState('');
+  const [newHourlyRate, setNewHourlyRate] = useState('');
+  const [newBaseSalary, setNewBaseSalary] = useState('');
+  const [newInssPercentage, setNewInssPercentage] = useState('');
+  const [newAdminFeePercentage, setNewAdminFeePercentage] = useState('');
 
   const [editForm, setEditForm] = useState<EditSettingForm | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleOpenCreateDialog = () => {
-    setNewDateStart("");
-    setNewHourlyRate("");
-    setNewBaseSalary("");
-    setNewInssPercentage("");
-    setNewAdminFeePercentage("");
+    setNewDateStart('');
+    setNewHourlyRate('');
+    setNewBaseSalary('');
+    setNewInssPercentage('');
+    setNewAdminFeePercentage('');
     setCreateDialogOpen(true);
   };
 
@@ -52,8 +52,8 @@ export function useSettingsTabLogic(
     setMessage(null);
     if (!newDateStart) {
       setMessage({
-        type: "error",
-        text: "Informe a data de inicio da vigencia.",
+        type: 'error',
+        text: 'Informe a data de inicio da vigencia.',
       });
       return;
     }
@@ -68,11 +68,11 @@ export function useSettingsTabLogic(
       setNewDateStart(saved.date_start);
       setCreateDialogOpen(false);
       setMessage({
-        type: "success",
-        text: "Configuracao salva com nova vigencia.",
+        type: 'success',
+        text: 'Configuracao salva com nova vigencia.',
       });
     } catch (error) {
-      setMessage({ type: "error", text: getErrorMessage(error) });
+      setMessage({ type: 'error', text: getErrorMessage(error) });
     }
   };
 
@@ -113,9 +113,9 @@ export function useSettingsTabLogic(
         setSelectedSettingKey(buildSettingKey(updated));
       }
       setEditForm(null);
-      setMessage({ type: "success", text: "Vigencia atualizada com sucesso." });
+      setMessage({ type: 'success', text: 'Vigencia atualizada com sucesso.' });
     } catch (error) {
-      setMessage({ type: "error", text: getErrorMessage(error) });
+      setMessage({ type: 'error', text: getErrorMessage(error) });
     }
   };
 
@@ -123,15 +123,15 @@ export function useSettingsTabLogic(
     setMessage(null);
     try {
       const restored = await deleteCurrentSetting.mutateAsync();
-      setSelectedSettingKey("");
+      setSelectedSettingKey('');
       setNewDateStart(restored.date_start);
       setDeleteDialogOpen(false);
       setMessage({
-        type: "success",
+        type: 'success',
         text: `Vigencia atual removida. Vigencia ${formatDateBR(restored.date_start)} restaurada.`,
       });
     } catch (error) {
-      setMessage({ type: "error", text: getErrorMessage(error) });
+      setMessage({ type: 'error', text: getErrorMessage(error) });
       setDeleteDialogOpen(false);
     }
   };

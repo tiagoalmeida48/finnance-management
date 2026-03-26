@@ -1,17 +1,11 @@
-import {
-  CalendarRange,
-  ChevronLeft,
-  ChevronRight,
-  CreditCard as CardIcon,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import type { NavigateFunction } from "react-router-dom";
-import { Button } from "@/shared/components/ui/button";
-import { Container } from "@/shared/components/layout/Container";
-import { IconButton } from "@/shared/components/ui/icon-button";
-import { Text } from "@/shared/components/ui/Text";
-import { useCardDetailsHeaderLogic } from "@/pages/cards/hooks/useCardDetailsHeaderLogic";
-import type { CreditCardDetails } from "@/shared/interfaces/card-details.interface";
+import { CalendarRange, ChevronLeft, ChevronRight, CreditCard as CardIcon, LucideIcon } from 'lucide-react';
+import type { NavigateFunction } from 'react-router-dom';
+import { Button } from '@/shared/components/ui/button';
+import { Container } from '@/shared/components/layout/Container';
+import { IconButton } from '@/shared/components/ui/icon-button';
+import { Text } from '@/shared/components/ui/Text';
+import { useCardDetailsHeaderLogic } from '@/pages/cards/hooks/useCardDetailsHeaderLogic';
+import type { CreditCardDetails } from '@/shared/interfaces/card-details.interface';
 
 interface CardDetailsHeaderProps {
   card: CreditCardDetails;
@@ -87,14 +81,14 @@ export function CardDetailsHeader({
             <button
               type="button"
               onClick={onSetYearlyView}
-              className={`flex flex-1 items-center justify-center rounded-full px-4 py-1 text-[13px] font-bold transition-all ${!isAllTime ? "bg-white/10 text-white shadow-md" : "text-[var(--color-text-muted)] hover:text-white"}`}
+              className={`flex flex-1 items-center justify-center rounded-full px-4 py-1 text-[13px] font-bold transition-all ${!isAllTime ? 'bg-white/10 text-white shadow-md' : 'text-[var(--color-text-muted)] hover:text-white'}`}
             >
               {headerMessages.yearly}
             </button>
             <button
               type="button"
               onClick={onSetAllTimeView}
-              className={`flex flex-1 items-center justify-center rounded-full px-4 py-1 text-[13px] font-bold transition-all ${isAllTime ? "bg-white/10 text-white shadow-md" : "text-[var(--color-text-muted)] hover:text-white"}`}
+              className={`flex flex-1 items-center justify-center rounded-full px-4 py-1 text-[13px] font-bold transition-all ${isAllTime ? 'bg-white/10 text-white shadow-md' : 'text-[var(--color-text-muted)] hover:text-white'}`}
             >
               {headerMessages.allTime}
             </button>
@@ -102,7 +96,7 @@ export function CardDetailsHeader({
 
           <Container
             unstyled
-            className={`inline-flex items-center gap-1 rounded-full border border-white/5 bg-white/[0.03] p-1 shadow-sm backdrop-blur-sm transition-opacity ${isAllTime ? "pointer-events-none opacity-40" : "pointer-events-auto opacity-100"}`}
+            className={`inline-flex items-center gap-1 rounded-full border border-white/5 bg-white/[0.03] p-1 shadow-sm backdrop-blur-sm transition-opacity ${isAllTime ? 'pointer-events-none opacity-40' : 'pointer-events-auto opacity-100'}`}
           >
             <IconButton
               size="small"
@@ -135,10 +129,7 @@ export function CardDetailsHeader({
       >
         <div className="pointer-events-none absolute -right-20 -top-20 h-40 w-40 rounded-full bg-[var(--color-primary)] opacity-10 blur-[64px]" />
 
-        <Container
-          unstyled
-          className="relative z-10 flex flex-col items-center gap-5 sm:flex-row"
-        >
+        <Container unstyled className="relative z-10 flex flex-col items-center gap-5 sm:flex-row">
           {/* Estilo Mini-cartão Físico */}
           <Container
             unstyled
@@ -160,13 +151,11 @@ export function CardDetailsHeader({
             </Text>
             <Text className="mt-1 flex flex-wrap items-center justify-center gap-2 text-[13px] text-[var(--color-text-secondary)] sm:justify-start">
               <span>
-                {headerMessages.ending}{" "}
-                <strong className="text-white">{dueDay}</strong>
+                {headerMessages.ending} <strong className="text-white">{dueDay}</strong>
               </span>
               <span>•</span>
               <span>
-                {headerMessages.closing}{" "}
-                <strong className="text-white">{closingDay}</strong>
+                {headerMessages.closing} <strong className="text-white">{closingDay}</strong>
               </span>
             </Text>
           </Container>
@@ -175,7 +164,7 @@ export function CardDetailsHeader({
 
       {/* Bento Metrics */}
       <Container unstyled className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {metrics.map((metric: any) => (
+        {metrics.map((metric) => (
           <HeaderMetricCard
             key={metric.key}
             icon={metric.icon}
@@ -230,9 +219,7 @@ function HeaderMetricCard({
           {label}
         </Text>
       </Container>
-      <Text
-        className={`font-heading text-[22px] font-black tracking-tight ${valueClass}`}
-      >
+      <Text className={`font-heading text-[22px] font-black tracking-tight ${valueClass}`}>
         {value}
       </Text>
 
@@ -244,10 +231,10 @@ function HeaderMetricCard({
           <div
             className={`h-full rounded-full transition-all duration-1000 ${
               progress >= 80
-                ? "bg-[var(--color-error)]"
+                ? 'bg-[var(--color-error)]'
                 : progress >= 50
-                  ? "bg-[var(--color-warning)]"
-                  : "bg-[var(--color-success)]"
+                  ? 'bg-[var(--color-warning)]'
+                  : 'bg-[var(--color-success)]'
             } shadow-[0_0_10px_currentColor]`}
             style={{ width: `${progress}%` }}
           />

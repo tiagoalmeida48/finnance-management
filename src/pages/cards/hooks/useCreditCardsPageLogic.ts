@@ -1,9 +1,6 @@
-import { useState } from "react";
-import {
-  useCreditCards,
-  useDeleteCreditCard,
-} from "@/shared/hooks/api/useCreditCards";
-import { CreditCard } from "@/shared/interfaces/credit-card.interface";
+import { useState } from 'react';
+import { useCreditCards, useDeleteCreditCard } from '@/shared/hooks/api/useCreditCards';
+import { CreditCard } from '@/shared/interfaces/credit-card.interface';
 
 export function useCreditCardsPageLogic() {
   const { data: cards, isLoading } = useCreditCards();
@@ -16,10 +13,7 @@ export function useCreditCardsPageLogic() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [menuCard, setMenuCard] = useState<CreditCard | null>(null);
 
-  const handleOpenMenu = (
-    event: React.MouseEvent<HTMLElement>,
-    card: CreditCard,
-  ) => {
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, card: CreditCard) => {
     setAnchorEl(event.currentTarget);
     setMenuCard(card);
   };
@@ -50,8 +44,8 @@ export function useCreditCardsPageLogic() {
       await deleteCard.mutateAsync(selectedCard.id);
       setDeleteModalOpen(false);
       setSelectedCard(null);
-    } catch (error) {
-      console.error("Error deleting card:", error);
+    } catch {
+      // erro tratado pelo onError global do QueryClient
     }
   };
 

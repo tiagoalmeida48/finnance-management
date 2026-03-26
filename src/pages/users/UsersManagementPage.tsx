@@ -1,16 +1,16 @@
-import { useUsersManagementPageLogic } from "@/pages/users/hooks/useUsersManagementPageLogic";
-import { Card, CardContent } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
-import { IconButton } from "@/shared/components/ui/icon-button";
-import { Edit2, KeyRound, Plus, Trash2, Users, MoreVertical } from "lucide-react";
-import { colors } from "@/shared/theme";
-import { ActionMenuPopover } from "@/shared/components/composite/ActionMenuPopover";
-import { UsersManagementDialogs } from "@/pages/users/components/dialogs/UsersManagementDialogs";
-import { Container } from "@/shared/components/layout/Container";
-import { Section } from "@/shared/components/layout/Section";
-import { PageHeader } from "@/shared/components/composite/PageHeader";
-import { CollectionState } from "@/shared/components/composite/CollectionState";
-import { Text } from "@/shared/components/ui/Text";
+import { useUsersManagementPageLogic } from '@/pages/users/hooks/useUsersManagementPageLogic';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { IconButton } from '@/shared/components/ui/icon-button';
+import { Edit2, KeyRound, Plus, Trash2, Users, MoreVertical } from 'lucide-react';
+import { colors } from '@/shared/theme';
+import { ActionMenuPopover } from '@/shared/components/composite/ActionMenuPopover';
+import { UsersManagementDialogs } from '@/pages/users/components/dialogs/UsersManagementDialogs';
+import { Container } from '@/shared/components/layout/Container';
+import { Section } from '@/shared/components/layout/Section';
+import { PageHeader } from '@/shared/components/composite/PageHeader';
+import { CollectionState } from '@/shared/components/composite/CollectionState';
+import { Text } from '@/shared/components/ui/Text';
 import {
   Table,
   TableBody,
@@ -18,7 +18,7 @@ import {
   TableHead,
   TableHeaderCell,
   TableRow,
-} from "@/shared/components/layout/Table";
+} from '@/shared/components/layout/Table';
 
 export function UsersManagementPage() {
   const {
@@ -83,10 +83,11 @@ export function UsersManagementPage() {
           {message && (
             <Container
               unstyled
-              className={`rounded-lg border px-3 py-2 text-sm ${message.type === "success"
-                ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-300"
-                : "border-red-400/30 bg-red-500/10 text-red-300"
-                }`}
+              className={`rounded-lg border px-3 py-2 text-sm ${
+                message.type === 'success'
+                  ? 'border-emerald-400/30 bg-emerald-500/10 text-emerald-300'
+                  : 'border-red-400/30 bg-red-500/10 text-red-300'
+              }`}
             >
               {message.text}
             </Container>
@@ -97,9 +98,7 @@ export function UsersManagementPage() {
               <Container unstyled className="space-y-2">
                 <Container unstyled className="flex items-center gap-1">
                   <Users size={18} color={colors.accent} />
-                  <Text className="font-heading font-bold">
-                    {pageMessages.registeredUsers}
-                  </Text>
+                  <Text className="font-heading font-bold">{pageMessages.registeredUsers}</Text>
                 </Container>
 
                 <CollectionState
@@ -142,30 +141,19 @@ export function UsersManagementPage() {
                       </TableHead>
                       <TableBody>
                         {users.map((user) => (
-                          <TableRow
-                            key={user.id}
-                            className="border-b border-white/5"
-                          >
+                          <TableRow key={user.id} className="border-b border-white/5">
                             <TableCell className="border-b-0 px-2 py-2 text-[var(--color-text-secondary)]">
-                              {user.full_name || "-"}
+                              {user.full_name || '-'}
                             </TableCell>
                             <TableCell className="border-b-0 px-2 py-2 text-[var(--color-text-secondary)]">
                               {user.email}
                             </TableCell>
                             <TableCell className="border-b-0 px-2 py-2 text-[var(--color-text-secondary)]">
-                              {user.is_admin
-                                ? pageMessages.yes
-                                : pageMessages.no}
+                              {user.is_admin ? pageMessages.yes : pageMessages.no}
                             </TableCell>
                             <TableCell className="border-b-0 px-2 py-2">
-                              <Container
-                                unstyled
-                                className="flex justify-end gap-1"
-                              >
-                                <IconButton
-                                  size="small"
-                                  onClick={(e) => handleOpenMenu(e, user)}
-                                >
+                              <Container unstyled className="flex justify-end gap-1">
+                                <IconButton size="small" onClick={(e) => handleOpenMenu(e, user)}>
                                   <MoreVertical size={16} />
                                 </IconButton>
                               </Container>
@@ -182,11 +170,7 @@ export function UsersManagementPage() {
         </Container>
       </Container>
 
-      <ActionMenuPopover
-        open={Boolean(anchorEl)}
-        onClose={handleCloseMenu}
-        anchorEl={anchorEl}
-      >
+      <ActionMenuPopover open={Boolean(anchorEl)} onClose={handleCloseMenu} anchorEl={anchorEl}>
         <button
           type="button"
           onClick={handleMenuEdit}

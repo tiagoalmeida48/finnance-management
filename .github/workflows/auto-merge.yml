@@ -1,0 +1,26 @@
+name: Auto Merge (dev → main)
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  auto-merge:
+    name: Habilitar Auto-Merge
+    runs-on: ubuntu-latest
+    if: github.head_ref == 'dev'
+
+    steps:
+      - name: Habilitar auto-merge via squash
+        run: |
+          gh pr merge "${{ github.event.pull_request.number }}" \
+            --auto \
+            --squash \
+            --repo "${{ github.repository }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

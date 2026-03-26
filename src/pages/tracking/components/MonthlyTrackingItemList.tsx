@@ -1,8 +1,8 @@
-import { Container } from "@/shared/components/layout/Container";
-import { Text } from "@/shared/components/ui/Text";
-import { CreditCard, CheckCircle2, Clock3, Wallet } from "lucide-react";
-import { colors } from "@/shared/theme";
-import type { TrackingItem } from "./MonthlyTrackingCard";
+import { Container } from '@/shared/components/layout/Container';
+import { Text } from '@/shared/components/ui/Text';
+import { CreditCard, CheckCircle2, Clock3, Wallet } from 'lucide-react';
+import { colors } from '@/shared/theme';
+import type { TrackingItem } from './MonthlyTrackingCard';
 
 interface MonthlyTrackingItemListProps {
   items: TrackingItem[];
@@ -31,19 +31,13 @@ export function MonthlyTrackingItemList({
     <>
       {items.map((item, iidx: number) => (
         <Container unstyled key={iidx}>
-          <Container
-            unstyled
-            className="flex items-center justify-between gap-1.5"
-          >
-            <Container
-              unstyled
-              className="flex min-w-0 flex-1 items-center gap-1"
-            >
+          <Container unstyled className="flex items-center justify-between gap-1.5">
+            <Container unstyled className="flex min-w-0 flex-1 items-center gap-1">
               <Container
                 unstyled
                 className="grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[6px] border border-[var(--color-border)] bg-[var(--color-surface)]"
               >
-                {item.itemType === "card" ? (
+                {item.itemType === 'card' ? (
                   <CreditCard size={11} color={colors.textMuted} />
                 ) : (
                   <Wallet size={11} color={colors.textMuted} />
@@ -52,8 +46,8 @@ export function MonthlyTrackingItemList({
               <Text
                 className={`truncate text-sm font-medium ${
                   item.isPaid
-                    ? "text-[var(--color-text-secondary)] line-through"
-                    : "text-[var(--color-text-primary)]"
+                    ? 'text-[var(--color-text-secondary)] line-through'
+                    : 'text-[var(--color-text-primary)]'
                 }`}
               >
                 {item.name}
@@ -68,11 +62,7 @@ export function MonthlyTrackingItemList({
                 <CheckCircle2 size={15} color={colors.green} />
               ) : (
                 <Text as="span" title={pendingTitle}>
-                  <Clock3
-                    size={15}
-                    color={colors.yellow}
-                    className="opacity-80"
-                  />
+                  <Clock3 size={15} color={colors.yellow} className="opacity-80" />
                 </Text>
               )}
             </Container>

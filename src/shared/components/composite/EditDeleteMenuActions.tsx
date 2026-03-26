@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from 'lucide-react';
 
 interface EditDeleteMenuActionsProps {
   onEdit: () => void;
@@ -10,8 +10,8 @@ interface EditDeleteMenuActionsProps {
 export function EditDeleteMenuActions({
   onEdit,
   onDelete,
-  editLabel = "Editar",
-  deleteLabel = "Excluir",
+  editLabel = 'Editar',
+  deleteLabel = 'Excluir',
 }: EditDeleteMenuActionsProps) {
   return (
     <>

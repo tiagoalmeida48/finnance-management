@@ -1,18 +1,18 @@
-import { Calendar, RefreshCw } from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
-import { CollectionState } from "@/shared/components/composite/CollectionState";
-import { Heading } from "@/shared/components/ui/Heading";
-import { Row } from "@/shared/components/layout/Row";
-import { Stack } from "@/shared/components/layout/Stack";
-import { Text } from "@/shared/components/ui/Text";
-import { useCardStatementListLogic } from "@/pages/cards/hooks/useCardStatementListLogic";
+import { Calendar, RefreshCw } from 'lucide-react';
+import { Button } from '@/shared/components/ui/button';
+import { CollectionState } from '@/shared/components/composite/CollectionState';
+import { Heading } from '@/shared/components/ui/Heading';
+import { Row } from '@/shared/components/layout/Row';
+import { Stack } from '@/shared/components/layout/Stack';
+import { Text } from '@/shared/components/ui/Text';
+import { useCardStatementListLogic } from '@/pages/cards/hooks/useCardStatementListLogic';
 import type {
   CardStatement,
   StatementTransaction,
-} from "@/shared/interfaces/card-details.interface";
-import { colors } from "@/shared/theme";
-import { CardStatementMonthCard } from "../cards/CardStatementMonthCard";
-import { Container } from "@/shared/components/layout/Container";
+} from '@/shared/interfaces/card-details.interface';
+import { colors } from '@/shared/theme';
+import { CardStatementMonthCard } from '../cards/CardStatementMonthCard';
+import { Container } from '@/shared/components/layout/Container';
 
 interface CardStatementListProps {
   cardId: string;
@@ -46,16 +46,10 @@ export function CardStatementList({
     <>
       <Row className="mb-3 items-center justify-between">
         <Row className="items-center gap-2">
-          <Container
-            unstyled
-            className="rounded-lg bg-[var(--overlay-primary-12)] p-1"
-          >
+          <Container unstyled className="rounded-lg bg-[var(--overlay-primary-12)] p-1">
             <Calendar size={18} color={colors.accent} />
           </Container>
-          <Heading
-            level={3}
-            className="text-lg font-bold text-[var(--color-text-primary)]"
-          >
+          <Heading level={3} className="text-lg font-bold text-[var(--color-text-primary)]">
             {statementMessages.title}
           </Heading>
         </Row>
@@ -73,9 +67,7 @@ export function CardStatementList({
           size="small"
           variant="text"
         >
-          {reprocessInvoices.isPending
-            ? statementMessages.updating
-            : statementMessages.recalculate}
+          {reprocessInvoices.isPending ? statementMessages.updating : statementMessages.recalculate}
         </Button>
       </Row>
 
@@ -99,9 +91,7 @@ export function CardStatementList({
               key={item.statement.monthKey}
               statement={item.statement}
               isExpanded={item.isExpanded}
-              onToggleExpand={() =>
-                toggleExpandedMonth(item.statement.monthKey)
-              }
+              onToggleExpand={() => toggleExpandedMonth(item.statement.monthKey)}
               status={item.status}
               isMobile={isMobile}
               statementSortField={statementSortField}
