@@ -15,7 +15,8 @@
       "Bash(wc -l /d/DEV/Pessoal/finnance-management/dist/assets/*.js)",
       "Bash(npx vite:*)",
       "Bash(grep -n \"as any\\\\|any\\\\[\" /d/DEV/Pessoal/finnance-management/src/shared/services/*.ts)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(pnpm --version)"
     ]
   }
 }
