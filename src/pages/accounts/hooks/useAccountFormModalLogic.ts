@@ -94,7 +94,7 @@ export function useAccountFormModalLogic({
       }
       onClose();
     } catch {
-      // erro tratado pelo onError global do QueryClient
+      //
     }
   };
 

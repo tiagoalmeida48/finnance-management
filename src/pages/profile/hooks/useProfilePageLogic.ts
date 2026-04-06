@@ -28,8 +28,6 @@ export function useProfilePageLogic() {
       setFetching(false);
     } else if (user && fetching) {
       refreshProfile().finally(() => setFetching(false));
-    } else if (!fetching) {
-      // No-op once fetching is done
     } else {
       setFetching(false);
     }

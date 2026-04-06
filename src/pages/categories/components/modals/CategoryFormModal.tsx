@@ -96,7 +96,7 @@ export function CategoryFormModal({
       }
       onClose();
     } catch {
-      // erro tratado pelo onError global do QueryClient
+      //
     }
   };
 

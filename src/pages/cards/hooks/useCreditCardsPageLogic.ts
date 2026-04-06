@@ -45,7 +45,7 @@ export function useCreditCardsPageLogic() {
       setDeleteModalOpen(false);
       setSelectedCard(null);
     } catch {
-      // erro tratado pelo onError global do QueryClient
+      //
     }
   };
 

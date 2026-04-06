@@ -41,7 +41,7 @@ export function useAccountsPageLogic() {
       setDeleteModalOpen(false);
       setMenuAccount(null);
     } catch {
-      // erro tratado pelo onError global do QueryClient
+      //
     }
   };
 

@@ -8,6 +8,8 @@ export interface TransactionQueryFilters {
   offset?: number;
 }
 
+export type { TransactionsPaginatedParams, TransactionsSummaryParams } from '../services/transactions/transactions-core.service';
+
 type DashboardFilter = Date | { start: string; end: string };
 
 const getDashboardFilterToken = (filter?: DashboardFilter) => {
@@ -30,7 +32,9 @@ export const queryKeys = {
   },
   transactions: {
     all: ['transactions'] as const,
-    list: (filters?: TransactionQueryFilters) => ['transactions', filters ?? null] as const,
+    list: (filters?: TransactionQueryFilters) => ['transactions', 'list', filters ?? null] as const,
+    paginated: (params: object) => ['transactions', 'paginated', params] as const,
+    summaries: (params: object) => ['transactions', 'summaries', params] as const,
     firstDate: ['transactions', 'first-date'] as const,
     recent: ['transactions', 'recent'] as const,
   },
@@ -46,4 +50,5 @@ export const queryKeys = {
     history: ['salary-settings-history'] as const,
     current: ['salary-settings-current'] as const,
   },
-} as const;
+};
+

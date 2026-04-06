@@ -2,20 +2,9 @@ import { z } from 'zod';
 import { supabase } from '@/lib/supabase/client';
 import type { Transaction, CreateTransactionData } from '../../interfaces';
 import { TransactionSchema } from '../../schemas';
-import {
-  replaceDateDayPreservingMonth,
-  toDateKeyIgnoringTime,
-} from '@/shared/utils/transactionsGroup.utils';
-import {
-  linkTransactionToInvoice,
-  recalculateInvoiceTotal,
-  recalculateInvoicesForTransactions,
-} from '../invoice-reconciliation.service';
 import { transactionsCoreService } from './transactions-core.service';
 import { transactionsCreationService } from './transactions-creation.service';
-import { getTransactionAnchorDateKey } from '@/shared/utils/card-statement-cycle.utils';
 import {
-  normalizeTargetDay,
   normalizeToPositiveInteger,
   requireAuthenticatedUserId,
   sanitizeCreatePayload,
@@ -61,182 +50,78 @@ export const transactionsBatchService = {
 
     if (error) throw error;
 
-    const createdTransactions = z.array(TransactionSchema).parse(data ?? []);
-    for (const createdTransaction of createdTransactions) {
-      await linkTransactionToInvoice(createdTransaction);
-    }
-
-    return createdTransactions;
+    return z.array(TransactionSchema).parse(data ?? []);
   },
 
   async batchPay(ids: string[], accountId: string, paymentDate: string) {
     const safeIds = sanitizeIds(ids);
     if (safeIds.length === 0) return [];
 
-    const { data: previousTransactionsRaw, error: fetchError } = await supabase
+    const { error } = await supabase.rpc('batch_pay_transactions', {
+      p_ids: safeIds,
+      p_account_id: accountId,
+      p_payment_date: paymentDate,
+    });
+
+    if (error) throw error;
+
+    const { data, error: fetchError } = await supabase
       .from('transactions')
       .select('*')
       .in('id', safeIds);
 
     if (fetchError) throw fetchError;
-
-    const { data: updatedTransactionsRaw, error: updateError } = await supabase
-      .from('transactions')
-      .update({
-        is_paid: true,
-        payment_date: paymentDate,
-        account_id: accountId,
-        updated_at: new Date().toISOString(),
-      })
-      .in('id', safeIds)
-      .select('*');
-
-    if (updateError) throw updateError;
-
-    const previousTransactions = z.array(TransactionSchema).parse(previousTransactionsRaw ?? []);
-    const updatedTransactions = z.array(TransactionSchema).parse(updatedTransactionsRaw ?? []);
-
-    await recalculateInvoicesForTransactions([...previousTransactions, ...updatedTransactions]);
-    return updatedTransactions;
+    return z.array(TransactionSchema).parse(data ?? []);
   },
 
   async batchUnpay(ids: string[]) {
     const safeIds = sanitizeIds(ids);
     if (safeIds.length === 0) return [];
 
-    const { data: previousTransactionsRaw, error: fetchError } = await supabase
+    const { error } = await supabase.rpc('batch_unpay_transactions', {
+      p_ids: safeIds,
+    });
+
+    if (error) throw error;
+
+    const { data, error: fetchError } = await supabase
       .from('transactions')
       .select('*')
       .in('id', safeIds);
 
     if (fetchError) throw fetchError;
-
-    const { data: updatedTransactionsRaw, error: updateError } = await supabase
-      .from('transactions')
-      .update({
-        is_paid: false,
-        updated_at: new Date().toISOString(),
-      })
-      .in('id', safeIds)
-      .select('*');
-
-    if (updateError) throw updateError;
-
-    const previousTransactions = z.array(TransactionSchema).parse(previousTransactionsRaw ?? []);
-    const updatedTransactions = z.array(TransactionSchema).parse(updatedTransactionsRaw ?? []);
-
-    await recalculateInvoicesForTransactions([...previousTransactions, ...updatedTransactions]);
-    return updatedTransactions;
+    return z.array(TransactionSchema).parse(data ?? []);
   },
 
   async batchDelete(ids: string[]) {
     const safeIds = sanitizeIds(ids);
     if (safeIds.length === 0) return;
 
-    const { data: transactionsRaw, error: fetchError } = await supabase
-      .from('transactions')
-      .select('*')
-      .in('id', safeIds);
+    const { error } = await supabase.rpc('batch_delete_transactions', {
+      p_ids: safeIds,
+    });
 
-    if (fetchError) throw fetchError;
-
-    const transactions = z.array(TransactionSchema).parse(transactionsRaw ?? []);
-
-    const { error: deleteError } = await supabase.from('transactions').delete().in('id', safeIds);
-
-    if (deleteError) throw deleteError;
-
-    await recalculateInvoicesForTransactions(transactions);
+    if (error) throw error;
   },
 
   async batchChangeDay(ids: string[], day: number) {
     const safeIds = sanitizeIds(ids);
     if (safeIds.length === 0) return [];
 
-    const targetDay = normalizeTargetDay(day);
-    const { data: transactionsRaw, error: fetchError } = await supabase
+    const { error } = await supabase.rpc('batch_change_day', {
+      p_ids: safeIds,
+      p_day: day,
+    });
+
+    if (error) throw error;
+
+    const { data, error: fetchError } = await supabase
       .from('transactions')
       .select('*')
       .in('id', safeIds);
 
     if (fetchError) throw fetchError;
-
-    const transactions = z.array(TransactionSchema).parse(transactionsRaw ?? []);
-    if (transactions.length === 0) return [];
-
-    const updatesById = new Map<string, { payment_date?: string; purchase_date?: string }>();
-
-    for (const transaction of transactions) {
-      const updates: { payment_date?: string; purchase_date?: string } = {};
-
-      const currentPaymentDate = toDateKeyIgnoringTime(transaction.payment_date);
-      const currentPurchaseDate = toDateKeyIgnoringTime(transaction.purchase_date);
-      const nextPaymentDate = replaceDateDayPreservingMonth(transaction.payment_date, targetDay);
-      const nextPurchaseDate = replaceDateDayPreservingMonth(transaction.purchase_date, targetDay);
-
-      if (currentPaymentDate && nextPaymentDate && nextPaymentDate !== currentPaymentDate) {
-        updates.payment_date = nextPaymentDate;
-      }
-
-      if (currentPurchaseDate && nextPurchaseDate && nextPurchaseDate !== currentPurchaseDate) {
-        updates.purchase_date = nextPurchaseDate;
-      }
-
-      if (Object.keys(updates).length > 0) {
-        updatesById.set(transaction.id, updates);
-      }
-    }
-
-    if (updatesById.size === 0) return [];
-
-    const previousTransactionsById = new Map(
-      transactions.map((transaction) => [transaction.id, transaction]),
-    );
-    const updatedTransactions: Transaction[] = [];
-
-    for (const [transactionId, updates] of updatesById.entries()) {
-      const { data: updatedRaw, error: updateError } = await supabase
-        .from('transactions')
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('id', transactionId)
-        .select('*')
-        .single();
-
-      if (updateError) throw updateError;
-      updatedTransactions.push(TransactionSchema.parse(updatedRaw));
-    }
-
-    const affectedOldInvoiceIds = new Set<string>();
-
-    for (const updatedTransaction of updatedTransactions) {
-      const previousTransaction = previousTransactionsById.get(updatedTransaction.id);
-      if (!previousTransaction) continue;
-
-      const previousAnchorDateKey = getTransactionAnchorDateKey(previousTransaction);
-      const nextAnchorDateKey = getTransactionAnchorDateKey(updatedTransaction);
-      const anchorDateChanged = previousAnchorDateKey !== nextAnchorDateKey;
-      const cardChanged = previousTransaction.card_id !== updatedTransaction.card_id;
-
-      if (!anchorDateChanged && !cardChanged) continue;
-
-      if (previousTransaction.invoice_id) {
-        const { error: clearInvoiceError } = await supabase
-          .from('transactions')
-          .update({ invoice_id: null })
-          .eq('id', updatedTransaction.id);
-
-        if (clearInvoiceError) throw clearInvoiceError;
-        affectedOldInvoiceIds.add(previousTransaction.invoice_id);
-        updatedTransaction.invoice_id = null;
-      }
-
-      await linkTransactionToInvoice(updatedTransaction);
-    }
-
-    await Promise.all(
-      Array.from(affectedOldInvoiceIds).map((invoiceId) => recalculateInvoiceTotal(invoiceId)),
-    );
-    return updatedTransactions;
+    return z.array(TransactionSchema).parse(data ?? []);
   },
 
   async payBill(
@@ -247,7 +132,6 @@ export const transactionsBatchService = {
     amount: number,
     description: string,
   ) {
-    // Keep cardId in signature for backward compatibility with current UI contract.
     const normalizedDescription = description.startsWith('Pgto Fatura:')
       ? description
       : `Pgto Fatura: ${description}`;

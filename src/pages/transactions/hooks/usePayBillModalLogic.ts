@@ -66,7 +66,7 @@ export function usePayBillModalLogic({
       });
       handleClose();
     } catch {
-      // erro tratado pelo onError global do QueryClient
+      //
     }
   });
 

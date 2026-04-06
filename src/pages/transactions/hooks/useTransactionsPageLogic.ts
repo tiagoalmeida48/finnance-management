@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns';
 import {
-  useTransactions,
+  useTransactionsPaginated,
+  useTransactionsSummaries,
   useDeleteTransaction,
   useTogglePaymentStatus,
   useBatchDeleteTransactions,
@@ -16,61 +17,85 @@ import { useAccounts } from '@/shared/hooks/api/useAccounts';
 import { useCategories } from '@/shared/hooks/api/useCategories';
 import { useCreditCards } from '@/shared/hooks/api/useCreditCards';
 import { Transaction } from '@/shared/services/transactions.service';
-import {
-  getFilteredTransactionsAndSummaries,
-  getGroupedTransactions,
-  type TransactionSortConfig,
-  type TransactionSortField,
-} from '@/shared/utils/transactionsPage.utils';
-import {
-  clearContextMenuState,
-  extractGroupOrTransactionIds,
-  mergeUniqueIds,
-  removeIds,
-} from '@/shared/utils/transactionsPage.helpers';
+import { getGroupedTransactions } from '@/shared/utils/transactionsPage.utils';
+import { useTransactionModals } from './useTransactionModals';
+import { useTransactionFilters } from './useTransactionFilters';
+import { useTransactionSelection } from './useTransactionSelection';
+import type {
+  TransactionsPaginatedParams,
+  TransactionsSummaryParams,
+} from '@/shared/constants/queryKeys';
 
 export function useTransactionsPageLogic() {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [importModalOpen, setImportModalOpen] = useState(false);
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [changeDayModalOpen, setChangeDayModalOpen] = useState(false);
-  const [batchDeleteModalOpen, setBatchDeleteModalOpen] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | undefined>();
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [typeFilter, setTypeFilter] = useState<string | null>(null);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [showPendingOnly, setShowPendingOnly] = useState(false);
-  const [showAllTime, setShowAllTime] = useState(false);
-  const [hideCreditCards, setHideCreditCards] = useState(false);
-  const [showOnlyCardPurchases, setShowOnlyCardPurchases] = useState(false);
-  const [showInstallmentsOnly, setShowInstallmentsOnly] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const modals = useTransactionModals();
+  const filters = useTransactionFilters();
+  const selection = useTransactionSelection();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('all');
-  const [accountFilter, setAccountFilter] = useState<string>('all');
-  const [cardFilter, setCardFilter] = useState<string>('all');
-  const [sortConfig, setSortConfig] = useState<TransactionSortConfig>({
-    field: 'payment_date',
-    direction: 'desc',
-  });
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [transactionsPage, setTransactionsPage] = useState(0);
   const [transactionsRowsPerPage, setTransactionsRowsPerPage] = useState(100);
 
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [menuTransaction, setMenuTransaction] = useState<Transaction | null>(null);
+  // Build server-side query params from filter state
+  const summaryParams = useMemo<TransactionsSummaryParams>(() => {
+    const dateRange = filters.shouldUseAllTimeRange
+      ? { start_date: undefined, end_date: undefined }
+      : {
+          start_date: format(startOfMonth(filters.currentMonth), 'yyyy-MM-dd'),
+          end_date: format(endOfMonth(filters.currentMonth), 'yyyy-MM-dd'),
+        };
+    return {
+      ...dateRange,
+      type: filters.typeFilter ?? undefined,
+      is_paid: filters.showPendingOnly ? false : undefined,
+      account_id: filters.accountFilter !== 'all' ? filters.accountFilter : undefined,
+      card_id: filters.cardFilter !== 'all' ? filters.cardFilter : undefined,
+      category_id: filters.categoryFilter !== 'all' ? filters.categoryFilter : undefined,
+      payment_method:
+        filters.paymentMethodFilter !== 'all' ? filters.paymentMethodFilter : undefined,
+      search: filters.searchQuery.trim() || undefined,
+      hide_credit_cards: filters.hideCreditCards || undefined,
+      only_credit_cards: filters.showOnlyCardPurchases || undefined,
+      only_installments: filters.showInstallmentsOnly || undefined,
+    };
+  }, [
+    filters.shouldUseAllTimeRange,
+    filters.currentMonth,
+    filters.typeFilter,
+    filters.showPendingOnly,
+    filters.accountFilter,
+    filters.cardFilter,
+    filters.categoryFilter,
+    filters.paymentMethodFilter,
+    filters.searchQuery,
+    filters.hideCreditCards,
+    filters.showOnlyCardPurchases,
+    filters.showInstallmentsOnly,
+  ]);
 
-  const shouldUseAllTimeRange = showAllTime || showInstallmentsOnly;
+  const paginatedParams = useMemo<TransactionsPaginatedParams>(() => {
+    const effectiveLimit = transactionsRowsPerPage === -1 ? 10000 : transactionsRowsPerPage;
+    return {
+      ...summaryParams,
+      sort_field: filters.sortConfig.field,
+      sort_direction: filters.sortConfig.direction,
+      limit: effectiveLimit,
+      offset: transactionsPage * effectiveLimit,
+    };
+  }, [summaryParams, filters.sortConfig, transactionsPage, transactionsRowsPerPage]);
 
-  const { data: transactions, isLoading: transactionsLoading } = useTransactions({
-    start_date: shouldUseAllTimeRange
-      ? undefined
-      : format(startOfMonth(currentMonth), 'yyyy-MM-dd'),
-    end_date: shouldUseAllTimeRange ? undefined : format(endOfMonth(currentMonth), 'yyyy-MM-dd'),
-    is_paid: undefined,
-  });
+  // Reset to page 0 when filters change (not when page/sort changes)
+  const filterKey = useMemo(() => JSON.stringify(summaryParams), [summaryParams]);
+  const prevFilterKeyRef = useRef(filterKey);
+  useEffect(() => {
+    if (prevFilterKeyRef.current !== filterKey) {
+      prevFilterKeyRef.current = filterKey;
+      setTransactionsPage(0);
+    }
+  }, [filterKey]);
+
+  const { data: paginatedResult, isLoading: transactionsLoading } =
+    useTransactionsPaginated(paginatedParams);
+  const { data: summaries } = useTransactionsSummaries(summaryParams);
 
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const { data: categories } = useCategories();
@@ -88,362 +113,184 @@ export function useTransactionsPageLogic() {
 
   const isLoading = transactionsLoading || accountsLoading || cardsLoading;
 
-  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, transaction: Transaction) => {
-    setAnchorEl(event.currentTarget);
-    setMenuTransaction(transaction);
-  };
+  const transactions = paginatedResult?.data ?? [];
+  const totalCount = paginatedResult?.count ?? 0;
 
-  const handleCloseMenu = () => {
-    clearContextMenuState(setAnchorEl, setMenuTransaction);
-  };
+  const defaultSummaries = { income: 0, expense: 0, balance: 0, pending: 0 };
 
-  const handleSetShowAllTime = (value: boolean) => {
-    setShowAllTime(value);
-    if (!value) {
-      setShowInstallmentsOnly(false);
-    }
-    clearContextMenuState(setAnchorEl, setMenuTransaction);
-  };
-
-  const handleSetHideCreditCards = (value: boolean) => {
-    setHideCreditCards(value);
-    if (value) {
-      setShowOnlyCardPurchases(false);
-    }
-  };
-
-  const handleSetShowOnlyCardPurchases = (value: boolean) => {
-    setShowOnlyCardPurchases(value);
-    if (value) {
-      setHideCreditCards(false);
-    }
-  };
-
-  const handleSetShowInstallmentsOnly = (value: boolean) => {
-    setShowInstallmentsOnly(value);
-    if (value) {
-      setShowAllTime(true);
-    }
-    clearContextMenuState(setAnchorEl, setMenuTransaction);
-  };
+  // Group current page visually (installments/recurring groups within the page)
+  const groupedTransactions = useMemo(
+    () => getGroupedTransactions(transactions, filters.sortConfig),
+    [transactions, filters.sortConfig],
+  );
 
   const handleEdit = () => {
-    setSelectedTransaction(menuTransaction || undefined);
-    setModalOpen(true);
-    handleCloseMenu();
+    modals.setSelectedTransaction(selection.menuTransaction || undefined);
+    modals.setModalOpen(true);
+    selection.handleCloseMenu();
   };
 
   const handleDelete = () => {
-    if (!menuTransaction) return;
-    setDeleteModalOpen(true);
-    handleCloseMenu();
+    if (!selection.menuTransaction) return;
+    modals.setDeleteModalOpen(true);
+    selection.handleCloseMenu();
   };
 
   const handleDuplicate = async () => {
-    if (!menuTransaction) return;
-
+    if (!selection.menuTransaction) return;
     try {
-      await duplicateTransaction.mutateAsync(menuTransaction.id);
-    } catch {
-      // erro tratado pelo onError global do QueryClient
+      await duplicateTransaction.mutateAsync(selection.menuTransaction.id);
     } finally {
-      handleCloseMenu();
+      selection.handleCloseMenu();
     }
   };
 
   const handleInsertInstallmentBetween = async () => {
-    if (!menuTransaction?.installment_group_id) return;
-
+    if (!selection.menuTransaction?.installment_group_id) return;
     try {
-      await insertInstallmentBetween.mutateAsync(menuTransaction.id);
-    } catch {
-      // erro tratado pelo onError global do QueryClient
+      await insertInstallmentBetween.mutateAsync(selection.menuTransaction.id);
     } finally {
-      handleCloseMenu();
+      selection.handleCloseMenu();
     }
   };
 
   const handleConfirmDelete = async (type: 'single' | 'group') => {
-    if (!menuTransaction) return;
+    if (!selection.menuTransaction) return;
     try {
       if (type === 'group') {
-        const groupId = menuTransaction.installment_group_id || menuTransaction.recurring_group_id;
-        const groupType = menuTransaction.installment_group_id ? 'installment' : 'recurring';
+        const groupId =
+          selection.menuTransaction.installment_group_id ||
+          selection.menuTransaction.recurring_group_id;
+        const groupType = selection.menuTransaction.installment_group_id
+          ? 'installment'
+          : 'recurring';
         if (groupId) {
-          await deleteTransactionGroup.mutateAsync({
-            groupId,
-            type: groupType,
-          });
+          await deleteTransactionGroup.mutateAsync({ groupId, type: groupType });
         }
-        setSelectedIds([]);
+        selection.setSelectedIds([]);
       } else {
-        await deleteTransaction.mutateAsync(menuTransaction.id);
-        setSelectedIds((prev) => prev.filter((id) => id !== menuTransaction.id));
+        await deleteTransaction.mutateAsync(selection.menuTransaction.id);
+        selection.setSelectedIds((prev) =>
+          prev.filter((id) => id !== selection.menuTransaction?.id),
+        );
       }
-      setDeleteModalOpen(false);
-      setMenuTransaction(null);
+      modals.setDeleteModalOpen(false);
+      selection.setMenuTransaction(null);
     } catch {
-      // erro tratado pelo onError global do QueryClient
+      //
     }
   };
 
   const handleTogglePaid = (transaction: Transaction) => {
     if (!transaction.is_paid) {
-      setSelectedTransaction(transaction);
-      setPaymentModalOpen(true);
+      modals.setSelectedTransaction(transaction);
+      modals.setPaymentModalOpen(true);
     } else {
-      togglePaymentStatus.mutate({
-        id: transaction.id,
-        currentStatus: true,
-      });
+      togglePaymentStatus.mutate({ id: transaction.id, currentStatus: true });
     }
   };
 
   const handleConfirmPayment = async (data: { account_id: string; payment_date: string }) => {
     try {
-      if (selectedTransaction) {
+      if (modals.selectedTransaction) {
         await batchPayTransactions.mutateAsync({
-          ids: [selectedTransaction.id],
+          ids: [modals.selectedTransaction.id],
           accountId: data.account_id,
           paymentDate: data.payment_date,
         });
-      } else if (selectedIds.length > 0) {
+      } else if (selection.selectedIds.length > 0) {
         await batchPayTransactions.mutateAsync({
-          ids: selectedIds,
+          ids: selection.selectedIds,
           accountId: data.account_id,
           paymentDate: data.payment_date,
         });
-        setSelectedIds([]);
+        selection.setSelectedIds([]);
       }
-      setPaymentModalOpen(false);
-      setSelectedTransaction(undefined);
+      modals.setPaymentModalOpen(false);
+      modals.setSelectedTransaction(undefined);
     } catch {
-      // erro tratado pelo onError global do QueryClient
+      //
     }
   };
 
   const handleBatchUnpay = async () => {
     try {
-      if (selectedIds.length > 0) {
-        await batchUnpayTransactions.mutateAsync(selectedIds);
-        setSelectedIds([]);
+      if (selection.selectedIds.length > 0) {
+        await batchUnpayTransactions.mutateAsync(selection.selectedIds);
+        selection.setSelectedIds([]);
       }
     } catch {
-      // erro tratado pelo onError global do QueryClient
+      //
     }
-  };
-
-  const handleOpenBatchDeleteModal = () => {
-    if (selectedIds.length === 0) return;
-    setBatchDeleteModalOpen(true);
   };
 
   const handleBatchDelete = async () => {
-    if (selectedIds.length === 0) return;
-
+    if (selection.selectedIds.length === 0) return;
     try {
-      await batchDeleteTransactions.mutateAsync(selectedIds);
-      setSelectedIds([]);
-      setBatchDeleteModalOpen(false);
+      await batchDeleteTransactions.mutateAsync(selection.selectedIds);
+      selection.setSelectedIds([]);
+      modals.setBatchDeleteModalOpen(false);
     } catch {
-      // erro tratado pelo onError global do QueryClient
+      //
     }
-  };
-
-  const handleOpenBatchChangeDayModal = () => {
-    if (selectedIds.length === 0) return;
-    setChangeDayModalOpen(true);
   };
 
   const handleBatchChangeDay = async (day: number) => {
-    if (selectedIds.length === 0) return;
-
+    if (selection.selectedIds.length === 0) return;
     try {
-      await batchChangeTransactionDay.mutateAsync({ ids: selectedIds, day });
-      setSelectedIds([]);
-      setChangeDayModalOpen(false);
+      await batchChangeTransactionDay.mutateAsync({ ids: selection.selectedIds, day });
+      selection.setSelectedIds([]);
+      modals.setChangeDayModalOpen(false);
     } catch {
-      // erro tratado pelo onError global do QueryClient
+      //
     }
-  };
-
-  const handleAdd = () => {
-    setSelectedTransaction(undefined);
-    setModalOpen(true);
-  };
-
-  const handleImport = () => {
-    setImportModalOpen(true);
   };
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
   };
 
-  const handleSelectRow = (id: string) => {
-    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
-  };
-
-  const handleSelectAll = (checked: boolean) => {
-    if (!checked) {
-      setSelectedIds((prev) => removeIds(prev, currentPageTransactionIds));
-      return;
-    }
-
-    setSelectedIds((prev) => mergeUniqueIds(prev, currentPageTransactionIds));
-  };
-
-  const handleOpenBatchPayModal = () => {
-    if (selectedIds.length === 0) return;
-    setSelectedTransaction(undefined);
-    setPaymentModalOpen(true);
-  };
-
   const handlePrevMonth = () => {
-    setCurrentMonth((prev) => subMonths(prev, 1));
-    setShowAllTime(false);
-    clearContextMenuState(setAnchorEl, setMenuTransaction);
-    setSelectedIds([]);
+    filters.setCurrentMonth((prev) => subMonths(prev, 1));
+    filters.setShowAllTime(false);
+    selection.clearMenuState();
+    selection.setSelectedIds([]);
   };
 
   const handleNextMonth = () => {
-    setCurrentMonth((prev) => addMonths(prev, 1));
-    setShowAllTime(false);
-    clearContextMenuState(setAnchorEl, setMenuTransaction);
-    setSelectedIds([]);
+    filters.setCurrentMonth((prev) => addMonths(prev, 1));
+    filters.setShowAllTime(false);
+    selection.clearMenuState();
+    selection.setSelectedIds([]);
   };
 
-  const handleSort = (field: TransactionSortField) => {
-    setSortConfig((prev) => ({
-      field,
-      direction: prev.field === field && prev.direction === 'desc' ? 'asc' : 'desc',
-    }));
-  };
-
-  const { filteredTransactions, summaries } = useMemo(() => {
-    if (!transactions)
-      return {
-        filteredTransactions: [],
-        summaries: { income: 0, expense: 0, balance: 0, pending: 0 },
-      };
-    return getFilteredTransactionsAndSummaries({
-      transactions,
-      showPendingOnly,
-      typeFilter,
-      searchQuery,
-      categoryFilter,
-      paymentMethodFilter,
-      accountFilter,
-      cardFilter,
-      hideCreditCards,
-      showOnlyCardPurchases,
-      showInstallmentsOnly,
-      sortConfig,
-    });
-  }, [
-    transactions,
-    showPendingOnly,
-    typeFilter,
-    searchQuery,
-    categoryFilter,
-    paymentMethodFilter,
-    accountFilter,
-    cardFilter,
-    sortConfig,
-    hideCreditCards,
-    showOnlyCardPurchases,
-    showInstallmentsOnly,
-  ]);
-
-  const groupedTransactions = useMemo(() => {
-    return getGroupedTransactions(filteredTransactions, sortConfig);
-  }, [filteredTransactions, sortConfig]);
-
-  const showingAllTransactions = transactionsRowsPerPage === -1;
-  const maxTransactionsPage = showingAllTransactions
-    ? 0
-    : Math.max(0, Math.ceil(groupedTransactions.length / transactionsRowsPerPage) - 1);
-  const safeTransactionsPage = Math.min(transactionsPage, maxTransactionsPage);
-
-  const paginatedGroupedTransactions = useMemo(() => {
-    if (showingAllTransactions) {
-      return groupedTransactions;
-    }
-    const startIndex = safeTransactionsPage * transactionsRowsPerPage;
-    return groupedTransactions.slice(startIndex, startIndex + transactionsRowsPerPage);
-  }, [groupedTransactions, safeTransactionsPage, showingAllTransactions, transactionsRowsPerPage]);
-
-  const currentPageTransactionIds = extractGroupOrTransactionIds(paginatedGroupedTransactions);
-
-  const handleTransactionsPageChange = (page: number) => {
-    setTransactionsPage(page);
-  };
+  const handleTransactionsPageChange = (page: number) => setTransactionsPage(page);
 
   const handleTransactionsRowsPerPageChange = (rowsPerPage: number) => {
     setTransactionsRowsPerPage(rowsPerPage);
     setTransactionsPage(0);
   };
 
+  const handleSelectAll = (checked: boolean) => {
+    selection.handleSelectAll(checked, groupedTransactions);
+  };
+
   return {
-    modalOpen,
-    setModalOpen,
-    importModalOpen,
-    setImportModalOpen,
-    paymentModalOpen,
-    setPaymentModalOpen,
-    changeDayModalOpen,
-    setChangeDayModalOpen,
-    batchDeleteModalOpen,
-    setBatchDeleteModalOpen,
-    selectedTransaction,
-    setSelectedTransaction,
-    deleteModalOpen,
-    setDeleteModalOpen,
-    typeFilter,
-    setTypeFilter,
-    currentMonth,
-    setCurrentMonth,
-    showPendingOnly,
-    setShowPendingOnly,
-    showAllTime,
-    setShowAllTime: handleSetShowAllTime,
-    showInstallmentsOnly,
-    setShowInstallmentsOnly: handleSetShowInstallmentsOnly,
-    hideCreditCards,
-    setHideCreditCards: handleSetHideCreditCards,
-    showOnlyCardPurchases,
-    setShowOnlyCardPurchases: handleSetShowOnlyCardPurchases,
+    ...modals,
+    ...filters,
+    ...selection,
     expandedGroups,
     setExpandedGroups,
-    searchQuery,
-    setSearchQuery,
-    categoryFilter,
-    setCategoryFilter,
-    paymentMethodFilter,
-    setPaymentMethodFilter,
-    accountFilter,
-    setAccountFilter,
-    cardFilter,
-    setCardFilter,
-    sortConfig,
-    setSortConfig,
-    transactionsPage: safeTransactionsPage,
+    transactionsPage,
     setTransactionsPage: handleTransactionsPageChange,
     transactionsRowsPerPage,
     setTransactionsRowsPerPage: handleTransactionsRowsPerPageChange,
-    selectedIds,
-    setSelectedIds,
-    anchorEl,
-    setAnchorEl,
-    menuTransaction,
-    setMenuTransaction,
     transactions,
+    totalCount,
     isLoading,
     categories,
     accounts,
     cards,
-    handleOpenMenu,
-    handleCloseMenu,
     handleEdit,
     handleDelete,
     handleConfirmDelete,
@@ -454,24 +301,21 @@ export function useTransactionsPageLogic() {
     handleBatchUnpay,
     handleBatchDelete,
     handleBatchChangeDay,
-    handleOpenBatchPayModal,
-    handleOpenBatchChangeDayModal,
-    handleOpenBatchDeleteModal,
-    handleAdd,
-    handleImport,
+    handleOpenBatchPayModal: () => modals.handleOpenBatchPayModal(selection.selectedIds.length > 0),
+    handleOpenBatchChangeDayModal: () =>
+      modals.handleOpenBatchChangeDayModal(selection.selectedIds.length > 0),
+    handleOpenBatchDeleteModal: () =>
+      modals.handleOpenBatchDeleteModal(selection.selectedIds.length > 0),
     toggleGroup,
-    handleSelectRow,
     handleSelectAll,
     handlePrevMonth,
     handleNextMonth,
-    handleSort,
-    filteredTransactions,
-    summaries,
+    summaries: summaries ?? defaultSummaries,
     groupedTransactions,
-    paginatedGroupedTransactions,
+    paginatedGroupedTransactions: groupedTransactions,
     duplicateTransaction,
     insertInstallmentBetween,
-    togglePaymentStatus, // exposes isPending etc if needed
+    togglePaymentStatus,
     batchChangeTransactionDay,
     batchDeleteTransactions,
   };

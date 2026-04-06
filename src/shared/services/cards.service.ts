@@ -35,70 +35,51 @@ const mapCyclesByCard = (cycles: CreditCardStatementCycle[]) =>
     return acc;
   }, {});
 
-const mapByCard = <T extends { card_id: string }>(items: T[]) =>
-  items.reduce<Record<string, T[]>>((acc, item) => {
-    if (!acc[item.card_id]) acc[item.card_id] = [];
-    acc[item.card_id].push(item);
-    return acc;
-  }, {});
 
 export const cardsService = {
   async getAll() {
-    const { data: cards, error } = await supabase
-      .from('credit_cards')
-      .select('*, bank_account:bank_account_id(name)')
-      .is('deleted_at', null)
-      .order('name');
+    const [cardsResult, cyclesResult, statsResult] = await Promise.all([
+      supabase
+        .from('credit_cards')
+        .select('*, bank_account:bank_account_id(name)')
+        .is('deleted_at', null)
+        .order('name'),
+      supabase
+        .from('credit_card_statement_cycles')
+        .select('*')
+        .order('date_start', { ascending: true }),
+      supabase.rpc('get_all_card_stats'),
+    ]);
 
-    if (error) throw new Error(error.message);
+    if (cardsResult.error) throw new Error(cardsResult.error.message);
+    if (cyclesResult.error) throw cyclesResult.error;
+    if (statsResult.error) throw statsResult.error;
 
-    const { data: invoices, error: invError } = await supabase
-      .from('credit_card_invoices')
-      .select('*')
-      .order('month_key', { ascending: false });
-
-    if (invError) throw invError;
-
-    const { data: cycles, error: cyclesError } = await supabase
-      .from('credit_card_statement_cycles')
-      .select('*')
-      .order('date_start', { ascending: true });
-
-    if (cyclesError) throw cyclesError;
-
-    const now = new Date();
-    const currentMonthKey = format(now, 'yyyy-MM');
-
-    const cardRows = z.array(CreditCardSchema).parse(cards ?? []);
-    const allInvoices = z.array(CreditCardInvoiceSchema).parse(invoices ?? []);
-    const allCycles = z.array(CreditCardStatementCycleSchema).parse(cycles ?? []);
-
-    const invoicesByCard = mapByCard(allInvoices);
+    const cardRows = z.array(CreditCardSchema).parse(cardsResult.data ?? []);
+    const allCycles = z.array(CreditCardStatementCycleSchema).parse(cyclesResult.data ?? []);
     const cyclesByCard = mapCyclesByCard(allCycles);
+
+    const statsMap = new Map(
+      ((statsResult.data ?? []) as Array<{
+        card_id: string;
+        usage: number;
+        current_invoice: number;
+        available_limit: number;
+      }>).map((s) => [s.card_id, s]),
+    );
 
     return cardRows.map((card) => {
       const cardCycles = sortStatementCyclesAsc(cyclesByCard[card.id] ?? []);
-      const cardInvoices = invoicesByCard[card.id] ?? [];
       const currentCycle = getCurrentStatementCycle(cardCycles);
-
-      const unpaidInvoices = cardInvoices.filter((inv) => inv.status !== 'paid');
-      const totalUsage = unpaidInvoices.reduce(
-        (acc, inv) => acc + (Number(inv.total_amount) - Number(inv.paid_amount)),
-        0,
-      );
-
-      const currentInvoiceData = cardInvoices.find((inv) => inv.month_key === currentMonthKey);
-      const currentInvoice = currentInvoiceData
-        ? Number(currentInvoiceData.total_amount) - Number(currentInvoiceData.paid_amount)
-        : 0;
+      const stats = statsMap.get(card.id);
 
       return {
         ...card,
         statement_cycles: cardCycles,
         current_statement_cycle: currentCycle,
-        usage: totalUsage,
-        current_invoice: currentInvoice,
-        available_limit: Number(card.credit_limit) - totalUsage,
+        usage: Number(stats?.usage ?? 0),
+        current_invoice: Number(stats?.current_invoice ?? 0),
+        available_limit: Number(stats?.available_limit ?? card.credit_limit),
       };
     });
   },
@@ -128,7 +109,6 @@ export const cardsService = {
         date_end: OPEN_CYCLE_END,
         closing_day: card.closing_day,
         due_day: card.due_day,
-        notes: 'Vigencia inicial criada no cadastro do cartao.',
       })
       .select('*')
       .single();
@@ -212,7 +192,7 @@ export const cardsService = {
           date_end: OPEN_CYCLE_END,
           closing_day: input.closing_day,
           due_day: input.due_day,
-          notes: input.notes?.trim() ? input.notes.trim() : 'Vigencia inicial criada manualmente.',
+          notes: input.notes?.trim() ? input.notes.trim() : null,
         })
         .select('*')
         .single();
@@ -355,13 +335,17 @@ export const cardsService = {
   },
 
   async getCardDetails(id: string) {
-    const { data: card, error: cardError } = await supabase
-      .from('credit_cards')
-      .select('*, bank_account:bank_account_id(name)')
-      .eq('id', id)
-      .single();
+    const [cardResult, statsResult] = await Promise.all([
+      supabase
+        .from('credit_cards')
+        .select('*, bank_account:bank_account_id(name)')
+        .eq('id', id)
+        .single(),
+      supabase.rpc('get_card_stats', { p_card_id: id }),
+    ]);
 
-    if (cardError) throw cardError;
+    if (cardResult.error) throw cardResult.error;
+    if (statsResult.error) throw statsResult.error;
 
     let from = 0;
     const cardTransactions: Transaction[] = [];
@@ -383,42 +367,34 @@ export const cardsService = {
       from += TRANSACTIONS_PAGE_SIZE;
     }
 
-    const { data: invoices, error: invError } = await supabase
-      .from('credit_card_invoices')
-      .select('*')
-      .eq('card_id', id)
-      .order('month_key', { ascending: false });
+    const [invoicesResult, cyclesResult] = await Promise.all([
+      supabase
+        .from('credit_card_invoices')
+        .select('*')
+        .eq('card_id', id)
+        .order('month_key', { ascending: false }),
+      supabase
+        .from('credit_card_statement_cycles')
+        .select('*')
+        .eq('card_id', id)
+        .order('date_start', { ascending: true }),
+    ]);
 
-    if (invError) throw invError;
+    if (invoicesResult.error) throw invoicesResult.error;
+    if (cyclesResult.error) throw cyclesResult.error;
 
-    const { data: cycles, error: cyclesError } = await supabase
-      .from('credit_card_statement_cycles')
-      .select('*')
-      .eq('card_id', id)
-      .order('date_start', { ascending: true });
-
-    if (cyclesError) throw cyclesError;
-
-    const cardRow = CreditCardSchema.parse(card);
+    const cardRow = CreditCardSchema.parse(cardResult.data);
     const cardCycles = sortStatementCyclesAsc(
-      z.array(CreditCardStatementCycleSchema).parse(cycles ?? []),
+      z.array(CreditCardStatementCycleSchema).parse(cyclesResult.data ?? []),
     );
-    const cardInvoices = z.array(CreditCardInvoiceSchema).parse(invoices ?? []);
+    const cardInvoices = z.array(CreditCardInvoiceSchema).parse(invoicesResult.data ?? []);
     const currentCycle = getCurrentStatementCycle(cardCycles);
 
-    const now = new Date();
-    const currentMonthKey = format(now, 'yyyy-MM');
-
-    const unpaidInvoices = cardInvoices.filter((inv) => inv.status !== 'paid');
-    const totalUsage = unpaidInvoices.reduce(
-      (acc, inv) => acc + (Number(inv.total_amount) - Number(inv.paid_amount)),
-      0,
-    );
-
-    const currentInvoiceData = cardInvoices.find((inv) => inv.month_key === currentMonthKey);
-    const currentInvoice = currentInvoiceData
-      ? Number(currentInvoiceData.total_amount) - Number(currentInvoiceData.paid_amount)
-      : 0;
+    const stats = statsResult.data as {
+      usage: number;
+      current_invoice: number;
+      available_limit: number;
+    } | null;
 
     return {
       ...cardRow,
@@ -426,9 +402,9 @@ export const cardsService = {
       invoices: cardInvoices,
       statement_cycles: cardCycles,
       current_statement_cycle: currentCycle,
-      usage: totalUsage,
-      current_invoice: currentInvoice,
-      available_limit: Number(cardRow.credit_limit) - totalUsage,
+      usage: Number(stats?.usage ?? 0),
+      current_invoice: Number(stats?.current_invoice ?? 0),
+      available_limit: Number(stats?.available_limit ?? cardRow.credit_limit),
     } as CreditCardDetails;
   },
 };

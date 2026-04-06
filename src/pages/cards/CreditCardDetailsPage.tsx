@@ -59,8 +59,8 @@ export function CreditCardDetailsPage() {
         <CardStatementCycleHistoryModal
           cardId={card.id}
           cardName={card.name}
-          fallbackClosingDay={card.current_statement_cycle?.closing_day ?? card.closing_day}
-          fallbackDueDay={card.current_statement_cycle?.due_day ?? card.due_day}
+          fallbackClosingDay={card.current_statement_cycle?.closing_day}
+          fallbackDueDay={card.current_statement_cycle?.due_day}
           open={cycleHistoryOpen}
           onClose={() => setCycleHistoryOpen(false)}
         />

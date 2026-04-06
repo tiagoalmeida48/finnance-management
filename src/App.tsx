@@ -15,7 +15,9 @@ const LazyToastProvider = lazy(() =>
 );
 
 function App() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) return null;
 
   if (!user) {
     return <AppRoutes />;

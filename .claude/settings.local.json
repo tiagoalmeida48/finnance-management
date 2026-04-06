@@ -16,7 +16,26 @@
       "Bash(npx vite:*)",
       "Bash(grep -n \"as any\\\\|any\\\\[\" /d/DEV/Pessoal/finnance-management/src/shared/services/*.ts)",
       "Bash(xargs grep:*)",
-      "Bash(pnpm --version)"
+      "Bash(pnpm --version)",
+      "Bash(ls -la \"C:/Users/Tiago/.claude/projects/D--DEV-Pessoal-finnance-management/\"*.jsonl)",
+      "Bash(rm:*)",
+      "Bash(find D:/DEV/Pessoal/finnance-management/src -name *.ts -o -name *.tsx)",
+      "WebSearch",
+      "Bash(bash -c \"grep -rn ''closing_day\\\\|due_day'' --include=''*.ts'' --include=''*.tsx'' | head -40\")",
+      "Bash(npx supabase:*)",
+      "Bash(ls D:/DEV/Pessoal/finnance-management/.env*)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(echo \"EXITCODE: $?\")",
+      "mcp__supabase__list_migrations",
+      "mcp__supabase__apply_migration",
+      "mcp__supabase__execute_sql",
+      "Bash(pnpm tsc:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(find /d/DEV/Pessoal/finnance-management/src -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec grep -l \"^\\\\s*//\" {} \\\\;)",
+      "Bash(find /d/DEV/Pessoal/finnance-management/src -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec grep -l \"/\\\\*\" {} \\\\;)",
+      "Bash(grep -rn \"^\\\\s*//\" /d/DEV/Pessoal/finnance-management/src --include=\"*.ts\" --include=\"*.tsx\")",
+      "Bash(find /d/DEV/Pessoal/finnance-management/src -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec wc -l {} +)",
+      "Bash(xargs wc:*)"
     ]
   }
 }

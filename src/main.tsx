@@ -9,6 +9,9 @@ import App from './App';
 
 const queryClient = new QueryClient({
   defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+    },
     mutations: {
       onError: (error) => {
         const message = error instanceof Error ? error.message : 'Ocorreu um erro inesperado.';

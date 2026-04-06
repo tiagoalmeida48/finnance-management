@@ -25,8 +25,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(() => {
-    // Fast-path: se não há token no storage, sabemos que não há sessão
-    // Mostra login imediatamente sem esperar getSession()
     const storageKey = `sb-${new URL(import.meta.env.VITE_SUPABASE_URL).hostname.split('.')[0]}-auth-token`;
     return localStorage.getItem(storageKey) !== null;
   });
@@ -108,12 +106,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      // INITIAL_SESSION is already handled by the bootstrap above.
+      // TOKEN_REFRESHED only rotates the JWT — no need to refetch the profile.
+      if (event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
+        if (isMounted()) setLoading(false);
+        return;
+      }
+
       void (async () => {
         if (!isMounted()) return;
-
-        await applySession(nextSession, isMounted, {
-          refreshProfile: event !== 'TOKEN_REFRESHED',
-        });
+        await applySession(nextSession, isMounted);
         if (isMounted()) setLoading(false);
       })();
     });

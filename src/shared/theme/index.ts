@@ -1,4 +1,3 @@
-// Colors are derived from global CSS vars declared in src/App.css.
 export const colors = {
   bgPrimary: 'var(--color-background)',
   bgSecondary: 'var(--color-surface)',

@@ -3,14 +3,41 @@ import { supabase } from '@/lib/supabase/client';
 import type { Transaction } from '../../interfaces';
 import { TransactionSchema } from '../../schemas';
 import { getTransactionAnchorDateKey } from '@/shared/utils/card-statement-cycle.utils';
-import {
-  linkTransactionToInvoice,
-  recalculateInvoiceTotal,
-} from '../invoice-reconciliation.service';
+import { recalculateInvoiceTotal } from '../invoice-reconciliation.service';
 import { TRANSACTION_MUTATION_PAGE_SIZE } from './transactions-utils.service';
 
 const TRANSACTION_SELECT =
   '*, bank_account:account_id(name), to_bank_account:to_account_id(name), category:category_id(name, color, icon), credit_card:card_id(name, color)';
+
+const SORTABLE_DB_FIELDS = new Set([
+  'payment_date', 'purchase_date', 'amount', 'is_paid',
+  'payment_method', 'description', 'type',
+]);
+
+export interface TransactionsPaginatedParams {
+  start_date?: string;
+  end_date?: string;
+  type?: string | null;
+  is_paid?: boolean;
+  account_id?: string;
+  card_id?: string;
+  category_id?: string;
+  payment_method?: string;
+  search?: string;
+  hide_credit_cards?: boolean;
+  only_credit_cards?: boolean;
+  only_installments?: boolean;
+  sort_field?: string;
+  sort_direction?: 'asc' | 'desc';
+  limit: number;
+  offset: number;
+}
+
+export type TransactionsSummaryParams = Omit<
+  TransactionsPaginatedParams,
+  'limit' | 'offset' | 'sort_field' | 'sort_direction'
+>;
+
 
 export const transactionsCoreService = {
   async getAll(filters?: {
@@ -22,7 +49,6 @@ export const transactionsCoreService = {
     limit?: number;
     offset?: number;
   }) {
-    // Single-page fetch when caller provides explicit pagination params
     if (filters?.limit !== undefined) {
       const pageOffset = filters.offset ?? 0;
 
@@ -43,7 +69,6 @@ export const transactionsCoreService = {
       return z.array(TransactionSchema).parse(data ?? []);
     }
 
-    // Legacy: accumulate all pages (backward compatible)
     let from = 0;
     const allTransactions: Transaction[] = [];
 
@@ -123,19 +148,8 @@ export const transactionsCoreService = {
     const anchorDateChanged = oldAnchorDateKey !== newAnchorDateKey;
     const cardChanged = oldTransaction.card_id !== updatedTransaction.card_id;
 
-    if (cardChanged || anchorDateChanged) {
-      if (oldTransaction.invoice_id) {
-        const { error: clearInvoiceError } = await supabase
-          .from('transactions')
-          .update({ invoice_id: null })
-          .eq('id', id);
-        if (clearInvoiceError) throw clearInvoiceError;
-
-        await recalculateInvoiceTotal(oldTransaction.invoice_id);
-        updatedTransaction.invoice_id = null;
-      }
-
-      await linkTransactionToInvoice(updatedTransaction);
+    if ((cardChanged || anchorDateChanged) && oldTransaction.invoice_id) {
+      await recalculateInvoiceTotal(oldTransaction.invoice_id);
     } else if (
       updatedTransaction.invoice_id &&
       (Number(oldTransaction.amount) !== Number(updatedTransaction.amount) ||
@@ -182,4 +196,81 @@ export const transactionsCoreService = {
     if (error) return null;
     return data?.payment_date || null;
   },
+
+  async getPaginated(params: TransactionsPaginatedParams) {
+    const effectiveLimit = params.limit === -1 ? 10000 : params.limit;
+    const dbSortField = SORTABLE_DB_FIELDS.has(params.sort_field ?? '')
+      ? (params.sort_field as string)
+      : 'payment_date';
+
+    let query = supabase
+      .from('transactions')
+      .select(TRANSACTION_SELECT, { count: 'exact' });
+
+    if (params.start_date) query = query.gte('payment_date', params.start_date);
+    if (params.end_date) query = query.lte('payment_date', params.end_date);
+    if (params.type) query = query.eq('type', params.type);
+    if (params.is_paid !== undefined) query = query.eq('is_paid', params.is_paid);
+    if (params.account_id) query = query.eq('account_id', params.account_id);
+    if (params.card_id) query = query.eq('card_id', params.card_id);
+    if (params.category_id) query = query.eq('category_id', params.category_id);
+    if (params.payment_method) query = query.eq('payment_method', params.payment_method);
+    if (params.search?.trim()) query = query.ilike('description', `%${params.search.trim()}%`);
+    if (params.hide_credit_cards) query = query.is('card_id', null);
+    else if (params.only_credit_cards) query = query.not('card_id', 'is', null);
+    if (params.only_installments) query = query.not('installment_group_id', 'is', null);
+
+    query = query
+      .order(dbSortField, { ascending: params.sort_direction === 'asc' })
+      .range(params.offset, params.offset + effectiveLimit - 1);
+
+    const { data, error, count } = await query;
+    if (error) throw error;
+
+    return {
+      data: z.array(TransactionSchema).parse(data ?? []),
+      count: count ?? 0,
+    };
+  },
+
+  async getSummaries(params: TransactionsSummaryParams) {
+    let query = supabase
+      .from('transactions')
+      .select('amount, type, is_paid, card_id');
+
+    if (params.start_date) query = query.gte('payment_date', params.start_date);
+    if (params.end_date) query = query.lte('payment_date', params.end_date);
+    if (params.type) query = query.eq('type', params.type);
+    if (params.is_paid !== undefined) query = query.eq('is_paid', params.is_paid);
+    if (params.account_id) query = query.eq('account_id', params.account_id);
+    if (params.card_id) query = query.eq('card_id', params.card_id);
+    if (params.category_id) query = query.eq('category_id', params.category_id);
+    if (params.payment_method) query = query.eq('payment_method', params.payment_method);
+    if (params.search?.trim()) query = query.ilike('description', `%${params.search.trim()}%`);
+    if (params.hide_credit_cards) query = query.is('card_id', null);
+    else if (params.only_credit_cards) query = query.not('card_id', 'is', null);
+    if (params.only_installments) query = query.not('installment_group_id', 'is', null);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const stats = (data ?? []).reduce(
+      (acc, t) => {
+        const amount = Number(t.amount) || 0;
+        if (t.type === 'income') {
+          acc.income += amount;
+        } else if (t.type === 'expense') {
+          if (!t.card_id || params.only_credit_cards) acc.expense += amount;
+        } else if (t.type === 'transfer') {
+          acc.expense += amount;
+        }
+        if (!t.is_paid) acc.pending += amount;
+        return acc;
+      },
+      { income: 0, expense: 0, pending: 0 },
+    );
+
+    return { ...stats, balance: stats.income - stats.expense };
+  },
 };
+

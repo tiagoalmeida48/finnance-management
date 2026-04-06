@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { calculatePayroll, TETO_INSS } from "@/shared/utils/payroll-calculations";
+import { calculatePayroll } from "@/shared/utils/payroll-calculations";
+
+const TETO_INSS = 1167.89;
 
 describe("calculatePayroll", () => {
   it("retorna zeros quando não há horas trabalhadas", () => {

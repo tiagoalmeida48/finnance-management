@@ -51,7 +51,7 @@ export function useCategoriesPageLogic() {
       setDeleteModalOpen(false);
       setSelectedCategory(undefined);
     } catch {
-      // erro tratado pelo onError global do QueryClient
+      //
     }
   };
 
