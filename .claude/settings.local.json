@@ -35,7 +35,16 @@
       "Bash(find /d/DEV/Pessoal/finnance-management/src -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec grep -l \"/\\\\*\" {} \\\\;)",
       "Bash(grep -rn \"^\\\\s*//\" /d/DEV/Pessoal/finnance-management/src --include=\"*.ts\" --include=\"*.tsx\")",
       "Bash(find /d/DEV/Pessoal/finnance-management/src -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec wc -l {} +)",
-      "Bash(xargs wc:*)"
+      "Bash(xargs wc:*)",
+      "Bash(pnpm run:*)",
+      "Bash(\"C:/Users/Tiago/.claude/projects/D--DEV-Pessoal-finnance-management/memory/project_db_issues.md\":*)",
+      "Bash(\"C:/Users/Tiago/.claude/projects/D--DEV-Pessoal-finnance-management/memory/project_rpc_migration.md\":*)",
+      "Bash(\"C:/Users/Tiago/.claude/projects/D--DEV-Pessoal-finnance-management/memory/project_devops.md\":*)",
+      "Bash(\"C:/Users/Tiago/.claude/projects/D--DEV-Pessoal-finnance-management/memory/reference_environment.md\":*)",
+      "Bash(\"C:/Users/Tiago/.claude/projects/D--DEV-Pessoal-finnance-management/memory/MEMORY.md\":*)",
+      "Bash(python3 -c \"import sys,json; p=json.load\\(sys.stdin\\); deps={**p.get\\('dependencies',{}\\), **p.get\\('devDependencies',{}\\)}; [print\\(k,v\\) for k in ['@tanstack/react-query','react-router-dom','react-router','zustand','zod','react-hook-form','framer-motion','recharts','tailwindcss','vitest'] if k in deps]\")",
+      "Bash(\"d:\\\\DEV\\\\Pessoal\\\\finnance-management\\\\Templates\\\\ai-crm-saas-landing.aura.build\\\\design-system-temp.html\")",
+      "Bash(\"d:\\\\DEV\\\\Pessoal\\\\finnance-management\\\\Templates\\\\ai-crm-saas-landing.aura.build\\\\design-system-tmp.html\")"
     ]
   }
 }

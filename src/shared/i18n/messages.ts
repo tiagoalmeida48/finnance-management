@@ -740,6 +740,16 @@ export const messages = {
           'A vigência anterior absorverá o período desta. As faturas serão reprocessadas automaticamente.',
         deleting: 'Deletando...',
         confirm: 'Confirmar',
+        reprocessInvoices: 'Recalcular Faturas',
+        reprocessing: 'Reprocessando...',
+        reprocessSuccess: 'Faturas reprocessadas com sucesso.',
+      },
+      reprocess: {
+        title: 'Recalcular Faturas',
+        description: 'Reprocessa as faturas do cartão a partir da data informada.',
+        fromDateLabel: 'A partir de',
+        success: 'Faturas reprocessadas com sucesso.',
+        error: 'Erro ao reprocessar faturas.',
       },
       errors: {
         invalidDay: 'Dia inválido',
