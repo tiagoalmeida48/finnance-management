@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/shared/components/ui/card';
-import { Wallet, CreditCard, TrendingUp, TrendingDown } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown } from 'lucide-react';
 import { messages } from '@/shared/i18n/messages';
 import { Text } from '@/shared/components/ui/Text';
 import { Heading } from '@/shared/components/ui/Heading';
@@ -30,13 +30,6 @@ export function DashboardSummary({ stats, isLoading }: DashboardSummaryProps) {
       topClass: 'bg-[linear-gradient(90deg,var(--color-accent),transparent)]',
     },
     {
-      title: summaryMessages.availableLimit,
-      value: stats?.totalLimit || 0,
-      icon: CreditCard,
-      iconClass: 'bg-[var(--overlay-secondary-10)] text-[var(--color-secondary)]',
-      topClass: 'bg-[linear-gradient(90deg,var(--color-secondary),transparent)]',
-    },
-    {
       title: summaryMessages.income,
       value: stats?.monthlyIncome || 0,
       icon: TrendingUp,
@@ -54,7 +47,7 @@ export function DashboardSummary({ stats, isLoading }: DashboardSummaryProps) {
   ];
 
   return (
-    <Container unstyled className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+    <Container unstyled className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
       {cards.map((card, idx) => {
         const Icon = card.icon;
         return (

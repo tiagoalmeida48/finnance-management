@@ -140,6 +140,22 @@ export function AccountFormModal({ open, onClose, account }: AccountFormModalPro
             {...register('notes')}
           />
         </FormField>
+        <FormField
+          htmlFor="account-pluggy-id"
+          label="Pluggy Item ID"
+          labelSuffix={
+            <span className="text-[var(--color-text-muted)]">
+              {accountFormMessages.fields.optionalLabel}
+            </span>
+          }
+        >
+          <Input
+            id="account-pluggy-id"
+            placeholder="Ex: a2c4f1b0-8e29-4bc5-aa77-..."
+            className={getFieldClass(false)}
+            {...register('pluggy_account_id')}
+          />
+        </FormField>
         <Controller
           name="color"
           control={control}

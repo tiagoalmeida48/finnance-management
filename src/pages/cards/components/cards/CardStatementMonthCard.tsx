@@ -28,6 +28,7 @@ interface CardStatementMonthCardProps {
   onSort: (field: StatementSortField) => void;
   transactions: StatementTransaction[];
   onPay: () => void;
+  onDeleteTransaction?: (transaction: StatementTransaction) => void;
   onEditTransaction?: (transaction: StatementTransaction) => void;
   setCategoryDotRef: (node: HTMLDivElement | null, color: string) => void;
   setCategoryIconRef: (node: HTMLDivElement | null, color: string) => void;
@@ -45,6 +46,7 @@ export function CardStatementMonthCard({
   onSort,
   transactions,
   onPay,
+  onDeleteTransaction,
   onEditTransaction,
   setCategoryDotRef,
   setCategoryIconRef,
@@ -129,6 +131,7 @@ export function CardStatementMonthCard({
             <CardStatementTransactionsMobile
               transactions={transactions}
               onEditTransaction={onEditTransaction}
+              onDeleteTransaction={onDeleteTransaction}
               setCategoryIconRef={setCategoryIconRef}
               fallbackCategoryColor={fallbackCategoryColor}
             />
@@ -139,6 +142,7 @@ export function CardStatementMonthCard({
               statementSortDirection={statementSortDirection}
               onSort={onSort}
               onEditTransaction={onEditTransaction}
+              onDeleteTransaction={onDeleteTransaction}
               setCategoryDotRef={setCategoryDotRef}
               fallbackCategoryColor={fallbackCategoryColor}
             />

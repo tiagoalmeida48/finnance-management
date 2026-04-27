@@ -6,7 +6,8 @@ import { SalaryDeleteDialog } from '@/pages/salary-simulator/components/dialogs/
 import { SalaryEditSettingDialog } from '@/pages/salary-simulator/components/dialogs/SalaryEditSettingDialog';
 import { SalaryLaunchDialog } from '@/pages/salary-simulator/components/dialogs/SalaryLaunchDialog';
 import { SalarySettingsTab } from '@/pages/salary-simulator/components/tabs/SalarySettingsTab';
-import { SalarySimulatorTab } from '@/pages/salary-simulator/components/tabs/SalarySimulatorTab';
+import { SalarySimulatorPanel, SalarySimulatorSummary } from '@/pages/salary-simulator/components/tabs/SalarySimulatorTab';
+import { PayrollCalculatorTab } from '@/pages/salary-simulator/components/tabs/PayrollCalculatorTab';
 import type { EditSettingForm } from '@/pages/salary-simulator/components/salarySimulator.helpers';
 import { useSalarySimulatorPageLogic } from '@/pages/salary-simulator/hooks/useSalarySimulatorPageLogic';
 import { Container } from '@/shared/components/layout/Container';
@@ -102,27 +103,45 @@ export function SalarySimulatorPage() {
 
             <Container unstyled className="grid gap-2">
               {logic.activeTab === 'simulator' && (
-                <SalarySimulatorTab
-                  availableSettings={logic.availableSettings}
-                  currentSetting={logic.currentSetting}
-                  selectedSettingInputKey={logic.selectedSettingInputKey}
-                  onSelectedSettingChange={logic.setSelectedSettingKey}
-                  totalHours={logic.totalHours}
-                  onHoursChange={logic.handleHoursChange}
-                  onHoursBlur={logic.handleHoursBlur}
-                  payroll={logic.payroll}
-                  isNetNegative={logic.isNetNegative}
-                  calculationSetting={logic.calculationSetting}
-                  today={logic.today}
-                  currentHourlyRate={logic.currentHourlyRate}
-                  currentBaseSalary={logic.currentBaseSalary}
-                  inssLabel={logic.inssLabel}
-                  adminFeeLabel={logic.adminFeeLabel}
-                  inssDisplay={logic.inssDisplay}
-                  adminDisplay={logic.adminDisplay}
-                  isTemporaryCalculation={logic.isTemporaryCalculation}
-                  onOpenLaunchSalaryDialog={logic.handleOpenLaunchSalaryDialog}
-                />
+                <Container unstyled className="flex flex-col gap-4">
+                  {/* Linha de cima: Simulador | Calculadora 50/50 */}
+                  <Container unstyled className="grid gap-4 lg:grid-cols-2">
+                    <SalarySimulatorPanel
+                      availableSettings={logic.availableSettings}
+                      currentSetting={logic.currentSetting}
+                      selectedSettingInputKey={logic.selectedSettingInputKey}
+                      onSelectedSettingChange={logic.setSelectedSettingKey}
+                      totalHours={logic.totalHours}
+                      onHoursChange={logic.handleHoursChange}
+                      onHoursBlur={logic.handleHoursBlur}
+                      payroll={logic.payroll}
+                      isNetNegative={logic.isNetNegative}
+                      calculationSetting={logic.calculationSetting}
+                      today={logic.today}
+                      currentHourlyRate={logic.currentHourlyRate}
+                      currentBaseSalary={logic.currentBaseSalary}
+                      inssLabel={logic.inssLabel}
+                      adminFeeLabel={logic.adminFeeLabel}
+                      inssDisplay={logic.inssDisplay}
+                      adminDisplay={logic.adminDisplay}
+                      isTemporaryCalculation={logic.isTemporaryCalculation}
+                      onOpenLaunchSalaryDialog={logic.handleOpenLaunchSalaryDialog}
+                    />
+                    <PayrollCalculatorTab />
+                  </Container>
+                  {/* Linha de baixo: Resumo full-width */}
+                  <SalarySimulatorSummary
+                    payroll={logic.payroll}
+                    calculationSetting={logic.calculationSetting}
+                    today={logic.today}
+                    currentHourlyRate={logic.currentHourlyRate}
+                    currentBaseSalary={logic.currentBaseSalary}
+                    inssLabel={logic.inssLabel}
+                    adminFeeLabel={logic.adminFeeLabel}
+                    inssDisplay={logic.inssDisplay}
+                    adminDisplay={logic.adminDisplay}
+                  />
+                </Container>
               )}
 
               {logic.activeTab === 'settings' && (

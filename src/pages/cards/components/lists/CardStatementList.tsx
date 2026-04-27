@@ -18,6 +18,7 @@ interface CardStatementListProps {
   cardId: string;
   statements: CardStatement[];
   handleOpenPayModal: (statement: CardStatement) => void;
+  onDeleteTransaction?: (transaction: StatementTransaction) => void;
   onEditTransaction?: (transaction: StatementTransaction) => void;
 }
 
@@ -25,6 +26,7 @@ export function CardStatementList({
   cardId,
   statements,
   handleOpenPayModal,
+  onDeleteTransaction,
   onEditTransaction,
 }: CardStatementListProps) {
   const {
@@ -99,6 +101,7 @@ export function CardStatementList({
               onSort={handleStatementSort}
               transactions={item.transactions}
               onPay={() => handleOpenPayModal(item.statement)}
+              onDeleteTransaction={onDeleteTransaction}
               onEditTransaction={onEditTransaction}
               setCategoryDotRef={setCategoryDotRef}
               setCategoryIconRef={setCategoryIconRef}

@@ -45,7 +45,14 @@
       "Bash(python3 -c \"import sys,json; p=json.load\\(sys.stdin\\); deps={**p.get\\('dependencies',{}\\), **p.get\\('devDependencies',{}\\)}; [print\\(k,v\\) for k in ['@tanstack/react-query','react-router-dom','react-router','zustand','zod','react-hook-form','framer-motion','recharts','tailwindcss','vitest'] if k in deps]\")",
       "Bash(\"d:\\\\DEV\\\\Pessoal\\\\finnance-management\\\\Templates\\\\ai-crm-saas-landing.aura.build\\\\design-system-temp.html\")",
       "Bash(\"d:\\\\DEV\\\\Pessoal\\\\finnance-management\\\\Templates\\\\ai-crm-saas-landing.aura.build\\\\design-system-tmp.html\")",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "mcp__plugin_context-mode_context-mode__ctx_batch_execute",
+      "mcp__plugin_context-mode_context-mode__ctx_fetch_and_index",
+      "mcp__plugin_context-mode_context-mode__ctx_search",
+      "mcp__supabase__list_edge_functions",
+      "mcp__supabase__get_project_url",
+      "mcp__supabase__deploy_edge_function",
+      "mcp__supabase__get_logs"
     ]
   }
 }

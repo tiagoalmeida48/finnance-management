@@ -16,4 +16,5 @@ export const AccountSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
   deleted_at: z.string().nullable().optional(),
+  pluggy_account_id: z.string().nullable().optional(),
 });

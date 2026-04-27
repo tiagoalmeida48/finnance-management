@@ -20,6 +20,7 @@ const accountSchema = z.object({
   color: z.string().min(1, accountValidationMessages.colorRequired),
   icon: z.string().min(1, accountValidationMessages.iconRequired),
   notes: z.string().optional(),
+  pluggy_account_id: z.string().optional(),
 });
 
 type AccountFormValues = z.infer<typeof accountSchema>;
@@ -32,6 +33,7 @@ const DEFAULT_ACCOUNT_FORM_VALUES: AccountFormValues = {
   color: '#c9a84c',
   icon: 'wallet',
   notes: '',
+  pluggy_account_id: '',
 };
 
 const mapAccountToFormValues = (account?: Account): AccountFormValues => ({
@@ -42,6 +44,7 @@ const mapAccountToFormValues = (account?: Account): AccountFormValues => ({
   color: account?.color ?? DEFAULT_ACCOUNT_FORM_VALUES.color,
   icon: account?.icon ?? DEFAULT_ACCOUNT_FORM_VALUES.icon,
   notes: account?.notes ?? DEFAULT_ACCOUNT_FORM_VALUES.notes,
+  pluggy_account_id: account?.pluggy_account_id ?? '',
 });
 
 const fieldBaseClass = 'bg-white/[0.06] border-[var(--overlay-white-16)]';

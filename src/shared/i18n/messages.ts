@@ -487,6 +487,7 @@ export const messages = {
         'Nenhuma configuração vigente encontrada. Cadastre a primeira configuração para habilitar o simulador.',
       tabSimulator: 'Simulador',
       tabSettings: 'Configuração',
+      tabCalculator: 'Calculadora',
     },
     simulatorTab: {
       title: 'Simulador',

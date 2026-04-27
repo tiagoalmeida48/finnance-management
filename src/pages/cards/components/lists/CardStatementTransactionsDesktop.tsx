@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { Trash2 } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { Container } from '@/shared/components/layout/Container';
 import { Row } from '@/shared/components/layout/Row';
@@ -28,6 +29,7 @@ interface CardStatementTransactionsDesktopProps {
   statementSortDirection: StatementSortDirection;
   onSort: (field: StatementSortField) => void;
   onEditTransaction?: (transaction: StatementTransaction) => void;
+  onDeleteTransaction?: (transaction: StatementTransaction) => void;
   setCategoryDotRef: (node: HTMLDivElement | null, color: string) => void;
   fallbackCategoryColor: string;
 }
@@ -40,6 +42,7 @@ export function CardStatementTransactionsDesktop({
   statementSortDirection,
   onSort,
   onEditTransaction,
+  onDeleteTransaction,
   setCategoryDotRef,
   fallbackCategoryColor,
 }: CardStatementTransactionsDesktopProps) {
@@ -74,6 +77,7 @@ export function CardStatementTransactionsDesktop({
             label={statementMessages.amountColumn}
             align="right"
           />
+          <TableHeaderCell className="w-8" />
         </TableRow>
       </TableHead>
       <TableBody>
@@ -82,6 +86,7 @@ export function CardStatementTransactionsDesktop({
             key={transaction.id}
             transaction={transaction}
             onEditTransaction={onEditTransaction}
+            onDeleteTransaction={onDeleteTransaction}
             setCategoryDotRef={setCategoryDotRef}
             fallbackCategoryColor={fallbackCategoryColor}
           />
@@ -94,6 +99,7 @@ export function CardStatementTransactionsDesktop({
 interface StatementDesktopRowProps {
   transaction: StatementTransaction;
   onEditTransaction?: (transaction: StatementTransaction) => void;
+  onDeleteTransaction?: (transaction: StatementTransaction) => void;
   setCategoryDotRef: (node: HTMLDivElement | null, color: string) => void;
   fallbackCategoryColor: string;
 }
@@ -101,6 +107,7 @@ interface StatementDesktopRowProps {
 function StatementDesktopRow({
   transaction,
   onEditTransaction,
+  onDeleteTransaction,
   setCategoryDotRef,
   fallbackCategoryColor,
 }: StatementDesktopRowProps) {
@@ -109,14 +116,11 @@ function StatementDesktopRow({
   const categoryColor = transaction.category?.color || fallbackCategoryColor;
 
   return (
-    <TableRow
-      onClick={() => onEditTransaction?.(transaction)}
-      className="cursor-pointer transition-colors hover:bg-white/5"
-    >
-      <TableCell>
+    <TableRow className="group/row transition-colors hover:bg-white/5">
+      <TableCell onClick={() => onEditTransaction?.(transaction)} className="cursor-pointer">
         {displayDate ? format(new Date(`${displayDate}T12:00:00`), 'dd/MM') : '-'}
       </TableCell>
-      <TableCell className="text-[var(--color-text-primary)]">
+      <TableCell onClick={() => onEditTransaction?.(transaction)} className="cursor-pointer text-[var(--color-text-primary)]">
         {transaction.description}
         {transaction.installment_number && transaction.total_installments ? (
           <Text as="span" className="ml-1 text-xs font-semibold text-[var(--color-text-muted)]">
@@ -124,7 +128,7 @@ function StatementDesktopRow({
           </Text>
         ) : null}
       </TableCell>
-      <TableCell>
+      <TableCell onClick={() => onEditTransaction?.(transaction)} className="cursor-pointer">
         <Row className="items-center gap-1">
           <Container
             unstyled
@@ -137,9 +141,21 @@ function StatementDesktopRow({
         </Row>
       </TableCell>
       <TableCell
-        className={`text-right font-semibold ${transaction.type === 'income' ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}
+        onClick={() => onEditTransaction?.(transaction)}
+        className={`cursor-pointer text-right font-semibold ${transaction.type === 'income' ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}
       >
         {formatCardStatementCurrency(transaction.amount)}
+      </TableCell>
+      <TableCell className="w-8 text-center">
+        {onDeleteTransaction && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onDeleteTransaction(transaction); }}
+            className="text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors"
+            title="Deletar transação"
+          >
+            <Trash2 size={14} />
+          </button>
+        )}
       </TableCell>
     </TableRow>
   );

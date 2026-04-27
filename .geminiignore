@@ -1,0 +1,103 @@
+# Build / Output
+bin/
+obj/
+dist/
+build/
+out/
+publish/
+
+# Node / Frontend
+node_modules/
+.pnpm-store/
+.npm/
+.yarn/
+.yarn-cache/
+.next/
+.nuxt/
+.vite/
+coverage/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.user
+*.cache
+
+# Env / Secrets
+.env
+.env.*
+*.key
+*.pem
+*.pfx
+*.crt
+secrets.json
+appsettings.*.json
+
+# Docker
+docker-compose.override.yml
+*.tar
+*.gz
+
+# Database / Dumps
+*.sql
+*.bak
+*.dump
+*.db
+*.sqlite
+
+# Temporary / Misc
+tmp/
+temp/
+.cache/
+*.tmp
+
+# Media / Large Files
+*.mp4
+*.mp3
+*.wav
+*.avi
+*.mov
+*.zip
+*.rar
+*.7z
+
+# Test Output
+TestResults/
+*.trx
+
+# Git
+.git/
+.gitignore
+
+# Images
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.webp
+*.bmp
+*.tiff
+
+# Pastas pesadas
+data/
+backups/
+migrations/
+
+# Arquivos locks
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+composer.lock
+bun.lockb
