@@ -43,7 +43,7 @@ export function CardDetailsCharts({ chartData, categoryData }: CardDetailsCharts
   });
 
   return (
-    <Container unstyled className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]">
+    <Container unstyled className="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-[2fr_1fr]">
       {/* Gráfico de Evolução Bento */}
       <Container
         unstyled

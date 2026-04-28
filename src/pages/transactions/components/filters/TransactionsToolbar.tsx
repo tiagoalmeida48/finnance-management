@@ -39,7 +39,7 @@ export function TransactionsToolbar({
   return (
     <Container
       unstyled
-      className="mb-6 flex flex-col gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bgSecondary)]/95 p-3 shadow-lg shadow-black/40 backdrop-blur-md md:flex-row md:items-center md:gap-4 md:px-4 md:py-3 z-10"
+      className="relative z-10 mb-4 flex flex-col gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bgSecondary)]/95 p-3 shadow-lg shadow-black/40 backdrop-blur-md md:flex-row md:items-center md:gap-4 md:px-4 md:py-3"
     >
       {/* Search Bar */}
       <Container unstyled className="relative flex-1">

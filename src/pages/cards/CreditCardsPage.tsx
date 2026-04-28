@@ -82,7 +82,7 @@ export function CreditCardsPage() {
           className="w-full flex-col items-start sm:flex-row sm:items-start"
         />
 
-        <Grid className="xl:grid-cols-2">
+        <Grid className="sm:grid-cols-2 xl:grid-cols-2">
           <CollectionState
             isLoading={isLoading}
             isEmpty={isEmpty}

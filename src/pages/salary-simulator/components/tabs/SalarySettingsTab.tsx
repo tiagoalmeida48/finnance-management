@@ -70,9 +70,9 @@ export function SalarySettingsTab({
             ) : (
               <Container
                 unstyled
-                className="overflow-auto rounded-xl border border-[var(--color-border)]"
+                className="overflow-x-auto [-webkit-overflow-scrolling:touch] rounded-xl border border-[var(--color-border)]"
               >
-                <Table className="w-full text-sm">
+                <Table className="w-full min-w-[600px] text-sm">
                   <TableHead>
                     <TableRow className="bg-[var(--overlay-white-02)]">
                       <TableHeaderCell className={headerCellClass}>

@@ -57,7 +57,7 @@ export function AccountsPage() {
           className="w-full"
         />
 
-        <Grid className="gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <Grid className="gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <CollectionState
             isLoading={isLoading}
             isEmpty={isEmpty}
