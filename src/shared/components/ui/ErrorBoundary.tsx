@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { Component, type ReactNode } from 'react';
 import { AlertTriangle } from 'lucide-react';
 
 interface Props {
@@ -18,9 +18,7 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, message: error.message };
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('[ErrorBoundary]', error, info.componentStack);
-  }
+  componentDidCatch(_error: Error, _info: ErrorInfo) {}
 
   reset = () => this.setState({ hasError: false, message: '' });
 

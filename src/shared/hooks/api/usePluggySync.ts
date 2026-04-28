@@ -46,11 +46,6 @@ function addMonths(dateStr: string, months: number): string {
 }
 
 export async function commitPluggyRows(rows: PluggyPreviewRow[]) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error('Não autenticado');
-
   const inserts: Record<string, unknown>[] = [];
 
   for (const row of rows) {
@@ -61,14 +56,11 @@ export async function commitPluggyRows(rows: PluggyPreviewRow[]) {
 
     for (let i = 1; i <= total; i++) {
       inserts.push({
-        user_id: user.id,
         type: row.type,
         amount: row.amount,
         payment_date: addMonths(row.paymentDate, i - 1),
         purchase_date: row.paymentDate,
-        description: total > 1
-          ? `${row.description} (${i}/${total})`
-          : row.description,
+        description: total > 1 ? `${row.description} (${i}/${total})` : row.description,
         account_id: row.accountId,
         card_id: row.cardId ?? null,
         category_id: row.categoryId ?? null,
@@ -82,7 +74,7 @@ export async function commitPluggyRows(rows: PluggyPreviewRow[]) {
     }
   }
 
-  const { error } = await supabase.from('transactions').insert(inserts);
+  const { error } = await supabase.rpc('insert_transactions', { p_rows: inserts });
   if (error) throw new Error(error.message);
 }
 
@@ -120,10 +112,5 @@ export function usePluggySync() {
     },
   });
 
-  return {
-    previewRows,
-    setPreviewRows,
-    fetchMutation,
-    commitMutation,
-  };
+  return { previewRows, setPreviewRows, fetchMutation, commitMutation };
 }

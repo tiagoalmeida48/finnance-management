@@ -6,7 +6,6 @@ import { transactionsCoreService } from './transactions-core.service';
 import { transactionsCreationService } from './transactions-creation.service';
 import {
   normalizeToPositiveInteger,
-  requireAuthenticatedUserId,
   sanitizeCreatePayload,
   sanitizeIds,
 } from './transactions-utils.service';
@@ -32,11 +31,9 @@ export const transactionsBatchService = {
       );
     }
 
-    const userId = await requireAuthenticatedUserId();
-    const rowsToInsert = createPayloads.map((transaction) =>
+    const rows = createPayloads.map((transaction) =>
       sanitizeCreatePayload({
         ...transaction,
-        user_id: userId,
         is_paid: Boolean(transaction.is_paid),
         is_fixed: Boolean(transaction.is_fixed),
         recurring_group_id: transaction.is_fixed ? (transaction.recurring_group_id ?? null) : null,
@@ -46,10 +43,8 @@ export const transactionsBatchService = {
       }),
     );
 
-    const { data, error } = await supabase.from('transactions').insert(rowsToInsert).select('*');
-
+    const { data, error } = await supabase.rpc('insert_transactions', { p_rows: rows });
     if (error) throw error;
-
     return z.array(TransactionSchema).parse(data ?? []);
   },
 
@@ -62,14 +57,11 @@ export const transactionsBatchService = {
       p_account_id: accountId,
       p_payment_date: paymentDate,
     });
-
     if (error) throw error;
 
-    const { data, error: fetchError } = await supabase
-      .from('transactions')
-      .select('*')
-      .in('id', safeIds);
-
+    const { data, error: fetchError } = await supabase.rpc('get_transactions_by_ids', {
+      p_ids: safeIds,
+    });
     if (fetchError) throw fetchError;
     return z.array(TransactionSchema).parse(data ?? []);
   },
@@ -78,17 +70,12 @@ export const transactionsBatchService = {
     const safeIds = sanitizeIds(ids);
     if (safeIds.length === 0) return [];
 
-    const { error } = await supabase.rpc('batch_unpay_transactions', {
-      p_ids: safeIds,
-    });
-
+    const { error } = await supabase.rpc('batch_unpay_transactions', { p_ids: safeIds });
     if (error) throw error;
 
-    const { data, error: fetchError } = await supabase
-      .from('transactions')
-      .select('*')
-      .in('id', safeIds);
-
+    const { data, error: fetchError } = await supabase.rpc('get_transactions_by_ids', {
+      p_ids: safeIds,
+    });
     if (fetchError) throw fetchError;
     return z.array(TransactionSchema).parse(data ?? []);
   },
@@ -97,10 +84,7 @@ export const transactionsBatchService = {
     const safeIds = sanitizeIds(ids);
     if (safeIds.length === 0) return;
 
-    const { error } = await supabase.rpc('batch_delete_transactions', {
-      p_ids: safeIds,
-    });
-
+    const { error } = await supabase.rpc('batch_delete_transactions', { p_ids: safeIds });
     if (error) throw error;
   },
 
@@ -108,18 +92,12 @@ export const transactionsBatchService = {
     const safeIds = sanitizeIds(ids);
     if (safeIds.length === 0) return [];
 
-    const { error } = await supabase.rpc('batch_change_day', {
-      p_ids: safeIds,
-      p_day: day,
-    });
-
+    const { error } = await supabase.rpc('batch_change_day', { p_ids: safeIds, p_day: day });
     if (error) throw error;
 
-    const { data, error: fetchError } = await supabase
-      .from('transactions')
-      .select('*')
-      .in('id', safeIds);
-
+    const { data, error: fetchError } = await supabase.rpc('get_transactions_by_ids', {
+      p_ids: safeIds,
+    });
     if (fetchError) throw fetchError;
     return z.array(TransactionSchema).parse(data ?? []);
   },
@@ -136,16 +114,17 @@ export const transactionsBatchService = {
       ? description
       : `Pgto Fatura: ${description}`;
 
-    const { data: existingPayment } = await supabase
-      .from('transactions')
-      .select('id')
-      .eq('description', normalizedDescription)
-      .eq('payment_method', 'bill_payment')
-      .limit(1)
-      .maybeSingle();
+    const { data: existingRows } = await supabase.rpc('get_transactions_paginated', {
+      p_search: normalizedDescription,
+      p_payment_method: 'bill_payment',
+      p_limit: 1,
+      p_offset: 0,
+    });
+
+    const existingPayment = existingRows?.[0] ?? null;
 
     if (existingPayment?.id) {
-      await transactionsCoreService.update(existingPayment.id, {
+      await transactionsCoreService.update(existingPayment.id as string, {
         amount,
         type: 'expense',
         account_id: accountId,

@@ -29,26 +29,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return localStorage.getItem(storageKey) !== null;
   });
 
-  const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
+  const fetchProfile = useCallback(async (_userId: string): Promise<Profile | null> => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('full_name, avatar_url, is_admin')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        if (error.code === 'PGRST116') {
-          return null;
-        }
-
-        console.error('Error fetching profile:', error);
-        return null;
-      }
-
+      const { data, error } = await supabase.rpc('get_profile');
+      if (error) return null;
+      if (!data) return null;
       return data as Profile;
-    } catch (err) {
-      console.error('Unexpected error fetching profile:', err);
+    } catch {
       return null;
     }
   }, []);
