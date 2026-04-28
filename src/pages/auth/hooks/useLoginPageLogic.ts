@@ -42,7 +42,6 @@ export function useLoginPageLogic() {
 
       navigate('/dashboard');
     } catch {
-      // Usa mensagem genérica de erro ou a do Supabase se disponível/seguro
       const errorMessage = messages.auth.login.error;
       setError(errorMessage);
     } finally {

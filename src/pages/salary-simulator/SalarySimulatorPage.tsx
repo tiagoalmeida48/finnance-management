@@ -104,7 +104,6 @@ export function SalarySimulatorPage() {
             <Container unstyled className="grid gap-2">
               {logic.activeTab === 'simulator' && (
                 <Container unstyled className="flex flex-col gap-4">
-                  {/* Linha de cima: Simulador | Calculadora 50/50 */}
                   <Container unstyled className="grid gap-4 lg:grid-cols-2">
                     <SalarySimulatorPanel
                       availableSettings={logic.availableSettings}
@@ -129,7 +128,6 @@ export function SalarySimulatorPage() {
                     />
                     <PayrollCalculatorTab />
                   </Container>
-                  {/* Linha de baixo: Resumo full-width */}
                   <SalarySimulatorSummary
                     payroll={logic.payroll}
                     calculationSetting={logic.calculationSetting}

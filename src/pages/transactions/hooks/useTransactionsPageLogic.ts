@@ -35,7 +35,6 @@ export function useTransactionsPageLogic() {
   const [transactionsPage, setTransactionsPage] = useState(0);
   const [transactionsRowsPerPage, setTransactionsRowsPerPage] = useState(100);
 
-  // Build server-side query params from filter state
   const summaryParams = useMemo<TransactionsSummaryParams>(() => {
     const dateRange = filters.shouldUseAllTimeRange
       ? { start_date: undefined, end_date: undefined }
@@ -83,7 +82,6 @@ export function useTransactionsPageLogic() {
     };
   }, [summaryParams, filters.sortConfig, transactionsPage, transactionsRowsPerPage]);
 
-  // Reset to page 0 when filters change (not when page/sort changes)
   const filterKey = useMemo(() => JSON.stringify(summaryParams), [summaryParams]);
   const prevFilterKeyRef = useRef(filterKey);
   useEffect(() => {
@@ -113,12 +111,11 @@ export function useTransactionsPageLogic() {
 
   const isLoading = transactionsLoading || accountsLoading || cardsLoading;
 
-  const transactions = paginatedResult?.data ?? [];
+  const transactions = useMemo(() => paginatedResult?.data ?? [], [paginatedResult]);
   const totalCount = paginatedResult?.count ?? 0;
 
   const defaultSummaries = { income: 0, expense: 0, balance: 0, pending: 0 };
 
-  // Group current page visually (installments/recurring groups within the page)
   const groupedTransactions = useMemo(
     () => getGroupedTransactions(transactions, filters.sortConfig),
     [transactions, filters.sortConfig],
@@ -176,9 +173,7 @@ export function useTransactionsPageLogic() {
       }
       modals.setDeleteModalOpen(false);
       selection.setMenuTransaction(null);
-    } catch {
-      //
-    }
+    } catch { return; }
   };
 
   const handleTogglePaid = (transaction: Transaction) => {
@@ -208,9 +203,7 @@ export function useTransactionsPageLogic() {
       }
       modals.setPaymentModalOpen(false);
       modals.setSelectedTransaction(undefined);
-    } catch {
-      //
-    }
+    } catch { return; }
   };
 
   const handleBatchUnpay = async () => {
@@ -219,9 +212,7 @@ export function useTransactionsPageLogic() {
         await batchUnpayTransactions.mutateAsync(selection.selectedIds);
         selection.setSelectedIds([]);
       }
-    } catch {
-      //
-    }
+    } catch { return; }
   };
 
   const handleBatchDelete = async () => {
@@ -230,9 +221,7 @@ export function useTransactionsPageLogic() {
       await batchDeleteTransactions.mutateAsync(selection.selectedIds);
       selection.setSelectedIds([]);
       modals.setBatchDeleteModalOpen(false);
-    } catch {
-      //
-    }
+    } catch { return; }
   };
 
   const handleBatchChangeDay = async (day: number) => {
@@ -241,9 +230,7 @@ export function useTransactionsPageLogic() {
       await batchChangeTransactionDay.mutateAsync({ ids: selection.selectedIds, day });
       selection.setSelectedIds([]);
       modals.setChangeDayModalOpen(false);
-    } catch {
-      //
-    }
+    } catch { return; }
   };
 
   const toggleGroup = (groupId: string) => {

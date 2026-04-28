@@ -83,15 +83,10 @@ export const dashboardService = {
       startDate = format(startOfMonth(start), 'yyyy-MM-dd');
       finalDate = format(endOfMonth(end), 'yyyy-MM-dd');
     } else {
-      const { data: firstTx } = await supabase
-        .from('transactions')
-        .select('payment_date')
-        .order('payment_date', { ascending: true })
-        .limit(1)
-        .maybeSingle();
+      const { data: firstDate } = await supabase.rpc('get_first_transaction_date');
 
-      const start = firstTx?.payment_date
-        ? new Date(firstTx.payment_date + 'T12:00:00')
+      const start = firstDate
+        ? new Date(String(firstDate) + 'T12:00:00')
         : subMonths(new Date(), 11);
       const end = new Date();
 

@@ -1,222 +1,122 @@
-# Arquitetura do Banco de Dados — Finnance Management
+# Arquitetura Atual - Finnance Management
 
-Documentação gerada a partir das migrations SQL em `supabase/migrations/`.
+Documento revisado a partir do codigo em `src/` e das migrations em `supabase/migrations/`.
 
----
+## Visao Geral
 
-## Diagrama de Entidades
+O Finnance Management e uma SPA React para gestao financeira pessoal. O frontend roda em Vite/React e usa Supabase como backend principal:
 
+- Supabase Auth para sessao do usuario.
+- PostgreSQL com RLS para isolamento por `auth.uid()`.
+- RPCs SQL para a maior parte das operacoes de leitura/escrita.
+- Edge Functions para integracao Pluggy.
+- React Query para cache, sincronizacao e invalidacao de dados.
+
+## Camadas do Frontend
+
+```text
+src/
+  routes/                 # AppRouter, guards e lazy loading
+  pages/                  # paginas por dominio
+  shared/
+    components/           # UI reutilizavel, layout e composites
+    constants/            # queryKeys e constantes de dominio
+    hooks/api/            # hooks React Query
+    interfaces/           # contratos TypeScript
+    schemas/              # validacao Zod dos retornos
+    services/             # fronteira de dados com Supabase
+    stores/               # estado local Zustand
+    theme/                # tokens TS derivados do CSS
+    utils/                # calculos puros e helpers
+  lib/supabase/           # client e AuthProvider
 ```
-auth.users
-  ├── profiles (1:1)
-  ├── settings_salary (1:N — por período)
-  ├── bank_accounts (1:N)
-  │     └── credit_cards (N:1 via bank_account_id)
-  │           ├── credit_card_invoices (1:N via card_id)
-  │           ├── credit_card_statement_cycles (1:N via card_id)
-  │           └── credit_card_statement_period_ranges (1:N via card_id)
-  ├── categories (1:N)
-  └── transactions (1:N)
-        ├── → bank_accounts (account_id, to_account_id)
-        ├── → credit_cards (card_id)
-        ├── → credit_card_invoices (invoice_id)
-        └── → categories (category_id)
-```
 
----
+## Fluxo de Dados
 
-## Tabelas
+1. A rota protegida valida sessao no `AuthProvider`.
+2. A pagina chama hooks de `src/shared/hooks/api/`.
+3. Os hooks usam services de `src/shared/services/`.
+4. Os services chamam `supabase.rpc(...)`, `supabase.functions.invoke(...)` ou, em poucos casos, acesso direto a tabela.
+5. Os retornos sao normalizados por Zod e expostos para a UI.
+6. Mutations invalidam chaves centralizadas em `src/shared/constants/queryKeys.ts`.
 
-### `profiles`
-| Coluna | Tipo | Default | Notas |
-|--------|------|---------|-------|
-| id | uuid PK | — | FK → auth.users(id) |
-| full_name | text | — | |
-| avatar_url | text | — | |
-| currency | text | 'BRL' | |
-| locale | text | 'pt-BR' | |
-| is_admin | boolean | false | Controla acesso a site_branding |
-| created_at | timestamptz | now() | |
-| updated_at | timestamptz | now() | |
+## Rotas
 
-### `site_branding`
-| Coluna | Tipo | Default | Notas |
-|--------|------|---------|-------|
-| id | integer PK | — | Singleton (trigger impede > 1 linha) |
-| site_title | text | 'FINNANCE' | |
-| logo_image | text | — | |
-| created_at / updated_at | timestamptz | now() | |
+| Rota | Pagina | Protecao |
+|---|---|---|
+| `/` | redireciona para dashboard ou login | publica |
+| `/auth/login` | login | publica |
+| `/auth/register` | redireciona para login | publica |
+| `/dashboard` | dashboard financeiro | autenticada |
+| `/accounts` | contas bancarias | autenticada |
+| `/transactions` | transacoes e importacao CSV/Pluggy | autenticada |
+| `/categories` | categorias | autenticada |
+| `/cards` | cartoes de credito | autenticada |
+| `/cards/:id` | detalhe de cartao, faturas e ciclos | autenticada |
+| `/tracking` | acompanhamento mensal | autenticada |
+| `/salary-simulator` | simulador/configuracao salarial | autenticada |
+| `/profile` | perfil | autenticada |
+| `/users` | gestao de usuarios | admin |
 
-### `settings_salary`
-| Coluna | Tipo | Default | Notas |
-|--------|------|---------|-------|
-| user_id | uuid | — | PK composta (user_id, date_start, date_end) |
-| date_start | date | — | |
-| date_end | date | '9999-12-31' | Período aberto |
-| hourly_rate | numeric | — | CHECK >= 0 |
-| base_salary | numeric | — | CHECK >= 0 |
-| inss_discount_percentage | numeric | — | CHECK 0–100 |
-| admin_fee_percentage | numeric | — | CHECK 0–100 |
+## Backend Supabase
 
-### `bank_accounts`
-| Coluna | Tipo | Default | Notas |
-|--------|------|---------|-------|
-| id | uuid PK | gen_random_uuid() | |
-| user_id | uuid | — | FK → auth.users |
-| name | varchar | — | |
-| type | varchar | 'checking' | checking, savings, investment, wallet, other |
-| initial_balance | numeric | 0 | |
-| current_balance | numeric | 0 | Atualizado por trigger |
-| color | varchar | '#8b5cf6' | |
-| icon | varchar | 'wallet' | |
-| notes | text | — | |
-| is_active | boolean | true | |
-| deleted_at | timestamp | — | Soft delete |
-| created_at / updated_at | timestamptz | now() | |
+### Tabelas principais
 
-### `categories`
-| Coluna | Tipo | Default | Notas |
-|--------|------|---------|-------|
-| id | uuid PK | gen_random_uuid() | |
-| user_id | uuid | — | FK → auth.users |
-| name | text | — | |
-| type | text | — | CHECK: 'income' \| 'expense' |
-| icon | text | — | |
-| color | text | — | |
-| is_active | boolean | true | |
-| deleted_at | timestamptz | — | Soft delete |
-| created_at / updated_at | timestamptz | now() | |
+| Tabela | Responsabilidade |
+|---|---|
+| `profiles` | perfil e flag `is_admin` |
+| `bank_accounts` | contas, saldo inicial/atual e vinculo Pluggy |
+| `categories` | categorias de receita/despesa |
+| `credit_cards` | cartoes sem `closing_day`/`due_day` diretos no modelo final |
+| `credit_card_statement_cycles` | vigencias de fechamento/vencimento do cartao |
+| `credit_card_invoices` | faturas por `card_id` + `month_key` |
+| `transactions` | receitas, despesas, transferencias, parcelas e recorrencias |
+| `settings_salary` | configuracoes salariais por periodo |
+| `system_config` | parametros globais protegidos |
+| `audit_log` | trilha de auditoria para tabelas sensiveis |
 
-### `credit_cards`
-| Coluna | Tipo | Default | Notas |
-|--------|------|---------|-------|
-| id | uuid PK | gen_random_uuid() | |
-| user_id | uuid | — | FK → auth.users |
-| bank_account_id | uuid | — | FK → bank_accounts |
-| name | text | — | |
-| color | text | — | |
-| credit_limit | numeric | 0 | |
-| closing_day | integer | — | CHECK 1–31; sincronizado por trigger |
-| due_day | integer | — | CHECK 1–31; sincronizado por trigger |
-| notes | text | — | |
-| is_active | boolean | true | |
-| deleted_at | timestamptz | — | Soft delete |
-| created_at / updated_at | timestamptz | now() | |
+### Observacoes de schema
 
-### `credit_card_invoices`
-| Coluna | Tipo | Default | Notas |
-|--------|------|---------|-------|
-| id | uuid PK | gen_random_uuid() | |
-| user_id | uuid | — | FK → auth.users |
-| card_id | uuid | — | FK → credit_cards; UNIQUE(card_id, month_key) |
-| month_key | text | — | Formato 'YYYY-MM' |
-| closing_date | date | — | |
-| due_date | date | — | |
-| total_amount | numeric | 0 | |
-| paid_amount | numeric | 0 | |
-| status | text | 'open' | CHECK: open, closed, partial, paid, overdue |
-| closed_at / paid_at | timestamptz | — | |
-| created_at / updated_at | timestamptz | now() | |
+- `credit_cards.closing_day` e `credit_cards.due_day` foram removidos por migration. A fonte correta dos dias de fechamento/vencimento e `credit_card_statement_cycles`.
+- As tabelas usam `user_id` para isolamento por usuario.
+- Soft delete aparece em contas, categorias, cartoes e transacoes.
+- `transactions` suporta `installment_group_id`, `recurring_group_id`, `invoice_id`, `purchase_date`, `payment_date` e `is_paid`.
 
-### `credit_card_statement_cycles`
-| Coluna | Tipo | Default | Notas |
-|--------|------|---------|-------|
-| id | uuid PK | gen_random_uuid() | |
-| user_id | uuid | — | FK → auth.users |
-| card_id | uuid | — | FK → credit_cards |
-| date_start | date | — | |
-| date_end | date | '9999-12-31' | Ciclo aberto |
-| closing_day | smallint | — | |
-| due_day | smallint | — | |
-| notes | text | — | |
-| created_at | timestamptz | now() | |
+## RPCs em Uso
 
-### `transactions`
-| Coluna | Tipo | Default | Notas |
-|--------|------|---------|-------|
-| id | uuid PK | gen_random_uuid() | |
-| user_id | uuid | — | FK → auth.users |
-| type | text | — | CHECK: income, expense, transfer |
-| amount | numeric | — | CHECK > 0 |
-| description | text | — | |
-| payment_date | date | — | |
-| purchase_date | date | — | |
-| account_id | uuid | — | FK → bank_accounts |
-| to_account_id | uuid | — | FK → bank_accounts; CHECK: só em transfers |
-| card_id | uuid | — | FK → credit_cards; CHECK: requer account_id |
-| invoice_id | uuid | — | FK → credit_card_invoices |
-| category_id | uuid | — | FK → categories |
-| is_fixed | boolean | false | |
-| is_paid | boolean | false | NOT NULL |
-| installment_group_id | uuid | — | Agrupa parcelas |
-| installment_number | integer | — | |
-| total_installments | integer | — | |
-| recurring_group_id | uuid | gen_random_uuid() | Agrupa recorrências |
-| notes | text | — | |
-| payment_method | text | — | CHECK: credit, debit, pix, cash, bill_payment, transfer, other |
-| created_at / updated_at | timestamptz | now() | |
+As areas abaixo ja operam majoritariamente via RPC:
 
----
+- contas: `get_accounts`, `create_account`, `update_account`, `delete_account`
+- categorias: `get_categories`, `create_category`, `update_category`, `delete_category`
+- dashboard: `get_dashboard_stats`, `get_chart_data`, `get_category_distribution`
+- cartoes/faturas/ciclos: `get_cards`, `get_card_by_id`, `get_card_stats`, `get_all_card_stats`, `get_invoices_by_card`, `get_cycles_by_card`, `update_cycle`, `delete_cycle`
+- transacoes: `get_transactions_paginated`, `get_transactions_summaries`, `create_transaction`, `update_transaction`, `delete_transaction`, `insert_transactions`, `batch_pay_transactions`, `batch_unpay_transactions`, `batch_delete_transactions`, `batch_change_day`
+- grupos: `delete_transaction_group`, `insert_installment_between`, `update_transaction_group`
+- salario: `get_salary_history`, `get_salary_current`, `get_salary_open`, `create_salary_setting`, `update_salary_setting`, `close_salary_setting`, `reopen_salary_setting`, `delete_salary_setting`
+- perfil/admin: `get_profile`, `upsert_profile`, `admin_list_users`, `admin_create_user`, `admin_update_user`, `admin_update_user_password`, `admin_delete_user`
+- Pluggy: `commit_pluggy_transactions`
 
-## Índices
+## Integracao Pluggy
 
-| Tabela | Índice | Colunas | Tipo |
-|--------|--------|---------|------|
-| transactions | idx_transactions_installment_group_id | installment_group_id | Parcial (WHERE NOT NULL) |
-| transactions | idx_transactions_recurring_group_id | recurring_group_id | Parcial (WHERE NOT NULL) |
-| transactions | idx_transactions_invoice_id | invoice_id | Parcial (WHERE NOT NULL) |
-| transactions | idx_transactions_user_payment_date | (user_id, payment_date DESC) | Composto |
+`supabase/functions/pluggy-token` cria connect tokens autenticados para o usuario logado.
 
----
+`supabase/functions/pluggy-sync` consulta transacoes na Pluggy, normaliza valores, detecta possiveis duplicidades e devolve uma previa para revisao no frontend. A confirmacao passa pelo hook `usePluggySync` e grava via `insert_transactions`.
 
-## RLS (Row Level Security)
+## Design System
 
-Todas as tabelas possuem RLS habilitado.
+O sistema visual atual usa Tailwind CSS v4, CSS variables em `src/App.css` e componentes React em `src/shared/components`.
 
-| Tabela | SELECT | INSERT | UPDATE | DELETE |
-|--------|--------|--------|--------|--------|
-| profiles | id = auth.uid() | id = auth.uid() | id = auth.uid() | — |
-| site_branding | PUBLIC (todos) | Apenas admin | Apenas admin | — |
-| settings_salary | user_id = auth.uid() | user_id = auth.uid() | user_id = auth.uid() | user_id = auth.uid() |
-| bank_accounts | user_id = auth.uid() | user_id = auth.uid() | user_id = auth.uid() | user_id = auth.uid() |
-| categories | user_id = auth.uid() | user_id = auth.uid() | user_id = auth.uid() | user_id = auth.uid() |
-| credit_cards | user_id = auth.uid() | user_id = auth.uid() | user_id = auth.uid() | user_id = auth.uid() |
-| credit_card_invoices | user_id = auth.uid() | user_id = auth.uid() | user_id = auth.uid() | user_id = auth.uid() |
-| credit_card_statement_cycles | user_id = auth.uid() | user_id = auth.uid() | user_id = auth.uid() | user_id = auth.uid() |
-| transactions | user_id = auth.uid() | user_id = auth.uid() | user_id = auth.uid() | user_id = auth.uid() |
+Tokens principais:
 
----
+- cores: `--color-background`, `--color-surface`, `--color-card`, `--color-primary`
+- texto: `--color-text-primary`, `--color-text-secondary`, `--color-text-muted`
+- estados: `--color-success`, `--color-error`, `--color-warning`, `--color-info`
+- radius: `--radius-sm`, `--radius-md`, `--radius-lg`
+- fontes: `--font-sans`, `--font-heading`
 
-## Triggers
+## Pontos de Atencao
 
-| Trigger | Tabela | Evento | Função | Descrição |
-|---------|--------|--------|--------|-----------|
-| trg_sync_account_balance | transactions | AFTER INSERT/UPDATE/DELETE | sync_account_balance_on_transaction() | Sincroniza `current_balance` das contas automaticamente |
-| trg_salary_no_overlap | settings_salary | BEFORE INSERT/UPDATE | check_salary_period_no_overlap() | Impede sobreposição de períodos salariais |
-| trg_sync_card_closing_due_day | credit_card_statement_cycles | AFTER INSERT/UPDATE | sync_card_closing_due_day() | Sincroniza closing/due_day do cartão com o ciclo aberto |
-| trg_site_branding_singleton | site_branding | BEFORE INSERT | enforce_site_branding_singleton() | Impede mais de uma linha na tabela |
-
----
-
-## Funções RPC
-
-| Função | Parâmetros | Retorno | Descrição |
-|--------|-----------|---------|-----------|
-| get_dashboard_stats_aggregated | p_start_date?, p_end_date? | total_income, total_expense | Totais de receitas/despesas para o período |
-| get_dashboard_chart_data | p_start_date, p_end_date | month_key, total_income, total_expense | Agregação mensal para gráficos |
-| get_category_distribution | p_start_date?, p_end_date? | category_name, total_amount | Distribuição de despesas por categoria |
-
-Todas as RPCs usam `SECURITY DEFINER` e filtram por `auth.uid()`.
-
----
-
-## Constraints de Integridade
-
-| Constraint | Tabela | Regra |
-|-----------|--------|-------|
-| transactions_type_check | transactions | type IN ('income', 'expense', 'transfer') |
-| transactions_payment_method_check | transactions | NULL ou IN ('credit', 'debit', 'pix', 'cash', 'bill_payment', 'transfer', 'other') |
-| chk_transfer_account | transactions | type = 'transfer' OR to_account_id IS NULL |
-| chk_card_has_account | transactions | card_id IS NULL OR account_id IS NOT NULL |
-| uq_invoices_card_month | credit_card_invoices | UNIQUE(card_id, month_key) |
-| credit_card_invoices_status_check | credit_card_invoices | status IN ('open', 'closed', 'partial', 'paid', 'overdue') |
+- `dashboard.service.ts` ainda usa um acesso direto a `transactions` para descobrir a primeira data quando nao ha filtro.
+- `accounts.service.ts` chama `increment_account_balance`, mas essa RPC nao aparece nas migrations atuais.
+- `cards.service.ts` chama `create_credit_card_statement_cycle`, mas essa RPC tambem nao aparece nas migrations listadas.
+- A pasta de testes e o `vitest.config.ts` foram removidos; a qualidade atual depende de lint/build ate uma nova suite ser criada.

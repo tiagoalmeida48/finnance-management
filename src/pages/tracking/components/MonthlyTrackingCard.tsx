@@ -46,7 +46,7 @@ export function MonthlyTrackingCard({ data }: MonthlyTrackingCardProps) {
   const progress = Math.round(data.progress || 0);
   const isSettled = progress === 100 && data.totalItems > 0;
 
-  const handleConfirmPay = async ({ paymentDate }: { paymentDate: string; accountId?: string; cardId?: string }) => {
+  const handleConfirmPay = async (_opts: { paymentDate: string; accountId?: string; cardId?: string }) => {
     if (!payingItem) return;
     try {
       await togglePaid.mutateAsync({ id: payingItem.id, currentStatus: false });

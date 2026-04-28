@@ -50,9 +50,7 @@ export function useCategoriesPageLogic() {
       await deleteCategory.mutateAsync(selectedCategory.id);
       setDeleteModalOpen(false);
       setSelectedCategory(undefined);
-    } catch {
-      //
-    }
+    } catch { return; }
   };
 
   const handleEdit = () => {

@@ -1,91 +1,110 @@
 # Finnance Management
 
-Aplicação web para gestão financeira pessoal com foco em:
-- contas e saldos
-- transações (manual, em lote e importação CSV)
-- categorias
-- cartões de crédito e faturas
-- acompanhamento mensal de contas
-- simulador de salário/holerite
-- perfil do usuário e gestão de usuários (admin)
+Aplicacao web para gestao financeira pessoal com contas, transacoes, cartoes de credito, faturas, acompanhamento mensal, simulador salarial, importacao CSV, integracao Pluggy e gestao administrativa de usuarios.
 
 ## Stack
 
 - React 19 + TypeScript 5.9
-- rolldown-vite 7.2.5
-- Material UI v7
-- React Query v5
-- React Hook Form v7 + Zod v4
+- Vite/rolldown-vite 7.2
+- Tailwind CSS 4
+- React Router 7
+- TanStack Query 5
+- Zustand 5
+- React Hook Form 7 + Zod 4
 - Framer Motion 12
 - Recharts 3
-- Supabase (Auth + PostgreSQL + RLS)
+- Supabase Auth, PostgreSQL, RLS, RPCs e Edge Functions
 
 ## Requisitos
 
 - Node.js 20+
-- pnpm 9+
+- pnpm 10.28.1 ou compativel
+- Projeto Supabase configurado
 
-## Configuração
+## Configuracao
 
-1. Instale dependências:
+Instale as dependencias:
 
 ```bash
 pnpm install
 ```
 
-2. Crie `.env.local` com as variáveis:
+Crie um arquivo `.env` ou `.env.local` com:
 
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_PUBLISHABLE_KEY`
+```env
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+```
+
+Para as Edge Functions Pluggy, configure no Supabase:
+
+```env
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+PLUGGY_CLIENT_ID=
+PLUGGY_CLIENT_SECRET=
+```
 
 ## Comandos
 
 ```bash
 pnpm dev          # ambiente local
-pnpm exec eslint src
-pnpm run build    # type-check + bundle de produção
-pnpm run test     # suite mínima com Vitest
-pnpm run test:watch
-pnpm run check:ci # lint + build + test
+pnpm run build    # type-check + build de producao
+pnpm run lint     # ESLint
+pnpm run preview  # preview local do build
+pnpm run format   # Prettier em src
+pnpm run check:ci # lint + build
 ```
 
-## Estrutura principal
+Nao ha suite de testes automatizados ativa no estado atual do projeto.
+
+## Estrutura Principal
 
 ```text
 src/
-  app-routes/            # rotas com lazy loading
-  pages/                 # páginas de rota
-  shared/components/     # componentes reutilizáveis por domínio
-  shared/hooks/          # regras de página/estado
-  shared/services/       # acesso a dados e regras de persistência
-  shared/interfaces/     # contratos e tipos
-  shared/constants/      # chaves compartilhadas (ex.: query keys)
-  shared/contexts/       # contexts (auth, branding)
-  shared/theme/          # tema MUI customizado
-  shared/utils/          # utilitários e formatadores
-  lib/supabase/          # cliente Supabase e AuthProvider
+  routes/                 # rotas, lazy loading e guards
+  pages/                  # paginas por dominio
+  shared/components/      # UI, layout, forms e composites
+  shared/hooks/api/       # hooks React Query
+  shared/services/        # acesso a Supabase/RPCs por dominio
+  shared/interfaces/      # contratos TypeScript
+  shared/schemas/         # schemas Zod
+  shared/constants/       # query keys e constantes de dominio
+  shared/stores/          # Zustand
+  shared/theme/           # tema derivado dos tokens CSS
+  shared/utils/           # calculos puros e helpers
+  lib/supabase/           # client Supabase e AuthProvider
+
+supabase/
+  functions/              # Edge Functions Pluggy
+  migrations/             # historico SQL do banco
 ```
 
-## Qualidade técnica
+## Funcionalidades
 
-- Lint: `pnpm exec eslint src`
-- Type-check: `pnpm exec tsc -b`
-- Build: `pnpm run build`
-- Testes: `pnpm run test`
+- autenticacao e rotas protegidas;
+- dashboard com indicadores, graficos e transacoes recentes;
+- contas bancarias com saldo e vinculo Pluggy;
+- categorias de receita/despesa;
+- transacoes manuais, em lote, parceladas e recorrentes;
+- importacao CSV;
+- sincronizacao Pluggy com previa antes de confirmar;
+- cartoes de credito, faturas e ciclos de fechamento/vencimento;
+- acompanhamento mensal;
+- simulador e configuracoes salariais;
+- perfil do usuario;
+- gestao de usuarios para administradores.
 
-Recomendado configurar CI para rodar esses passos em pull requests e pushes.
+## Documentacao
 
-## Testes incluídos
+- [Arquitetura](docs/architecture.md)
+- [Status da migracao para RPCs](docs/migration-to-rpc-plan.md)
+- [PRD](docs/PRD.md)
+- [SPECS](docs/SPECS.md)
 
-- parser e normalização da importação de transações
-- resumo de tracking mensal
-- filtro de atualizações em grupo de transações
-- cálculos centrais de folha (`calculatePayroll`)
-- resumo e agrupamento de transações
-- lógica de ciclos de fatura de cartão
+## Observacoes Tecnicas
 
-## Observações
-
-- O projeto usa chave de cache do React Query centralizada em `src/shared/constants/queryKeys.ts`.
-- O modo admin depende do campo `is_admin` no perfil do usuário autenticado.
-- Gerenciador de pacotes: sempre usar **pnpm**.
+- O frontend usa principalmente RPCs Supabase, com poucos acessos diretos residuais.
+- As chaves do React Query ficam em `src/shared/constants/queryKeys.ts`.
+- `supabase/.temp/` e cache local da CLI e nao deve ser versionado.
+- Antes de deploy limpo, conferir as RPCs chamadas pelo frontend contra as migrations aplicadas no banco remoto.

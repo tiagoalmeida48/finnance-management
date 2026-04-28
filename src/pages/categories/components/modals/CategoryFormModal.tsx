@@ -95,9 +95,7 @@ export function CategoryFormModal({
         await createCategory.mutateAsync(values);
       }
       onClose();
-    } catch {
-      //
-    }
+    } catch { return; }
   };
 
   const isSaving = createCategory.isPending || updateCategory.isPending;

@@ -40,15 +40,9 @@ export const transactionsInstallmentsService = {
 
     if (error) throw error;
 
-    // Retorna as transações atualizadas para o caller
     const column = type === 'installment' ? 'installment_group_id' : 'recurring_group_id';
-    const { data, error: fetchError } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq(column, groupId);
-
-    if (fetchError) throw fetchError;
-    return (data ?? []) as Transaction[];
+    const transactions = await transactionsCoreService.getAll();
+    return transactions.filter((transaction) => transaction[column] === groupId);
   },
 };
 

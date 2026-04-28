@@ -44,9 +44,7 @@ export function useCreditCardsPageLogic() {
       await deleteCard.mutateAsync(selectedCard.id);
       setDeleteModalOpen(false);
       setSelectedCard(null);
-    } catch {
-      //
-    }
+    } catch { return; }
   };
 
   const handleAdd = () => {

@@ -22,7 +22,6 @@ import {
   normalizeDateKey,
   planCycleInsertion,
   sortStatementCyclesAsc,
-  OPEN_CYCLE_END,
 } from '@/shared/utils/card-statement-cycle.utils';
 import { invoicesService } from './invoices.service';
 

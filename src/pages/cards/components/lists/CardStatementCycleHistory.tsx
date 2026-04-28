@@ -29,8 +29,8 @@ import { useToast } from '@/shared/contexts/useToast';
 interface CardStatementCycleHistoryModalProps {
   cardId: string;
   cardName: string;
-  fallbackClosingDay: number;
-  fallbackDueDay: number;
+  fallbackClosingDay?: number;
+  fallbackDueDay?: number;
   open: boolean;
   onClose: () => void;
 }
@@ -131,8 +131,8 @@ export function CardStatementCycleHistoryModal({
     isDeleting,
   } = useCardStatementCycleHistoryLogic({
     cardId,
-    fallbackClosingDay,
-    fallbackDueDay,
+    fallbackClosingDay: fallbackClosingDay ?? 0,
+    fallbackDueDay: fallbackDueDay ?? 0,
     open,
     onClose,
   });

@@ -11,12 +11,10 @@ export function useOnClickOutside<T extends HTMLElement = HTMLElement>(
     const listener = (event: MouseEvent | TouchEvent) => {
       const el = ref?.current;
 
-      // Do nothing if clicking ref's element or descendent elements
       if (!el || el.contains(event.target as Node)) {
         return;
       }
 
-      // Do nothing if clicking on any of the excluded refs
       for (const excludeRef of excludeRefs) {
         if (excludeRef?.current?.contains(event.target as Node)) {
           return;

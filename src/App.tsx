@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { useAuth } from './lib/supabase/auth-context';
+import { useAuth } from './lib/supabase/use-auth';
 import { AppRoutes } from './routes/AppRouter';
 
 const MainLayout = lazy(() =>

@@ -40,9 +40,7 @@ export function useAccountsPageLogic() {
       await deleteAccount.mutateAsync(menuAccount.id);
       setDeleteModalOpen(false);
       setMenuAccount(null);
-    } catch {
-      //
-    }
+    } catch { return; }
   };
 
   const handleAdd = () => {

@@ -68,7 +68,7 @@ export function DeleteTransactionModal({
                 style: 'currency',
                 currency: 'BRL',
               }).format(transaction.amount)}{' '}
-              • {new Date(transaction.payment_date).toLocaleDateString('pt-BR')}
+              {transaction.payment_date && <>• {new Date(transaction.payment_date).toLocaleDateString('pt-BR')}</>}
             </Text>
           </Container>
 

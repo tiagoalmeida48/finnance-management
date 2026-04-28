@@ -1,24 +1,7 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from './client';
-
-export interface Profile {
-  full_name: string | null;
-  avatar_url: string | null;
-  is_admin: boolean | null;
-}
-
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  profile: Profile | null;
-  loading: boolean;
-  signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { AuthContext, type Profile } from './auth-context-value';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -29,7 +12,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return localStorage.getItem(storageKey) !== null;
   });
 
-  const fetchProfile = useCallback(async (_userId: string): Promise<Profile | null> => {
+  const fetchProfile = useCallback(async (): Promise<Profile | null> => {
     try {
       const { data, error } = await supabase.rpc('get_profile');
       if (error) return null;
@@ -61,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const fetchedProfile = await fetchProfile(currentUser.id);
+      const fetchedProfile = await fetchProfile();
       if (!isMounted()) return;
       setProfile(fetchedProfile);
     },
@@ -70,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshProfile = useCallback(async () => {
     if (!user) return;
-    const fetchedProfile = await fetchProfile(user.id);
+    const fetchedProfile = await fetchProfile();
     setProfile(fetchedProfile);
   }, [fetchProfile, user]);
 
@@ -93,8 +76,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, nextSession) => {
-      // INITIAL_SESSION is already handled by the bootstrap above.
-      // TOKEN_REFRESHED only rotates the JWT — no need to refetch the profile.
       if (event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
         if (isMounted()) setLoading(false);
         return;
@@ -130,11 +111,3 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </AuthContext.Provider>
   );
 }
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/lib/supabase/auth-context';
+import { useAuth } from '@/lib/supabase/use-auth';
 import { supabase } from '@/lib/supabase/client';
 
 type FeedbackMessage = { type: 'success' | 'error'; text: string } | null;

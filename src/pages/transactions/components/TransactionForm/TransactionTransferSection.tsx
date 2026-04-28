@@ -34,7 +34,7 @@ export function TransactionTransferSection({
       value: account.id,
       label: account.name,
       icon: <Icon size={16} />,
-      color: account.color,
+      color: account.color ?? undefined,
     };
   });
 

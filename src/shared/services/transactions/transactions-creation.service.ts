@@ -13,7 +13,7 @@ import {
 export const transactionsCreationService = {
   async create(transaction: CreateTransactionData) {
     const { data, error } = await supabase.rpc('create_transaction', {
-      p_data: transaction as Record<string, unknown>,
+      p_data: transaction as unknown as Record<string, unknown>,
     });
 
     if (error) throw error;

@@ -77,7 +77,6 @@ export function PluggySyncButton() {
               isPreviewMode ? 'w-full h-full' : 'w-full max-w-md'
             }`}
           >
-            {/* Header */}
             <Container unstyled className="flex items-center justify-between p-6 pb-4 shrink-0">
               <Container unstyled className="flex items-center gap-2">
                 <Building2 size={18} className="text-[var(--color-primary)]" />
@@ -96,7 +95,6 @@ export function PluggySyncButton() {
               </button>
             </Container>
 
-            {/* Seleção de conta */}
             {!isPreviewMode && (
               <Container unstyled className="flex flex-col gap-4 px-6 pb-6">
                 <Container unstyled className="flex flex-col gap-1">
@@ -139,7 +137,6 @@ export function PluggySyncButton() {
               </Container>
             )}
 
-            {/* Preview */}
             {isPreviewMode && (
               <>
                 {previewRows.length === 0 ? (
@@ -302,28 +299,20 @@ function InstallmentInput({
   installmentNumber,
   totalInstallments,
   pluggyId,
-  cardId,
   onChange,
 }: {
   installmentNumber: number | null;
   totalInstallments: number | null;
   pluggyId: string;
-  cardId: string | null;
+  cardId?: string | null;
   onChange: (n: number | null, total: number | null, groupId: string | null) => void;
 }) {
-  const initialValue =
-    totalInstallments && totalInstallments > 1
-      ? `${installmentNumber ?? 1}/${totalInstallments}`
-      : '';
-  const [raw, setRaw] = useState(initialValue);
+  const toRaw = (n: number | null, t: number | null) =>
+    t && t > 1 ? `${n ?? 1}/${t}` : '';
 
-  useEffect(() => {
-    const next =
-      totalInstallments && totalInstallments > 1
-        ? `${installmentNumber ?? 1}/${totalInstallments}`
-        : '';
-    setRaw(next);
-  }, [installmentNumber, totalInstallments]);
+  const [raw, setRaw] = useState(() => toRaw(installmentNumber, totalInstallments));
+
+  useEffect(() => { setRaw(toRaw(installmentNumber, totalInstallments)); }, [installmentNumber, totalInstallments]);
 
   const handleBlur = () => {
     const trimmed = raw.trim();

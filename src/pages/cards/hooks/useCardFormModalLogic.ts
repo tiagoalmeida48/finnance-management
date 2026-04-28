@@ -161,9 +161,7 @@ export function useCardFormModalLogic({ open, onClose, card }: UseCardFormModalL
         });
       }
       onClose();
-    } catch {
-      //
-    }
+    } catch { return; }
   });
 
   return {

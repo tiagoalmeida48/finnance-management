@@ -43,7 +43,7 @@ function loadHistory(): HistoryEntry[] {
 function saveHistory(h: HistoryEntry[]) {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify(h.slice(0, MAX_HISTORY)));
-  } catch {}
+  } catch { return; }
 }
 
 function fmt(value: string): string {
@@ -144,7 +144,7 @@ export function PayrollCalculatorTab() {
     });
   }, []);
 
-  const useHistoryResult = useCallback((result: string) => {
+  const applyHistoryResult = useCallback((result: string) => {
     setState((s) => ({
       ...s,
       display: result,
@@ -297,7 +297,7 @@ export function PayrollCalculatorTab() {
                   className="group flex items-center justify-between gap-2 py-2 first:pt-1 last:pb-1"
                 >
                   <button
-                    onClick={() => { useHistoryResult(entry.result); setShowHistory(false); }}
+                    onClick={() => { applyHistoryResult(entry.result); setShowHistory(false); }}
                     className="flex-1 min-w-0 text-left rounded-[6px] px-1 py-0.5 hover:bg-[var(--overlay-white-03)] transition-colors"
                     title="Usar resultado e fechar"
                   >

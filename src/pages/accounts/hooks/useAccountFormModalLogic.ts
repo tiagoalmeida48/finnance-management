@@ -96,9 +96,7 @@ export function useAccountFormModalLogic({
         });
       }
       onClose();
-    } catch {
-      //
-    }
+    } catch { return; }
   };
 
   return {

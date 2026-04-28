@@ -219,9 +219,7 @@ export function useTransactionFormLogic(
       }
       resetUiState();
       onClose();
-    } catch {
-      //
-    }
+    } catch { return; }
   };
 
   return {

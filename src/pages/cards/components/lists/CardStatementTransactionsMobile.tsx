@@ -14,6 +14,7 @@ import { Container } from '@/shared/components/layout/Container';
 interface CardStatementTransactionsMobileProps {
   transactions: StatementTransaction[];
   onEditTransaction?: (transaction: StatementTransaction) => void;
+  onDeleteTransaction?: (transaction: StatementTransaction) => void;
   setCategoryIconRef: (node: HTMLDivElement | null, color: string) => void;
   fallbackCategoryColor: string;
 }

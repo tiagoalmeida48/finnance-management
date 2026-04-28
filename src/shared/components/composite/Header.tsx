@@ -1,5 +1,5 @@
 import { IconButton } from '@/shared/components/ui/icon-button';
-import { useAuth } from '@/lib/supabase/auth-context';
+import { useAuth } from '@/lib/supabase/use-auth';
 import { LogOut, User as UserIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';

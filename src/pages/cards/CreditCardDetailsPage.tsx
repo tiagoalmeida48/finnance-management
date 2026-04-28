@@ -7,36 +7,20 @@ import { CardStatementCycleHistoryModal } from './components/lists/CardStatement
 import { PayBillModal } from './components/modals/PayBillModal';
 import { TransactionFormModal } from '@/pages/transactions/components/modals/TransactionFormModal';
 import type { Transaction } from '@/shared/interfaces';
-import type { CardStatement } from '@/shared/interfaces/card-details.interface';
 import { Container } from '@/shared/components/layout/Container';
 import { Section } from '@/shared/components/layout/Section';
 import { messages } from '@/shared/i18n/messages';
-import { useDeleteTransactionGroup } from '@/shared/hooks/api/useTransactions';
-import { useToast } from '@/shared/contexts/useToast';
+import { useDeleteTransaction } from '@/shared/hooks/api/useTransactions';
 
 export function CreditCardDetailsPage() {
   const detailsMessages = messages.cards.detailsPage;
   const [cycleHistoryOpen, setCycleHistoryOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-  const [deletingStatement, setDeletingStatement] = useState<CardStatement | null>(null);
-  const deleteGroup = useDeleteTransactionGroup();
-  const toast = useToast();
+  const deleteTransaction = useDeleteTransaction();
 
   const handleDeleteTransaction = (transaction: { id: string; description?: string }) => {
     if (!confirm(`Deletar "${transaction.description ?? 'esta transação'}"?`)) return;
-    deleteGroup.mutateAsync({ groupId: transaction.id, type: 'single' })
-      .then(() => toast.success('Transação deletada.'))
-      .catch(() => toast.error('Erro ao deletar transação.'));
-  };
-
-  const handleDeleteStatement = (statement: CardStatement) => {
-    if (!confirm(`Deletar todas as ${statement.transactions?.length ?? 0} transações da fatura ${statement.month}?`)) return;
-    setDeletingStatement(statement);
-    const ids = statement.transactions?.map((t) => t.id) ?? [];
-    Promise.all(ids.map((id) => deleteGroup.mutateAsync({ groupId: id, type: 'single' })))
-      .then(() => toast.success(`Fatura ${statement.month} deletada.`))
-      .catch(() => toast.error('Erro ao deletar fatura.'))
-      .finally(() => setDeletingStatement(null));
+    deleteTransaction.mutate(transaction.id);
   };
 
   const {

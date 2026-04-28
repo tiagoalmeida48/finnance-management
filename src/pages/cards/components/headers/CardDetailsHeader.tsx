@@ -46,7 +46,6 @@ export function CardDetailsHeader({
 
   return (
     <Container unstyled className="mb-6 flex flex-col gap-4">
-      {/* Top Navigation */}
       <Container
         unstyled
         className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center"
@@ -122,7 +121,6 @@ export function CardDetailsHeader({
         </Container>
       </Container>
 
-      {/* Hero Card Info (Solid background without transparency) */}
       <Container
         unstyled
         className="relative overflow-hidden rounded-[24px] border border-white/5 bg-[var(--color-card)] p-6 shadow-sm"
@@ -130,14 +128,12 @@ export function CardDetailsHeader({
         <div className="pointer-events-none absolute -right-20 -top-20 h-40 w-40 rounded-full bg-[var(--color-primary)] opacity-10 blur-[64px]" />
 
         <Container unstyled className="relative z-10 flex flex-col items-center gap-5 sm:flex-row">
-          {/* Estilo Mini-cartão Físico */}
           <Container
             unstyled
             ref={cardIconRef}
             className="relative flex h-16 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[14px] shadow-lg"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent mix-blend-overlay" />
-            {/* Simula chip do cartão */}
             <div className="absolute left-2.5 top-1/2 h-3.5 w-4.5 -translate-y-1/2 rounded-[3px] border border-black/10 bg-gradient-to-br from-[#ffd700]/40 to-[#DAA520]/20 mix-blend-color-dodge" />
             <CardIcon
               size={24}
@@ -162,7 +158,6 @@ export function CardDetailsHeader({
         </Container>
       </Container>
 
-      {/* Bento Metrics */}
       <Container unstyled className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {metrics.map((metric) => (
           <HeaderMetricCard
