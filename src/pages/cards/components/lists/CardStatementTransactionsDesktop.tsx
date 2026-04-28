@@ -51,7 +51,7 @@ export function CardStatementTransactionsDesktop({
   return (
     <Table>
       <TableHead>
-        <TableRow className="bg-[var(--overlay-white-02)]">
+        <TableRow className="bg-gradient-to-r from-[var(--overlay-white-03)] to-transparent">
           <SortHeaderCell
             active={statementSortField === 'payment_date'}
             direction={statementSortDirection}
@@ -116,33 +116,35 @@ function StatementDesktopRow({
   const categoryColor = transaction.category?.color || fallbackCategoryColor;
 
   return (
-    <TableRow className="group/row transition-colors hover:bg-white/5">
-      <TableCell onClick={() => onEditTransaction?.(transaction)} className="cursor-pointer">
+    <TableRow className="group/row border-b border-[var(--color-border)] transition-colors hover:bg-white/[0.03]">
+      <TableCell onClick={() => onEditTransaction?.(transaction)} className="cursor-pointer text-[var(--color-text-muted)] text-[13px] tabular-nums">
         {displayDate ? format(new Date(`${displayDate}T12:00:00`), 'dd/MM') : '-'}
       </TableCell>
-      <TableCell onClick={() => onEditTransaction?.(transaction)} className="cursor-pointer text-[var(--color-text-primary)]">
-        {transaction.description}
+      <TableCell onClick={() => onEditTransaction?.(transaction)} className="cursor-pointer">
+        <span className="text-[13.5px] font-medium text-[var(--color-text-primary)]">
+          {transaction.description}
+        </span>
         {transaction.installment_number && transaction.total_installments ? (
-          <Text as="span" className="ml-1 text-xs font-semibold text-[var(--color-text-muted)]">
+          <Text as="span" className="ml-1.5 rounded bg-white/[0.06] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--color-text-muted)]">
             {transaction.installment_number}/{transaction.total_installments}
           </Text>
         ) : null}
       </TableCell>
       <TableCell onClick={() => onEditTransaction?.(transaction)} className="cursor-pointer">
-        <Row className="items-center gap-1">
+        <Row className="items-center gap-1.5">
           <Container
             unstyled
             ref={(node) => setCategoryDotRef(node, categoryColor)}
-            className="h-2 w-2 rounded-sm"
+            className="h-2 w-2 shrink-0 rounded-sm"
           />
-          <Text as="span" className="text-sm text-[var(--color-text-secondary)]">
+          <Text as="span" className="text-[13px] text-[var(--color-text-secondary)]">
             {transaction.category?.name || statementMessages.noCategory}
           </Text>
         </Row>
       </TableCell>
       <TableCell
         onClick={() => onEditTransaction?.(transaction)}
-        className={`cursor-pointer text-right font-semibold ${transaction.type === 'income' ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}
+        className={`cursor-pointer text-right text-[13.5px] font-bold tabular-nums ${transaction.type === 'income' ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}
       >
         {formatCardStatementCurrency(transaction.amount)}
       </TableCell>
@@ -150,7 +152,7 @@ function StatementDesktopRow({
         {onDeleteTransaction && (
           <button
             onClick={(e) => { e.stopPropagation(); onDeleteTransaction(transaction); }}
-            className="text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors"
+            className="rounded-md p-1 text-[var(--color-text-muted)] opacity-0 transition-all group-hover/row:opacity-100 hover:bg-[var(--overlay-error-10)] hover:text-[var(--color-error)]"
             title="Deletar transação"
           >
             <Trash2 size={14} />

@@ -302,7 +302,18 @@ export const cardsService = {
       });
       if (error) throw error;
 
-      const page = z.array(TransactionSchema).parse(data ?? []);
+      const normalized = (data ?? []).map((row: Record<string, unknown>) => ({
+        ...row,
+        bank_account: row.bank_account_name ? { name: row.bank_account_name } : null,
+        to_bank_account: row.to_bank_account_name ? { name: row.to_bank_account_name } : null,
+        category: row.category_name
+          ? { name: row.category_name, color: row.category_color ?? '', icon: row.category_icon ?? '' }
+          : null,
+        credit_card: row.credit_card_name
+          ? { name: row.credit_card_name, color: row.credit_card_color ?? null }
+          : null,
+      }));
+      const page = z.array(TransactionSchema).parse(normalized);
       cardTransactions.push(...page);
       if (page.length < TRANSACTIONS_PAGE_SIZE) break;
       offset += TRANSACTIONS_PAGE_SIZE;
@@ -316,7 +327,9 @@ export const cardsService = {
     if (invoicesResult.error) throw invoicesResult.error;
     if (cyclesResult.error) throw cyclesResult.error;
 
-    const cardRow = CreditCardSchema.parse(cardResult.data);
+    const cardDataRaw = Array.isArray(cardResult.data) ? cardResult.data[0] : cardResult.data;
+    if (!cardDataRaw) throw new Error('Cartão não encontrado');
+    const cardRow = CreditCardSchema.parse(cardDataRaw);
     const cardCycles = sortStatementCyclesAsc(
       z.array(CreditCardStatementCycleSchema).parse(cyclesResult.data ?? []),
     );

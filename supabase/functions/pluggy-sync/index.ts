@@ -2,14 +2,30 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const PLUGGY_API = "https://api.pluggy.ai";
-const CORS = {
-  "Access-Control-Allow-Origin": "https://finnance-management.vercel.app",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: { ...CORS, "Content-Type": "application/json" } });
+const ALLOWED_ORIGINS = [
+  "https://finnance-management.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin") ?? "";
+  const allowed =
+    ALLOWED_ORIGINS.includes(origin) || origin.endsWith(".vercel.app")
+      ? origin
+      : ALLOWED_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allowed,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Vary": "Origin",
+  };
+}
+
+function json(body: unknown, status = 200, req?: Request) {
+  const cors = req ? getCorsHeaders(req) : { "Access-Control-Allow-Origin": ALLOWED_ORIGINS[0] };
+  return new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
 }
 
 async function getApiKey(): Promise<string> {
@@ -97,31 +113,30 @@ export interface PluggyPreviewRow {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: getCorsHeaders(req) });
 
   const authHeader = req.headers.get("Authorization");
-  if (!authHeader) return json({ error: "Unauthorized" }, 401);
+  if (!authHeader) return json({ error: "Unauthorized" }, 401, req);
 
   const anonClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
   const { data: { user }, error: authError } = await anonClient.auth.getUser();
-  if (authError || !user) return json({ error: "Unauthorized" }, 401);
+  if (authError || !user) return json({ error: "Unauthorized" }, 401, req);
 
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
   const body = await req.json();
   const { pluggyItemId, localAccountId } = body as { pluggyItemId: string; localAccountId: string };
-  if (!pluggyItemId || !localAccountId) return json({ error: "pluggyItemId and localAccountId required" }, 400);
+  if (!pluggyItemId || !localAccountId) return json({ error: "pluggyItemId and localAccountId required" }, 400, req);
 
-  // Verifica que a conta pertence ao usuário autenticado
   const { data: accountCheck } = await supabase
     .from("bank_accounts").select("id").eq("id", localAccountId).eq("user_id", user.id).maybeSingle();
-  if (!accountCheck) return json({ error: "Account not found or access denied" }, 403);
+  if (!accountCheck) return json({ error: "Account not found or access denied" }, 403, req);
 
   let apiKey: string;
-  try { apiKey = await getApiKey(); } catch (e) { return json({ error: String(e) }, 502); }
+  try { apiKey = await getApiKey(); } catch (e) { return json({ error: String(e) }, 502, req); }
 
   const accListRes = await fetch(`${PLUGGY_API}/accounts?itemId=${pluggyItemId}`, { headers: { "X-API-KEY": apiKey } });
-  if (!accListRes.ok) return json({ error: "Failed to list Pluggy accounts" }, 502);
+  if (!accListRes.ok) return json({ error: "Failed to list Pluggy accounts" }, 502, req);
   const allAccounts: Array<Record<string, unknown>> = (await accListRes.json()).results ?? [];
 
   const { data: creditCards } = await supabase
@@ -142,7 +157,7 @@ Deno.serve(async (req: Request) => {
     : (() => { const d = new Date(); d.setDate(d.getDate() - 90); return d.toISOString().split("T")[0]; })();
   const toDate = new Date().toISOString().split("T")[0];
 
-  if (fromDate > toDate) return json({ rows: [], upToDate: true });
+  if (fromDate > toDate) return json({ rows: [], upToDate: true }, 200, req);
 
   const { data: existingTxs } = await supabase
     .from("transactions").select("description, amount, payment_date")
@@ -216,5 +231,5 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  return json({ rows, upToDate: false, fromDate, toDate });
+  return json({ rows, upToDate: false, fromDate, toDate }, 200, req);
 });
