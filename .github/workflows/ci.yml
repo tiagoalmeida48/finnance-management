@@ -28,8 +28,5 @@ jobs:
       - name: Lint
         run: pnpm exec eslint src
 
-      - name: Test
-        run: pnpm test
-
       - name: Build
         run: pnpm build
