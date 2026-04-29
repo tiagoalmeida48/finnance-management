@@ -1,8 +1,5 @@
 import { format } from 'date-fns';
-<<<<<<< HEAD
 import { Trash2 } from 'lucide-react';
-=======
->>>>>>> finnance-management/main
 import { Button } from '@/shared/components/ui/button';
 import { Container } from '@/shared/components/layout/Container';
 import { Row } from '@/shared/components/layout/Row';
@@ -119,16 +116,8 @@ function StatementDesktopRow({
   const categoryColor = transaction.category?.color || fallbackCategoryColor;
 
   return (
-<<<<<<< HEAD
     <TableRow className="group/row border-b border-[var(--color-border)] transition-colors hover:bg-white/[0.03]">
       <TableCell onClick={() => onEditTransaction?.(transaction)} className="cursor-pointer text-[var(--color-text-muted)] text-[13px] tabular-nums">
-=======
-    <TableRow
-      onClick={() => onEditTransaction?.(transaction)}
-      className="cursor-pointer transition-colors hover:bg-white/5"
-    >
-      <TableCell>
->>>>>>> finnance-management/main
         {displayDate ? format(new Date(`${displayDate}T12:00:00`), 'dd/MM') : '-'}
       </TableCell>
       <TableCell onClick={() => onEditTransaction?.(transaction)} className="cursor-pointer">
@@ -136,11 +125,7 @@ function StatementDesktopRow({
           {transaction.description}
         </span>
         {transaction.installment_number && transaction.total_installments ? (
-<<<<<<< HEAD
           <Text as="span" className="ml-1.5 rounded bg-white/[0.06] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--color-text-muted)]">
-=======
-          <Text as="span" className="ml-1 text-xs font-semibold text-[var(--color-text-muted)]">
->>>>>>> finnance-management/main
             {transaction.installment_number}/{transaction.total_installments}
           </Text>
         ) : null}
@@ -152,22 +137,14 @@ function StatementDesktopRow({
             ref={(node) => setCategoryDotRef(node, categoryColor)}
             className="h-2 w-2 shrink-0 rounded-sm"
           />
-<<<<<<< HEAD
           <Text as="span" className="text-[13px] text-[var(--color-text-secondary)]">
-=======
-          <Text as="span" className="text-sm text-[var(--color-text-secondary)]">
->>>>>>> finnance-management/main
             {transaction.category?.name || statementMessages.noCategory}
           </Text>
         </Row>
       </TableCell>
       <TableCell
-<<<<<<< HEAD
         onClick={() => onEditTransaction?.(transaction)}
         className={`cursor-pointer text-right text-[13.5px] font-bold tabular-nums ${transaction.type === 'income' ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}
-=======
-        className={`text-right font-semibold ${transaction.type === 'income' ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}
->>>>>>> finnance-management/main
       >
         {formatCardStatementCurrency(transaction.amount)}
       </TableCell>

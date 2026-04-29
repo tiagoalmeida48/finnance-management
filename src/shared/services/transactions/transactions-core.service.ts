@@ -3,7 +3,6 @@ import { supabase } from '@/lib/supabase/client';
 import type { Transaction } from '../../interfaces';
 import { TransactionSchema } from '../../schemas';
 import { getTransactionAnchorDateKey } from '@/shared/utils/card-statement-cycle.utils';
-<<<<<<< HEAD
 import { recalculateInvoiceTotal } from '../invoice-reconciliation.service';
 import { TRANSACTION_MUTATION_PAGE_SIZE } from './transactions-utils.service';
 
@@ -30,16 +29,6 @@ export type TransactionsSummaryParams = Omit<
   TransactionsPaginatedParams,
   'limit' | 'offset' | 'sort_field' | 'sort_direction'
 >;
-=======
-import {
-  linkTransactionToInvoice,
-  recalculateInvoiceTotal,
-} from '../invoice-reconciliation.service';
-import { TRANSACTION_MUTATION_PAGE_SIZE } from './transactions-utils.service';
-
-const TRANSACTION_SELECT =
-  '*, bank_account:account_id(name), to_bank_account:to_account_id(name), category:category_id(name, color, icon), credit_card:card_id(name, color)';
->>>>>>> finnance-management/main
 
 export const transactionsCoreService = {
   async getAll(filters?: {
@@ -52,7 +41,6 @@ export const transactionsCoreService = {
     offset?: number;
   }) {
     if (filters?.limit !== undefined) {
-<<<<<<< HEAD
       const { data, error } = await supabase.rpc('get_transactions_paginated', {
         p_account_id: filters.account_id ?? null,
         p_category_id: filters.category_id ?? null,
@@ -63,23 +51,6 @@ export const transactionsCoreService = {
         p_offset: filters.offset ?? 0,
         p_sort_asc: false,
       });
-=======
-      const pageOffset = filters.offset ?? 0;
-
-      let query = supabase
-        .from('transactions')
-        .select(TRANSACTION_SELECT)
-        .order('payment_date', { ascending: false })
-        .range(pageOffset, pageOffset + filters.limit - 1);
-
-      if (filters.account_id) query = query.eq('account_id', filters.account_id);
-      if (filters.category_id) query = query.eq('category_id', filters.category_id);
-      if (filters.start_date) query = query.gte('payment_date', filters.start_date);
-      if (filters.end_date) query = query.lte('payment_date', filters.end_date);
-      if (filters.is_paid !== undefined) query = query.eq('is_paid', filters.is_paid);
-
-      const { data, error } = await query;
->>>>>>> finnance-management/main
       if (error) throw error;
       return z.array(TransactionSchema).parse(data ?? []);
     }
@@ -88,7 +59,6 @@ export const transactionsCoreService = {
     const allTransactions: Transaction[] = [];
 
     while (true) {
-<<<<<<< HEAD
       const { data, error } = await supabase.rpc('get_transactions_paginated', {
         p_account_id: filters?.account_id ?? null,
         p_category_id: filters?.category_id ?? null,
@@ -99,21 +69,6 @@ export const transactionsCoreService = {
         p_offset: offset,
         p_sort_asc: false,
       });
-=======
-      let query = supabase
-        .from('transactions')
-        .select(TRANSACTION_SELECT)
-        .order('payment_date', { ascending: false })
-        .range(from, from + TRANSACTION_MUTATION_PAGE_SIZE - 1);
-
-      if (filters?.account_id) query = query.eq('account_id', filters.account_id);
-      if (filters?.category_id) query = query.eq('category_id', filters.category_id);
-      if (filters?.start_date) query = query.gte('payment_date', filters.start_date);
-      if (filters?.end_date) query = query.lte('payment_date', filters.end_date);
-      if (filters?.is_paid !== undefined) query = query.eq('is_paid', filters.is_paid);
-
-      const { data, error } = await query;
->>>>>>> finnance-management/main
       if (error) throw error;
 
       const page = z.array(TransactionSchema).parse(data ?? []);
@@ -126,26 +81,16 @@ export const transactionsCoreService = {
   },
 
   async getRecent(limit = 6) {
-<<<<<<< HEAD
     const { data, error } = await supabase.rpc('get_transactions_paginated', {
       p_limit: limit,
       p_offset: 0,
       p_sort_asc: false,
     });
-=======
-    const { data, error } = await supabase
-      .from('transactions')
-      .select(TRANSACTION_SELECT)
-      .order('payment_date', { ascending: false })
-      .limit(limit);
-
->>>>>>> finnance-management/main
     if (error) throw error;
     return z.array(TransactionSchema).parse(data ?? []);
   },
 
   async getById(id: string) {
-<<<<<<< HEAD
     const { data, error } = await supabase.rpc('get_transaction_by_id', { p_id: id });
     if (error) throw error;
     const row = Array.isArray(data) ? data[0] : data;
@@ -154,26 +99,6 @@ export const transactionsCoreService = {
 
   async update(id: string, updates: Partial<Transaction>) {
     const oldTransaction = await this.getById(id);
-=======
-    const { data, error } = await supabase
-      .from('transactions')
-      .select(
-        '*, bank_account:account_id(name), to_bank_account:to_account_id(name), category:category_id(name, color, icon), credit_card:card_id(name, color)',
-      )
-      .eq('id', id)
-      .single();
-
-    if (error) throw error;
-    return TransactionSchema.parse(data);
-  },
-
-  async update(id: string, updates: Partial<Transaction>) {
-    const { data: oldTransactionRaw, error: fetchError } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('id', id)
-      .single();
->>>>>>> finnance-management/main
 
     const { data, error } = await supabase.rpc('update_transaction', {
       p_id: id,
@@ -181,45 +106,15 @@ export const transactionsCoreService = {
     });
     if (error) throw error;
 
-<<<<<<< HEAD
     const updatedTransaction = TransactionSchema.parse(data);
-=======
-    const oldTransaction = TransactionSchema.parse(oldTransactionRaw);
-    const { data: updatedRaw, error: updateError } = await supabase
-      .from('transactions')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select('*')
-      .single();
-
-    if (updateError) throw updateError;
-
-    const updatedTransaction = TransactionSchema.parse(updatedRaw);
->>>>>>> finnance-management/main
 
     const oldAnchorDateKey = getTransactionAnchorDateKey(oldTransaction);
     const newAnchorDateKey = getTransactionAnchorDateKey(updatedTransaction);
     const anchorDateChanged = oldAnchorDateKey !== newAnchorDateKey;
     const cardChanged = oldTransaction.card_id !== updatedTransaction.card_id;
 
-<<<<<<< HEAD
     if ((cardChanged || anchorDateChanged) && oldTransaction.invoice_id) {
       await recalculateInvoiceTotal(oldTransaction.invoice_id);
-=======
-    if (cardChanged || anchorDateChanged) {
-      if (oldTransaction.invoice_id) {
-        const { error: clearInvoiceError } = await supabase
-          .from('transactions')
-          .update({ invoice_id: null })
-          .eq('id', id);
-        if (clearInvoiceError) throw clearInvoiceError;
-
-        await recalculateInvoiceTotal(oldTransaction.invoice_id);
-        updatedTransaction.invoice_id = null;
-      }
-
-      await linkTransactionToInvoice(updatedTransaction);
->>>>>>> finnance-management/main
     } else if (
       updatedTransaction.invoice_id &&
       (Number(oldTransaction.amount) !== Number(updatedTransaction.amount) ||
@@ -237,23 +132,8 @@ export const transactionsCoreService = {
   },
 
   async delete(id: string) {
-<<<<<<< HEAD
     const { data, error } = await supabase.rpc('delete_transaction', { p_id: id });
     if (error) throw error;
-=======
-    const { data: transactionRaw, error: fetchError } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (fetchError) throw fetchError;
-    const transaction = TransactionSchema.parse(transactionRaw);
-
-    const { error: deleteError } = await supabase.from('transactions').delete().eq('id', id);
-
-    if (deleteError) throw deleteError;
->>>>>>> finnance-management/main
 
     const transaction = TransactionSchema.parse(data);
     if (transaction.invoice_id) {
@@ -262,17 +142,7 @@ export const transactionsCoreService = {
   },
 
   async getFirstTransactionDate() {
-<<<<<<< HEAD
     const { data, error } = await supabase.rpc('get_first_transaction_date');
-=======
-    const { data, error } = await supabase
-      .from('transactions')
-      .select('payment_date')
-      .order('payment_date', { ascending: true })
-      .limit(1)
-      .single();
-
->>>>>>> finnance-management/main
     if (error) return null;
     return (data as string | null) || null;
   },

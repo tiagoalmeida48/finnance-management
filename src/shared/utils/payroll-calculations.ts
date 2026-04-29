@@ -33,11 +33,7 @@ export const calculatePayroll = (input: PayrollInput): PayrollResult => {
   const profitAdvance = grossPay > 0 ? round2(grossPay - baseSalary) : 0;
 
   const inssDiscount =
-<<<<<<< HEAD
     grossPay > 0 ? round2(-Math.min(baseSalary * (inssPercentage / 100), tetoInss)) : 0;
-=======
-    grossPay > 0 ? round2(-Math.min(baseSalary * (inssPercentage / 100), TETO_INSS)) : 0;
->>>>>>> finnance-management/main
 
   const adminFeeDiscount = grossPay > 0 ? round2(-(grossPay * (adminFeePercentage / 100))) : 0;
 

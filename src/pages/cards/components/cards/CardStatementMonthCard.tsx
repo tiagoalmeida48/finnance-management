@@ -66,7 +66,6 @@ export function CardStatementMonthCard({
         onClick={onToggleExpand}
         className="flex w-full items-center p-4 text-left transition-colors hover:bg-white/5 data-[state=open]:bg-white/5"
       >
-<<<<<<< HEAD
         <Container unstyled className="flex w-full items-center justify-between gap-2">
           <Row className="min-w-0 flex-1 items-center gap-2">
             <Container
@@ -112,64 +111,6 @@ export function CardStatementMonthCard({
               </Button>
             ) : null}
           </Row>
-=======
-        <Container unstyled className="grid w-full items-center gap-3 md:grid-cols-12">
-          <Container unstyled className="md:col-span-4">
-            <Row className="items-center gap-3">
-              <Container
-                unstyled
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-[var(--color-text-secondary)] transition-transform duration-300 group-hover/card:bg-white/10 group-hover/card:text-white"
-              >
-                {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-              </Container>
-              <Text as="span" className="text-[16px] font-heading font-bold capitalize text-white">
-                {statement.month}
-              </Text>
-              <Text
-                as="span"
-                className={`rounded-md px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider backdrop-blur-sm ${status.className}`}
-              >
-                {status.label}
-              </Text>
-              {!isMobile ? (
-                <Text as="span" className="text-xs text-[var(--color-text-muted)]">
-                  {statementMessages.items(statement.transactions?.length || 0)}
-                </Text>
-              ) : null}
-            </Row>
-          </Container>
-
-          <Container unstyled className="md:col-span-8">
-            <Row className="items-center justify-between gap-3 md:justify-end">
-              {isMobile ? (
-                <Text as="span" className="text-[13px] font-medium text-[var(--color-text-muted)]">
-                  {statementMessages.items(statement.transactions?.length || 0)}
-                </Text>
-              ) : null}
-
-              <Row className="items-center gap-4">
-                <Text
-                  as="span"
-                  className={`font-heading text-[18px] font-black tracking-tight ${statement.unpaidTotal > 0 ? 'text-white' : 'text-[var(--color-success)] drop-shadow-[0_0_8px_rgba(0,200,83,0.3)]'}`}
-                >
-                  {formatCardStatementCurrency(statement.total)}
-                </Text>
-                {statement.unpaidTotal > 0 ? (
-                  <Button
-                    size="small"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onPay();
-                    }}
-                    className="h-8 rounded-lg bg-[var(--color-primary)] px-4 text-[13px] font-bold text-black shadow-[0_0_15px_rgba(var(--color-primary-rgb),0.3)] transition-all hover:scale-105 hover:bg-[var(--color-primary)] hover:shadow-[0_0_20px_rgba(var(--color-primary-rgb),0.5)] active:scale-95"
-                  >
-                    {statementMessages.pay}
-                  </Button>
-                ) : null}
-              </Row>
-            </Row>
-          </Container>
->>>>>>> finnance-management/main
         </Container>
       </Button>
 

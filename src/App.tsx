@@ -1,9 +1,5 @@
 import { lazy, Suspense } from 'react';
-<<<<<<< HEAD
 import { useAuth } from './lib/supabase/use-auth';
-=======
-import { useAuth } from './lib/supabase/auth-context';
->>>>>>> finnance-management/main
 import { AppRoutes } from './routes/AppRouter';
 
 const MainLayout = lazy(() =>

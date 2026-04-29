@@ -1,10 +1,7 @@
 import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { transactionsService } from '@/shared/services/transactions.service';
-<<<<<<< HEAD
 import { transactionsCoreService } from '@/shared/services/transactions/transactions-core.service';
 import type { TransactionsPaginatedParams, TransactionsSummaryParams } from '@/shared/constants/queryKeys';
-=======
->>>>>>> finnance-management/main
 import { Transaction, CreateTransactionData } from '@/shared/interfaces';
 import { queryKeys } from '@/shared/constants/queryKeys';
 import { useToast } from '@/shared/contexts/useToast';

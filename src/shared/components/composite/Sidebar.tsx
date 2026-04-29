@@ -14,11 +14,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-<<<<<<< HEAD
 import { useAuth } from '@/lib/supabase/use-auth';
-=======
-import { useAuth } from '@/lib/supabase/auth-context';
->>>>>>> finnance-management/main
 import { SidebarMenuItem } from './SidebarMenuItem';
 import { useMediaQuery } from '@/shared/hooks/useMediaQuery';
 

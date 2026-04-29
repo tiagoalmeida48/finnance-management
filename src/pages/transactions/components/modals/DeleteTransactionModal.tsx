@@ -68,11 +68,7 @@ export function DeleteTransactionModal({
                 style: 'currency',
                 currency: 'BRL',
               }).format(transaction.amount)}{' '}
-<<<<<<< HEAD
               {transaction.payment_date && <>• {new Date(transaction.payment_date).toLocaleDateString('pt-BR')}</>}
-=======
-              • {new Date(transaction.payment_date).toLocaleDateString('pt-BR')}
->>>>>>> finnance-management/main
             </Text>
           </Container>
 

@@ -33,15 +33,11 @@ export function MonthlyTrackingItemList({
     <>
       {items.map((item, iidx: number) => (
         <Container unstyled key={iidx}>
-<<<<<<< HEAD
           <Container
             unstyled
             className={`flex items-center justify-between gap-1.5 rounded-[8px] px-1 py-0.5 transition-colors ${!item.isPaid && onPayItem ? 'cursor-pointer hover:bg-[var(--overlay-white-03)]' : ''}`}
             onClick={!item.isPaid && onPayItem ? () => onPayItem(item) : undefined}
           >
-=======
-          <Container unstyled className="flex items-center justify-between gap-1.5">
->>>>>>> finnance-management/main
             <Container unstyled className="flex min-w-0 flex-1 items-center gap-1">
               <Container
                 unstyled

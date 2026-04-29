@@ -50,13 +50,7 @@ export function useCategoriesPageLogic() {
       await deleteCategory.mutateAsync(selectedCategory.id);
       setDeleteModalOpen(false);
       setSelectedCategory(undefined);
-<<<<<<< HEAD
     } catch { return; }
-=======
-    } catch {
-      // erro tratado pelo onError global do QueryClient
-    }
->>>>>>> finnance-management/main
   };
 
   const handleEdit = () => {

@@ -3,10 +3,7 @@ import { Button } from '@/shared/components/ui/button';
 import { messages } from '@/shared/i18n/messages';
 import { Container } from '@/shared/components/layout/Container';
 import { Text } from '@/shared/components/ui/Text';
-<<<<<<< HEAD
 import { PluggySyncButton } from '@/pages/dashboard/components/PluggySyncButton';
-=======
->>>>>>> finnance-management/main
 
 interface TransactionsHeaderProps {
   isMobile: boolean;
@@ -29,10 +26,7 @@ export function TransactionsHeader({ isMobile, onImport, onAdd }: TransactionsHe
       </Container>
 
       <Container unstyled className="flex gap-2">
-<<<<<<< HEAD
         <PluggySyncButton />
-=======
->>>>>>> finnance-management/main
         <Button variant="outlined" startIcon={<Upload size={16} />} onClick={onImport}>
           {pageMessages.importButton}
         </Button>

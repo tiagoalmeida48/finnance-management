@@ -89,13 +89,8 @@ export function useCardFormModalLogic({ open, onClose, card }: UseCardFormModalL
   });
 
   const currentCycle = card?.current_statement_cycle ?? null;
-<<<<<<< HEAD
   const activeClosingDay = currentCycle?.closing_day ?? '-';
   const activeDueDay = currentCycle?.due_day ?? '-';
-=======
-  const activeClosingDay = currentCycle?.closing_day ?? card?.closing_day ?? '-';
-  const activeDueDay = currentCycle?.due_day ?? card?.due_day ?? '-';
->>>>>>> finnance-management/main
 
   const cyclePeriodLabel = useMemo(() => {
     if (!currentCycle) return null;
@@ -166,13 +161,7 @@ export function useCardFormModalLogic({ open, onClose, card }: UseCardFormModalL
         });
       }
       onClose();
-<<<<<<< HEAD
     } catch { return; }
-=======
-    } catch {
-      // erro tratado pelo onError global do QueryClient
-    }
->>>>>>> finnance-management/main
   });
 
   return {

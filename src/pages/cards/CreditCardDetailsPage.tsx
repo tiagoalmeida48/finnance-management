@@ -10,24 +10,18 @@ import type { Transaction } from '@/shared/interfaces';
 import { Container } from '@/shared/components/layout/Container';
 import { Section } from '@/shared/components/layout/Section';
 import { messages } from '@/shared/i18n/messages';
-<<<<<<< HEAD
 import { useDeleteTransaction } from '@/shared/hooks/api/useTransactions';
-=======
->>>>>>> finnance-management/main
 
 export function CreditCardDetailsPage() {
   const detailsMessages = messages.cards.detailsPage;
   const [cycleHistoryOpen, setCycleHistoryOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-<<<<<<< HEAD
   const deleteTransaction = useDeleteTransaction();
 
   const handleDeleteTransaction = (transaction: { id: string; description?: string }) => {
     if (!confirm(`Deletar "${transaction.description ?? 'esta transação'}"?`)) return;
     deleteTransaction.mutate(transaction.id);
   };
-=======
->>>>>>> finnance-management/main
 
   const {
     navigate,
@@ -72,13 +66,8 @@ export function CreditCardDetailsPage() {
         <CardStatementCycleHistoryModal
           cardId={card.id}
           cardName={card.name}
-<<<<<<< HEAD
           fallbackClosingDay={card.current_statement_cycle?.closing_day}
           fallbackDueDay={card.current_statement_cycle?.due_day}
-=======
-          fallbackClosingDay={card.current_statement_cycle?.closing_day ?? card.closing_day}
-          fallbackDueDay={card.current_statement_cycle?.due_day ?? card.due_day}
->>>>>>> finnance-management/main
           open={cycleHistoryOpen}
           onClose={() => setCycleHistoryOpen(false)}
         />
@@ -90,10 +79,7 @@ export function CreditCardDetailsPage() {
           cardId={card.id}
           statements={historyData.statements}
           handleOpenPayModal={handleOpenPayModal}
-<<<<<<< HEAD
           onDeleteTransaction={handleDeleteTransaction}
-=======
->>>>>>> finnance-management/main
           onEditTransaction={(transaction) => setEditingTransaction(transaction as Transaction)}
         />
         <TransactionFormModal

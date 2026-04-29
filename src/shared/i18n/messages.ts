@@ -487,10 +487,7 @@ export const messages = {
         'Nenhuma configuração vigente encontrada. Cadastre a primeira configuração para habilitar o simulador.',
       tabSimulator: 'Simulador',
       tabSettings: 'Configuração',
-<<<<<<< HEAD
       tabCalculator: 'Calculadora',
-=======
->>>>>>> finnance-management/main
     },
     simulatorTab: {
       title: 'Simulador',
@@ -744,7 +741,6 @@ export const messages = {
           'A vigência anterior absorverá o período desta. As faturas serão reprocessadas automaticamente.',
         deleting: 'Deletando...',
         confirm: 'Confirmar',
-<<<<<<< HEAD
         reprocessInvoices: 'Recalcular Faturas',
         reprocessing: 'Reprocessando...',
         reprocessSuccess: 'Faturas reprocessadas com sucesso.',
@@ -755,8 +751,6 @@ export const messages = {
         fromDateLabel: 'A partir de',
         success: 'Faturas reprocessadas com sucesso.',
         error: 'Erro ao reprocessar faturas.',
-=======
->>>>>>> finnance-management/main
       },
       errors: {
         invalidDay: 'Dia inválido',

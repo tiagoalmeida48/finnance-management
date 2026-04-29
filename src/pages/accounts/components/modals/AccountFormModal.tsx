@@ -138,7 +138,6 @@ export function AccountFormModal({ open, onClose, account }: AccountFormModalPro
             rows={3}
             placeholder={accountFormMessages.fields.notesPlaceholder}
             {...register('notes')}
-<<<<<<< HEAD
           />
         </FormField>
         <FormField
@@ -155,8 +154,6 @@ export function AccountFormModal({ open, onClose, account }: AccountFormModalPro
             placeholder="Ex: a2c4f1b0-8e29-4bc5-aa77-..."
             className={getFieldClass(false)}
             {...register('pluggy_account_id')}
-=======
->>>>>>> finnance-management/main
           />
         </FormField>
         <Controller

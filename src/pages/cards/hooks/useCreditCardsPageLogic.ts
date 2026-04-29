@@ -44,13 +44,7 @@ export function useCreditCardsPageLogic() {
       await deleteCard.mutateAsync(selectedCard.id);
       setDeleteModalOpen(false);
       setSelectedCard(null);
-<<<<<<< HEAD
     } catch { return; }
-=======
-    } catch {
-      // erro tratado pelo onError global do QueryClient
-    }
->>>>>>> finnance-management/main
   };
 
   const handleAdd = () => {

@@ -36,11 +36,7 @@ export function ActionMenuPopover({
               }
             : undefined
         }
-<<<<<<< HEAD
         className={`fixed z-[1200] min-w-[160px] rounded-xl border border-[var(--color-border)] bg-[var(--color-card-elevated)] p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm ${className ?? ''}`.trim()}
-=======
-        className={`fixed z-[1200] min-w-[150px] rounded-md border border-[var(--color-border)] bg-[var(--color-card)] p-1 shadow-lg ${className ?? ''}`.trim()}
->>>>>>> finnance-management/main
       >
         {children}
       </div>
