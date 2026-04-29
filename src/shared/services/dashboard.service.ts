@@ -14,19 +14,6 @@ interface DashboardMonthBucket {
 
 export const dashboardService = {
   async getStats(filter?: DashboardFilter) {
-    const [{ data: accounts }, { data: cards }, { data: usage }] = await Promise.all([
-      supabase
-        .from('bank_accounts')
-        .select('current_balance, initial_balance')
-        .is('deleted_at', null),
-      supabase.from('credit_cards').select('credit_limit').is('deleted_at', null),
-      supabase
-        .from('transactions')
-        .select('amount')
-        .eq('is_paid', false)
-        .not('card_id', 'is', null),
-    ]);
-
     let startDate: string | null = null;
     let endDate: string | null = null;
 
@@ -38,59 +25,25 @@ export const dashboardService = {
       endDate = filter.end;
     }
 
-    let txQuery = supabase.from('transactions').select('amount, type, card_id');
+    const { data, error } = await supabase.rpc('get_dashboard_stats', {
+      p_start_date: startDate,
+      p_end_date: endDate,
+    });
 
-    if (startDate) txQuery = txQuery.gte('payment_date', startDate);
-    if (endDate) txQuery = txQuery.lte('payment_date', endDate);
+    if (error) throw error;
 
-    const { data: txData, error: txError } = await txQuery;
-    if (txError) throw txError;
-
-    const transactions = txData ?? [];
-
-    const totalBalance =
-      accounts?.reduce((acc, curr) => acc + (Number(curr.current_balance) || 0), 0) ?? 0;
-    const totalLimit = cards?.reduce((acc, curr) => acc + (Number(curr.credit_limit) || 0), 0) ?? 0;
-    const totalUsed = usage?.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0) ?? 0;
-
-    const { data: firstTx } = await supabase
-      .from('transactions')
-      .select('payment_date')
-      .order('payment_date', { ascending: true })
-      .limit(1)
-      .single();
-
-    const firstDate = firstTx?.payment_date
-      ? startOfMonth(new Date(firstTx.payment_date + 'T12:00:00'))
-      : null;
-
-    let shouldIncludeInitialBalance = false;
-    if (!filter) {
-      shouldIncludeInitialBalance = true;
-    } else if (filter instanceof Date && firstDate) {
-      shouldIncludeInitialBalance =
-        format(startOfMonth(filter), 'yyyy-MM') === format(firstDate, 'yyyy-MM');
-    } else if (filter && 'start' in filter && firstDate) {
-      shouldIncludeInitialBalance = startOfMonth(new Date(filter.start)) <= firstDate;
-    }
-
-    const initialBalanceSum = accounts?.reduce((acc, a) => acc + (a.initial_balance || 0), 0) ?? 0;
-    const baseIncome = shouldIncludeInitialBalance ? initialBalanceSum : 0;
-
-    const monthlyIncome =
-      transactions
-        .filter((t) => t.type === 'income')
-        .reduce((acc, t) => acc + (Number(t.amount) || 0), 0) + baseIncome;
-
-    const monthlyExpenses = transactions
-      .filter((t) => (t.type === 'expense' || t.type === 'transfer') && !t.card_id)
-      .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+    const stats = data as {
+      total_balance: number;
+      total_available_limit: number;
+      monthly_income: number;
+      monthly_expenses: number;
+    };
 
     return {
-      totalBalance,
-      totalLimit: totalLimit - totalUsed,
-      monthlyIncome,
-      monthlyExpenses,
+      totalBalance: Number(stats.total_balance),
+      totalLimit: Number(stats.total_available_limit),
+      monthlyIncome: Number(stats.monthly_income),
+      monthlyExpenses: Number(stats.monthly_expenses),
     };
   },
 
@@ -130,15 +83,10 @@ export const dashboardService = {
       startDate = format(startOfMonth(start), 'yyyy-MM-dd');
       finalDate = format(endOfMonth(end), 'yyyy-MM-dd');
     } else {
-      const { data: firstTx } = await supabase
-        .from('transactions')
-        .select('payment_date')
-        .order('payment_date', { ascending: true })
-        .limit(1)
-        .maybeSingle();
+      const { data: firstDate } = await supabase.rpc('get_first_transaction_date');
 
-      const start = firstTx?.payment_date
-        ? new Date(firstTx.payment_date + 'T12:00:00')
+      const start = firstDate
+        ? new Date(String(firstDate) + 'T12:00:00')
         : subMonths(new Date(), 11);
       const end = new Date();
 
@@ -161,61 +109,53 @@ export const dashboardService = {
 
     if (months.length === 0) return [];
 
-    let query = supabase.from('transactions').select('amount, type, card_id, payment_date');
+    const { data, error } = await supabase.rpc('get_chart_data', {
+      p_start_date: startDate,
+      p_end_date: finalDate,
+    });
 
-    if (startDate) query = query.gte('payment_date', startDate);
-    if (finalDate) query = query.lte('payment_date', finalDate);
-
-    const { data, error } = await query;
     if (error) throw error;
 
-    for (const t of data ?? []) {
-      const monthKey = format(new Date(t.payment_date + 'T12:00:00'), 'yyyy-MM');
-      const month = months.find((m) => m.key === monthKey);
-      if (!month) continue;
+    const rpcRows = (data ?? []) as Array<{
+      month_key: string;
+      receita: number;
+      despesa: number;
+    }>;
 
-      if (t.type === 'income') {
-        month.receita += Number(t.amount);
-      } else if (t.type === 'transfer') {
-        month.despesa += Number(t.amount);
-      } else if (t.type === 'expense' && !t.card_id) {
-        month.despesa += Number(t.amount);
-      }
-    }
+    const rpcByKey = new Map(rpcRows.map((r) => [r.month_key, r]));
 
-    return months.map(({ name, receita, despesa }) => ({
-      name,
-      receita,
-      despesa,
-    }));
+    return months.map(({ key, name }) => {
+      const row = rpcByKey.get(key);
+      return {
+        name,
+        receita: Number(row?.receita ?? 0),
+        despesa: Number(row?.despesa ?? 0),
+      };
+    });
   },
 
   async getCategoryDistribution(filter?: DashboardFilter) {
-    let query = supabase
-      .from('transactions')
-      .select('amount, category:category_id(name)')
-      .eq('type', 'expense');
+    let startDate: string | null = null;
+    let endDate: string | null = null;
 
     if (filter instanceof Date) {
-      query = query
-        .gte('payment_date', format(startOfMonth(filter), 'yyyy-MM-dd'))
-        .lte('payment_date', format(endOfMonth(filter), 'yyyy-MM-dd'));
+      startDate = format(startOfMonth(filter), 'yyyy-MM-dd');
+      endDate = format(endOfMonth(filter), 'yyyy-MM-dd');
     } else if (filter && 'start' in filter && 'end' in filter) {
-      query = query.gte('payment_date', filter.start).lte('payment_date', filter.end);
+      startDate = filter.start;
+      endDate = filter.end;
     }
 
-    const { data, error } = await query;
+    const { data, error } = await supabase.rpc('get_category_distribution', {
+      p_start_date: startDate,
+      p_end_date: endDate,
+    });
+
     if (error) throw error;
 
-    const distribution: Record<string, number> = {};
-    for (const t of data ?? []) {
-      const category = Array.isArray(t.category) ? t.category[0] : t.category;
-      const name = (category as { name?: string } | null)?.name ?? 'Geral';
-      distribution[name] = (distribution[name] ?? 0) + Number(t.amount);
-    }
-
-    return Object.entries(distribution)
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value);
+    return (data ?? []).map((row: { category_name: string; total: number }) => ({
+      name: row.category_name,
+      value: Number(row.total),
+    }));
   },
 };

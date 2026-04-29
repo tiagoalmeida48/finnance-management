@@ -89,8 +89,8 @@ export function useCardFormModalLogic({ open, onClose, card }: UseCardFormModalL
   });
 
   const currentCycle = card?.current_statement_cycle ?? null;
-  const activeClosingDay = currentCycle?.closing_day ?? card?.closing_day ?? '-';
-  const activeDueDay = currentCycle?.due_day ?? card?.due_day ?? '-';
+  const activeClosingDay = currentCycle?.closing_day ?? '-';
+  const activeDueDay = currentCycle?.due_day ?? '-';
 
   const cyclePeriodLabel = useMemo(() => {
     if (!currentCycle) return null;
@@ -110,12 +110,12 @@ export function useCardFormModalLogic({ open, onClose, card }: UseCardFormModalL
       name: card?.name || '',
       bank_account_id: card?.bank_account_id || '',
       credit_limit: limitValue,
-      closing_day: card?.closing_day || 1,
-      due_day: card?.due_day || 10,
+      closing_day: card?.closing_day ?? currentCycle?.closing_day ?? 1,
+      due_day: card?.due_day ?? currentCycle?.due_day ?? 10,
       color: cardColor,
       notes: card?.notes || '',
     });
-  }, [card, open, reset]);
+  }, [card, currentCycle?.closing_day, currentCycle?.due_day, open, reset]);
 
   const setBankAccountId = (value: string) => {
     setValue('bank_account_id', value, {
@@ -161,9 +161,7 @@ export function useCardFormModalLogic({ open, onClose, card }: UseCardFormModalL
         });
       }
       onClose();
-    } catch {
-      // erro tratado pelo onError global do QueryClient
-    }
+    } catch { return; }
   });
 
   return {

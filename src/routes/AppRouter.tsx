@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '../lib/supabase/auth-context';
+import { useAuth } from '../lib/supabase/use-auth';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { ErrorBoundary } from '@/shared/components/ui/ErrorBoundary';
 

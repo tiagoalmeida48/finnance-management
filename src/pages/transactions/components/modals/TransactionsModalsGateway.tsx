@@ -60,14 +60,16 @@ export function TransactionsModalsGateway({
 
   return (
     <>
-      <TransactionFormModal
-        open={modalOpen}
-        onClose={() => {
-          setModalOpen(false);
-          setSelectedTransaction(undefined);
-        }}
-        transaction={selectedTransaction}
-      />
+      {modalOpen && (
+        <TransactionFormModal
+          open={modalOpen}
+          onClose={() => {
+            setModalOpen(false);
+            setSelectedTransaction(undefined);
+          }}
+          transaction={selectedTransaction}
+        />
+      )}
 
       <DeleteTransactionModal
         open={deleteModalOpen}

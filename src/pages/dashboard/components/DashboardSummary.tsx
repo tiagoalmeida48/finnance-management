@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/shared/components/ui/card';
-import { Wallet, CreditCard, TrendingUp, TrendingDown } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown } from 'lucide-react';
 import { messages } from '@/shared/i18n/messages';
 import { Text } from '@/shared/components/ui/Text';
 import { Heading } from '@/shared/components/ui/Heading';
@@ -30,13 +30,6 @@ export function DashboardSummary({ stats, isLoading }: DashboardSummaryProps) {
       topClass: 'bg-[linear-gradient(90deg,var(--color-accent),transparent)]',
     },
     {
-      title: summaryMessages.availableLimit,
-      value: stats?.totalLimit || 0,
-      icon: CreditCard,
-      iconClass: 'bg-[var(--overlay-secondary-10)] text-[var(--color-secondary)]',
-      topClass: 'bg-[linear-gradient(90deg,var(--color-secondary),transparent)]',
-    },
-    {
       title: summaryMessages.income,
       value: stats?.monthlyIncome || 0,
       icon: TrendingUp,
@@ -54,37 +47,39 @@ export function DashboardSummary({ stats, isLoading }: DashboardSummaryProps) {
   ];
 
   return (
-    <Container unstyled className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+    <Container unstyled className="mb-6 grid grid-cols-3 gap-2 sm:gap-4">
       {cards.map((card, idx) => {
         const Icon = card.icon;
         return (
           <Container unstyled key={idx}>
-            <Card className="group relative overflow-hidden">
+            <Card className="group relative overflow-hidden hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.25)]">
               <Container
                 unstyled
-                className={`pointer-events-none absolute inset-x-0 top-0 h-0.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${card.topClass}`}
+                className={`pointer-events-none absolute inset-x-0 top-0 h-[2px] opacity-60 transition-opacity duration-300 group-hover:opacity-100 ${card.topClass}`}
               />
-              <CardContent className="p-6">
-                <Container unstyled className="flex flex-col gap-4">
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.025] to-transparent" />
+              <CardContent className="relative p-3 sm:p-5">
+                <Container unstyled className="flex flex-col gap-2 sm:gap-4">
                   <Container
                     unstyled
-                    className={`flex h-10 w-10 items-center justify-center rounded-[10px] ${card.iconClass}`}
+                    className={`flex h-8 w-8 items-center justify-center rounded-[10px] sm:h-10 sm:w-10 ${card.iconClass}`}
                   >
-                    <Icon size={20} />
+                    <Icon size={16} className="sm:hidden" />
+                    <Icon size={20} className="hidden sm:block" />
                   </Container>
                   <Container unstyled>
-                    <Text className="mb-0.5 text-[13px] font-medium text-[var(--color-text-muted)]">
+                    <Text className="mb-0.5 text-[11px] font-medium text-[var(--color-text-muted)] sm:text-[13px]">
                       {card.title}
                     </Text>
                     {isLoading ? (
                       <Container
                         unstyled
-                        className="h-8 w-[120px] animate-pulse rounded bg-white/5"
+                        className="h-6 w-[80px] animate-pulse rounded bg-white/5 sm:h-8 sm:w-[120px]"
                       />
                     ) : (
                       <Heading
                         level={3}
-                        className={`font-heading text-2xl font-bold tracking-[-0.03em] ${card.isNegative ? 'text-[var(--color-error)]' : 'text-[var(--color-success)]'}`}
+                        className={`font-heading text-base font-bold tracking-[-0.03em] sm:text-2xl ${card.isNegative ? 'text-[var(--color-error)]' : 'text-[var(--color-success)]'}`}
                       >
                         {formatCurrency(card.value)}
                       </Heading>

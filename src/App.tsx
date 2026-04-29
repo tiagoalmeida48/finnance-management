@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { useAuth } from './lib/supabase/auth-context';
+import { useAuth } from './lib/supabase/use-auth';
 import { AppRoutes } from './routes/AppRouter';
 
 const MainLayout = lazy(() =>
@@ -15,7 +15,9 @@ const LazyToastProvider = lazy(() =>
 );
 
 function App() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) return null;
 
   if (!user) {
     return <AppRoutes />;

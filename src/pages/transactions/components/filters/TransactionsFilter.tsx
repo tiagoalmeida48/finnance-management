@@ -97,11 +97,11 @@ export function TransactionsFilter({
   return (
     <Container
       unstyled
-      className="mb-4 flex flex-col justify-between gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bgSecondary)]/95 p-2 shadow-lg shadow-black/40 backdrop-blur-md md:flex-row md:items-center z-10"
+      className="mb-4 flex flex-col justify-between gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bgSecondary)]/95 p-2 shadow-lg shadow-black/40 backdrop-blur-md md:flex-row md:items-center md:gap-3 z-10"
     >
       <Container
         unstyled
-        className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] md:pb-0"
+        className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] md:pb-0"
       >
         <Container unstyled className="flex shrink-0 gap-1 rounded-xl bg-black/40 p-1">
           <TabButton
@@ -136,7 +136,7 @@ export function TransactionsFilter({
 
       <Container
         unstyled
-        className="flex items-center justify-between gap-2 overflow-x-auto pb-1 md:justify-end md:pb-0"
+        className="flex items-center justify-between gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] md:justify-end md:pb-0"
       >
         <Button
           type="button"

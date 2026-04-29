@@ -37,8 +37,8 @@ export function AccountCard({ account, handleOpenMenu, cards, navigate }: Accoun
   const linkedCard = cards?.find((card) => card.bank_account_id === account.id);
 
   return (
-    <Card className="h-full overflow-visible">
-      <CardContent className="p-6">
+    <Card className="group h-full overflow-visible hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.25)] hover:border-[var(--color-border-hover)]">
+      <CardContent className="p-4 sm:p-6">
         <Row className="items-start justify-between">
           <Stack ref={iconBgRef} className="mb-2 rounded-lg p-1.5">
             {createElement(accountTypeIcon, {

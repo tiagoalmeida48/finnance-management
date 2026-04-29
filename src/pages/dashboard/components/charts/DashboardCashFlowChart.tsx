@@ -72,7 +72,7 @@ export function DashboardCashFlowChart({ chartData }: DashboardCashFlowChartProp
             </Container>
           </Container>
         </Container>
-        <Container unstyled className="h-[280px] w-full min-w-0">
+        <Container unstyled className="h-[200px] w-full min-w-0 sm:h-[280px]">
           {hasInsufficientCashFlowData ? (
             <Container
               unstyled

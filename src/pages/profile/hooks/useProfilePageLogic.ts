@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/lib/supabase/auth-context';
+import { useAuth } from '@/lib/supabase/use-auth';
 import { supabase } from '@/lib/supabase/client';
 
 type FeedbackMessage = { type: 'success' | 'error'; text: string } | null;
@@ -28,8 +28,6 @@ export function useProfilePageLogic() {
       setFetching(false);
     } else if (user && fetching) {
       refreshProfile().finally(() => setFetching(false));
-    } else if (!fetching) {
-      // No-op once fetching is done
     } else {
       setFetching(false);
     }
@@ -41,20 +39,12 @@ export function useProfilePageLogic() {
     setMessage(null);
 
     try {
-      const { error } = await supabase.from('profiles').upsert({
-        id: user.id,
-        full_name: fullName,
-        updated_at: new Date().toISOString(),
-      });
-
+      const { error } = await supabase.rpc('upsert_profile', { p_full_name: fullName });
       if (error) throw error;
       await refreshProfile();
       setMessage({ type: 'success', text: 'Nome atualizado com sucesso!' });
     } catch (error: unknown) {
-      setMessage({
-        type: 'error',
-        text: getErrorMessage(error, 'Erro ao atualizar perfil.'),
-      });
+      setMessage({ type: 'error', text: getErrorMessage(error, 'Erro ao atualizar perfil.') });
     } finally {
       setLoading(false);
     }
@@ -72,31 +62,23 @@ export function useProfilePageLogic() {
       const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
       const fileName = `${user?.id}-${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
 
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
-
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file);
       if (uploadError) throw uploadError;
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
 
-      const { error: updateError } = await supabase.from('profiles').upsert({
-        id: user?.id,
-        avatar_url: publicUrl,
-        updated_at: new Date().toISOString(),
+      const { error: updateError } = await supabase.rpc('upsert_profile', {
+        p_avatar_url: publicUrl,
       });
-
       if (updateError) throw updateError;
 
       await refreshProfile();
       setMessage({ type: 'success', text: 'Foto do perfil atualizada!' });
     } catch (error: unknown) {
-      setMessage({
-        type: 'error',
-        text: getErrorMessage(error, 'Erro ao carregar avatar.'),
-      });
+      setMessage({ type: 'error', text: getErrorMessage(error, 'Erro ao carregar avatar.') });
     } finally {
       setUploading(false);
     }
@@ -117,45 +99,23 @@ export function useProfilePageLogic() {
     setMessage(null);
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: password,
-      });
-
+      const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
-
       setMessage({ type: 'success', text: 'Senha atualizada com sucesso!' });
       setPassword('');
       setConfirmPassword('');
     } catch (error: unknown) {
-      setMessage({
-        type: 'error',
-        text: getErrorMessage(error, 'Erro ao atualizar senha.'),
-      });
+      setMessage({ type: 'error', text: getErrorMessage(error, 'Erro ao atualizar senha.') });
     } finally {
       setPwdLoading(false);
     }
   }
 
   return {
-    user,
-    profile,
-    loading,
-    fetching,
-    message,
-    setMessage,
-    fullName,
-    setFullName,
-    avatarUrl,
-    uploading,
-    password,
-    setPassword,
-    confirmPassword,
-    setConfirmPassword,
-    showPassword,
-    setShowPassword,
-    pwdLoading,
-    handleUpdate,
-    uploadAvatar,
-    handlePasswordUpdate,
+    user, profile, loading, fetching, message, setMessage,
+    fullName, setFullName, avatarUrl, uploading,
+    password, setPassword, confirmPassword, setConfirmPassword,
+    showPassword, setShowPassword, pwdLoading,
+    handleUpdate, uploadAvatar, handlePasswordUpdate,
   };
 }

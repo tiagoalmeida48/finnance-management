@@ -60,8 +60,8 @@ export function TransactionsPage() {
     setDeleteModalOpen,
     handleAdd,
     handleImport,
-    groupedTransactions,
     paginatedGroupedTransactions,
+    totalCount,
     transactionsPage,
     setTransactionsPage,
     transactionsRowsPerPage,
@@ -142,7 +142,7 @@ export function TransactionsPage() {
 
           <TransactionsTable
             groupedTransactions={paginatedGroupedTransactions}
-            totalItems={groupedTransactions.length}
+            totalItems={totalCount}
             page={transactionsPage}
             rowsPerPage={transactionsRowsPerPage}
             onPageChange={setTransactionsPage}

@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { transactionsService } from '@/shared/services/transactions.service';
+import { transactionsCoreService } from '@/shared/services/transactions/transactions-core.service';
+import type { TransactionsPaginatedParams, TransactionsSummaryParams } from '@/shared/constants/queryKeys';
 import { Transaction, CreateTransactionData } from '@/shared/interfaces';
 import { queryKeys } from '@/shared/constants/queryKeys';
 import { useToast } from '@/shared/contexts/useToast';
@@ -17,6 +19,24 @@ export function useTransactions(filters?: Parameters<typeof transactionsService.
     queryFn: () => transactionsService.getAll(filters),
   });
 }
+
+export function useTransactionsPaginated(params: TransactionsPaginatedParams) {
+  return useQuery({
+    queryKey: queryKeys.transactions.paginated(params),
+    queryFn: () => transactionsCoreService.getPaginated(params),
+    placeholderData: (prev) => prev,
+  });
+}
+
+export function useTransactionsSummaries(params: TransactionsSummaryParams) {
+  return useQuery({
+    queryKey: queryKeys.transactions.summaries(params),
+    queryFn: () => transactionsCoreService.getSummaries(params),
+    staleTime: 60_000,
+  });
+}
+
+
 
 export function useFirstTransactionDate() {
   return useQuery({

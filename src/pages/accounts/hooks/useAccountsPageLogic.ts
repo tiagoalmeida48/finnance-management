@@ -40,9 +40,7 @@ export function useAccountsPageLogic() {
       await deleteAccount.mutateAsync(menuAccount.id);
       setDeleteModalOpen(false);
       setMenuAccount(null);
-    } catch {
-      // erro tratado pelo onError global do QueryClient
-    }
+    } catch { return; }
   };
 
   const handleAdd = () => {

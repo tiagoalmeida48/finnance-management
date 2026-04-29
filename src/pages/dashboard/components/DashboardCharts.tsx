@@ -24,12 +24,12 @@ export function DashboardCharts({ chartData, categories }: DashboardChartsProps)
   const safeCategories = categories ?? [];
 
   return (
-    <Container unstyled className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-12">
-      <Container unstyled className="min-w-0 md:col-span-8">
+    <Container unstyled className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-12">
+      <Container unstyled className="min-w-0 lg:col-span-8">
         <DashboardCashFlowChart chartData={safeChartData} />
       </Container>
 
-      <Container unstyled className="min-w-0 md:col-span-4">
+      <Container unstyled className="min-w-0 lg:col-span-4">
         <DashboardCategoriesChart categories={safeCategories} />
       </Container>
     </Container>

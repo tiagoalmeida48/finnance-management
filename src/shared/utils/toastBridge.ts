@@ -1,7 +1,3 @@
-/**
- * Bridge to allow toast calls outside of React components
- * (e.g., QueryClient global onError handler).
- */
 type ToastFn = (message: string) => void;
 
 interface ToastBridge {

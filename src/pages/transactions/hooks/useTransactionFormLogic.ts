@@ -29,7 +29,6 @@ const transactionSchema = z.object({
   notes: z.string().optional(),
   is_installment: z.boolean().default(false),
   total_installments: z.coerce.number().min(1, 'Mínimo 1').max(120, 'Máximo 120').optional(),
-  // installments: z.array(z.object({ amount: z.coerce.number() })).optional(), // Removed
 });
 
 export type TransactionFormValues = z.infer<typeof transactionSchema>;
@@ -46,16 +45,15 @@ const NON_TRANSACTION_FIELDS = new Set([
   'repeat_count',
   'is_installment',
   'installments',
+  'payment_method',
 ]);
 const DATE_LIKE_FIELDS = new Set<keyof Transaction>(['payment_date', 'purchase_date']);
 
 const toComparableValue = (field: keyof Transaction, value: unknown) => {
   if (value === undefined || value === null || value === '') return null;
-
   if (DATE_LIKE_FIELDS.has(field) && typeof value === 'string') {
     return toDateKeyIgnoringTime(value) ?? value;
   }
-
   return value;
 };
 
@@ -111,36 +109,13 @@ export function useTransactionFormLogic(
     },
   });
 
-  const transactionType = useWatch({
-    control: form.control,
-    name: 'type',
-    defaultValue: 'expense',
-  });
-  const paymentMethod = useWatch({
-    control: form.control,
-    name: 'payment_method',
-  });
-  const isInstallment = useWatch({
-    control: form.control,
-    name: 'is_installment',
-    defaultValue: false,
-  });
-  const isFixed = useWatch({
-    control: form.control,
-    name: 'is_fixed',
-    defaultValue: false,
-  });
-  const totalInstallments =
-    useWatch({
-      control: form.control,
-      name: 'total_installments',
-      defaultValue: 1,
-    }) || 1;
+  const transactionType = useWatch({ control: form.control, name: 'type', defaultValue: 'expense' });
+  const paymentMethod = useWatch({ control: form.control, name: 'payment_method' });
+  const isInstallment = useWatch({ control: form.control, name: 'is_installment', defaultValue: false });
+  const isFixed = useWatch({ control: form.control, name: 'is_fixed', defaultValue: false });
+  const totalInstallments = useWatch({ control: form.control, name: 'total_installments', defaultValue: 1 }) || 1;
   const baseAmount = useWatch({ control: form.control, name: 'amount', defaultValue: 0 }) || 0;
-  const selectedAccountId = useWatch({
-    control: form.control,
-    name: 'account_id',
-  });
+  const selectedAccountId = useWatch({ control: form.control, name: 'account_id' });
 
   const filteredCards = useMemo(() => {
     if (!cards) return [];
@@ -189,11 +164,9 @@ export function useTransactionFormLogic(
 
       if (isCreditPurchase) {
         payload.purchase_date = values.payment_date;
-        // Keep payment_date mirrored for unpaid card transactions to preserve current UI/query behavior.
         if (!transaction || !transaction.is_paid) {
           payload.payment_date = values.payment_date;
         } else {
-          // For paid card transactions, preserve the real payment date from bill payment flow.
           delete payload.payment_date;
         }
       } else {
@@ -228,23 +201,14 @@ export function useTransactionFormLogic(
         const groupId = transaction.installment_group_id || transaction.recurring_group_id;
         const groupType = transaction.installment_group_id ? 'installment' : 'recurring';
         if (applyToGroup && groupId) {
-          await updateTransactionGroup.mutateAsync({
-            groupId,
-            type: groupType,
-            updates: changedUpdates,
-          });
+          await updateTransactionGroup.mutateAsync({ groupId, type: groupType, updates: changedUpdates });
         } else {
-          await updateTransaction.mutateAsync({
-            id: transaction.id,
-            updates: changedUpdates,
-          });
+          await updateTransaction.mutateAsync({ id: transaction.id, updates: changedUpdates });
         }
       } else {
         const createPayload: CreateTransactionData = {
           ...(payload as CreateTransactionData),
-          // New transactions must always start as pending.
           is_paid: values.is_paid,
-          // Recurrence only exists when explicitly enabled.
           is_fixed: Boolean(values.is_fixed),
           recurring_group_id: values.is_fixed
             ? (payload.recurring_group_id as string | null | undefined)
@@ -256,9 +220,7 @@ export function useTransactionFormLogic(
       }
       resetUiState();
       onClose();
-    } catch {
-      // erro tratado pelo onError global do QueryClient
-    }
+    } catch { return; }
   };
 
   return {

@@ -1,4 +1,5 @@
-import { CalendarRange, Plus } from 'lucide-react';
+import { CalendarRange, Plus, RefreshCw } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Dialog, DialogActions, DialogContent, DialogTitle } from '@/shared/components/ui/dialog';
 import { CollectionState } from '@/shared/components/composite/CollectionState';
@@ -22,15 +23,81 @@ import { messages } from '@/shared/i18n/messages';
 import { colors } from '@/shared/theme';
 import { CardStatementCycleHistoryRow } from './CardStatementCycleHistoryRow';
 import { Container } from '@/shared/components/layout/Container';
+import { useReprocessInvoices } from '@/shared/hooks/api/useCreditCards';
+import { useToast } from '@/shared/contexts/useToast';
 
 interface CardStatementCycleHistoryModalProps {
   cardId: string;
   cardName: string;
-  fallbackClosingDay: number;
-  fallbackDueDay: number;
+  fallbackClosingDay?: number;
+  fallbackDueDay?: number;
   open: boolean;
   onClose: () => void;
 }
+
+const ReprocessInvoicesDialog = ({
+  cardId,
+  onClose,
+}: {
+  cardId: string;
+  onClose: () => void;
+}) => {
+  const toast = useToast();
+  const reprocessInvoices = useReprocessInvoices(cardId);
+  const [fromDate, setFromDate] = useState<string>(
+    () => new Date().toISOString().slice(0, 7) + '-01',
+  );
+  const [reprocessError, setReprocessError] = useState<string | null>(null);
+
+  const handleSubmit = async () => {
+    if (!fromDate) return;
+    setReprocessError(null);
+    try {
+      await reprocessInvoices.mutateAsync(fromDate);
+      toast.success(cycleHistoryMessages.actions.reprocessSuccess);
+      onClose();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : cycleHistoryMessages.reprocess.error;
+      setReprocessError(message);
+    }
+  };
+
+  const cycleHistoryMessages = messages.cards.cycleHistory;
+
+  return (
+    <Dialog open onClose={onClose} maxWidth="sm">
+      <DialogTitle className="font-heading text-lg font-bold text-[var(--color-text-primary)]">
+        {cycleHistoryMessages.reprocess.title}
+      </DialogTitle>
+      <DialogContent>
+        <Text className="mb-3 text-sm text-[var(--color-text-secondary)]">
+          {cycleHistoryMessages.reprocess.description}
+        </Text>
+        <FormField label={cycleHistoryMessages.reprocess.fromDateLabel}>
+          <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+        </FormField>
+        {reprocessError ? (
+          <Text className="mt-1 text-xs text-[var(--color-error)]">{reprocessError}</Text>
+        ) : null}
+      </DialogContent>
+      <DialogActions className="gap-2">
+        <Button onClick={onClose} variant="ghost">
+          {messages.common.actions.cancel}
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          disabled={reprocessInvoices.isPending || !fromDate}
+          startIcon={<RefreshCw size={16} />}
+        >
+          {reprocessInvoices.isPending
+            ? cycleHistoryMessages.actions.reprocessing
+            : cycleHistoryMessages.actions.reprocessInvoices}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
 
 export function CardStatementCycleHistoryModal({
   cardId,
@@ -40,8 +107,10 @@ export function CardStatementCycleHistoryModal({
   open,
   onClose,
 }: CardStatementCycleHistoryModalProps) {
+  const cycleHistoryMessages = messages.cards.cycleHistory;
+  const [reprocessDialogOpen, setReprocessDialogOpen] = useState(false);
+
   const {
-    cycleHistoryMessages,
     orderedCycles,
     isLoading,
     isMutating,
@@ -62,11 +131,15 @@ export function CardStatementCycleHistoryModal({
     isDeleting,
   } = useCardStatementCycleHistoryLogic({
     cardId,
-    fallbackClosingDay,
-    fallbackDueDay,
+    fallbackClosingDay: fallbackClosingDay ?? 0,
+    fallbackDueDay: fallbackDueDay ?? 0,
     open,
     onClose,
   });
+
+  const handleCloseReprocess = useCallback(() => {
+    setReprocessDialogOpen(false);
+  }, []);
 
   return (
     <>
@@ -86,15 +159,26 @@ export function CardStatementCycleHistoryModal({
               </Stack>
             </Row>
 
-            <Button
-              startIcon={<Plus size={16} />}
-              onClick={handleOpenCreate}
-              size="small"
-              variant="text"
-              className="text-[var(--color-primary)]"
-            >
-              {cycleHistoryMessages.newValidity}
-            </Button>
+            <Row className="items-center">
+              <Button
+                startIcon={<RefreshCw size={16} />}
+                onClick={() => setReprocessDialogOpen(true)}
+                size="small"
+                variant="text"
+                className="text-[var(--color-text-muted)] hover:text-[var(--color-warning)]"
+              >
+                {cycleHistoryMessages.actions.reprocessInvoices}
+              </Button>
+              <Button
+                startIcon={<Plus size={16} />}
+                onClick={handleOpenCreate}
+                size="small"
+                variant="text"
+                className="text-[var(--color-primary)]"
+              >
+                {cycleHistoryMessages.newValidity}
+              </Button>
+            </Row>
           </Row>
         </DialogTitle>
 
@@ -276,6 +360,10 @@ export function CardStatementCycleHistoryModal({
           </Button>
         </DialogActions>
       </Dialog>
+
+      {reprocessDialogOpen && (
+        <ReprocessInvoicesDialog cardId={cardId} onClose={handleCloseReprocess} />
+      )}
     </>
   );
 }

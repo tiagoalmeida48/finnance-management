@@ -108,7 +108,6 @@ export const resolveStatementMonth = (
 
   const effectiveClosingDay = cycle.closing_day;
   const effectiveDueDay = cycle.due_day;
-  // The statement includes purchases on the closing day.
   const closingMonthShift = anchorDate.getDate() > effectiveClosingDay ? 1 : 0;
   const dueMonthShift = effectiveClosingDay >= effectiveDueDay ? 1 : 0;
   const monthShift = closingMonthShift + dueMonthShift;

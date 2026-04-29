@@ -1,154 +1,157 @@
-# PRD - Sistema de Finanças Pessoais (Finnance)
+# PRD - Finnance Management
 
-## 1. VISÃO DO PRODUTO
-O Finnance é uma plataforma web para gestão financeira pessoal. Permite controle de contas bancárias, cartões de crédito com ciclos de fatura, transações manuais e por importação CSV, acompanhamento mensal de contas, simulação de salário/holerite, e gestão administrativa de usuários. Focado em uma experiência premium com modo escuro e design ultra-moderno.
+## 1. Visao do Produto
 
-## 2. OBJETIVOS DE NEGÓCIO
-- Proporcionar uma visão clara e consolidada de todos os saldos e dívidas do usuário.
-- Automatizar o acompanhamento de contas recorrentes e parcelas para evitar esquecimentos.
-- Facilitar a análise de padrões de consumo através de categorização e dashboards visuais.
-- Garantir a privacidade absoluta dos dados financeiros através de isolamento por usuário (RLS).
-- Permitir importação em lote de transações via CSV para maior agilidade.
-- Oferecer ferramentas de planejamento como simulação de salário/holerite.
+Finnance Management e uma aplicacao web para controle financeiro pessoal. O produto centraliza contas, transacoes, cartoes de credito, faturas, categorias, acompanhamento mensal, simulacao salarial e administracao de usuarios.
 
-## 3. PERSONAS
+O foco do produto e dar ao usuario uma leitura rapida de quanto dinheiro possui, quanto deve, quais contas estao pendentes e como seus gastos se distribuem ao longo do tempo.
 
-### Persona Principal
-- **Nome:** Carlos Eduardo
-- **Perfil:** 32 anos, analista de sistemas, mora sozinho em um apartamento alugado.
-- **Dores:** Dificuldade em controlar os gastos no cartão de crédito e frequentemente se perde no valor total das parcelas futuras.
-- **Necessidades:** Precisa de um lugar único para ver quanto dinheiro tem sobrando após as contas fixas e quanto de limite ainda tem nos seus 3 cartões.
-- **Comportamento:** Técnico, prefere interface limpa em modo escuro, utiliza a web para lançamentos pesados e o celular para conferência rápida.
+## 2. Objetivos
 
-### Persona Secundária
-- **Nome:** Maria Clara
-- **Perfil:** 28 anos, profissional autônoma (designer).
-- **Dores:** Renda variável que dificulta o planejamento mensal e mistura ocasional de gastos pessoais com pequenos gastos de trabalho.
-- **Necessidades:** Categorização detalhada para entender onde pode cortar custos em meses de baixa receita.
-- **Comportamento:** Visual, valoriza gráficos coloridos e facilidade de importação de dados.
+- Consolidar saldos, receitas, despesas e limite de cartao em uma visao unica.
+- Reduzir erro manual com transacoes em lote, importacao CSV e integracao Pluggy.
+- Controlar parcelas, recorrencias e faturas de cartao com historico de ciclos.
+- Isolar dados financeiros por usuario usando Supabase Auth e RLS.
+- Dar suporte a gestao administrativa de usuarios.
+- Manter uma experiencia visual escura, densa e orientada a produtividade.
 
-## 4. FUNCIONALIDADES
+## 3. Usuarios
 
-### 4.1 Autenticação (Supabase Auth)
-Sistema de login e registro usando Supabase Auth nativo.
+### Usuario principal
 
-- Login com email/senha.
-- Login com Google (OAuth).
-- Recuperação de senha via email.
-- Sessão persistente (Refresh Token).
-- Perfil de usuário com avatar, nome e preferências.
+Pessoa que organiza financas pessoais em uma interface web, com volume relevante de transacoes, cartoes e contas recorrentes.
 
-**Fluxo:**
-1. Usuário acessa a URL raiz.
-2. Se não autenticado, redireciona para `/auth/login`.
-3. Após login, redireciona para `/dashboard`.
+Necessidades:
 
-### 4.2 Gestão de Contas Bancárias
-Controle de diferentes fontes de dinheiro (Corrente, Poupança, Investimento, Carteira, Outros).
+- ver saldo total e despesas do periodo;
+- cadastrar e revisar transacoes rapidamente;
+- entender faturas atuais e futuras;
+- acompanhar contas fixas;
+- importar ou sincronizar movimentacoes.
 
-- Cadastro de conta com nome, tipo, banco, saldo inicial e cor.
-- Cálculo automático de saldo corrente baseado nas transações.
-- Desativação de contas sem excluir histórico (soft delete).
+### Usuario administrador
 
-### 4.3 Gestão de Cartões de Crédito
-Acompanhamento detalhado de limites e faturas com ciclos de faturamento.
+Usuario com `profile.is_admin = true`.
 
-- Cadastro de limite total, dia de fechamento e dia de vencimento.
-- Vinculação com conta bancária para pagamento da fatura.
-- Cálculo automático de limite disponível, fatura corrente e utilização.
-- Ciclos de faturamento (Statement Cycles) com períodos de vigência.
-- Ranges de período de fatura para cálculos precisos.
-- Página de detalhes com histórico de faturas por mês, gráficos de categoria e evolução.
+Necessidades:
 
-### 4.4 Gestão de Categorias
-Organização de receitas e despesas por categorias.
+- listar usuarios;
+- criar, editar, redefinir senha e remover usuarios;
+- acessar rotas restritas de administracao.
 
-- Categorias com tipo (receita/despesa), cor e ícone.
-- CRUD completo com soft delete.
+## 4. Funcionalidades Atuais
 
-### 4.5 Gestão de Transações
-Lançamento de entradas, saídas e transferências entre contas.
+### 4.1 Autenticacao
 
-**Tipos de transação:**
-- **Receita (income):** Aumenta o saldo da conta destino.
-- **Despesa (expense):** Diminui o saldo da conta ou ocupa limite do cartão.
-- **Transferência (transfer):** Movimenta valores entre duas contas diferentes.
+- Login com Supabase Auth.
+- Sessao persistente.
+- Rotas protegidas para usuario autenticado.
+- Rota admin protegida por `is_admin`.
+- `/auth/register` redireciona para login; nao ha pagina dedicada de cadastro neste estado do codigo.
 
-**Funcionalidades:**
-- Forma de pagamento: conta bancária, cartão de crédito ou manual.
-- Parcelamento com agrupamento por `installment_group_id`.
-- Transações recorrentes com agrupamento por `recurring_group_id`.
-- Marcação de pagamento (pago/não pago).
-- Data de compra e data de pagamento separadas.
-- Filtros por período, tipo, categoria, conta e cartão.
+### 4.2 Dashboard
 
-### 4.6 Importação de Transações via CSV
-Importação em lote de transações através de arquivo CSV.
+- Cards de resumo financeiro.
+- Filtro de periodo.
+- Grafico de fluxo de caixa.
+- Grafico de categorias.
+- Lista de transacoes recentes.
+- Botao/fluxo Pluggy para buscar previa de transacoes e confirmar importacao.
 
-- Upload e preview dos dados antes da importação.
-- Filtros globais de forma de pagamento, conta e cartão aplicados a todos os registros.
-- Suporte a coluna de parcelas (formato `N` ou `A-B`).
-- Template CSV para download.
-- Validações visuais de valor, data e formato.
+### 4.3 Contas
 
-### 4.7 Dashboard
-Central de comando visual com indicadores rápidos.
+- Listagem de contas.
+- Criacao, edicao e exclusao logica.
+- Saldo inicial e saldo atual.
+- Tipo, cor e icone.
+- Campo `pluggy_account_id` para vinculo com integracao Pluggy.
 
-**Indicadores:**
-- Saldo Total (soma de todas as contas).
-- Receitas do Período (entradas no período selecionado).
-- Despesas do Período (saídas + faturas de cartão).
-- Balanço (receita - despesa).
+### 4.4 Categorias
 
-**Gráficos:**
-- Evolução de Receitas vs Despesas (Barra) — verde para receitas, vermelho para despesas.
-- Gastos por Categoria (Donut Chart com label central).
-- Filtro por período com seletor global.
-- Filtro "Geral" como padrão.
+- CRUD de categorias.
+- Tipo `income` ou `expense`.
+- Cor e icone.
+- Exclusao logica.
 
-### 4.8 Acompanhamento Mensal (Tracking)
-Monitoramento de contas fixas e recorrentes mês a mês.
+### 4.5 Transacoes
 
-- Visualização de contas por mês com totais mensais em cada card.
-- Acompanhamento de pagamentos pendentes.
+- Receitas, despesas e transferencias.
+- Datas de pagamento e compra.
+- Conta, conta destino, cartao e categoria.
+- Parcelas por `installment_group_id`.
+- Recorrencias por `recurring_group_id`.
+- Marcacao de pago/nao pago.
+- Acoes em lote: pagar, desfazer pagamento, excluir e alterar dia.
+- Filtros, paginacao, selecao e resumo.
+- Importacao CSV com preview.
+- Importacao/sincronizacao Pluggy com revisao antes de gravar.
 
-### 4.9 Simulador de Salário/Holerite
-Ferramenta de planejamento financeiro para trabalhadores.
+### 4.6 Cartoes de Credito
 
-- Cadastro de configurações salariais por período (data início/fim).
-- Parâmetros: salário base, valor/hora, desconto INSS, taxa administrativa.
-- Cálculo de rendimentos e deduções.
-- Histórico de configurações.
+- CRUD de cartoes.
+- Limite, cor, conta bancaria vinculada e notas.
+- Ciclos de fechamento/vencimento em `credit_card_statement_cycles`.
+- Detalhe do cartao com estatisticas, faturas, transacoes e historico de ciclos.
+- Reprocessamento de faturas quando ciclos mudam.
 
-### 4.10 Perfil do Usuário
-Gestão do perfil pessoal do usuário autenticado.
+### 4.7 Faturas
 
-- Upload de avatar.
-- Edição de nome, moeda e locale.
-- Visualização de informações da conta.
+- Faturas por cartao e mes (`month_key`).
+- Valores total e pago.
+- Status `open`, `closed`, `partial`, `paid` e/ou estados definidos em migration.
+- Reconciliacao por RPC.
+- Pagamento de fatura pelo fluxo de cartao.
 
-### 4.11 Gestão de Usuários (Admin)
-Painel administrativo para gerenciar usuários do sistema.
+### 4.8 Acompanhamento Mensal
 
-- Listagem de todos os usuários.
-- Acesso restrito via campo `is_admin` no perfil.
-- Rota protegida por `AdminRoute`.
+- Visualizacao mensal de itens financeiros.
+- Progresso e pendencias.
+- Modal de pagamento.
 
-## 5. REQUISITOS NÃO-FUNCIONAIS
-- **Performance:** Painel deve carregar em < 1s; code-splitting com lazy loading em todas as páginas.
-- **Segurança:** Isolamento rigoroso via RLS por `user_id`; rota de admin protegida por guard.
-- **Responsividade:** Layout adaptável para desktop; menus colapsáveis; tabelas scrolláveis.
-- **Acessibilidade:** Contraste adequado (WCAG 2.1 AA); suporte a navegação por teclado.
+### 4.9 Simulador Salarial
 
-## 6. FORA DO ESCOPO
-❌ Conciliação bancária automática via API de bancos (Open Finance).
-❌ Gestão de carteira de ações, criptomoedas e dividendos.
-❌ Análise preditiva baseada em IA para sugestão de economia.
-❌ Aplicativo mobile nativo (iOS/Android).
-❌ Exportação de relatórios em PDF/Excel.
+- Configuracoes salariais por periodo.
+- Historico, criacao, edicao, fechamento, reabertura e exclusao.
+- Calculos puros de folha no frontend.
+- Lancamento financeiro a partir do resultado.
 
-## 7. MÉTRICAS DE SUCESSO
-- **WUA (Weekly Unique Users):** Usuários ativos pelo menos uma vez por semana.
-- **Stickiness:** Frequência de lançamentos diários vs mensais.
-- **Data Quality:** Média de transações categorizadas vs "Sem Categoria".
-- **CSV Adoption:** Percentual de transações criadas via importação.
+### 4.10 Perfil
+
+- Exibicao e edicao de dados pessoais suportados pelo perfil.
+- Atualizacao via RPC `upsert_profile`.
+
+### 4.11 Administracao de Usuarios
+
+- Listagem de usuarios.
+- Criacao de usuario.
+- Edicao de usuario.
+- Alteracao de senha.
+- Exclusao de usuario.
+- Acesso restrito via `AdminRoute`.
+
+## 5. Requisitos Nao Funcionais
+
+- Segurança: todo dado sensivel deve ser isolado por usuario.
+- Backend: operacoes com regra de negocio devem preferir RPCs com filtro por `auth.uid()`.
+- Frontend: paginas devem usar lazy loading.
+- Estado remoto: React Query deve centralizar cache e invalidacao.
+- Validacao: entradas de formulario devem passar por Zod/React Hook Form quando aplicavel.
+- UI: usar tokens globais de `src/App.css` e componentes compartilhados.
+
+## 6. Fora do Escopo Atual
+
+- Aplicativo mobile nativo.
+- Exportacao formal de relatorios PDF/Excel.
+- Cadastro publico completo em pagina separada.
+- Open Finance completo; ha integracao Pluggy especifica.
+- Previsao financeira com IA.
+- Suite automatizada de testes, removida no estado atual do projeto.
+
+## 7. Metricas de Sucesso
+
+- Frequencia de uso semanal.
+- Quantidade de transacoes cadastradas/importadas.
+- Percentual de transacoes categorizadas.
+- Reducao de faturas/transacoes pendentes sem revisao.
+- Uso da importacao CSV e Pluggy.
+- Tempo percebido para abrir dashboard e transacoes.

@@ -39,7 +39,6 @@ export function CustomSelect({
     setIsOpen(false);
   };
 
-  // Close on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {

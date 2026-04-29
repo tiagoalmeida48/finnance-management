@@ -1,56 +1,24 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from './client';
-
-export interface Profile {
-  full_name: string | null;
-  avatar_url: string | null;
-  is_admin: boolean | null;
-}
-
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  profile: Profile | null;
-  loading: boolean;
-  signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { AuthContext, type Profile } from './auth-context-value';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(() => {
-    // Fast-path: se não há token no storage, sabemos que não há sessão
-    // Mostra login imediatamente sem esperar getSession()
     const storageKey = `sb-${new URL(import.meta.env.VITE_SUPABASE_URL).hostname.split('.')[0]}-auth-token`;
     return localStorage.getItem(storageKey) !== null;
   });
 
-  const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
+  const fetchProfile = useCallback(async (): Promise<Profile | null> => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('full_name, avatar_url, is_admin')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        if (error.code === 'PGRST116') {
-          return null;
-        }
-
-        console.error('Error fetching profile:', error);
-        return null;
-      }
-
+      const { data, error } = await supabase.rpc('get_profile');
+      if (error) return null;
+      if (!data) return null;
       return data as Profile;
-    } catch (err) {
-      console.error('Unexpected error fetching profile:', err);
+    } catch {
       return null;
     }
   }, []);
@@ -76,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const fetchedProfile = await fetchProfile(currentUser.id);
+      const fetchedProfile = await fetchProfile();
       if (!isMounted()) return;
       setProfile(fetchedProfile);
     },
@@ -85,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshProfile = useCallback(async () => {
     if (!user) return;
-    const fetchedProfile = await fetchProfile(user.id);
+    const fetchedProfile = await fetchProfile();
     setProfile(fetchedProfile);
   }, [fetchProfile, user]);
 
@@ -108,12 +76,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
+        if (isMounted()) setLoading(false);
+        return;
+      }
+
       void (async () => {
         if (!isMounted()) return;
-
-        await applySession(nextSession, isMounted, {
-          refreshProfile: event !== 'TOKEN_REFRESHED',
-        });
+        await applySession(nextSession, isMounted);
         if (isMounted()) setLoading(false);
       })();
     });
@@ -141,11 +111,3 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </AuthContext.Provider>
   );
 }
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};

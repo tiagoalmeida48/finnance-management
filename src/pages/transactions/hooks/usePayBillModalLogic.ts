@@ -65,9 +65,7 @@ export function usePayBillModalLogic({
         description: payBillMessages.paymentDescription(cardName, statementMonth),
       });
       handleClose();
-    } catch {
-      // erro tratado pelo onError global do QueryClient
-    }
+    } catch { return; }
   });
 
   return {

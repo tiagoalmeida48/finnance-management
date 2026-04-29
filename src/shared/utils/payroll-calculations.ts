@@ -1,4 +1,4 @@
-export const TETO_INSS = 1167.89;
+const DEFAULT_TETO_INSS = 1167.89;
 
 export interface PayrollInput {
   totalHours: number;
@@ -6,6 +6,7 @@ export interface PayrollInput {
   baseSalary: number;
   inssPercentage: number;
   adminFeePercentage: number;
+  tetoInss?: number;
 }
 
 export interface PayrollResult {
@@ -26,12 +27,13 @@ export const calculatePayroll = (input: PayrollInput): PayrollResult => {
   const baseSalary = Math.max(0, Number(input.baseSalary) || 0);
   const inssPercentage = Math.max(0, Number(input.inssPercentage) || 0);
   const adminFeePercentage = Math.max(0, Number(input.adminFeePercentage) || 0);
+  const tetoInss = input.tetoInss ?? DEFAULT_TETO_INSS;
 
   const grossPay = round2(totalHours * hourlyRate);
   const profitAdvance = grossPay > 0 ? round2(grossPay - baseSalary) : 0;
 
   const inssDiscount =
-    grossPay > 0 ? round2(-Math.min(baseSalary * (inssPercentage / 100), TETO_INSS)) : 0;
+    grossPay > 0 ? round2(-Math.min(baseSalary * (inssPercentage / 100), tetoInss)) : 0;
 
   const adminFeeDiscount = grossPay > 0 ? round2(-(grossPay * (adminFeePercentage / 100))) : 0;
 
