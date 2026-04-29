@@ -32,9 +32,13 @@ export const queryKeys = {
   },
   transactions: {
     all: ['transactions'] as const,
+<<<<<<< HEAD
     list: (filters?: TransactionQueryFilters) => ['transactions', 'list', filters ?? null] as const,
     paginated: (params: object) => ['transactions', 'paginated', params] as const,
     summaries: (params: object) => ['transactions', 'summaries', params] as const,
+=======
+    list: (filters?: TransactionQueryFilters) => ['transactions', filters ?? null] as const,
+>>>>>>> finnance-management/main
     firstDate: ['transactions', 'first-date'] as const,
     recent: ['transactions', 'recent'] as const,
   },

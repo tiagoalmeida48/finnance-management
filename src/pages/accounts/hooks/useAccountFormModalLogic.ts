@@ -33,7 +33,10 @@ const DEFAULT_ACCOUNT_FORM_VALUES: AccountFormValues = {
   color: '#c9a84c',
   icon: 'wallet',
   notes: '',
+<<<<<<< HEAD
   pluggy_account_id: '',
+=======
+>>>>>>> finnance-management/main
 };
 
 const mapAccountToFormValues = (account?: Account): AccountFormValues => ({
@@ -96,7 +99,13 @@ export function useAccountFormModalLogic({
         });
       }
       onClose();
+<<<<<<< HEAD
     } catch { return; }
+=======
+    } catch {
+      // erro tratado pelo onError global do QueryClient
+    }
+>>>>>>> finnance-management/main
   };
 
   return {

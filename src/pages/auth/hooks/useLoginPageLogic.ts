@@ -42,6 +42,10 @@ export function useLoginPageLogic() {
 
       navigate('/dashboard');
     } catch {
+<<<<<<< HEAD
+=======
+      // Usa mensagem genérica de erro ou a do Supabase se disponível/seguro
+>>>>>>> finnance-management/main
       const errorMessage = messages.auth.login.error;
       setError(errorMessage);
     } finally {

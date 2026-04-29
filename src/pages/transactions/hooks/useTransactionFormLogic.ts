@@ -29,6 +29,10 @@ const transactionSchema = z.object({
   notes: z.string().optional(),
   is_installment: z.boolean().default(false),
   total_installments: z.coerce.number().min(1, 'Mínimo 1').max(120, 'Máximo 120').optional(),
+<<<<<<< HEAD
+=======
+  // installments: z.array(z.object({ amount: z.coerce.number() })).optional(), // Removed
+>>>>>>> finnance-management/main
 });
 
 export type TransactionFormValues = z.infer<typeof transactionSchema>;
@@ -45,12 +49,19 @@ const NON_TRANSACTION_FIELDS = new Set([
   'repeat_count',
   'is_installment',
   'installments',
+<<<<<<< HEAD
   'payment_method',
+=======
+>>>>>>> finnance-management/main
 ]);
 const DATE_LIKE_FIELDS = new Set<keyof Transaction>(['payment_date', 'purchase_date']);
 
 const toComparableValue = (field: keyof Transaction, value: unknown) => {
   if (value === undefined || value === null || value === '') return null;
+<<<<<<< HEAD
+=======
+
+>>>>>>> finnance-management/main
   if (DATE_LIKE_FIELDS.has(field) && typeof value === 'string') {
     return toDateKeyIgnoringTime(value) ?? value;
   }
@@ -109,6 +120,7 @@ export function useTransactionFormLogic(
     },
   });
 
+<<<<<<< HEAD
   const transactionType = useWatch({ control: form.control, name: 'type', defaultValue: 'expense' });
   const paymentMethod = useWatch({ control: form.control, name: 'payment_method' });
   const isInstallment = useWatch({ control: form.control, name: 'is_installment', defaultValue: false });
@@ -116,6 +128,38 @@ export function useTransactionFormLogic(
   const totalInstallments = useWatch({ control: form.control, name: 'total_installments', defaultValue: 1 }) || 1;
   const baseAmount = useWatch({ control: form.control, name: 'amount', defaultValue: 0 }) || 0;
   const selectedAccountId = useWatch({ control: form.control, name: 'account_id' });
+=======
+  const transactionType = useWatch({
+    control: form.control,
+    name: 'type',
+    defaultValue: 'expense',
+  });
+  const paymentMethod = useWatch({
+    control: form.control,
+    name: 'payment_method',
+  });
+  const isInstallment = useWatch({
+    control: form.control,
+    name: 'is_installment',
+    defaultValue: false,
+  });
+  const isFixed = useWatch({
+    control: form.control,
+    name: 'is_fixed',
+    defaultValue: false,
+  });
+  const totalInstallments =
+    useWatch({
+      control: form.control,
+      name: 'total_installments',
+      defaultValue: 1,
+    }) || 1;
+  const baseAmount = useWatch({ control: form.control, name: 'amount', defaultValue: 0 }) || 0;
+  const selectedAccountId = useWatch({
+    control: form.control,
+    name: 'account_id',
+  });
+>>>>>>> finnance-management/main
 
   const filteredCards = useMemo(() => {
     if (!cards) return [];
@@ -220,7 +264,13 @@ export function useTransactionFormLogic(
       }
       resetUiState();
       onClose();
+<<<<<<< HEAD
     } catch { return; }
+=======
+    } catch {
+      // erro tratado pelo onError global do QueryClient
+    }
+>>>>>>> finnance-management/main
   };
 
   return {

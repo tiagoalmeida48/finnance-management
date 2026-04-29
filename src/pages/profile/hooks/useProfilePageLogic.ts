@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
+<<<<<<< HEAD
 import { useAuth } from '@/lib/supabase/use-auth';
+=======
+import { useAuth } from '@/lib/supabase/auth-context';
+>>>>>>> finnance-management/main
 import { supabase } from '@/lib/supabase/client';
 
 type FeedbackMessage = { type: 'success' | 'error'; text: string } | null;
@@ -39,12 +43,28 @@ export function useProfilePageLogic() {
     setMessage(null);
 
     try {
+<<<<<<< HEAD
       const { error } = await supabase.rpc('upsert_profile', { p_full_name: fullName });
+=======
+      const { error } = await supabase.from('profiles').upsert({
+        id: user.id,
+        full_name: fullName,
+        updated_at: new Date().toISOString(),
+      });
+
+>>>>>>> finnance-management/main
       if (error) throw error;
       await refreshProfile();
       setMessage({ type: 'success', text: 'Nome atualizado com sucesso!' });
     } catch (error: unknown) {
+<<<<<<< HEAD
       setMessage({ type: 'error', text: getErrorMessage(error, 'Erro ao atualizar perfil.') });
+=======
+      setMessage({
+        type: 'error',
+        text: getErrorMessage(error, 'Erro ao atualizar perfil.'),
+      });
+>>>>>>> finnance-management/main
     } finally {
       setLoading(false);
     }
@@ -63,6 +83,7 @@ export function useProfilePageLogic() {
       const fileExt = file.name.split('.').pop();
       const fileName = `${user?.id}-${Math.random()}.${fileExt}`;
 
+<<<<<<< HEAD
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, file);
@@ -72,13 +93,34 @@ export function useProfilePageLogic() {
 
       const { error: updateError } = await supabase.rpc('upsert_profile', {
         p_avatar_url: publicUrl,
+=======
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('avatars').getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase.from('profiles').upsert({
+        id: user?.id,
+        avatar_url: publicUrl,
+        updated_at: new Date().toISOString(),
+>>>>>>> finnance-management/main
       });
       if (updateError) throw updateError;
 
       await refreshProfile();
       setMessage({ type: 'success', text: 'Foto do perfil atualizada!' });
     } catch (error: unknown) {
+<<<<<<< HEAD
       setMessage({ type: 'error', text: getErrorMessage(error, 'Erro ao carregar avatar.') });
+=======
+      setMessage({
+        type: 'error',
+        text: getErrorMessage(error, 'Erro ao carregar avatar.'),
+      });
+>>>>>>> finnance-management/main
     } finally {
       setUploading(false);
     }
@@ -101,11 +143,22 @@ export function useProfilePageLogic() {
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
+<<<<<<< HEAD
+=======
+
+>>>>>>> finnance-management/main
       setMessage({ type: 'success', text: 'Senha atualizada com sucesso!' });
       setPassword('');
       setConfirmPassword('');
     } catch (error: unknown) {
+<<<<<<< HEAD
       setMessage({ type: 'error', text: getErrorMessage(error, 'Erro ao atualizar senha.') });
+=======
+      setMessage({
+        type: 'error',
+        text: getErrorMessage(error, 'Erro ao atualizar senha.'),
+      });
+>>>>>>> finnance-management/main
     } finally {
       setPwdLoading(false);
     }

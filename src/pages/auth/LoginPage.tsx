@@ -3,9 +3,19 @@ import { Input } from '@/shared/components/ui/input';
 import { messages } from '@/shared/i18n/messages';
 import { useLoginPageLogic } from '@/pages/auth/hooks/useLoginPageLogic';
 import { FormField } from '@/shared/components/forms/FormField';
+<<<<<<< HEAD
 
 export function LoginPage() {
   const loginMessages = messages.auth.login;
+=======
+import { Stack } from '@/shared/components/layout/Stack';
+import { Section } from '@/shared/components/layout/Section';
+import { FormDialog } from '@/shared/components/composite/FormDialog';
+
+export function LoginPage() {
+  const loginMessages = messages.auth.login;
+  const siteTitle = 'Gestão Financeira';
+>>>>>>> finnance-management/main
   const { formMethods, isLoading, error, onSubmit } = useLoginPageLogic();
   const {
     register,
@@ -24,6 +34,7 @@ export function LoginPage() {
         className="pointer-events-none absolute inset-0 -z-10 opacity-[0.03] [background-image:linear-gradient(var(--color-text-primary)_1px,transparent_1px),linear-gradient(90deg,var(--color-text-primary)_1px,transparent_1px)] [background-size:40px_40px]"
       />
 
+<<<<<<< HEAD
       <div className="relative w-full max-w-sm">
         <div className="absolute -inset-px rounded-[22px] bg-gradient-to-b from-[var(--overlay-primary-12)] to-transparent opacity-60" />
 
@@ -84,5 +95,44 @@ export function LoginPage() {
         </p>
       </div>
     </div>
+=======
+      <FormDialog
+        open={true}
+        onClose={() => {}}
+        title={siteTitle}
+        onSubmit={onSubmit}
+        maxWidth="xs"
+        actions={
+          <Button fullWidth variant="contained" size="large" type="submit" disabled={isLoading}>
+            {isLoading ? loginMessages.loading : loginMessages.submit}
+          </Button>
+        }
+      >
+        <Stack className="gap-4">
+          {error && (
+            <Stack className="rounded-md border border-[color:color-mix(in_oklab,var(--color-error)_45%,transparent)] bg-[color:color-mix(in_oklab,var(--color-error)_20%,transparent)] p-3 text-sm text-red-100">
+              {error}
+            </Stack>
+          )}
+
+          <FormField
+            htmlFor="login-email"
+            label={loginMessages.emailLabel}
+            errorMessage={errors.email?.message}
+          >
+            <Input id="login-email" type="email" {...register('email')} />
+          </FormField>
+
+          <FormField
+            htmlFor="login-password"
+            label={loginMessages.passwordLabel}
+            errorMessage={errors.password?.message}
+          >
+            <Input id="login-password" type="password" {...register('password')} />
+          </FormField>
+        </Stack>
+      </FormDialog>
+    </Section>
+>>>>>>> finnance-management/main
   );
 }

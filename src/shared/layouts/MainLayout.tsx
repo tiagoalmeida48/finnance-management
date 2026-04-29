@@ -15,6 +15,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="flex min-h-screen bg-[var(--color-background)]">
       {isMobile && (
+<<<<<<< HEAD
         <header className="fixed left-0 right-0 top-0 z-[1301] border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-md">
           <div className="flex h-14 items-center justify-between px-4">
             <div className="flex items-center gap-2">
@@ -35,6 +36,20 @@ export function MainLayout({ children }: MainLayoutProps) {
               </h1>
             </div>
             <div className="w-10" />
+=======
+        <header className="fixed left-0 right-0 top-0 z-[1301] border-b border-[var(--color-border)] bg-[var(--color-background)]">
+          <div className="flex h-14 items-center px-4">
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={toggleSidebarMobile}
+              className="mr-2 text-[var(--color-text-primary)]"
+            >
+              <Menu />
+            </IconButton>
+            <h1 className="text-base font-semibold text-[var(--color-text-primary)]">Finnance</h1>
+>>>>>>> finnance-management/main
           </div>
         </header>
       )}

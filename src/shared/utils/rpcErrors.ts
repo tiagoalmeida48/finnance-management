@@ -7,6 +7,10 @@ export const normalizeRpcError = (error: unknown): string => {
     return error.message;
   }
 
+<<<<<<< HEAD
+=======
+  // Handle Supabase/PostgREST errors structure
+>>>>>>> finnance-management/main
   if (typeof error === 'object' && error !== null) {
     const err = error as {
       message?: unknown;
@@ -14,14 +18,26 @@ export const normalizeRpcError = (error: unknown): string => {
       hint?: unknown;
     };
 
+<<<<<<< HEAD
+=======
+    // Sometimes Supabase returns an object with a 'message' property
+>>>>>>> finnance-management/main
     if (typeof err.message === 'string') {
       return err.message;
     }
 
+<<<<<<< HEAD
+=======
+    // Sometimes it might return details
+>>>>>>> finnance-management/main
     if (typeof err.details === 'string') {
       return err.details;
     }
 
+<<<<<<< HEAD
+=======
+    // Or hint
+>>>>>>> finnance-management/main
     if (typeof err.hint === 'string') {
       return `Error: ${err.hint}`;
     }

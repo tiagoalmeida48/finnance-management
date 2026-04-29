@@ -6,8 +6,13 @@ export const CreditCardSchema = z.object({
   user_id: z.string(),
   name: z.string(),
   credit_limit: z.coerce.number(),
+<<<<<<< HEAD
   closing_day: z.coerce.number().optional(),
   due_day: z.coerce.number().optional(),
+=======
+  closing_day: z.coerce.number(),
+  due_day: z.coerce.number(),
+>>>>>>> finnance-management/main
   bank_account_id: z.string(),
   color: z.string(),
   notes: z.string().nullable().optional(),

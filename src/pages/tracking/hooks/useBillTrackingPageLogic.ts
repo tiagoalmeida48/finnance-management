@@ -42,7 +42,10 @@ export function useBillTrackingPageLogic() {
       const fixedExpenses = transactions.filter(
         (t) =>
           t.is_fixed &&
+<<<<<<< HEAD
           t.payment_date !== null &&
+=======
+>>>>>>> finnance-management/main
           format(new Date(t.payment_date + 'T12:00:00'), 'yyyy-MM') === monthStr &&
           t.type === 'expense',
       );
@@ -51,8 +54,13 @@ export function useBillTrackingPageLogic() {
         .map((card) => {
           const statementCycles = card.statement_cycles ?? [];
           const fallbackCycle = {
+<<<<<<< HEAD
             closing_day: card.current_statement_cycle?.closing_day ?? 1,
             due_day: card.current_statement_cycle?.due_day ?? 10,
+=======
+            closing_day: card.current_statement_cycle?.closing_day ?? card.closing_day,
+            due_day: card.current_statement_cycle?.due_day ?? card.due_day,
+>>>>>>> finnance-management/main
           };
           const cardTransactions = transactions.filter((t) => t.card_id === card.id);
 

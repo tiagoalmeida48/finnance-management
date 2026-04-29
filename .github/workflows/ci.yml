@@ -28,5 +28,11 @@ jobs:
       - name: Lint
         run: pnpm exec eslint src
 
+<<<<<<< HEAD
+=======
+      - name: Test
+        run: pnpm test
+
+>>>>>>> finnance-management/main
       - name: Build
         run: pnpm build

@@ -34,8 +34,13 @@ export function useCardDetailsHeaderLogic({
   setIsAllTime,
 }: UseCardDetailsHeaderLogicParams) {
   const headerMessages = messages.cards.detailsHeader;
+<<<<<<< HEAD
   const dueDay = card.current_statement_cycle?.due_day;
   const closingDay = card.current_statement_cycle?.closing_day;
+=======
+  const dueDay = card.current_statement_cycle?.due_day ?? card.due_day;
+  const closingDay = card.current_statement_cycle?.closing_day ?? card.closing_day;
+>>>>>>> finnance-management/main
 
   const usagePercent =
     card.credit_limit > 0 ? Math.min(((card.usage || 0) / card.credit_limit) * 100, 100) : 0;

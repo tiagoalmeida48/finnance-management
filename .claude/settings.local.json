@@ -16,6 +16,7 @@
       "Bash(npx vite:*)",
       "Bash(grep -n \"as any\\\\|any\\\\[\" /d/DEV/Pessoal/finnance-management/src/shared/services/*.ts)",
       "Bash(xargs grep:*)",
+<<<<<<< HEAD
       "Bash(pnpm --version)",
       "Bash(ls -la \"C:/Users/Tiago/.claude/projects/D--DEV-Pessoal-finnance-management/\"*.jsonl)",
       "Bash(rm:*)",
@@ -58,6 +59,9 @@
       "mcp__plugin_context-mode_context-mode__ctx_execute_file",
       "mcp__plugin_context-mode_context-mode__ctx_execute",
       "Bash(pnpm exec *)"
+=======
+      "Bash(pnpm --version)"
+>>>>>>> finnance-management/main
     ]
   }
 }

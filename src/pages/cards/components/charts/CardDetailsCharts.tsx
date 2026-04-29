@@ -43,7 +43,12 @@ export function CardDetailsCharts({ chartData, categoryData }: CardDetailsCharts
   });
 
   return (
+<<<<<<< HEAD
     <Container unstyled className="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-[2fr_1fr]">
+=======
+    <Container unstyled className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]">
+      {/* Gráfico de Evolução Bento */}
+>>>>>>> finnance-management/main
       <Container
         unstyled
         className="group relative overflow-hidden rounded-[24px] border border-[var(--color-border)] bg-[var(--color-card)] p-5 shadow-sm transition-all hover:-translate-y-1 hover:border-white/10 hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)]"

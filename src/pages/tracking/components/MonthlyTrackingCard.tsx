@@ -1,13 +1,19 @@
+<<<<<<< HEAD
 import { useState } from 'react';
+=======
+>>>>>>> finnance-management/main
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { messages } from '@/shared/i18n/messages';
 import { Container } from '@/shared/components/layout/Container';
 import { MonthlyTrackingHeader } from './MonthlyTrackingHeader';
 import { MonthlyTrackingProgress } from './MonthlyTrackingProgress';
 import { MonthlyTrackingItemList } from './MonthlyTrackingItemList';
+<<<<<<< HEAD
 import { TrackingPayModal } from './TrackingPayModal';
 import { useTogglePaymentStatus } from '@/shared/hooks/api/useTransactions';
 import { useToast } from '@/shared/contexts/useToast';
+=======
+>>>>>>> finnance-management/main
 
 export interface TrackingItem {
   id: string;

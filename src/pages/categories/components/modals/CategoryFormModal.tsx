@@ -95,7 +95,13 @@ export function CategoryFormModal({
         await createCategory.mutateAsync(values);
       }
       onClose();
+<<<<<<< HEAD
     } catch { return; }
+=======
+    } catch {
+      // erro tratado pelo onError global do QueryClient
+    }
+>>>>>>> finnance-management/main
   };
 
   const isSaving = createCategory.isPending || updateCategory.isPending;

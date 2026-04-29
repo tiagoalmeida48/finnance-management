@@ -40,7 +40,13 @@ export function useAccountsPageLogic() {
       await deleteAccount.mutateAsync(menuAccount.id);
       setDeleteModalOpen(false);
       setMenuAccount(null);
+<<<<<<< HEAD
     } catch { return; }
+=======
+    } catch {
+      // erro tratado pelo onError global do QueryClient
+    }
+>>>>>>> finnance-management/main
   };
 
   const handleAdd = () => {

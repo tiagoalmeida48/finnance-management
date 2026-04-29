@@ -128,6 +128,10 @@ export function CardDetailsHeader({
         <div className="pointer-events-none absolute -right-20 -top-20 h-40 w-40 rounded-full bg-[var(--color-primary)] opacity-10 blur-[64px]" />
 
         <Container unstyled className="relative z-10 flex flex-col items-center gap-5 sm:flex-row">
+<<<<<<< HEAD
+=======
+          {/* Estilo Mini-cartão Físico */}
+>>>>>>> finnance-management/main
           <Container
             unstyled
             ref={cardIconRef}
