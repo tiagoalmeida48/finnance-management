@@ -45,6 +45,7 @@ const NON_TRANSACTION_FIELDS = new Set([
   'repeat_count',
   'is_installment',
   'installments',
+  'payment_method',
 ]);
 const DATE_LIKE_FIELDS = new Set<keyof Transaction>(['payment_date', 'purchase_date']);
 

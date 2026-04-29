@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { RefreshCw, X, Building2, Trash2, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { RefreshCw, X, Building2, Trash2, CheckCircle2, Circle, MinusCircle, ChevronUp, ChevronDown, GripVertical } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { Container } from '@/shared/components/layout/Container';
 import { Text } from '@/shared/components/ui/Text';
@@ -17,9 +17,46 @@ import {
   TableRow,
 } from '@/shared/components/layout/Table';
 
+type ColKey = 'data' | 'pagamento' | 'tipo' | 'descricao' | 'valor' | 'categoria' | 'parcelas';
+type SortDir = 'asc' | 'desc';
+
+const DEFAULT_COLS: ColKey[] = ['data', 'pagamento', 'tipo', 'descricao', 'valor', 'categoria', 'parcelas'];
+
+const COL_LABEL: Record<ColKey, string> = {
+  data: 'Data',
+  pagamento: 'Pagamento',
+  tipo: 'Tipo',
+  descricao: 'Descrição',
+  valor: 'Valor',
+  categoria: 'Categoria',
+  parcelas: 'Parcelas',
+};
+
+const SORTABLE: ColKey[] = ['data', 'descricao', 'valor', 'tipo', 'pagamento'];
+
+function sortRows(rows: PluggyPreviewRow[], col: ColKey, dir: SortDir): PluggyPreviewRow[] {
+  return [...rows].sort((a, b) => {
+    let va: string | number = '';
+    let vb: string | number = '';
+    if (col === 'data') { va = a.paymentDate ?? ''; vb = b.paymentDate ?? ''; }
+    else if (col === 'descricao') { va = a.description.toLowerCase(); vb = b.description.toLowerCase(); }
+    else if (col === 'valor') { va = a.amount; vb = b.amount; }
+    else if (col === 'tipo') { va = a.type; vb = b.type; }
+    else if (col === 'pagamento') { va = a.isCredit ? 1 : 0; vb = b.isCredit ? 1 : 0; }
+    if (va < vb) return dir === 'asc' ? -1 : 1;
+    if (va > vb) return dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+}
+
 export function PluggySyncButton() {
   const [open, setOpen] = useState(false);
   const [localAccountId, setLocalAccountId] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [columnOrder, setColumnOrder] = useState<ColKey[]>(DEFAULT_COLS);
+  const [sortCol, setSortCol] = useState<ColKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
+  const dragColRef = useRef<ColKey | null>(null);
   const { data: accounts = [] } = useAccounts();
   const { data: categories = [] } = useCategories();
   const { previewRows, setPreviewRows, fetchMutation, commitMutation } = usePluggySync();
@@ -30,10 +67,50 @@ export function PluggySyncButton() {
   const hasPluggyId = Boolean(pluggyItemId);
   const isPreviewMode = previewRows !== null;
 
+  const outrasExpenseId = categories.find((c) => c.name === 'Outras' && c.type === 'expense')?.id ?? null;
+  const outrasIncomeId = categories.find((c) => c.name === 'Outras' && c.type === 'income')?.id ?? null;
+
+  useEffect(() => {
+    if (!previewRows) return;
+    setPreviewRows((prev) => {
+      if (!prev) return prev;
+      return prev.map((row) => {
+        if (row.categoryId != null) return row;
+        const fallback = row.type === 'expense' ? outrasExpenseId : outrasIncomeId;
+        return fallback ? { ...row, categoryId: fallback } : row;
+      });
+    });
+  }, [previewRows?.length, outrasExpenseId, outrasIncomeId]);
+
+  const allSelected = previewRows != null && previewRows.length > 0 && selectedIds.size === previewRows.length;
+  const someSelected = selectedIds.size > 0;
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(previewRows?.map((_, i) => i) ?? []));
+    }
+  };
+
+  const toggleSelect = (idx: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(idx) ? next.delete(idx) : next.add(idx);
+      return next;
+    });
+  };
+
+  const removeSelected = () => {
+    setPreviewRows((prev) => prev ? prev.filter((_, i) => !selectedIds.has(i)) : prev);
+    setSelectedIds(new Set());
+  };
+
   const handleClose = () => {
     setOpen(false);
     setLocalAccountId('');
     setPreviewRows(null);
+    setSelectedIds(new Set());
   };
 
   const handleFetch = () => {
@@ -58,6 +135,37 @@ export function PluggySyncButton() {
   const removeRow = (idx: number) => {
     setPreviewRows((prev) => prev ? prev.filter((_, i) => i !== idx) : prev);
   };
+
+  const handleSortClick = (col: ColKey) => {
+    if (!SORTABLE.includes(col)) return;
+    if (sortCol === col) {
+      setSortDir((d) => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortCol(col);
+      setSortDir('asc');
+    }
+    if (previewRows) {
+      const nextDir = sortCol === col ? (sortDir === 'asc' ? 'desc' : 'asc') : 'asc';
+      setPreviewRows(sortRows(previewRows, col, nextDir));
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleColDragStart = (col: ColKey) => { dragColRef.current = col; };
+  const handleColDragOver = (e: React.DragEvent, col: ColKey) => {
+    e.preventDefault();
+    const from = dragColRef.current;
+    if (!from || from === col) return;
+    setColumnOrder((prev) => {
+      const next = [...prev];
+      const fromIdx = next.indexOf(from);
+      const toIdx = next.indexOf(col);
+      next.splice(fromIdx, 1);
+      next.splice(toIdx, 0, from);
+      return next;
+    });
+  };
+  const handleColDragEnd = () => { dragColRef.current = null; };
 
   return (
     <>
@@ -159,104 +267,151 @@ export function PluggySyncButton() {
                         <Table className="w-full border-separate border-spacing-0 text-xs">
                           <TableHead className="sticky top-0 z-10 bg-[var(--color-card)]">
                             <TableRow>
-                              {['Data', 'Descrição', 'Valor', 'Tipo', 'Pagamento', 'Categoria', 'Parcelas'].map((h) => (
-                                <TableHeaderCell
-                                  key={h}
-                                  className="border-b border-[var(--color-border)] px-2 py-2 text-left text-[11px] font-bold text-[var(--color-text-secondary)] whitespace-nowrap"
-                                >
-                                  {h}
-                                </TableHeaderCell>
-                              ))}
+                              <TableHeaderCell className="w-8 border-b border-[var(--color-border)] px-2 py-2">
+                                <label className="relative flex items-center justify-center w-5 h-5 cursor-pointer group">
+                                  <input
+                                    type="checkbox"
+                                    checked={allSelected}
+                                    onChange={toggleSelectAll}
+                                    className="absolute inset-0 z-10 w-full h-full cursor-pointer opacity-0"
+                                  />
+                                  {allSelected ? (
+                                    <CheckCircle2 size={16} className="text-[var(--color-primary)] transition-colors" />
+                                  ) : someSelected ? (
+                                    <MinusCircle size={16} className="text-[var(--color-primary)] opacity-70 transition-colors" />
+                                  ) : (
+                                    <Circle size={16} className="text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)] transition-colors" />
+                                  )}
+                                </label>
+                              </TableHeaderCell>
+                              {columnOrder.map((col) => {
+                                const isSortable = SORTABLE.includes(col);
+                                const isActive = sortCol === col;
+                                return (
+                                  <TableHeaderCell
+                                    key={col}
+                                    draggable
+                                    onDragStart={() => handleColDragStart(col)}
+                                    onDragOver={(e) => handleColDragOver(e, col)}
+                                    onDragEnd={handleColDragEnd}
+                                    className="border-b border-[var(--color-border)] px-2 py-2 text-left text-[11px] font-bold text-[var(--color-text-secondary)] whitespace-nowrap select-none"
+                                  >
+                                    <span className="inline-flex items-center gap-1">
+                                      <GripVertical size={11} className="text-[var(--color-text-muted)] opacity-40 cursor-grab active:cursor-grabbing shrink-0" />
+                                      {isSortable ? (
+                                        <button
+                                          onClick={() => handleSortClick(col)}
+                                          className="inline-flex items-center gap-0.5 hover:text-[var(--color-text-primary)] transition-colors"
+                                        >
+                                          {COL_LABEL[col]}
+                                          {isActive ? (
+                                            sortDir === 'asc'
+                                              ? <ChevronUp size={11} className="text-[var(--color-primary)]" />
+                                              : <ChevronDown size={11} className="text-[var(--color-primary)]" />
+                                          ) : (
+                                            <ChevronUp size={11} className="opacity-20" />
+                                          )}
+                                        </button>
+                                      ) : (
+                                        <span>{COL_LABEL[col]}</span>
+                                      )}
+                                    </span>
+                                  </TableHeaderCell>
+                                );
+                              })}
                               <TableHeaderCell className="w-8 border-b border-[var(--color-border)] p-0" />
                             </TableRow>
                           </TableHead>
                           <TableBody>
                             {previewRows.map((row, idx) => (
-                              <TableRow key={idx} className="hover:bg-white/5">
-                                <TableCell className="border-b border-[var(--color-border)] p-1 w-[110px]">
-                                  <Input
-                                    value={row.paymentDate ? row.paymentDate.split('-').reverse().join('/') : ''}
-                                    onChange={(e) => {
-                                      const parts = e.target.value.split('/');
-                                      if (parts.length === 3) {
-                                        updateRow(idx, 'paymentDate', `${parts[2]}-${parts[1]}-${parts[0]}`);
-                                      } else {
-                                        updateRow(idx, 'paymentDate', e.target.value);
-                                      }
-                                    }}
-                                    placeholder="dd/mm/aaaa"
-                                    className="h-8 text-xs"
-                                  />
+                              <TableRow key={idx} className={`hover:bg-white/5 ${selectedIds.has(idx) ? 'bg-white/[0.03]' : ''}`}>
+                                <TableCell className="border-b border-[var(--color-border)] px-2 py-1 w-8">
+                                  <label className="relative flex items-center justify-center w-5 h-5 cursor-pointer group">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedIds.has(idx)}
+                                      onChange={() => toggleSelect(idx)}
+                                      className="absolute inset-0 z-10 w-full h-full cursor-pointer opacity-0"
+                                    />
+                                    {selectedIds.has(idx) ? (
+                                      <CheckCircle2 size={16} className="text-[var(--color-primary)] transition-colors" />
+                                    ) : (
+                                      <Circle size={16} className="text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)] transition-colors" />
+                                    )}
+                                  </label>
                                 </TableCell>
-                                <TableCell className="border-b border-[var(--color-border)] p-1">
-                                  <Input
-                                    value={row.description}
-                                    onChange={(e) => updateRow(idx, 'description', e.target.value)}
-                                    className="h-8 text-xs w-full min-w-[180px]"
-                                  />
-                                </TableCell>
-                                <TableCell className="border-b border-[var(--color-border)] p-1 w-[100px]">
-                                  <Input
-                                    value={String(row.amount)}
-                                    onChange={(e) => updateRow(idx, 'amount', e.target.value)}
-                                    className={`h-8 text-xs font-bold ${row.type === 'income' ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}
-                                  />
-                                </TableCell>
-                                <TableCell className="border-b border-[var(--color-border)] p-1 w-[100px]">
-                                  <button
-                                    onClick={() => updateRow(idx, 'type', row.type === 'expense' ? 'income' : 'expense')}
-                                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold cursor-pointer transition-colors ${
-                                      row.type === 'expense'
-                                        ? 'bg-[var(--color-redBg)] text-[var(--color-error)]'
-                                        : 'bg-[var(--color-greenBg)] text-[var(--color-success)]'
-                                    }`}
-                                  >
-                                    {row.type === 'expense' ? 'Despesa' : 'Receita'}
-                                  </button>
-                                </TableCell>
-                                <TableCell className="border-b border-[var(--color-border)] p-1 w-[110px]">
-                                  <span
-                                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                                      row.isCredit
-                                        ? 'bg-[var(--overlay-secondary-10)] text-[var(--color-secondary)]'
-                                        : 'bg-[var(--overlay-primary-08)] text-[var(--color-primary)]'
-                                    }`}
-                                  >
-                                    {row.isCredit ? 'Cartão' : 'Débito'}
-                                  </span>
-                                </TableCell>
-                                <TableCell className="border-b border-[var(--color-border)] p-1 w-[160px]">
-                                  <Select
-                                    value={row.categoryId ?? ''}
-                                    onChange={(e) => updateRow(idx, 'categoryId', e.target.value)}
-                                    className="h-8 text-xs"
-                                  >
-                                    <option value="" style={{ background: '#14141e', color: '#f0f0f5' }}>Sem categoria</option>
-                                    {categories
-                                      .filter((c) => c.type === row.type && c.is_active)
-                                      .map((c) => (
-                                        <option key={c.id} value={c.id} style={{ background: '#14141e', color: '#f0f0f5' }}>
-                                          {c.name}
-                                        </option>
-                                      ))}
-                                  </Select>
-                                </TableCell>
-                                <TableCell className="border-b border-[var(--color-border)] p-1 w-[90px]">
-                                  <InstallmentInput
-                                    installmentNumber={row.installmentNumber}
-                                    totalInstallments={row.totalInstallments}
-                                    pluggyId={row.pluggyId}
-                                    cardId={row.cardId}
-                                    onChange={(installmentNumber, totalInstallments, installmentGroupId) => {
-                                      setPreviewRows((prev) => {
-                                        if (!prev) return prev;
-                                        const next = [...prev];
-                                        next[idx] = { ...next[idx], installmentNumber, totalInstallments, installmentGroupId };
-                                        return next;
-                                      });
-                                    }}
-                                  />
-                                </TableCell>
+                                {columnOrder.map((col) => {
+                                  if (col === 'data') return (
+                                    <TableCell key={col} className="border-b border-[var(--color-border)] p-1 w-[110px]">
+                                      <span className="block px-2 py-1.5 text-xs text-[var(--color-text-secondary)]">
+                                        {row.paymentDate ? row.paymentDate.split('-').reverse().join('/') : '—'}
+                                      </span>
+                                    </TableCell>
+                                  );
+                                  if (col === 'pagamento') return (
+                                    <TableCell key={col} className="border-b border-[var(--color-border)] p-1 w-[110px]">
+                                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${row.isCredit ? 'bg-[var(--overlay-secondary-10)] text-[var(--color-secondary)]' : 'bg-[var(--overlay-primary-08)] text-[var(--color-primary)]'}`}>
+                                        {row.isCredit ? 'Cartão' : 'Débito'}
+                                      </span>
+                                    </TableCell>
+                                  );
+                                  if (col === 'tipo') return (
+                                    <TableCell key={col} className="border-b border-[var(--color-border)] p-1 w-[100px]">
+                                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${row.type === 'expense' ? 'bg-[var(--color-redBg)] text-[var(--color-error)]' : 'bg-[var(--color-greenBg)] text-[var(--color-success)]'}`}>
+                                        {row.type === 'expense' ? 'Despesa' : 'Receita'}
+                                      </span>
+                                    </TableCell>
+                                  );
+                                  if (col === 'descricao') return (
+                                    <TableCell key={col} className="border-b border-[var(--color-border)] p-1">
+                                      <Input
+                                        value={row.description}
+                                        onChange={(e) => updateRow(idx, 'description', e.target.value)}
+                                        className="h-8 text-xs w-full min-w-[180px]"
+                                      />
+                                    </TableCell>
+                                  );
+                                  if (col === 'valor') return (
+                                    <TableCell key={col} className="border-b border-[var(--color-border)] p-1 w-[100px]">
+                                      <span className={`block px-2 py-1.5 text-xs font-bold ${row.type === 'income' ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}>
+                                        {row.amount}
+                                      </span>
+                                    </TableCell>
+                                  );
+                                  if (col === 'categoria') return (
+                                    <TableCell key={col} className="border-b border-[var(--color-border)] p-1 w-[160px]">
+                                      <Select
+                                        value={row.categoryId ?? ''}
+                                        onChange={(e) => updateRow(idx, 'categoryId', e.target.value)}
+                                        className="h-8 text-xs"
+                                      >
+                                        <option value="" style={{ background: '#14141e', color: '#f0f0f5' }}>Sem categoria</option>
+                                        {categories.filter((c) => c.type === row.type && c.is_active).map((c) => (
+                                          <option key={c.id} value={c.id} style={{ background: '#14141e', color: '#f0f0f5' }}>{c.name}</option>
+                                        ))}
+                                      </Select>
+                                    </TableCell>
+                                  );
+                                  if (col === 'parcelas') return (
+                                    <TableCell key={col} className="border-b border-[var(--color-border)] p-1 w-[90px]">
+                                      <InstallmentInput
+                                        installmentNumber={row.installmentNumber}
+                                        totalInstallments={row.totalInstallments}
+                                        pluggyId={row.pluggyId}
+                                        cardId={row.cardId}
+                                        onChange={(installmentNumber, totalInstallments, installmentGroupId) => {
+                                          setPreviewRows((prev) => {
+                                            if (!prev) return prev;
+                                            const next = [...prev];
+                                            next[idx] = { ...next[idx], installmentNumber, totalInstallments, installmentGroupId };
+                                            return next;
+                                          });
+                                        }}
+                                      />
+                                    </TableCell>
+                                  );
+                                  return null;
+                                })}
                                 <TableCell className="border-b border-[var(--color-border)] p-1 w-8 text-center">
                                   <button
                                     onClick={() => removeRow(idx)}
@@ -273,6 +428,16 @@ export function PluggySyncButton() {
                     </Container>
 
                     <Container unstyled className="flex gap-2 justify-end px-6 py-4 shrink-0 border-t border-[var(--color-border)]">
+                      {someSelected && (
+                        <Button
+                          variant="outlined"
+                          onClick={removeSelected}
+                          startIcon={<Trash2 size={14} />}
+                          className="text-[var(--color-error)] border-[var(--color-error)] hover:bg-[var(--color-redBg)]"
+                        >
+                          Remover {selectedIds.size} selecionada(s)
+                        </Button>
+                      )}
                       <Button variant="outlined" onClick={handleClose} disabled={commitMutation.isPending}>
                         Cancelar
                       </Button>

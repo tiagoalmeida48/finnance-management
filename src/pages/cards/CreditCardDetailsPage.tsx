@@ -98,7 +98,7 @@ export function CreditCardDetailsPage() {
             cardName={card.name}
             statementMonth={selectedStatement.month}
             transactionIds={selectedStatement.unpaidIds}
-            totalAmount={selectedStatement.unpaidTotal}
+            totalAmount={selectedStatement.total}
           />
         )}
       </Container>

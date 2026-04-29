@@ -93,12 +93,12 @@ export const transactionsCoreService = {
   async getById(id: string) {
     const { data, error } = await supabase.rpc('get_transaction_by_id', { p_id: id });
     if (error) throw error;
-    return TransactionSchema.parse(data);
+    const row = Array.isArray(data) ? data[0] : data;
+    return TransactionSchema.parse(row);
   },
 
   async update(id: string, updates: Partial<Transaction>) {
-    const oldData = await this.getById(id);
-    const oldTransaction = TransactionSchema.parse(oldData);
+    const oldTransaction = await this.getById(id);
 
     const { data, error } = await supabase.rpc('update_transaction', {
       p_id: id,

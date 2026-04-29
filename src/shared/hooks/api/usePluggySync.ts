@@ -47,12 +47,19 @@ function addMonths(dateStr: string, months: number): string {
 
 export async function commitPluggyRows(rows: PluggyPreviewRow[]) {
   const inserts: Record<string, unknown>[] = [];
+  const groupUuidMap = new Map<string, string>();
 
   for (const row of rows) {
     const total = row.totalInstallments ?? 1;
-    const groupId = total > 1
-      ? (row.installmentGroupId ?? `pluggy-group:${row.pluggyId}`)
-      : null;
+    let groupId: string | null = null;
+    if (total > 1 && row.installmentGroupId) {
+      if (!groupUuidMap.has(row.installmentGroupId)) {
+        groupUuidMap.set(row.installmentGroupId, crypto.randomUUID());
+      }
+      groupId = groupUuidMap.get(row.installmentGroupId)!;
+    } else if (total > 1) {
+      groupId = crypto.randomUUID();
+    }
 
     for (let i = 1; i <= total; i++) {
       inserts.push({
