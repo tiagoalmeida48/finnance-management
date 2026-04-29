@@ -56,7 +56,8 @@
       "mcp__supabase__get_edge_function",
       "Bash(xargs cat *)",
       "mcp__plugin_context-mode_context-mode__ctx_execute_file",
-      "mcp__plugin_context-mode_context-mode__ctx_execute"
+      "mcp__plugin_context-mode_context-mode__ctx_execute",
+      "Bash(pnpm exec *)"
     ]
   }
 }
