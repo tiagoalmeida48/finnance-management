@@ -39,7 +39,7 @@ export const transactionsBatchService = {
         recurring_group_id: transaction.is_fixed ? (transaction.recurring_group_id ?? null) : null,
         installment_group_id: transaction.installment_group_id ?? null,
         installment_number: transaction.installment_number ?? null,
-        total_installments: transaction.total_installments ?? 1,
+        total_installments: transaction.installment_number != null ? (transaction.total_installments ?? 1) : null,
       }),
     );
 
