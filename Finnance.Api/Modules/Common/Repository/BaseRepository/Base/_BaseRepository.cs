@@ -1,0 +1,53 @@
+using Npgsql;
+using Finnance.Api.Modules.Common.Domain.Interfaces;
+using Finnance.Api.Modules.Common.Domain.Vo;
+using Finnance.Api.Shared;
+using Finnance.Api.Shared.BaseClass;
+using System.Data;
+
+namespace Finnance.Api.Modules.Common.Repository;
+
+public partial class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity>
+    where TEntity : BaseEntity
+    where TModel : BaseModel
+{
+    protected readonly string _ConnStr;
+    protected readonly ApiContextVo ApiContext;
+    protected readonly string Schema;
+
+    protected BaseRepository()
+    {
+        var apiContext = ServiceLocator.GetInstance<ApiContextVo>();
+        _ConnStr = apiContext.Conn.RemoveFrom("sch");
+        ApiContext = apiContext;
+
+        var arrParam = apiContext.Conn.Split(';');
+        var schemaTemp = arrParam.FirstOrDefault(a => a.StartsWith("sch"));
+        if (schemaTemp == null) return;
+
+        arrParam = schemaTemp.Split('=');
+        Schema = arrParam.Length > 1 ? arrParam[1] + "." : string.Empty;
+    }
+
+    protected IDbConnection Conn => new NpgsqlConnection(_ConnStr);
+
+    protected TModel MapToModel(TEntity entity)
+    {
+        return entity?.MapTo<TModel>();
+    }
+
+    protected TEntity MapToEntity(TModel model)
+    {
+        return model?.MapTo<TEntity>();
+    }
+
+    protected IEnumerable<TEntity> MapToEntity(IEnumerable<TModel> models)
+    {
+        return models?.Select(MapToEntity).ToList();
+    }
+
+    protected IEnumerable<TModel> MapToModel(IEnumerable<TEntity> entities)
+    {
+        return entities?.Select(MapToModel).ToList();
+    }
+}

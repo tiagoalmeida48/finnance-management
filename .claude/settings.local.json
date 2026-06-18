@@ -57,7 +57,9 @@
       "Bash(xargs cat *)",
       "mcp__plugin_context-mode_context-mode__ctx_execute_file",
       "mcp__plugin_context-mode_context-mode__ctx_execute",
-      "Bash(pnpm exec *)"
+      "Bash(pnpm exec *)",
+      "Bash(cd /d/DEV/Pessoal/finnance-management/Frontend && ls node_modules/.bin/ 2>/dev/null | grep -iE 'tsc|vite|eslint' ; echo \"---pkg scripts---\"; node -e \"const p=require\\('./package.json'\\); console.log\\(JSON.stringify\\(p.scripts,null,2\\)\\); console.log\\('typescript dep:', \\(p.devDependencies&&p.devDependencies.typescript\\)||\\(p.dependencies&&p.dependencies.typescript\\)\\)\" 2>&1)",
+      "Read(//d/d/DEV/Pessoal/finnance-management/Frontend/node_modules/**)"
     ]
   }
 }

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <meta content="noindex, nofollow" name="robots"/>
+    <title>Login - API</title>
+    <link href="/auth/css/styles.css" rel="stylesheet"/>
+</head>
+<body class="login-page">
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h5 class="auth-title">Acesso APIs</h5>
+        </div>
+
+        <form id="login-form">
+            <div class="auth-form-group">
+                <label class="auth-label" for="user">Usuário</label>
+                <input autocomplete="username" autofocus class="auth-input" id="user" placeholder="Digite seu usuário"
+                       required type="text"/>
+            </div>
+
+            <div class="auth-form-group">
+                <label class="auth-label" for="password">Senha</label>
+                <input autocomplete="current-password" class="auth-input" id="password" placeholder="Digite sua senha"
+                       required type="password"/>
+            </div>
+
+            <div class="auth-message error" id="error" role="alert"></div>
+            <div class="auth-message success" id="success" role="status"></div>
+        </form>
+
+        <div class="auth-divider">
+            <span>Acessar Plataforma</span>
+        </div>
+
+        <div class="auth-platform-buttons">
+            <button class="auth-platform-btn" data-platform="swagger" title="Fazer login e acessar Swagger">
+                <span class="button-text">Swagger</span>
+                <div class="auth-spinner"></div>
+            </button>
+            <button class="auth-platform-btn" data-platform="scalar" title="Fazer login e acessar Scalar">
+                <span class="button-text">Scalar</span>
+                <div class="auth-spinner"></div>
+            </button>
+            <button class="auth-platform-btn" data-platform="graphql" title="Fazer login e acessar GraphQL">
+                <span class="button-text">GraphQL</span>
+                <div class="auth-spinner"></div>
+            </button>
+            <button class="auth-platform-btn" data-platform="scheduler" title="Fazer login e acessar Scheduler">
+                <span class="button-text">Scheduler</span>
+                <div class="auth-spinner"></div>
+            </button>
+        </div>
+
+        <div class="auth-footer">
+            <a class="auth-home-link" href="/" title="Voltar ao site principal">← Voltar para o site</a>
+        </div>
+    </div>
+</div>
+
+<!-- Modal MFA -->
+<div class="auth-modal" id="mfa-modal" style="display: none;">
+    <div class="auth-modal-overlay"></div>
+    <div class="auth-modal-content">
+        <div class="auth-modal-header">
+            <h3>Autenticação de dois fatores</h3>
+        </div>
+        <div class="auth-modal-body">
+            <p>Digite o código de verificação do seu aplicativo autenticador:</p>
+            <form id="mfa-form">
+                <div class="auth-form-group">
+                    <label class="auth-label" for="mfa-code">Código MFA</label>
+                    <input autocomplete="off" autofocus class="auth-input" id="mfa-code"
+                           inputmode="numeric" maxlength="6" pattern="[0-9]{6}"
+                           placeholder="000000" required type="text"/>
+                </div>
+
+                <button class="auth-btn-primary" id="btnMfa" type="submit">
+                    <span class="button-text">Verificar</span>
+                    <div class="auth-spinner"></div>
+                </button>
+
+                <div class="auth-message error" id="mfa-error" role="alert"></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="/auth/js/auth-manager.js"></script>
+<script src="/auth/js/login.js"></script>
+</body>
+</html>

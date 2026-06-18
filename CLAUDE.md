@@ -2,88 +2,119 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project
+`finnance-management` é um app de gestão financeira pessoal (UI em pt-BR). Comunique-se com o usuário em **pt-BR**.
 
-Personal finance management SPA (Portuguese UI) — bank accounts, transactions, credit cards/invoices, monthly tracking, salary simulator, CSV import, Pluggy bank-sync integration, and admin user management. React 19 frontend with a Supabase backend (Auth + PostgreSQL + RLS + RPCs + Edge Functions).
+---
 
-The UI and all user-facing strings are pt-BR. Communicate with the user in pt-BR.
+## 1. O repositório tem duas metades
 
-## Commands
+```
+finnance-management/
+├── Finnance.Api/                 # Backend .NET 9 (Web API) — em construção
+│   ├── Modules/                  # Features de negócio por domínio (uma pasta por módulo)
+│   │   └── Common/               # Módulo base: camadas Domain/Application/Repository reutilizáveis
+│   ├── Shared/                   # Cross-cutting: BaseClass, Extensions, Utils (fora dos módulos)
+│   ├── Controllers/  Security/  Configuration/
+│   ├── wwwroot/                  # Build do frontend é servido daqui (SPA fallback)
+│   └── Frontend/                 # SPA React 19 + Supabase — a aplicação que está em produção hoje
+│       └── CLAUDE.md             # ← guia COMPLETO do frontend; leia-o ao mexer em Frontend/
+├── docs/                         # PRD, arquitetura, specs de migração e schema do banco
+├── Finnance.Api.slnx             # Solution (referencia só Finnance.Api.csproj)
+└── README.md                     # Descreve o template .NET genérico, NÃO este app (ver §6)
+```
 
-Always use **pnpm** (never npm/yarn). Package manager is pinned to `pnpm@10.28.1`.
+**A aplicação real, hoje, é o frontend React em `Finnance.Api/Frontend/`** (React 19 + Supabase: Auth, PostgreSQL, RLS, RPCs, Edge Functions). Para qualquer trabalho ali, o `Finnance.Api/Frontend/CLAUDE.md` é a fonte de verdade — não duplico o conteúdo dele aqui. Comandos de frontend (`pnpm dev/build/lint/check:ci`, sempre **pnpm**) e regras de banco Supabase estão lá.
+
+**O backend `Finnance.Api/` é uma migração em andamento**: substituir o Supabase por uma API .NET Core local. Está em estágio de **scaffolding** — a base arquitetural existe (módulo `Common` + `Shared`), mas nenhuma feature de negócio (transações, contas, cartões…) foi escrita ainda. As regras de negócio a portar estão verificadas contra o banco real em `docs/specs/` (specs 00–10). Consulte-as antes de implementar qualquer algoritmo de domínio (transação→fatura, recálculo de fatura, sync de saldo, folha/salário).
+
+---
+
+## 2. Build e execução do backend
 
 ```bash
-pnpm dev          # Vite dev server
-pnpm build        # tsc -b (type-check) + vite build
-pnpm lint         # eslint .
-pnpm format       # prettier --write on src
-pnpm preview      # preview the production build
-pnpm check:ci     # eslint src + build — run this before considering work done
+# da pasta Finnance.Api/
+dotnet build                      # compila o projeto único
+dotnet run                        # sobe a Web API (Kestrel)
 ```
 
-There is **no automated test suite** (Vitest and the test scripts were removed). `check:ci` is the gate: it does not run tests. Verify changes by running the app.
+- Projeto **único consolidado**: `Finnance.Api.csproj` (não é multi-projeto). `net9.0`, `Nullable=disable`, `LangVersion=13.0`, `ImplicitUsings=enable`.
+- **Não há suíte de testes** em nenhuma das metades. O gate do frontend é `pnpm check:ci`; o do backend é compilar (`dotnet build`). Verifique mudanças rodando.
+- Banco: **PostgreSQL** (`finnance_dev`) via Npgsql + Dapper. A connection string em `appsettings.json` está **criptografada** e é descriptografada em runtime por `HashHelper.DecryptConnectionString`. Não cole connection string em claro no arquivo.
+- O frontend é compilado para `wwwroot/`; o backend serve a SPA com `app.MapFallbackToFile("index.html")`.
 
-## Architecture
+---
 
-### Data flow (one direction, layered)
+## 3. Arquitetura do backend — template consolidado num único assembly
+
+O backend segue o padrão **Clean Architecture do template `base-project-api-clean`**, mas **achatado num só projeto** e **organizado por módulos**. O que no template eram projetos separados aqui são pastas:
 
 ```
-pages/[domain]  →  shared/hooks/api/ (React Query)  →  shared/services/  →  Supabase
+Finnance.Api/
+├── Modules/                          # namespace Finnance.Api.Modules.<Feature>.*
+│   └── Common/                       # módulo base (Finnance.Api.Modules.Common.*)
+│       ├── Domain/        Interfaces/ (IBaseRepository…)  Vo/ (ApiContextVo, SessionVo…)
+│       ├── Application/   Interfaces/  Services/BaseService/ (BaseService<T>, BaseRead/Write/CsvExport)
+│       └── Repository/    BaseRepository/Base/  BaseRepository/EntityHelper/  (Models/  Repositories/ por feature)
+└── Shared/                           # namespace Finnance.Api.Shared.*  (fora dos módulos)
+    ├── BaseClass/ (BaseEntity, BaseModel)  Extensions/
+    └── Utils/ (ResultApi, BusinessError, JwtHelper, Argon2Helper, Constants…)
 ```
 
-- **Pages** render and own local UI state only.
-- **API hooks** (`shared/hooks/api/use*.ts`) wrap React Query; query keys are centralized in `src/shared/constants/queryKeys.ts`.
-- **Services** (`shared/services/`) are the only place that touches the Supabase client.
+Cada feature de negócio vira um **módulo próprio** em `Finnance.Api/Modules/<Feature>/` (namespace `Finnance.Api.Modules.<Feature>.{Domain,Application,Repository}`), com suas próprias entidades, models, repos, services e o controller correspondente em `Controllers/`. O módulo **`Common`** guarda as classes base de cada camada (`BaseService`, `BaseRepository`, VOs, interfaces base) — reutilizável; não coloque lógica de negócio nele. **`Shared`** (na raiz, fora de `Modules/`) é cross-cutting puro: utils, extensions e classes base de Entity/Model.
 
-### RPCs are the business-logic boundary
+### Injeção de dependência por reflexão
+`Configuration/DependencyInjectionConfiguration.cs` (`GetSouls`) registra serviços/repos automaticamente **varrendo o assembly**: casa o prefixo `Finnance.Api.Modules` com o **sufixo da camada** (`.Domain.Services`, `.Application.Services`, `.Repository.Repositories`) e liga `Foo` ↔ `IFoo`. Assim **qualquer módulo novo é descoberto automaticamente** — basta seguir a convenção de namespace por camada; não há registro manual no container. Models do Dapper são mapeados igual, via `TypeMapper.Initialize([".Repository.Models"], [])` (sufixo de camada, varre todos os módulos).
 
-Services delegate to Supabase **RPCs** (`SECURITY DEFINER` Postgres functions), not direct table writes, for anything with business rules — transaction creation, batch pay/unpay/delete, installments, invoice recalculation, dashboard aggregations, admin user CRUD. Do not reimplement that logic client-side. When adding a feature with server-side rules, add/extend an RPC migration in `supabase/migrations/` and call it from a service. The `transactions` service is split into submodules under `shared/services/transactions/` (`-core`, `-creation`, `-installments`, `-batch`, `-utils`).
+### Dapper + PostgreSQL
+- Todo repositório herda `BaseRepository<TEntity, TModel>` e abre conexão com `using var con = Conn;` (propriedade que retorna `new NpgsqlConnection`). Nunca injete `IDbConnection`/`DbContext`.
+- A connection string suporta **schema customizado** via prefixo `sch=nome;` (lido no construtor de `BaseRepository`).
+- SQL é **inline**: `const string` para queries simples, `StringBuilder` + `DynamicParameters` para dinâmicas. `EntityHelper` gera SELECT/WHERE a partir de atributos do Model. **Nunca arquivos `.sql` separados nem SQL fora dos repositórios.**
+- Services herdam `BaseService<T>`; transações via `using var tran = GetTransaction()` (`TransactionScope`) + `tran.Complete()`.
 
-### State
+### Estado atual: stubs do template ainda não reimplementados
+Vários serviços do template foram **removidos na consolidação** e marcam o lugar com `// Stub: ... sera reimplementado em Finnance.Api/Modules`. Hoje são apenas stubs:
+- **Autorização** (`Security/AuthorizationAttribute`): não valida acesso — só respeita `[AllowAnonymous]`.
+- **Logging** (`GlobalErrorHandle.TryLog`), **rate limiting** por política, **scheduler/attachments** no bootstrap.
 
-- **Server state** → React Query (all API data).
-- **Auth** → Supabase JWT via the AuthProvider in `src/lib/supabase/`; route guards `ProtectedRoute` (logged in) and `AdminRoute` (`profile.is_admin`) in `src/routes/`.
-- **UI state** → Zustand (`shared/stores/ui.store.ts`), minimal (e.g. sidebar expand/collapse).
-- **Toasts** → context bridge in `shared/contexts/`.
+Ao implementar um módulo que dependa de algo assim, reimplemente o serviço correspondente — não presuma que já funciona.
 
-### Routing
+---
 
-React Router v7, all pages lazy-loaded (route-level code splitting) with Suspense + ErrorBoundary. Vite uses manual rollup chunks: `react-core`, `charts`, `supabase`, `motion`.
+## 4. Contratos e regras invioláveis do backend
 
-## Conventions
+Estas regras vêm do template e o código novo deve segui-las (atualizadas para a estrutura consolidada):
 
-- **Path alias:** import from `@/...` (maps to `src/`), configured in both `vite.config.ts` and `tsconfig.app.json`.
-- **Logic extraction:** each page/feature component pairs with a `use*Logic` / `use*PageLogic` hook (e.g. `useTransactionsPageLogic.ts`) holding the logic; the component stays presentational. Follow this pattern for new pages.
-- **Page folders** are organized by type: `components/`, `hooks/`, `modals/`.
-- **Shared components** live under `shared/components/` as `ui/` (headless), `forms/`, `layout/`, `composite/`.
-- **Forms:** React Hook Form + Zod schemas in `shared/schemas/`, wired via `@hookform/resolvers/zod`.
-- **TypeScript is strict** with `noUnusedLocals`/`noUnusedParameters` — unused vars fail the build; prefix intentionally-unused with `_`.
+1. **Todo controller REST retorna `ResultApi<T>`** (`{ Success, Message, InternalError, Result }`). Nunca `IActionResult`/`ActionResult<T>`/tipo direto. Sucesso → 200 com `Result`; erro → capturado por `GlobalErrorHandle` (`/errors`).
+2. **Erros de negócio lançam `BusinessError(GeneralErrorNumber.X, FieldName.Y)`** — nunca `Exception`/`ArgumentException` genérica.
+3. **Validação é 100% imperativa** no Domain (`ValidateCreate`/`ValidateUpdate`/`ValidatePersistence` na Entity) e no Service (partial `ValidatePersistence.cs`). **Não use FluentValidation nem DataAnnotations.**
+4. **Nunca exponha a Entity na API.** Controllers recebem/retornam DTOs; conversão sempre via `.MapTo<T>()` (extension próprio), nunca propriedade a propriedade.
+5. **Models de banco têm sufixo `Mod`** e ficam em `Repository/Models/` do módulo da feature (namespace terminando em `.Repository.Models`). Entity (`...Entity`) nunca vai direto pro Dapper.
+6. **Autorização** via `[Authorization(Constants.AuthObject.X, Constants.AuthActivity.Y)]` (não `[Authorize]` padrão) — lembrando que hoje é stub (§3).
+7. **Serviços grandes são `partial`** divididos por responsabilidade (`_FooService.cs`, `FooGetService.cs`, `ValidatePersistence.cs`). Arquivos de classe base usam prefixo `_`.
 
-## Design system
+| Artefato | Convenção | Exemplo |
+|---|---|---|
+| Entidade de domínio | `Entity` | `UserEntity` |
+| Model de banco | `Mod` | `UserMod` |
+| Repositório | `I…Repository` / `…Repository` | `IUserRepository` / `UserRepository` |
+| Serviço | `I…Service` / `…Service` | `IUserService` / `UserService` |
+| DTO leitura/criação/update | `DisplayDto`/`LightDto` · `CreateDto` · `UpdateDto` | `UserDisplayDto`, `UserCreateDto` |
 
-CSS custom properties in `src/App.css` are the single source of truth (colors, overlay/sidebar glass tokens, typography, radii). Prefer existing tokens over hardcoded values. `docs/design-system.html` is the visual reference for UI work.
+---
 
-## Database (Supabase) — constraints to respect in migrations
+## 5. Frontend (resumo — detalhe em `Finnance.Api/Frontend/CLAUDE.md`)
 
-- `bank_accounts.current_balance` is managed by the `trg_sync_account_balance` trigger — **never write it directly**.
-- `credit_cards` has no `closing_day`/`due_day` columns — read cycles from the `v_credit_cards_with_cycles` view.
-- `payment_method` CHECK: `credit|debit|pix|cash|bill_payment|transfer|other`.
-- `transactions.type` uses EN-only enum values; `is_paid` is `NOT NULL DEFAULT FALSE`; monetary columns are `NUMERIC(15,2)`.
-- Soft deletes use `deleted_at IS NULL` + `is_active = FALSE` (accounts, cards, categories).
-- Invoice linking via `trg_link_transaction_to_invoice` trigger.
+React 19 + TypeScript estrito + Vite (rolldown), Tailwind v4, React Query, Zustand, React Router v7, RHF + Zod. Sempre **pnpm** (pinado em `pnpm@10.28.1`). Fluxo de dados unidirecional `pages → shared/hooks/api → shared/services → Supabase`; lógica de negócio mora em **RPCs** Postgres `SECURITY DEFINER` (não reimplementar no cliente). Cada página pareia com um hook `use*PageLogic`. Para qualquer detalhe (design tokens, constraints de migração do banco, Edge Functions Pluggy), abra o CLAUDE.md de lá.
 
-### Edge Functions
+---
 
-`supabase/functions/pluggy-sync` and `pluggy-token` (Pluggy open-finance integration). They need `PLUGGY_CLIENT_ID` / `PLUGGY_CLIENT_SECRET` configured in Supabase.
+## 6. ⚠️ README.md e specs
 
-## Environment
+- O **`README.md` da raiz descreve o template genérico `base-project-api-clean`** (estrutura multi-projeto `ProjectBase.*`, GraphQL/HotChocolate, Hangfire) — **não reflete este app**. O backend real é o assembly único consolidado de §3, **sem GraphQL e sem Hangfire**. Não tome o README como verdade arquitetural deste repositório; este CLAUDE.md prevalece.
+- `docs/specs/00–10` são a especificação verificada das regras de negócio (transações, faturas, saldo, folha, dashboard, auth, integrações Pluggy) — a referência canônica ao portar lógica do Supabase para o `Finnance.Api`.
 
-Frontend `.env` / `.env.local`: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.
+---
 
-## Branching & deploy
+## 7. Branches
 
-`main` = production, `dev` = active development. Deploys to Vercel as an SPA (all routes → `/index.html`).
-
-## Planned migration
-
-A planned migration off Supabase to a local **.NET Core** backend is documented in `docs/specs/` (11 numbered specs, 00–10, of business rules verified against the live database). This is spec-only — no .NET code yet. Consult it before changing core business algorithms (transaction→invoice linking, invoice recalculation, balance sync, payroll).
+`main` = produção, `dev` = desenvolvimento ativo (branch atual). O frontend faz deploy na Vercel como SPA.

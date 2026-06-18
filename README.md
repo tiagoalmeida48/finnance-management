@@ -1,110 +1,260 @@
-# Finnance Management
+# ProjectBase - API Clean Architecture
 
-Aplicacao web para gestao financeira pessoal com contas, transacoes, cartoes de credito, faturas, acompanhamento mensal, simulador salarial, importacao CSV, integracao Pluggy e gestao administrativa de usuarios.
+## Introdução
 
-## Stack
+O ProjectBase é um sistema robusto desenvolvido em **C# .NET 9** seguindo os princípios da **Clean Architecture**. Este projeto oferece uma base sólida para desenvolvimento de APIs corporativas, implementando padrões arquiteturais modernos, flexibilidade de escolha de banco de dados (PostgreSQL ou SQL Server) e um sistema completo de autenticação e autorização.
 
-- React 19 + TypeScript 5.9
-- Vite/rolldown-vite 7.2
-- Tailwind CSS 4
-- React Router 7
-- TanStack Query 5
-- Zustand 5
-- React Hook Form 7 + Zod 4
-- Framer Motion 12
-- Recharts 3
-- Supabase Auth, PostgreSQL, RLS, RPCs e Edge Functions
+## Diagrama da Arquitetura
 
-## Requisitos
+```
+ProjectBase (Clean Architecture)
+│
+├── 1️⃣ Domain (Núcleo do Negócio)
+│   └── ProjectBase.Domain/
+│       ├── Entities/BaseSystem/        # Entidades com regras de negócio
+│       ├── Interfaces/                 # Contratos de repositório  
+│       └── Vo/                        # Value Objects
+│
+├── 2️⃣ Application (Casos de Uso)
+│   └── ProjectBase.Application/
+│       ├── Interfaces/                 # Contratos de serviços
+│       ├── Records/                    # DTOs tipados
+│       └── Services/                   # Implementação dos casos de uso
+│
+├── 3️⃣ Infrastructure (Escolha uma opção)
+│   ├── ProjectBase.Repository.PostgreSql/    # Opção PostgreSQL
+│   │   ├── BaseRepository/
+│   │   ├── Models/
+│   │   └── Repositories/
+│   │
+│   ├── ProjectBase.Repository.SqlServer/     # Opção SQL Server  
+│   │    ├── BaseRepository/
+│   │    ├── Models/
+│   │    └── Repositories/
+│   │ 
+│   └── 🛠️ Shared (Cross-Cutting)
+│       └── ProjectBase.Shared/
+│           ├── BaseClass/                  # Classes base
+│           ├── Extensions/                 # Métodos de extensão
+│           └── Utils/                      # Utilitários diversos
+└── 4️⃣ Presentation (API)
+    └── ProjectBase.WebApi/
+        ├── Controllers/                # Endpoints REST
+        ├── GraphQL/                    # Endpoints GraphQl
+        ├── Configuration/              # Configurações
+        ├── Security/                   # Autenticação/Autorização
+        └── Program.cs                  # Entry Point
+```
 
-- Node.js 20+
-- pnpm 10.28.1 ou compativel
-- Projeto Supabase configurado
+### Objetivos do Projeto
 
-## Configuracao
+- Fornecer uma arquitetura limpa e escalável para APIs corporativas
+- Implementar padrões de design consolidados na indústria
+- Oferecer flexibilidade de escolha entre PostgreSQL ou SQL Server
+- Disponibilizar um sistema robusto de autenticação com Active Directory
+- Facilitar manutenção e evolução através de separação clara de responsabilidades
 
-Instale as dependencias:
+## Arquitetura do Sistema
 
+### Estrutura de Camadas
+
+O projeto segue rigorosamente os princípios da **Clean Architecture**, organizando o código em camadas bem definidas:
+
+#### 🏗️ **1. Domain (Núcleo)**
+- **Entidades**: Modelos de domínio ricos com regras de negócio incorporadas
+- **Interfaces de Repositório**: Contratos que definem operações de acesso a dados
+- **Value Objects**: Objetos imutáveis representando conceitos do domínio
+
+```
+ProjectBase.Domain/
+├── Entities/BaseSystem/     # Entidades do sistema base
+├── Interfaces/              # Contratos de repositório
+└── Vo/                     # Value Objects
+```
+
+#### 🔧 **2. Application (Casos de Uso)**
+- **Services**: Implementação dos casos de uso da aplicação
+- **Interfaces**: Contratos dos serviços de aplicação
+- **Records**: DTOs tipados para transferência de dados
+- **Padrões de Comando**: Separação clara entre operações de leitura e escrita
+
+```
+ProjectBase.Application/
+├── Interfaces/              # Contratos de serviços
+├── Records/                 # DTOs tipados
+└── Services/               # Implementação dos casos de uso
+```
+
+#### 💾 **3. Infrastructure (Repositórios)**
+- **Flexible Database Support**: Escolha entre PostgreSQL ou SQL Server
+- **Dapper ORM**: Performance otimizada para acesso a dados
+- **Models**: Mapeamento objeto-relacional
+- **Base Repository**: Implementação comum para operações CRUD
+##### Shared (Componentes Compartilhados)**
+- **Extensions**: Métodos de extensão utilitários
+- **Utils**: Utilitários diversos (JWT, Hashing, etc.)
+- **Base Classes**: Classes base para herança
+- **Constants**: Constantes do sistema
+
+```
+ProjectBase.External/                  # Classes de consumo externo, como o SAP
+ProjectBase.Repository.PostgreSql/     # Opção PostgreSQL
+ProjectBase.Repository.SqlServer/      # Opção SQL Server
+├── BaseRepository/                    # Funcionalidades base
+├── Models/                            # Modelos de dados
+└── Repositories/                      # Implementações específicas
+ProjectBase.Shared/                    # Componentes compartilhados
+```
+
+#### 🌐 **4. Presentation (API)**
+- **Controllers**: Endpoints da API REST
+- **GraphQL**: Endpoints da API GraphQl
+- **Middleware**: Interceptadores de requisições
+- **Configuration**: Configurações de injeção de dependência
+- **Security**: Sistema de autenticação e autorização
+
+```
+ProjectBase.WebApi/
+├── Controllers/             # Endpoints da API REST
+├── GraphQl/                 # Endpoints da API GraphQl
+├── Configuration/           # Configurações do sistema
+└── Security/                # Autenticação e autorização
+```
+
+## Pontos Fortes da Arquitetura
+
+### ✅ **Clean Architecture**
+- **Inversão de Dependência**: Camadas externas dependem das internas
+- **Flexibilidade**: Fácil substituição de componentes
+- **Manutenibilidade**: Código organizado e fácil de evoluir
+- **Escalabilidade**: Arquitetura preparada para crescimento
+
+### ✅ **Flexibilidade de Banco de Dados**
+- Escolha entre PostgreSQL ou SQL Server conforme necessidade
+- Implementação DRY com base classes compartilhadas
+- Flexibilidade para escolha do provedor por ambiente
+- Fácil migração entre provedores
+
+### ✅ **Sistema de Autenticação Avançado**
+- **JWT Tokens**: Autenticação stateless
+- **Active Directory Integration**: Integração com AD corporativo
+- **Multi-Platform Support**: Suporte a diferentes plataformas
+
+### ✅ **Sistema de Autorização com objetos**
+    Nessa etapa são definidos as autorizações do sistema 
+- **Object Field**: Relação de campos por objeto
+- **Object Menu**: Relação de menus por objeto
+- **Object Group**: Relação de grupo, objeto, campo e valor. 
+
+### ✅ **Padrões de Design Modernos**
+- **Repository Pattern**: Abstração de acesso a dados
+- **Service Pattern**: Encapsulamento da lógica de negócio
+- **Record Types**: DTOs imutáveis e tipados
+- **Validation Pattern**: Validações incorporadas nas entidades
+
+### ✅ **Performance Otimizada**
+- **Dapper ORM**: Micro-ORM de alta performance
+- **Connection Pooling**: Gestão eficiente de conexões
+- **Lazy Loading**: Carregamento otimizado de dados
+- **Transaction Scope**: Controle transacional robusto
+
+### ✅ **Observabilidade**
+- **Swagger/OpenAPI**: Documentação automática da API
+- **Scalar UI**: Interface moderna para documentação
+- **Logging Estruturado**: Sistema de logs corporativo
+- **Error Handling**: Tratamento centralizado de erros
+
+### ✅ **Background Processing**
+- **Hangfire Integration**: Processamento de tarefas em background
+- **Scheduler Support**: Agendamento de tarefas
+- **Queue Management**: Gestão de filas de processamento
+
+## Tecnologias Utilizadas
+
+### Core Framework
+- **.NET 9.0**: Versão mais recente do .NET
+- **C# 13.0**: Recursos mais modernos da linguagem
+- **ASP.NET Core**: Framework web moderno
+
+### Banco de Dados
+- **PostgreSQL**: Banco relacional open-source
+- **SQL Server**: Banco de dados Microsoft
+- **Dapper**: Micro-ORM de alta performance
+
+### Segurança
+- **JWT Bearer**: Autenticação via tokens
+- **Active Directory**: Integração corporativa
+- **HTTPS**: Comunicação segura
+
+### Background Jobs
+- **Hangfire**: Processamento background
+- **Hangfire.PostgreSql**: Armazenamento PostgreSQL
+- **Hangfire.SqlServer**: Armazenamento SQL Server
+
+### Documentação
+- **Swashbuckle**: Geração Swagger/OpenAPI
+- **Scalar**: Interface moderna de documentação
+
+### Utilitários
+- **QRCoder**: Geração de códigos QR
+- **Newtonsoft.Json**: Serialização JSON
+- **Refit**: Cliente HTTP tipado
+
+## Primeiros Passos
+
+### Pré-requisitos
+- .NET 9.0 SDK
+- PostgreSQL ou SQL Server
+- Visual Studio 2022 ou VS Code
+
+### Configuração
+
+#### 1. Clone o repositório
 ```bash
-pnpm install
+git clone [url-do-repositorio]
+cd base-project-api-clean
 ```
 
-Crie um arquivo `.env` ou `.env.local` com:
+#### 2. Escolha e configure o provedor de banco de dados
 
-```env
-VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
-```
+**Para PostgreSQL:**
+- Mantenha apenas o projeto `ProjectBase.Repository.PostgreSql`
+- Remova o projeto `ProjectBase.Repository.SqlServer`
+- Configure a connection string PostgreSQL e Database: "PostgreSql" em `appsettings.json`
 
-Para as Edge Functions Pluggy, configure no Supabase:
+**Para SQL Server:**
+- Mantenha apenas o projeto `ProjectBase.Repository.SqlServer`
+- Remova o projeto `ProjectBase.Repository.PostgreSql`
+- Configure a connection string SQL Server e Database: "SqlServer" em `appsettings.json`
 
-```env
-SUPABASE_URL=
-SUPABASE_ANON_KEY=
-PLUGGY_CLIENT_ID=
-PLUGGY_CLIENT_SECRET=
-```
-
-## Comandos
-
+#### 3. Configure as dependências
 ```bash
-pnpm dev          # ambiente local
-pnpm run build    # type-check + build de producao
-pnpm run lint     # ESLint
-pnpm run preview  # preview local do build
-pnpm run format   # Prettier em src
-pnpm run check:ci # lint + build
+dotnet restore
+dotnet build
 ```
 
-Nao ha suite de testes automatizados ativa no estado atual do projeto.
-
-## Estrutura Principal
-
-```text
-src/
-  routes/                 # rotas, lazy loading e guards
-  pages/                  # paginas por dominio
-  shared/components/      # UI, layout, forms e composites
-  shared/hooks/api/       # hooks React Query
-  shared/services/        # acesso a Supabase/RPCs por dominio
-  shared/interfaces/      # contratos TypeScript
-  shared/schemas/         # schemas Zod
-  shared/constants/       # query keys e constantes de dominio
-  shared/stores/          # Zustand
-  shared/theme/           # tema derivado dos tokens CSS
-  shared/utils/           # calculos puros e helpers
-  lib/supabase/           # client Supabase e AuthProvider
-
-supabase/
-  functions/              # Edge Functions Pluggy
-  migrations/             # historico SQL do banco
+#### 4. Execute o projeto
+```bash
+dotnet run --project ProjectBase.WebApi
 ```
 
-## Funcionalidades
+### Estrutura de Configuração
+- `appsettings.json`: Configurações base
+- `appsettings.Development.json`: Configurações de desenvolvimento
+- `launchSettings.json`: Configurações de execução
 
-- autenticacao e rotas protegidas;
-- dashboard com indicadores, graficos e transacoes recentes;
-- contas bancarias com saldo e vinculo Pluggy;
-- categorias de receita/despesa;
-- transacoes manuais, em lote, parceladas e recorrentes;
-- importacao CSV;
-- sincronizacao Pluggy com previa antes de confirmar;
-- cartoes de credito, faturas e ciclos de fechamento/vencimento;
-- acompanhamento mensal;
-- simulador e configuracoes salariais;
-- perfil do usuario;
-- gestao de usuarios para administradores.
+## Contribuição
 
-## Documentacao
+Este projeto segue padrões rigorosos de desenvolvimento:
 
-- [Arquitetura](docs/architecture.md)
-- [Status da migracao para RPCs](docs/migration-to-rpc-plan.md)
-- [PRD](docs/PRD.md)
-- [SPECS](docs/SPECS.md)
+- **Code Style**: Seguir convenções do C#/.NET
+- **Clean Code**: Código limpo e legível  
+- **SOLID Principles**: Aplicação dos princípios SOLID
+- **Documentation**: Documentação clara e atualizada
 
-## Observacoes Tecnicas
+### Fluxo de Desenvolvimento
+1. Fork do repositório
+2. Desenvolver seguindo os padrões estabelecidos
+3. Fazer commit das alterações
 
-- O frontend usa principalmente RPCs Supabase, com poucos acessos diretos residuais.
-- As chaves do React Query ficam em `src/shared/constants/queryKeys.ts`.
-- `supabase/.temp/` e cache local da CLI e nao deve ser versionado.
-- Antes de deploy limpo, conferir as RPCs chamadas pelo frontend contra as migrations aplicadas no banco remoto.
+---
