@@ -38,21 +38,21 @@ public static class AccessExt
 
     public static (long user, string language, string timeZone) GetUserLogged(this HttpContext ctx)
     {
-        // Stub: IAuthenticationService foi removido na consolidacao.
-        _ = ctx;
-        return (0L, string.Empty, string.Empty);
+        var (_, token) = ctx.GetToken();
+        if (token.IsEmpty()) return (0L, string.Empty, string.Empty);
+        return ctx.DecodeJwt(token);
     }
 
     public static (long user, string language, string timeZone) DecodeJwt(this HttpContext ctx, string token)
     {
-        var handler = new JwtSecurityTokenHandler();
-        var jwtToken = handler.ReadJwtToken(token);
+        // Valida assinatura/expiracao antes de extrair claims.
+        var principal = JwtHelper.ValidateToken(token, Finnance.Api.Shared.Utils.JwtConstants.SecretKey);
 
-        var userClaim = long.Parse(jwtToken.Claims.FirstOrDefault(c => c.Type == JwtHelper.NameIdentifier).Value);
-        var langClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == JwtHelper.ClaimLang);
-        var timeZoneClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == JwtHelper.ClaimTimeZone);
+        var userClaim = long.Parse(principal.FindFirst(JwtHelper.NameIdentifier)?.Value ?? "0");
+        var langClaim = principal.FindFirst(JwtHelper.ClaimLang)?.Value ?? string.Empty;
+        var timeZoneClaim = principal.FindFirst(JwtHelper.ClaimTimeZone)?.Value ?? string.Empty;
 
-        return (userClaim, langClaim.Value, timeZoneClaim.Value);
+        return (userClaim, langClaim, timeZoneClaim);
     }
 
     private static string GetKeyHeader(this HttpContext ctx, string key)
