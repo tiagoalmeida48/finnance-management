@@ -69,7 +69,7 @@ public class GlobalErrorHandle : ControllerBase
 
         var ret = new ResultApi<object>
         {
-            Message = errTrat.Message,
+            Message = errTrat.TranslatedMessage(),
             InternalError = (int)errTrat.ErrorNumber,
             Success = false
         };

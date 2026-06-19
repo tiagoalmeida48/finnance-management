@@ -46,4 +46,10 @@ public static partial class Constants
         public const string UPDATE = "03";
         public const string DELETE = "04";
     }
+
+    public static class RoleCode
+    {
+        public const string ADMIN = "ADMIN";
+        public const string USER = "USER";
+    }
 }
