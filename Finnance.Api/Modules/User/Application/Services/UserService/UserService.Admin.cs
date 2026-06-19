@@ -56,14 +56,25 @@ public partial class UserService
     public bool UpdateUserPassword(long user, string rawPassword)
     {
         ValidatePassword(rawPassword);
+        var current = _userRepository.GetByKey(new UserEntity { User = user });
+        if (current == null)
+            throw new BusinessError(GeneralErrorNumber.USER_NOT_FOUND, FieldName.USER);
+
         var hash = Argon2Helper.GenerateHashPassword(rawPassword);
-        return _userRepository.UpdatePassword(user, hash);
+        using var tran = GetTransaction();
+        var ok = _userRepository.UpdatePassword(user, hash);
+        tran.Complete();
+        return ok;
     }
 
     public bool DeleteUser(long user, long currentUser)
     {
         if (user == currentUser)
             throw new BusinessError("Você não pode excluir seu próprio usuário.");
+
+        var current = _userRepository.GetByKey(new UserEntity { User = user });
+        if (current == null)
+            throw new BusinessError(GeneralErrorNumber.USER_NOT_FOUND, FieldName.USER);
 
         using var tran = GetTransaction();
         _userRoleRepository.DeleteByUser(user);
