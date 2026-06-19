@@ -31,6 +31,10 @@ public static partial class Configuration
 
         app.MapFallbackToFile("index.html");
 
+        var connSeed = Shared.Utils.HashHelper.DecryptConnectionString(configuration.GetConnectionString("DefaultConnection"));
+        try { Modules.User.Repository.RoleSeed.Run(connSeed); }
+        catch { /* banco pode nao estar acessivel em dev; nao derruba o boot */ }
+
         // Stub: ISchedulerConfigService / IAttachmentConfigService do template foram
         // removidos na consolidacao. A inicializacao sera reimplementada em Finnance.Api/Modules.
     }
