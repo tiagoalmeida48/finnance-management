@@ -3,7 +3,6 @@ using Finnance.Api.Modules.User.Application.Dto;
 using Finnance.Api.Modules.User.Application.Interfaces;
 using Finnance.Api.Modules.User.Domain.Entities;
 using Finnance.Api.Security;
-using Finnance.Api.Shared;
 using Finnance.Api.Shared.Utils;
 
 namespace Finnance.Api.Controllers;
