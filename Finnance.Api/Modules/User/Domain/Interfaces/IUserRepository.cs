@@ -5,8 +5,8 @@ namespace Finnance.Api.Modules.User.Domain.Interfaces;
 
 public interface IUserRepository : IBaseRepository<UserEntity>
 {
-    UserEntity GetByEmail(string email);
-    bool ExistEmail(string email, long ignoreUser);
-    bool UpdatePassword(long user, string passwordHash);
-    bool DeleteUser(long user);
+    List<UserEntity> Search(long user = 0,
+                            string email = null,
+                            bool active = false,
+                            int quantity = 0);
 }

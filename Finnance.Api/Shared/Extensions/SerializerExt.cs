@@ -11,7 +11,6 @@ public static partial class Extensions
         Formatting = Formatting.None,
         ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
         NullValueHandling = NullValueHandling.Ignore,
-       // ContractResolver = new CamelCasePropertyNamesContractResolver(),
         Converters = { new ByteArrayConverter() }
     };
 

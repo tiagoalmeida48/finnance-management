@@ -12,26 +12,11 @@ namespace Finnance.Api.Controllers;
 [ApiExplorerSettings(IgnoreApi = true)]
 public class GlobalErrorHandle : ControllerBase
 {
-    private BusinessError IdentifyError(Exception err)
-    {
-        var language = Constants.LanguageDefault;
-
-        if (err is BusinessError errTrat)
-        {
-            if (errTrat.ErrorNumber is not (GeneralErrorNumber.ERROR_ACCESS or GeneralErrorNumber.EXPIRED_TOKEN))
-                language = UserLogged.language.IsEmpty() ? Constants.LanguageDefault : UserLogged.language;
-
-            errTrat.Language = language;
-            return errTrat;
-        }
-
-        var log = TryLog(err);
-        return new BusinessError(GeneralErrorNumber.ERROR_NOT_EXPECTED, log) { Language = language };
-    }
+    private const int InternalErrorStatus = 500;
+    private const int BusinessErrorStatus = 400;
 
     private static long TryLog(Exception err)
     {
-        // Stub: ILogService do template foi removido na consolidacao.
         _ = err;
         return Constants.DefaultErrorLog;
     }
@@ -45,42 +30,45 @@ public class GlobalErrorHandle : ControllerBase
         {
             var retErr = new ResultApi<object>
             {
-                Message = GeneralErrorNumber.DATABASE_ACCESS_ERROR.ToString(),
+                Message = Constants.ErrorMessage.DatabaseAccessError,
                 Success = false,
                 InternalError = TryLog(ctx.Error)
             };
 
-            return StatusCode((int)GeneralErrorNumber.INTERNAL_ERROR, retErr);
+            return StatusCode(InternalErrorStatus, retErr);
         }
 
         if (ctx.Error.InnerException is ApiException apiException && apiException.StatusCode == HttpStatusCode.Unauthorized)
         {
             var retErr = new ResultApi<object>
             {
-                Message = GeneralErrorNumber.ERROR_LOGIN_ERP.ToString(),
+                Message = Constants.ErrorMessage.ErrorLoginErp,
                 Success = false,
                 InternalError = TryLog(ctx.Error)
             };
 
-            return StatusCode((int)GeneralErrorNumber.INTERNAL_ERROR, retErr);
+            return StatusCode(InternalErrorStatus, retErr);
         }
 
-        var errTrat = IdentifyError(ctx.Error);
-
-        var ret = new ResultApi<object>
+        if (ctx.Error is ApplicationException businessError)
         {
-            Message = errTrat.TranslatedMessage(),
-            InternalError = (int)errTrat.ErrorNumber,
+            var ret = new ResultApi<object>
+            {
+                Message = businessError.Message,
+                Success = false
+            };
+
+            return StatusCode(BusinessErrorStatus, ret);
+        }
+
+        var retErrNotExpected = new ResultApi<object>
+        {
+            Message = Constants.ErrorMessage.ErrorNotExpected,
+            InternalError = TryLog(ctx.Error),
             Success = false
         };
 
-        if (errTrat.ErrorNumber == GeneralErrorNumber.EXPIRED_TOKEN)
-            return StatusCode((int)GeneralErrorNumber.EXPIRED_TOKEN, ret);
-
-        if (errTrat.ErrorNumber == GeneralErrorNumber.ERROR_ACCESS)
-            return StatusCode((int)GeneralErrorNumber.ERROR_ACCESS, ret);
-
-        return StatusCode((int)GeneralErrorNumber.INTERNAL_ERROR, ret);
+        return StatusCode(InternalErrorStatus, retErrNotExpected);
     }
 
     private static bool IsDatabaseTimeout(Exception exception)

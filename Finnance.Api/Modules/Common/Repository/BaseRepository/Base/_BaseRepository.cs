@@ -41,12 +41,12 @@ public partial class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity>
         return model?.MapTo<TEntity>();
     }
 
-    protected IEnumerable<TEntity> MapToEntity(IEnumerable<TModel> models)
+    protected List<TEntity> MapToEntity(List<TModel> models)
     {
         return models?.Select(MapToEntity).ToList();
     }
 
-    protected IEnumerable<TModel> MapToModel(IEnumerable<TEntity> entities)
+    protected List<TModel> MapToModel(List<TEntity> entities)
     {
         return entities?.Select(MapToModel).ToList();
     }

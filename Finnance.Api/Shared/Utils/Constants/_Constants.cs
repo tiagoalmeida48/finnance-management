@@ -18,31 +18,6 @@ public static partial class Constants
     public const string CookieName = "CookieAuth";
     public const string UrlOpenApi = "/openapi";
     public const string UrlSwagger = "/swagger";
-    public const string ProjectName = "Project Base";
+    public const string ProjectName = "Finnance";
     public const string MfaRequired = "1";
-
-    public class CodeTask
-    {
-        public const string DELETE_LOG = "DLOG";
-        public const string SYNC_DELETE_FILE_ORPHANS = "SDFO";
-    }
-
-    public class StatusTask
-    {
-        public const string Processing = "PRC";
-        public const string Finished = "FNS";
-        public const string Error = "ERR";
-    }
-
-    public class AttachmentType
-    {
-        public const string Image = "IMG";
-        public const string Video = "VID";
-        public const string Document = "DOC";
-    }
-
-    public static class AttachmentClassification
-    {
-        public const int ExportCsv = 1;
-    }
 }

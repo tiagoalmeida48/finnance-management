@@ -30,7 +30,7 @@ public class JwtHelper
     public static ClaimsPrincipal ValidateToken(string token, string key)
     {
         if (token.IsEmpty())
-            throw new BusinessError(GeneralErrorNumber.ERROR_ACCESS);
+            throw new ApplicationException(Constants.ErrorMessage.ErrorAccess);
 
         var tokenValidationParameters = new TokenValidationParameters
         {
@@ -49,11 +49,11 @@ public class JwtHelper
         }
         catch (SecurityTokenExpiredException)
         {
-            throw new BusinessError(GeneralErrorNumber.EXPIRED_TOKEN);
+            throw new ApplicationException(Constants.ErrorMessage.ExpiredToken);
         }
         catch (Exception)
         {
-            throw new BusinessError(GeneralErrorNumber.ERROR_ACCESS);
+            throw new ApplicationException(Constants.ErrorMessage.ErrorAccess);
         }
     }
 }

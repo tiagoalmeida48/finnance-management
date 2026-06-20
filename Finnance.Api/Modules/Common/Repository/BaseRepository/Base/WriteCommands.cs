@@ -50,7 +50,7 @@ public partial class BaseRepository<TEntity, TModel>
         {
             var (table, _) = refs.FirstOrDefault(t => t.quant > 0);
             if (table.IsNotEmpty())
-                throw new BusinessError(GeneralErrorNumber.PENDING_REGISTRATION_ANOTHER_TABLE, msgParam: GetTableName(table) ?? table);
+                throw new ApplicationException(Constants.ErrorMessage.PendingRegistrationAnotherTable);
         }
 
         var del = EntityHelper.GetDelete<TModel>(Schema);
@@ -62,7 +62,7 @@ public partial class BaseRepository<TEntity, TModel>
     {
         if (entities.IsEmpty()) return false;
 
-        var models = MapToModel(entities);
+        var models = MapToModel(entities.ToList());
         var (inserts, parameters) = models.GenerateInserts(Schema);
 
         using var con = Conn;
@@ -85,7 +85,7 @@ public partial class BaseRepository<TEntity, TModel>
     {
         if (entities.IsEmpty()) return false;
 
-        var models = MapToModel(entities);
+        var models = MapToModel(entities.ToList());
         var (updates, parameters) = models.GenerateUpdates(Schema);
 
         using var con = Conn;
@@ -108,7 +108,7 @@ public partial class BaseRepository<TEntity, TModel>
     {
         if (entities.IsEmpty()) return false;
 
-        var models = MapToModel(entities);
+        var models = MapToModel(entities.ToList());
 
         Parallel.ForEach(models, model =>
         {
@@ -117,7 +117,7 @@ public partial class BaseRepository<TEntity, TModel>
 
             var (table, _) = refs.FirstOrDefault(t => t.quant > 0);
             if (table.IsNotEmpty())
-                throw new BusinessError(GeneralErrorNumber.PENDING_REGISTRATION_ANOTHER_TABLE, msgParam: GetTableName(table) ?? table);
+                throw new ApplicationException(Constants.ErrorMessage.PendingRegistrationAnotherTable);
         });
 
         var (deletes, parameters) = models.GenerateDeletes(Schema);

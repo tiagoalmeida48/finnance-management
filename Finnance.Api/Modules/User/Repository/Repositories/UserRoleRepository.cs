@@ -3,31 +3,68 @@ using Finnance.Api.Modules.Common.Repository;
 using Finnance.Api.Modules.User.Domain.Entities;
 using Finnance.Api.Modules.User.Domain.Interfaces;
 using Finnance.Api.Modules.User.Repository.Models;
+using Finnance.Api.Shared;
+using System.Text;
 
 namespace Finnance.Api.Modules.User.Repository.Repositories;
 
 public class UserRoleRepository : BaseRepository<UserRoleEntity, UserRoleMod>, IUserRoleRepository
 {
-    public IEnumerable<string> GetRoleCodesByUser(long user)
+    public List<UserRoleEntity> Search(long user = 0,
+                                       long role = 0,
+                                       bool active = false,
+                                       int quantity = 0)
     {
-        const string sql = @"SELECT r.code FROM user_role ur
-                             JOIN ""role"" r ON r.""role"" = ur.""role""
-                             WHERE ur.""user"" = @user AND ur.active AND r.active";
+        var sb = new StringBuilder();
+        var param = new DynamicParameters();
+
+        sb.Append("SELECT * FROM user_role WHERE 1 = 1 ");
+
+        if (user > 0)
+        {
+            param.Add("user", user);
+            sb.Append("""AND "user" = @user """);
+        }
+
+        if (role > 0)
+        {
+            param.Add("role", role);
+            sb.Append("""AND "role" = @role """);
+        }
+
+        if (active)
+            sb.Append("AND active = TRUE ");
+
+        if (quantity > 0)
+        {
+            param.Add("quantity", quantity);
+            sb.Append("LIMIT @quantity");
+        }
+
         using var con = Conn;
-        return con.Query<string>(sql, new { user });
+        var model = con.Query<UserRoleMod>(sb.ToString(), param).ToList();
+        return MapToEntity(model);
     }
 
-    public bool ExistUserRole(long user, long role)
+    public List<long> SearchRoleIds(long user)
     {
-        const string sql = "SELECT COUNT(1) FROM user_role WHERE \"user\" = @user AND \"role\" = @role";
+        const string query = """SELECT "role" FROM user_role WHERE "user" = @user AND active""";
+
         using var con = Conn;
-        return con.ExecuteScalar<long>(sql, new { user, role }) > 0;
+        return con.Query<long>(query, new { user }).ToList();
     }
 
-    public bool DeleteByUser(long user)
+    public List<(long User, bool IsAdmin)> SearchAdminFlags(long adminRole)
     {
-        const string sql = "DELETE FROM user_role WHERE \"user\" = @user";
+        const string query = """
+                             SELECT u."user",
+                                    BOOL_OR(ur."role" = @adminRole AND ur.active) AS isadmin
+                             FROM "user" u
+                             LEFT JOIN user_role ur ON ur."user" = u."user"
+                             GROUP BY u."user"
+                             """;
+
         using var con = Conn;
-        return con.Execute(sql, new { user }) > 0;
+        return con.Query<(long User, bool IsAdmin)>(query, new { adminRole }).ToList();
     }
 }

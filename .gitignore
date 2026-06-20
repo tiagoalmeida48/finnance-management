@@ -42,7 +42,12 @@ artifacts/
 *.sln.docstates
 
 # Claude Code files
-.claude/
+.claude/*
+!.claude/skills/
+!.claude/agents/
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/launch.json
 
 # OS generated files
 .DS_Store

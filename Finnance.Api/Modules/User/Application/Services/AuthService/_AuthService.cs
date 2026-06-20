@@ -2,23 +2,19 @@ using System.Security.Claims;
 using Finnance.Api.Modules.Common.Domain.Vo;
 using Finnance.Api.Modules.User.Application.Dto;
 using Finnance.Api.Modules.User.Application.Interfaces;
-using Finnance.Api.Modules.User.Domain.Entities;
-using Finnance.Api.Modules.User.Domain.Interfaces;
 using Finnance.Api.Shared;
 using Finnance.Api.Shared.Utils;
 
 namespace Finnance.Api.Modules.User.Application.Services;
 
-public class AuthService(IUserRepository userRepository, IUserRoleRepository userRoleRepository) : IAuthService
+public class AuthService(IUserRoleService userRoleSrv,
+                         IUserService userSrv) : IAuthService
 {
     public SessionVo Login(string email, string password)
     {
-        var user = userRepository.GetByEmail(email ?? string.Empty);
-        if (user == null)
-            throw new BusinessError(GeneralErrorNumber.USER_NOT_FOUND, FieldName.EMAIL);
-
-        if (!Argon2Helper.VerifyPassword(password ?? string.Empty, user.PasswordHash ?? string.Empty))
-            throw new BusinessError(GeneralErrorNumber.USER_INVALID_PASSWORD, FieldName.PASSWORD);
+        var user = userSrv.GetByEmail(email);
+        if (!Argon2Helper.VerifyPassword(password, user.PasswordHash))
+            throw new ApplicationException(Constants.ErrorMessage.UserInvalidPassword);
 
         var language = user.Locale.IsEmpty() ? Constants.LanguageDefault : user.Locale;
         var claims = new List<Claim>
@@ -45,11 +41,8 @@ public class AuthService(IUserRepository userRepository, IUserRoleRepository use
 
     public MeDto Me(long user)
     {
-        var entity = userRepository.GetByKey(new UserEntity { User = user });
-        if (entity == null)
-            throw new BusinessError(GeneralErrorNumber.USER_NOT_FOUND, FieldName.USER);
-
-        var roles = userRoleRepository.GetRoleCodesByUser(user).ToList();
+        var entity = userSrv.Get(user);
+        var roles = userRoleSrv.GetRoleIds(user);
         return new MeDto
         {
             User = entity.User,
@@ -59,7 +52,7 @@ public class AuthService(IUserRepository userRepository, IUserRoleRepository use
             Currency = entity.Currency,
             Locale = entity.Locale,
             Roles = roles,
-            IsAdmin = roles.Contains(Constants.RoleCode.ADMIN)
+            IsAdmin = roles.Contains(Constants.RoleId.ADMIN)
         };
     }
 }

@@ -2,16 +2,77 @@ using Finnance.Api.Modules.Common.Application.Services;
 using Finnance.Api.Modules.User.Application.Interfaces;
 using Finnance.Api.Modules.User.Domain.Entities;
 using Finnance.Api.Modules.User.Domain.Interfaces;
+using Finnance.Api.Shared;
+using Finnance.Api.Shared.Utils;
 
 namespace Finnance.Api.Modules.User.Application.Services;
 
-public partial class UserService(
-    IUserRepository userRepository,
-    IRoleRepository roleRepository,
-    IUserRoleRepository userRoleRepository)
-    : BaseService<UserEntity>(userRepository), IUserService
+public partial class UserService(IUserRepository userRepository,
+                                 IUserRoleService userRoleService) : BaseService<UserEntity>(userRepository), IUserService
 {
-    private readonly IUserRepository _userRepository = userRepository;
-    private readonly IRoleRepository _roleRepository = roleRepository;
-    private readonly IUserRoleRepository _userRoleRepository = userRoleRepository;
+    public long CreateUser(UserEntity entity, string rawPassword, bool isAdmin)
+    {
+        entity.ValidateCreate();
+        UserEntity.ValidatePassword(rawPassword);
+        ValidateEmailUnique(entity.Email, 0);
+
+        entity.PasswordHash = Argon2Helper.GenerateHashPassword(rawPassword);
+
+        using var tran = GetTransaction();
+        var userId = userRepository.Create(entity);
+        userRoleService.AssignRole(userId, isAdmin ? Constants.RoleId.ADMIN : Constants.RoleId.USER);
+        tran.Complete();
+        return userId;
+    }
+
+    public bool UpdateUser(UserEntity entity, bool isAdmin)
+    {
+        entity.ValidateUpdate();
+        ValidateEmailUnique(entity.Email, entity.User);
+
+        var current = Get(entity.User);
+        current.Email = entity.Email;
+        current.FullName = entity.FullName;
+
+        using var tran = GetTransaction();
+        userRepository.Update(current);
+        userRoleService.SyncAdminRole(entity.User, isAdmin);
+        tran.Complete();
+        
+        return true;
+    }
+
+    public bool UpdateUserPassword(long user, string rawPassword)
+    {
+        UserEntity.ValidatePassword(rawPassword);
+
+        var current = Get(user);
+        current.PasswordHash = Argon2Helper.GenerateHashPassword(rawPassword);
+
+        using var tran = GetTransaction();
+        userRepository.Update(current);
+        tran.Complete();
+        
+        return true;
+    }
+
+    public bool DeleteUser(long user, long currentUser)
+    {
+        if (user == currentUser)
+            throw new ApplicationException(Constants.ErrorMessage.CannotDeleteSelf);
+
+        var current = Get(user);
+
+        using var tran = GetTransaction();
+        userRoleService.DeleteByUser(user);
+        userRepository.Delete(current);
+        tran.Complete();
+        
+        return true;
+    }
+
+    public void EnsureAdmin(long currentUser)
+    {
+        userRoleService.EnsureAdmin(currentUser);
+    }
 }

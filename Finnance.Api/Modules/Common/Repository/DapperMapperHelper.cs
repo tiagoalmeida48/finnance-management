@@ -10,9 +10,6 @@ public static class TypeMapper
 
     public static void Initialize(string[] layerSuffix, string[] excludes)
     {
-        // Projeto consolidado: os models vivem no assembly unico em execucao,
-        // sob Finnance.Api.Modules.<Feature>.Repository.Models. Casamos o prefixo
-        // de modulos com o sufixo da camada de models para varrer todas as features.
         var assembly = Assembly.GetExecutingAssembly();
 
         var classes = from type in assembly.GetExportedTypes()
@@ -61,9 +58,6 @@ public class FallBackTypeMapper(IEnumerable<SqlMapper.ITypeMap> mappers) : SqlMa
             }
             catch (NotImplementedException)
             {
-                // the CustomPropertyTypeMap only supports a no-args
-                // constructor and throws a not implemented exception.
-                // to work around that, catch and ignore.
             }
         }
         return null;
@@ -89,9 +83,6 @@ public class FallBackTypeMapper(IEnumerable<SqlMapper.ITypeMap> mappers) : SqlMa
             }
             catch (NotImplementedException)
             {
-                // the CustomPropertyTypeMap only supports a no-args
-                // constructor and throws a not implemented exception.
-                // to work around that, catch and ignore.
             }
         }
         return null;
@@ -110,9 +101,6 @@ public class FallBackTypeMapper(IEnumerable<SqlMapper.ITypeMap> mappers) : SqlMa
             }
             catch (NotImplementedException)
             {
-                // the CustomPropertyTypeMap only supports a no-args
-                // constructor and throws a not implemented exception.
-                // to work around that, catch and ignore.
             }
         }
         return null;

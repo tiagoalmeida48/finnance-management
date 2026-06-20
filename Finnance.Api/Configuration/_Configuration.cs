@@ -18,7 +18,6 @@ public static partial class Configuration
     {
         JsonConvert.DefaultSettings = () => Extensions.JsonStt;
 
-        // Projeto consolidado: models sob Finnance.Api.Modules.<Feature>.Repository.Models.
         TypeMapper.Initialize([".Repository.Models"], []);
 
         var strCon = configuration.GetConnectionString("DefaultConnection");
@@ -46,8 +45,6 @@ public static partial class Configuration
                 if (!ctx.Request.Path.StartsWithSegments("/api"))
                     return RateLimitPartition.GetNoLimiter("bypass");
 
-                // Stub: ISecurityPolicyConfigRepository do template foi removido na consolidacao.
-                // Limites padrao ate o modulo de seguranca ser reimplementado em Finnance.Api/Modules.
                 return RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.ToString() ?? "anon",
                                                                 _ => new FixedWindowRateLimiterOptions
                                                                 {
@@ -97,7 +94,6 @@ public class SlugifyParameterTransformer : IOutboundParameterTransformer
 {
     public string TransformOutbound(object value)
     {
-        // Slugify value
         return value == null ? null : Regex.Replace(value.ToString() ?? string.Empty, "([a-z])([A-Z])", "$1-$2").ToLower();
     }
 

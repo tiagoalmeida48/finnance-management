@@ -6,8 +6,13 @@ namespace Finnance.Api.Modules.User.Repository.Models;
 [Table("\"role\"")]
 public class RoleMod : BaseModel
 {
-    [Key][Column("\"role\"")] public long Role { get; set; }
-    [Column("code")] public string Code { get; set; }
-    [Column("name")] public string Name { get; set; }
-    [Column("active")] public bool Active { get; set; }
+    [Key]
+    [Column("\"role\"")]
+    public long Role { get; set; }
+
+    [Column("name")]
+    public string Name { get; set; }
+
+    [Column("active")]
+    public bool Active { get; set; }
 }

@@ -5,5 +5,8 @@ namespace Finnance.Api.Modules.User.Domain.Interfaces;
 
 public interface IRoleRepository : IBaseRepository<RoleEntity>
 {
-    RoleEntity GetByCode(string code);
+    List<RoleEntity> Search(long role = 0,
+                            string name = null,
+                            bool active = false,
+                            int quantity = 0);
 }

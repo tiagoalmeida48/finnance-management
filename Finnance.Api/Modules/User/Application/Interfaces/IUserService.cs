@@ -6,6 +6,8 @@ namespace Finnance.Api.Modules.User.Application.Interfaces;
 
 public interface IUserService : IBaseService<UserEntity>
 {
+    UserEntity Get(long user);
+    UserEntity GetByEmail(string email);
     long CreateUser(UserEntity entity, string rawPassword, bool isAdmin);
     bool UpdateUser(UserEntity entity, bool isAdmin);
     bool UpdateUserPassword(long user, string rawPassword);

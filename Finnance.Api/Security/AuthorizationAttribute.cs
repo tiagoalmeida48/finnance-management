@@ -1,24 +1,31 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Finnance.Api.Modules.User.Application.Interfaces;
 using Finnance.Api.Shared;
 using Finnance.Api.Shared.Utils;
-using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 
 namespace Finnance.Api.Security;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class AuthorizationAttribute(string authObject, string activity) : Attribute, IAuthorizationFilter
+public class AuthorizationAttribute(params long[] roles) : Attribute, IAuthorizationFilter
 {
     public void OnAuthorization(AuthorizationFilterContext context)
     {
-        // Stub: o servico de autenticacao do template foi removido na consolidacao.
-        // A autorizacao por modulo sera reimplementada em Finnance.Api/Modules.
-        _ = authObject;
-        _ = activity;
         var allowAnonymous = (context.ActionDescriptor as ControllerActionDescriptor).MethodInfo.GetCustomAttributes<AllowAnonymousAttribute>().Any();
         if (allowAnonymous) return;
+
+        var (user, _, _) = context.HttpContext.GetUserLogged();
+        if (user <= 0)
+            throw new ApplicationException(Constants.ErrorMessage.ErrorAccess);
+
+        if (roles.IsEmpty()) return;
+
+        var userRoleService = context.HttpContext.RequestServices.GetService(typeof(IUserRoleService)) as IUserRoleService;
+        var userRoles = userRoleService.GetRoleIds(user);
+        if (!roles.Any(userRoles.Contains))
+            throw new ApplicationException(Constants.ErrorMessage.ErrorAuthorization);
     }
 }
 
@@ -45,7 +52,6 @@ public static class AccessExt
 
     public static (long user, string language, string timeZone) DecodeJwt(this HttpContext ctx, string token)
     {
-        // Valida assinatura/expiracao antes de extrair claims.
         var principal = JwtHelper.ValidateToken(token, Finnance.Api.Shared.Utils.JwtConstants.SecretKey);
 
         var userClaim = long.Parse(principal.FindFirst(JwtHelper.NameIdentifier)?.Value ?? "0");

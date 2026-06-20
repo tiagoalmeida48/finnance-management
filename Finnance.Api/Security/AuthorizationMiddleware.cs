@@ -22,8 +22,6 @@ public class AuthorizationMiddleware(RequestDelegate next)
 
     public static bool ValidateToken(HttpContext context, string path)
     {
-        // Stub: IAuthenticationService foi removido na consolidacao.
-        // A validacao real sera reimplementada em Finnance.Api/Modules.
         var token = context.Request.Cookies[Constants.CookieName];
         if (token.IsEmpty() && context.Request.Headers.TryGetValue("Authorization", out var value))
         {

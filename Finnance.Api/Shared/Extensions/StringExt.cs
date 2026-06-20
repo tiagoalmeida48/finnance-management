@@ -175,11 +175,11 @@ public static partial class Extensions
     {
         return intervalMin switch
         {
-            1 => "* * * * *", // A cada minuto
-            < 60 when 60 % intervalMin == 0 => $"*/{intervalMin} * * * *", // A cada N minutos, onde N divide 60 igualmente
-            60 => "0 * * * *", // A cada hora
-            > 60 and < 1440 when intervalMin % 60 == 0 => $"0 */{intervalMin / 60} * * *", // A cada N horas
-            1440 => "0 0 * * *", // A cada dia meia noite
+            1 => "* * * * *",
+            < 60 when 60 % intervalMin == 0 => $"*/{intervalMin} * * * *",
+            60 => "0 * * * *",
+            > 60 and < 1440 when intervalMin % 60 == 0 => $"0 */{intervalMin / 60} * * *",
+            1440 => "0 0 * * *",
             _ => null
         };
     }

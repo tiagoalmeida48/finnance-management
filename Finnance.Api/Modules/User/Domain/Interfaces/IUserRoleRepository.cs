@@ -5,7 +5,12 @@ namespace Finnance.Api.Modules.User.Domain.Interfaces;
 
 public interface IUserRoleRepository : IBaseRepository<UserRoleEntity>
 {
-    IEnumerable<string> GetRoleCodesByUser(long user);
-    bool ExistUserRole(long user, long role);
-    bool DeleteByUser(long user);
+    List<UserRoleEntity> Search(long user = 0,
+                                long role = 0,
+                                bool active = false,
+                                int quantity = 0);
+
+    List<long> SearchRoleIds(long user);
+
+    List<(long User, bool IsAdmin)> SearchAdminFlags(long adminRole);
 }

@@ -60,7 +60,8 @@ public partial class BaseRepository<TEntity, TModel>
 
     public IEnumerable<(string table, long quant)> GetReference(TModel model)
     {
-        var tName = GetTableName<TModel>().Split('.')[1];
+        var fullName = GetTableName<TModel>();
+        var tName = (fullName.Contains('.') ? fullName.Split('.')[^1] : fullName).Trim('"');
 
         const string query = """
                              SELECT tc.table_name AS reference_table,
@@ -83,7 +84,7 @@ public partial class BaseRepository<TEntity, TModel>
         var sbCheckRef = new StringBuilder();
         var sbColsRef = new StringBuilder();
 
-        var schema = Schema.Split('.')[0];
+        var schema = Schema.IsEmpty() ? "public" : Schema.Replace(".", string.Empty).Trim('"');
         var resGeneral = con.Query<(string table, string field, string refField)>(query, new { schema, tName });
         if (resGeneral.IsEmpty()) return null;
 
@@ -103,15 +104,15 @@ public partial class BaseRepository<TEntity, TModel>
                 var col = columnsByTable[y];
 
                 var currentValue = model.GetValueFromField(col.refField);
-                var nameParam = $"@{col.refField}{i}{y}";
+                var nameParam = $"@p{col.refField}{i}{y}";
 
-                sbColsRef.Append($"{col.refField} = {nameParam} AND ");
+                sbColsRef.Append($"\"{col.refField}\" = {nameParam} AND ");
                 dyParams.Add(nameParam, currentValue);
             }
 
             sbColsRef.Remove(sbColsRef.Length - 5, 4);
 
-            var sel = $"SELECT '{table}' TABELA, COUNT(1) QUANT FROM {Schema}{table} WHERE {sbColsRef} UNION ALL ";
+            var sel = $"SELECT '{table}' TABELA, COUNT(1) QUANT FROM {Schema}\"{table}\" WHERE {sbColsRef} UNION ALL ";
             sbCheckRef.Append(sel);
         }
 
@@ -134,7 +135,7 @@ public partial class BaseRepository<TEntity, TModel>
 
             var value = prop.GetValue(model)?.ToString();
             if (value != null && value.ContainsSpecialCharacters())
-                throw new BusinessError(GeneralErrorNumber.CANNOT_SPECIAL_CHARACTER_IN_FIELD);
+                throw new ApplicationException(Constants.ErrorMessage.CannotSpecialCharacterInField);
         }
     }
 
