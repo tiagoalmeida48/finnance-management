@@ -20,5 +20,31 @@ public static partial class Constants
         public const string ErrorNotExpected = "Ocorreu um erro inesperado. Tente novamente mais tarde.";
         public const string DatabaseAccessError = "Não foi possível acessar o banco de dados. Tente novamente mais tarde.";
         public const string ErrorLoginErp = "Falha na autenticação com o serviço externo.";
+        public const string InvalidAmount = "O valor deve ser maior que zero.";
+        public const string InvalidTransactionType = "Tipo de transação inválido.";
+        public const string InvalidPaymentMethod = "Forma de pagamento inválida.";
+        public const string AccountRequiredForCard = "Informe a conta vinculada ao cartão.";
+        public const string ToAccountOnlyForTransfer = "Conta de destino só é permitida em transferências.";
+        public const string ToAccountRequiredForTransfer = "Informe a conta de destino da transferência.";
+        public const string InvalidInstallment = "Número da parcela inválido.";
+        public const string AccountNotFound = "Conta não encontrada.";
+        public const string CategoryNotFound = "Categoria não encontrada.";
+        public const string CardNotFound = "Cartão não encontrado.";
+        public const string InvoiceNotFound = "Fatura não encontrada.";
+        public const string TransactionNotFound = "Transação não encontrada.";
+        public const string StatementCycleNotFound = "Vigência do cartão não encontrada.";
+        public const string NoOpenStatementCycle = "Não existe vigência aberta para este cartão.";
+        public const string CycleNoRegistered = "Não existe vigência cadastrada para este cartão.";
+        public const string CycleStartBeforeFirst = "A data de início não pode ser anterior à primeira vigência.";
+        public const string CycleStartNotContained = "Não existe vigência que contenha a data informada.";
+        public const string CycleStartMustBeGreater = "A data de início deve ser maior que o início da vigência atual.";
+        public const string CycleCannotSplit = "Não foi possível dividir a vigência atual com a data informada.";
+        public const string SalaryPeriodOverlap = "Já existe um período de salário que se sobrepõe ao informado.";
+        public const string SalaryOpenNotFound = "Não existe período de salário em aberto.";
+        public const string InvalidGroupType = "Tipo de grupo inválido.";
+        public const string TransactionNotInstallment = "A transação não pertence a um grupo de parcelamento.";
+        public const string CategoryAlreadyExists = "Já existe uma categoria com este nome para o tipo informado.";
+        public const string AccessDeniedResource = "Você não tem acesso a este recurso.";
+        public const string SystemConfigNotFound = "Configuração do sistema não encontrada.";
     }
 }
