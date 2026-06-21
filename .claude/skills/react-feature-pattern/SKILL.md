@@ -5,6 +5,8 @@ description: Enforces the project's specific React patterns for features, focusi
 
 # React Feature Pattern
 
+> **Atualização (verdade do código atual):** o `Finnance.Api/Frontend` usa **folder-by-type** (`src/features/<feat>/{components,hooks,services,types,index.ts}` + `src/pages/<feat>/<Feature>Page.tsx`), consome a **API .NET** via `@/config/http` `apiClient` (não Supabase), e usa **strings pt-BR inline** (não `@/shared/i18n/messages`). As seções abaixo que citam `pages+shared`, `messages` i18n e `useApplyElementStyles` descrevem o frontend de **referência** (`docs/Referencia`), não o destino. Onde houver conflito, **o código atual do destino prevalece**. Para portar features da Referencia, use a skill `frontend-reference-port`. O princípio inviolável que continua valendo: **separação estrita de lógica** (hook `use*PageLogic`) + **zero comentários** + **máx 300 linhas**.
+
 This skill enforces the `finnance-management` project's specific architectural and coding patterns. It facilitates the creation of consistent, maintainable, and clean React features.
 
 ## When to Use This Skill

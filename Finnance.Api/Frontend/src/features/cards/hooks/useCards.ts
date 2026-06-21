@@ -14,6 +14,8 @@ export const cardsKeys = {
   all: ['cards'] as const,
   list: ['cards', 'list'] as const,
   allStats: ['cards', 'all-stats'] as const,
+  card: (card: number) => ['cards', 'card', card] as const,
+  stats: (card: number) => ['cards', 'stats', card] as const,
   invoices: (card: number, year: number) => ['cards', 'invoices', card, year] as const,
   bankAccounts: ['cards', 'bank-accounts'] as const,
 };
@@ -25,10 +27,26 @@ export function useCards() {
   });
 }
 
+export function useCard(card: number | null) {
+  return useQuery({
+    queryKey: cardsKeys.card(card ?? 0),
+    queryFn: () => cardsService.get(card as number),
+    enabled: card !== null,
+  });
+}
+
 export function useCardsStats() {
   return useQuery({
     queryKey: cardsKeys.allStats,
     queryFn: cardsService.allStats,
+  });
+}
+
+export function useCardStats(card: number | null) {
+  return useQuery({
+    queryKey: cardsKeys.stats(card ?? 0),
+    queryFn: () => cardsService.stats(card as number),
+    enabled: card !== null,
   });
 }
 

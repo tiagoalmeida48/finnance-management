@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Spinner } from '@/shared/components/ui';
 import { ProtectedRoute } from './ProtectedRoute';
+import { AdminRoute } from './AdminRoute';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { MainLayout } from '@/layouts/MainLayout';
 
@@ -22,6 +23,18 @@ const CategoriesPage = lazy(() =>
 );
 const SalaryPage = lazy(() =>
   import('@/pages/salary/SalaryPage').then((m) => ({ default: m.SalaryPage })),
+);
+const CreditCardDetailsPage = lazy(() =>
+  import('@/pages/cards/CreditCardDetailsPage').then((m) => ({ default: m.CreditCardDetailsPage })),
+);
+const TrackingPage = lazy(() =>
+  import('@/pages/tracking/TrackingPage').then((m) => ({ default: m.TrackingPage })),
+);
+const ProfilePage = lazy(() =>
+  import('@/pages/profile/ProfilePage').then((m) => ({ default: m.ProfilePage })),
+);
+const UsersPage = lazy(() =>
+  import('@/pages/users/UsersPage').then((m) => ({ default: m.UsersPage })),
 );
 
 const SuspenseFallback = () => (
@@ -49,8 +62,19 @@ export function AppRouter() {
         <Route path="/transactions" element={<Lazy><TransactionsPage /></Lazy>} />
         <Route path="/accounts" element={<Lazy><AccountsPage /></Lazy>} />
         <Route path="/cards" element={<Lazy><CardsPage /></Lazy>} />
+        <Route path="/cards/:id" element={<Lazy><CreditCardDetailsPage /></Lazy>} />
         <Route path="/categories" element={<Lazy><CategoriesPage /></Lazy>} />
         <Route path="/salary" element={<Lazy><SalaryPage /></Lazy>} />
+        <Route path="/tracking" element={<Lazy><TrackingPage /></Lazy>} />
+        <Route path="/profile" element={<Lazy><ProfilePage /></Lazy>} />
+        <Route
+          path="/users"
+          element={
+            <AdminRoute>
+              <Lazy><UsersPage /></Lazy>
+            </AdminRoute>
+          }
+        />
       </Route>
     </Routes>
   );

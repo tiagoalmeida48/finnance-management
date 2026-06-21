@@ -1,0 +1,142 @@
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
+} from '@/shared/components/ui';
+import { formatCurrency } from '@/shared/utils';
+import type { BankAccount } from '@/features/accounts';
+import type { Category } from '@/features/categories';
+
+interface SalaryLaunchDialogProps {
+  open: boolean;
+  isSaving: boolean;
+  description: string;
+  accountId: string;
+  categoryId: string;
+  paymentDate: string;
+  netPay: number;
+  accounts: BankAccount[];
+  incomeCategories: Category[];
+  onClose: () => void;
+  onConfirm: () => void;
+  onDescriptionChange: (value: string) => void;
+  onAccountChange: (value: string) => void;
+  onCategoryChange: (value: string) => void;
+  onPaymentDateChange: (value: string) => void;
+}
+
+const selectClass =
+  'w-full rounded-md border border-border bg-surface px-3 py-2 text-text transition-colors focus-visible:border-primary disabled:opacity-60';
+
+export function SalaryLaunchDialog({
+  open,
+  isSaving,
+  description,
+  accountId,
+  categoryId,
+  paymentDate,
+  netPay,
+  accounts,
+  incomeCategories,
+  onClose,
+  onConfirm,
+  onDescriptionChange,
+  onAccountChange,
+  onCategoryChange,
+  onPaymentDateChange,
+}: SalaryLaunchDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Lançar salário</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="salary-launch-description">Descrição</Label>
+            <Input
+              id="salary-launch-description"
+              className="w-full"
+              value={description}
+              onChange={(event) => onDescriptionChange(event.target.value)}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="salary-launch-account">Conta</Label>
+              <select
+                id="salary-launch-account"
+                className={selectClass}
+                value={accountId}
+                onChange={(event) => onAccountChange(event.target.value)}
+              >
+                {accounts.map((account) => (
+                  <option key={account.bankAccount} value={account.bankAccount}>
+                    {account.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label htmlFor="salary-launch-date">Data</Label>
+              <Input
+                id="salary-launch-date"
+                type="date"
+                className="w-full"
+                value={paymentDate}
+                onChange={(event) => onPaymentDateChange(event.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="salary-launch-category">Categoria</Label>
+              <select
+                id="salary-launch-category"
+                className={selectClass}
+                value={categoryId}
+                onChange={(event) => onCategoryChange(event.target.value)}
+              >
+                {incomeCategories.map((category) => (
+                  <option key={category.category} value={category.category}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label htmlFor="salary-launch-amount">Valor líquido</Label>
+              <Input
+                id="salary-launch-amount"
+                className="w-full"
+                value={formatCurrency(netPay)}
+                disabled
+              />
+            </div>
+          </div>
+
+          <p className="text-xs text-text-muted">
+            A transação será criada como receita pendente, vinculada à conta e categoria selecionadas.
+          </p>
+        </div>
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose} disabled={isSaving}>
+            Cancelar
+          </Button>
+          <Button onClick={onConfirm} loading={isSaving}>
+            Lançar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

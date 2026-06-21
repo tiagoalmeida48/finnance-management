@@ -1,15 +1,29 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Wallet, CreditCard, TrendingUp, Tags, Receipt, LogOut } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Wallet,
+  CreditCard,
+  TrendingUp,
+  Tags,
+  Receipt,
+  CalendarCheck,
+  UserRound,
+  Users,
+  LogOut,
+} from 'lucide-react';
 import { useAuth } from '@/features/auth';
 import { cn } from '@/shared/utils';
 
 const navigation = [
-  { label: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { label: 'Transações', path: '/transactions', icon: Wallet },
-  { label: 'Contas', path: '/accounts', icon: TrendingUp },
-  { label: 'Cartões', path: '/cards', icon: CreditCard },
-  { label: 'Categorias', path: '/categories', icon: Tags },
-  { label: 'Salário', path: '/salary', icon: Receipt },
+  { label: 'Dashboard', path: '/', icon: LayoutDashboard, adminOnly: false },
+  { label: 'Transações', path: '/transactions', icon: Wallet, adminOnly: false },
+  { label: 'Contas', path: '/accounts', icon: TrendingUp, adminOnly: false },
+  { label: 'Cartões', path: '/cards', icon: CreditCard, adminOnly: false },
+  { label: 'Categorias', path: '/categories', icon: Tags, adminOnly: false },
+  { label: 'Salário', path: '/salary', icon: Receipt, adminOnly: false },
+  { label: 'Acompanhamento', path: '/tracking', icon: CalendarCheck, adminOnly: false },
+  { label: 'Perfil', path: '/profile', icon: UserRound, adminOnly: false },
+  { label: 'Usuários', path: '/users', icon: Users, adminOnly: true },
 ];
 
 export function Sidebar() {
@@ -23,7 +37,9 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto p-4 space-y-2">
-        {navigation.map((item) => {
+        {navigation
+          .filter((item) => !item.adminOnly || user?.isAdmin)
+          .map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
           return (

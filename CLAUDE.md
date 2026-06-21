@@ -16,16 +16,18 @@ finnance-management/
 │   ├── Shared/                   # Cross-cutting: BaseClass, Extensions, Utils (fora dos módulos)
 │   ├── Controllers/  Security/  Configuration/
 │   ├── wwwroot/                  # Build do frontend é servido daqui (SPA fallback)
-│   └── Frontend/                 # SPA React 19 + Supabase — a aplicação que está em produção hoje
+│   └── Frontend/                 # SPA React 19 sobre a API .NET — a aplicação em produção hoje
 │       └── CLAUDE.md             # ← guia COMPLETO do frontend; leia-o ao mexer em Frontend/
-├── docs/                         # PRD, arquitetura, specs de migração e schema do banco
+├── docs/
+│   ├── Referencia/               # frontend LEGADO (React + Supabase) — fonte de UX p/ migração, não buildar
+│   └── ...                       # PRD, arquitetura, specs (00–10), schema, MIGRACAO_FRONTEND.md
 ├── Finnance.Api.slnx             # Solution (referencia só Finnance.Api.csproj)
 └── README.md                     # Descreve o template .NET genérico, NÃO este app (ver §6)
 ```
 
-**A aplicação real, hoje, é o frontend React em `Finnance.Api/Frontend/`** (React 19 + Supabase: Auth, PostgreSQL, RLS, RPCs, Edge Functions). Para qualquer trabalho ali, o `Finnance.Api/Frontend/CLAUDE.md` é a fonte de verdade — não duplico o conteúdo dele aqui. Comandos de frontend (`pnpm dev/build/lint/check:ci`, sempre **pnpm**) e regras de banco Supabase estão lá.
+**A aplicação real, hoje, é o frontend React em `Finnance.Api/Frontend/`**, agora sobre a **API .NET** local (axios + Bearer/localStorage; folder-by-type `features/<feat>/`). O `Finnance.Api/Frontend/CLAUDE.md` é a fonte de verdade — não duplico aqui. Comandos (`pnpm dev/build/lint/check:ci`, sempre **pnpm**) estão lá. O frontend **Supabase** original está congelado em `docs/Referencia/` e serve só como fonte de funcionalidade/UX para a migração (ver skill `frontend-reference-port` e `docs/MIGRACAO_FRONTEND.md`).
 
-**O backend `Finnance.Api/` é uma migração em andamento**: substituir o Supabase por uma API .NET Core local. Está em estágio de **scaffolding** — a base arquitetural existe (módulo `Common` + `Shared`), mas nenhuma feature de negócio (transações, contas, cartões…) foi escrita ainda. As regras de negócio a portar estão verificadas contra o banco real em `docs/specs/` (specs 00–10). Consulte-as antes de implementar qualquer algoritmo de domínio (transação→fatura, recálculo de fatura, sync de saldo, folha/salário).
+**O backend `Finnance.Api/` substitui o Supabase por uma API .NET Core local** e já saiu do scaffolding: além de `Common`/`Shared`, há módulos de negócio reais em `Modules/` (`User/auth`, `BankAccount`, `Category`/`CategoryType`, `Transaction`/`TransactionType`, `CreditCard`, `PaymentMethod`, `AccountType`, `InvoiceStatus`, `AuditLog`…), expostos no Swagger. As regras de negócio a portar estão verificadas contra o banco real em `docs/specs/` (specs 00–10) — consulte-as antes de implementar qualquer algoritmo de domínio (transação→fatura, recálculo de fatura, sync de saldo, folha/salário).
 
 ---
 
