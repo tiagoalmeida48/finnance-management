@@ -1,91 +1,19 @@
 <!doctype html>
 <html lang="pt-BR">
-
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/finnance-icon.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gestão Financeira</title>
-  <meta name="description" content="Sistema de gestão financeira pessoal — controle de contas, cartões, transações e orçamento.">
-  <meta name="theme-color" content="#090b12">
-  <meta property="og:title" content="Gestão Financeira">
-  <meta property="og:description" content="Controle suas finanças pessoais de forma simples e eficiente.">
-  <meta property="og:type" content="website">
-  <style>
-    html,
-    body,
-    #root {
-      height: 100%;
-    }
-
-    body {
-      margin: 0;
-      background: #090b12;
-      color: #f5f7ff;
-      font-family: "DM Sans", sans-serif;
-    }
-
-    .boot-splash {
-      min-height: 100%;
-      display: grid;
-      place-items: center;
-      background:
-        radial-gradient(circle at 18% 12%, rgba(201, 168, 76, 0.12), transparent 38%),
-        radial-gradient(circle at 78% 82%, rgba(59, 130, 246, 0.09), transparent 32%),
-        #090b12;
-    }
-
-    .boot-splash__inner {
-      text-align: center;
-      display: grid;
-      gap: 10px;
-      justify-items: center;
-    }
-
-    .boot-splash__spinner {
-      width: 28px;
-      height: 28px;
-      border: 3px solid rgba(255, 255, 255, 0.18);
-      border-top-color: #d4af37;
-      border-radius: 50%;
-      animation: boot-spin 0.9s linear infinite;
-    }
-
-    .boot-splash__title {
-      font-size: 14px;
-      opacity: 0.9;
-      letter-spacing: 0.08em;
-    }
-
-    @keyframes boot-spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-  </style>
-
-  <!-- Google Fonts: Plus Jakarta Sans + DM Sans -->
-  <link rel="dns-prefetch" href="%VITE_SUPABASE_URL%">
-  <link rel="preconnect" href="%VITE_SUPABASE_URL%" crossorigin>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap"
-    rel="stylesheet"
-    media="print"
-    onload="this.media='all'">
-</head>
-
-<body>
-  <div id="root">
-    <div class="boot-splash">
-      <div class="boot-splash__inner">
-        <div class="boot-splash__spinner" aria-hidden="true"></div>
-        <div class="boot-splash__title">Carregando...</div>
-      </div>
-    </div>
-  </div>
-  <script type="module" src="/src/main.tsx"></script>
-</body>
-
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/finnance-icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Finnance — Gestão Financeira</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

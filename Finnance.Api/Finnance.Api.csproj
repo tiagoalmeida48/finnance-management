@@ -72,13 +72,4 @@
       <Folder Include="Modules\RecurringGroup\Application\Interfaces\" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Compile Remove="Modules\BankAccount\Repository\Repositories\BankAccountRepository.cs" />
-      <Compile Remove="Modules\Category\Application\Dto\CategoryCreateDto.cs" />
-      <Compile Remove="Modules\Category\Application\Dto\CategoryDisplayDto.cs" />
-      <Compile Remove="Modules\RecurringGroup\Application\Dto\RecurringGroupCreateDto.cs" />
-      <Compile Remove="Modules\RecurringGroup\Application\Services\RecurringGroupService\RecurringGroupGetService.cs" />
-      <Compile Remove="Modules\Transaction\Application\Dto\BatchPayDto.cs" />
-    </ItemGroup>
-
 </Project>

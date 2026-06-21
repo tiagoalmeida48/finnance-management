@@ -1,34 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router-dom';
-import './index.css';
-import { AuthProvider } from './lib/supabase/auth-context';
-import { toastBridge } from './shared/utils/toastBridge';
-import App from './App';
+import { App } from './App';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 30_000,
-    },
-    mutations: {
-      onError: (error) => {
-        const message = error instanceof Error ? error.message : 'Ocorreu um erro inesperado.';
-        toastBridge.error(message);
-      },
-    },
-  },
-});
+const root = document.getElementById('root');
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+if (!root) {
+  throw new Error('Root element not found');
+}
+
+ReactDOM.createRoot(root).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </AuthProvider>
-    </QueryClientProvider>
+    <App />
   </React.StrictMode>,
 );

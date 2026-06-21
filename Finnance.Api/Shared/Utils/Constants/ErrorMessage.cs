@@ -22,7 +22,9 @@ public static partial class Constants
         public const string ErrorLoginErp = "Falha na autenticação com o serviço externo.";
         public const string InvalidAmount = "O valor deve ser maior que zero.";
         public const string InvalidTransactionType = "Tipo de transação inválido.";
+        public const string TransactionTypeNotFound = "Tipo de transação não encontrado.";
         public const string InvalidPaymentMethod = "Forma de pagamento inválida.";
+        public const string PaymentMethodNotFound = "Forma de pagamento não encontrada.";
         public const string AccountRequiredForCard = "Informe a conta vinculada ao cartão.";
         public const string ToAccountOnlyForTransfer = "Conta de destino só é permitida em transferências.";
         public const string ToAccountRequiredForTransfer = "Informe a conta de destino da transferência.";

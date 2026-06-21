@@ -1,43 +1,14 @@
-import { useDashboardPageLogic } from '@/pages/dashboard/hooks/useDashboardPageLogic';
-import { DashboardSummary } from './components/DashboardSummary';
-import { DashboardCharts } from './components/DashboardCharts';
-import { DashboardRecentTransactions } from './components/DashboardRecentTransactions';
-import { DashboardFilters } from './components/DashboardFilters';
-import { Container } from '@/shared/components/layout/Container';
-import { Section } from '@/shared/components/layout/Section';
-import { messages } from '@/shared/i18n/messages';
-import { PageHeader } from '@/shared/components/composite/PageHeader';
+import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/ui';
 
 export function DashboardPage() {
-  const pageMessages = messages.dashboard.page;
-  const {
-    selectedYear,
-    setSelectedYear,
-    stats,
-    chartData,
-    categories,
-    recentTransactions,
-    isLoading,
-  } = useDashboardPageLogic();
-
   return (
-    <Section>
-      <Container>
-        <PageHeader
-          title={pageMessages.title}
-          subtitle={pageMessages.subtitle}
-          actions={
-            <DashboardFilters selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
-          }
-          className="w-full flex-col items-start md:flex-row md:items-center"
-        />
-
-        <DashboardSummary stats={stats} isLoading={isLoading} />
-
-        <DashboardCharts chartData={chartData} categories={categories} />
-
-        <DashboardRecentTransactions transactions={recentTransactions} isLoading={isLoading} />
-      </Container>
-    </Section>
+    <Card>
+      <CardHeader>
+        <CardTitle>Dashboard</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-text-muted">Em construção</p>
+      </CardContent>
+    </Card>
   );
 }

@@ -8,6 +8,8 @@ public static partial class Configuration
     {
         app.UseExceptionHandler("/errors");
 
+        configuration.SeedConfiguration();
+
         app.UseRouting();
 
         app.UseCors(options =>
