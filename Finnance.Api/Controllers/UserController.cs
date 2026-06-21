@@ -9,14 +9,14 @@ namespace Finnance.Api.Controllers;
 
 public class UserController(IUserService userService) : ControllerBase
 {
-    [Authorization(Constants.RoleId.ADMIN)]
+    [Authorization(admin: true)]
     [HttpGet]
     public ResultApi<List<UserLightDto>> List()
     {
         return new ResultApi<List<UserLightDto>> { Result = userService.ListManaged() };
     }
 
-    [Authorization(Constants.RoleId.ADMIN)]
+    [Authorization(admin: true)]
     [HttpPost]
     public ResultApi<long> Create([FromBody] UserCreateDto dto)
     {
@@ -25,7 +25,7 @@ public class UserController(IUserService userService) : ControllerBase
         return new ResultApi<long> { Result = id };
     }
 
-    [Authorization(Constants.RoleId.ADMIN)]
+    [Authorization(admin: true)]
     [HttpPut]
     public ResultApi<bool> Update([FromBody] UserUpdateDto dto)
     {
@@ -33,14 +33,14 @@ public class UserController(IUserService userService) : ControllerBase
         return new ResultApi<bool> { Result = userService.UpdateUser(entity, dto.IsAdmin) };
     }
 
-    [Authorization(Constants.RoleId.ADMIN)]
+    [Authorization(admin: true)]
     [HttpPut]
     public ResultApi<bool> UpdatePassword([FromBody] UserUpdatePasswordDto dto)
     {
         return new ResultApi<bool> { Result = userService.UpdateUserPassword(dto.User, dto.Password) };
     }
 
-    [Authorization(Constants.RoleId.ADMIN)]
+    [Authorization(admin: true)]
     [HttpDelete]
     public ResultApi<bool> Delete([FromBody] long user)
     {

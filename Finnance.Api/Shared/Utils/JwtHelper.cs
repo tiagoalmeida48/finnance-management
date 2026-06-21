@@ -10,6 +10,7 @@ public class JwtHelper
     public const string ClaimLang = "lang";
     public const string ClaimTimeZone = "utc";
     public const string ClaimMfa = "mfa";
+    public const string ClaimIsAdmin = "is_admin";
     public const string ClaimPlatform = "WEB";
 
     public static string GeraToken(List<Claim> claims, DateTime expiration, string key)
@@ -40,7 +41,7 @@ public class JwtHelper
             ValidateAudience = false
         };
 
-        var tokenHandler = new JwtSecurityTokenHandler();
+        var tokenHandler = new JwtSecurityTokenHandler { MapInboundClaims = false };
 
         try
         {

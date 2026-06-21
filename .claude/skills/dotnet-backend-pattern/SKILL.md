@@ -21,7 +21,7 @@ These override default behavior. Code that violates them is wrong, even if it co
 4. **Validation is 100% imperative** — in the Domain (`ValidateCreate`/`ValidateUpdate`/`ValidatePersistence` on the Entity) and in the Service (partial `ValidatePersistence.cs`). **No FluentValidation, no DataAnnotations.**
 5. **Never expose the Entity in the API.** Controllers receive/return DTOs; conversion always via `.MapTo<T>()`, never property-by-property.
 6. **DB Models have suffix `Mod`** and live in `Repository/Models/` of the feature module (namespace ending in `.Repository.Models`). The Entity (`...Entity`) never goes straight to Dapper.
-7. **Authorization** via `[Authorization(Constants.RoleId.ADMIN)]` (role id from RBAC), not `[Authorize]`. The attribute reads the user from the JWT, resolves `IUserRoleService`, and checks `user_role`.
+7. **Authorization** via `[Authorization(admin: true)]` (admin-only) or `[Authorization]` (authenticated only), not `[Authorize]`. The attribute reads the user and the `is_admin` claim from the JWT — there are **no** `role`/`user_role` tables and no `IUserRoleService`; admin is the boolean `is_admin` column on `user`.
 8. **Large services are `partial`**, split by responsibility (`_FooService.cs`, `FooGetService.cs`, `ValidatePersistence.cs`). Base-class files use the `_` prefix.
 9. **Zero comments.** No `//`, `/* */`, or XML doc anywhere. Remove any comment found while editing.
 10. **SQL is inline in the repositories** — `const string` for static queries, `StringBuilder` + `DynamicParameters` for dynamic. Never `.sql` files, never SQL outside a repository.
@@ -76,17 +76,17 @@ Implication: the interface must be named `I` + class name (`UserService` ↔ `IU
 Reference repository (dynamic Search):
 
 ```csharp
-public List<UserRoleEntity> Search(long user = 0, long role = 0, bool active = false, int quantity = 0)
+public List<UserEntity> Search(long user = 0, string email = null, bool active = false, int quantity = 0)
 {
     var sb = new StringBuilder();
     var param = new DynamicParameters();
-    sb.Append("SELECT * FROM user_role WHERE 1 = 1 ");
+    sb.Append("""SELECT * FROM "user" WHERE 1 = 1 """);
     if (user > 0) { param.Add("user", user); sb.Append("""AND "user" = @user """); }
-    if (role > 0) { param.Add("role", role); sb.Append("""AND "role" = @role """); }
+    if (email.IsNotEmpty()) { param.Add("email", email); sb.Append("AND LOWER(email) = LOWER(@email) "); }
     if (active) sb.Append("AND active = TRUE ");
     if (quantity > 0) { param.Add("quantity", quantity); sb.Append("LIMIT @quantity"); }
     using var con = Conn;
-    var model = con.Query<UserRoleMod>(sb.ToString(), param).ToList();
+    var model = con.Query<UserMod>(sb.ToString(), param).ToList();
     return MapToEntity(model);
 }
 ```
@@ -95,8 +95,9 @@ public List<UserRoleEntity> Search(long user = 0, long role = 0, bool active = f
 
 - Throw: `throw new ApplicationException(Constants.ErrorMessage.RegisterNotFound);`
 - New message: add `public const string X = "...";` to `Constants.ErrorMessage`, in pt-BR with full diacritics.
-- RBAC ids/codes are in `Shared/Utils/Constants/Authorization.cs`: `Constants.RoleId` (`ADMIN = 1`, `USER = 2`) and `Constants.RoleCode` (`"admin"`/`"user"`). The DDL has only `role` + `user_role` (no object/activity tables) — RBAC is role-based, not granular.
-- Protect an endpoint: `[Authorization(Constants.RoleId.ADMIN)]` on the action. Empty roles = authenticated-only. The attribute throws `ApplicationException(Constants.ErrorMessage.ErrorAuthorization)` on failure.
+- Authorization is a **boolean `is_admin`**, not table-based RBAC. The DDL has no `role`/`user_role` tables; `user` has an `is_admin bool NOT NULL DEFAULT false` column. There are no `Constants.RoleId`/`RoleCode` constants anymore.
+- `AuthService.Login` puts the `is_admin` claim (`JwtHelper.ClaimIsAdmin`) into the JWT. `AuthorizationAttribute(bool admin = false)` reads it via `HttpContext.IsAdminLogged()` — no DB lookup.
+- Protect an endpoint: `[Authorization(admin: true)]` for admin-only, `[Authorization]` for authenticated-only. The attribute throws `ApplicationException(Constants.ErrorMessage.ErrorAccess)` if not logged in, or `Constants.ErrorMessage.ErrorAuthorization` if logged in but not admin.
 
 ## Workflow: Add a Feature Module
 

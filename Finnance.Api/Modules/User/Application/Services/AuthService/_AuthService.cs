@@ -7,8 +7,7 @@ using Finnance.Api.Shared.Utils;
 
 namespace Finnance.Api.Modules.User.Application.Services;
 
-public class AuthService(IUserRoleService userRoleSrv,
-                         IUserService userSrv) : IAuthService
+public class AuthService(IUserService userSrv) : IAuthService
 {
     public SessionVo Login(string email, string password)
     {
@@ -22,6 +21,7 @@ public class AuthService(IUserRoleService userRoleSrv,
             new(JwtHelper.NameIdentifier, user.User.ToString()),
             new(JwtHelper.ClaimLang, language),
             new(JwtHelper.ClaimTimeZone, Constants.TimeZoneDefault),
+            new(JwtHelper.ClaimIsAdmin, user.IsAdmin.ToString()),
         };
 
         var token = JwtHelper.GeraToken(claims, DateTime.UtcNow.AddHours(JwtConstants.ExpirationHours), JwtConstants.SecretKey);
@@ -42,7 +42,6 @@ public class AuthService(IUserRoleService userRoleSrv,
     public MeDto Me(long user)
     {
         var entity = userSrv.Get(user);
-        var roles = userRoleSrv.GetRoleIds(user);
         return new MeDto
         {
             User = entity.User,
@@ -51,8 +50,7 @@ public class AuthService(IUserRoleService userRoleSrv,
             AvatarUrl = entity.AvatarUrl,
             Currency = entity.Currency,
             Locale = entity.Locale,
-            Roles = roles,
-            IsAdmin = roles.Contains(Constants.RoleId.ADMIN)
+            IsAdmin = entity.IsAdmin
         };
     }
 }

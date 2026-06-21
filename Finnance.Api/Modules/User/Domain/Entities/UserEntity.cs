@@ -22,6 +22,8 @@ public class UserEntity : BaseEntity
 
     public bool Active { get; set; }
 
+    public bool IsAdmin { get; set; }
+
     public override void ValidateCreate()
     {
         Currency = Currency.IsEmpty() ? "BRL" : Currency;

@@ -4,91 +4,77 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1" name="viewport"/>
     <meta content="noindex, nofollow" name="robots"/>
-    <title>Login - API</title>
-    <link href="/auth/css/styles.css" rel="stylesheet"/>
+    <title>Finnance · Acesso à API</title>
+    <link href="/finnance-icon.svg" rel="icon" type="image/svg+xml"/>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="/auth/css/styles.css?v=8" rel="stylesheet"/>
 </head>
 <body class="login-page">
-<div class="auth-container">
-    <div class="auth-card">
-        <div class="auth-header">
-            <h5 class="auth-title">Acesso APIs</h5>
-        </div>
+<main class="auth-shell">
+    <section class="auth-card" aria-labelledby="auth-title">
+        <header class="auth-head">
+            <span class="auth-logo">
+                <img src="/finnance-icon.svg" alt="" width="40" height="40"/>
+            </span>
+            <div class="auth-head-text">
+                <h1 class="auth-title" id="auth-title">Finnance</h1>
+                <p class="auth-subtitle">Acesso à API · Swagger</p>
+            </div>
+        </header>
 
-        <form id="login-form">
-            <div class="auth-form-group">
-                <label class="auth-label" for="user">Usuário</label>
-                <input autocomplete="username" autofocus class="auth-input" id="user" placeholder="Digite seu usuário"
-                       required type="text"/>
+        <form id="login-form" class="auth-form" novalidate>
+            <div class="field">
+                <label class="field-label" for="user">E-mail</label>
+                <input autocomplete="username" autofocus class="field-input" id="user"
+                       inputmode="email" placeholder="voce@email.com" required type="email"/>
             </div>
 
-            <div class="auth-form-group">
-                <label class="auth-label" for="password">Senha</label>
-                <input autocomplete="current-password" class="auth-input" id="password" placeholder="Digite sua senha"
-                       required type="password"/>
+            <div class="field">
+                <label class="field-label" for="password">Senha</label>
+                <div class="field-control">
+                    <input autocomplete="current-password" class="field-input" id="password"
+                           placeholder="••••••••" required type="password"/>
+                    <button class="field-affix" id="toggle-password" type="button"
+                            aria-label="Mostrar senha" aria-pressed="false">
+                        <svg class="i i-eye" viewBox="0 0 24 24" width="20" height="20" fill="none"
+                             stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <svg class="i i-eye-off" viewBox="0 0 24 24" width="20" height="20" fill="none"
+                             stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c6.5 0 10 7 10 7a18 18 0 0 1-3.06 4.06"/>
+                            <path d="M6.6 6.6A18 18 0 0 0 2 11s3.5 7 10 7a9 9 0 0 0 4.4-1.1"/>
+                            <path d="m2 2 20 20"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
-            <div class="auth-message error" id="error" role="alert"></div>
-            <div class="auth-message success" id="success" role="status"></div>
+            <button class="auth-submit" id="btn-login" type="submit">
+                <span class="auth-submit-label">Entrar</span>
+                <span class="auth-submit-spinner" aria-hidden="true"></span>
+            </button>
+
+            <p class="auth-feedback error" id="error" role="alert"></p>
+            <p class="auth-feedback success" id="success" role="status"></p>
         </form>
 
-        <div class="auth-divider">
-            <span>Acessar Plataforma</span>
-        </div>
+        <footer class="auth-foot">
+            <a class="auth-back" href="/">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m15 18-6-6 6-6"/>
+                </svg>
+                Voltar ao app
+            </a>
+        </footer>
+    </section>
+</main>
 
-        <div class="auth-platform-buttons">
-            <button class="auth-platform-btn" data-platform="swagger" title="Fazer login e acessar Swagger">
-                <span class="button-text">Swagger</span>
-                <div class="auth-spinner"></div>
-            </button>
-            <button class="auth-platform-btn" data-platform="scalar" title="Fazer login e acessar Scalar">
-                <span class="button-text">Scalar</span>
-                <div class="auth-spinner"></div>
-            </button>
-            <button class="auth-platform-btn" data-platform="graphql" title="Fazer login e acessar GraphQL">
-                <span class="button-text">GraphQL</span>
-                <div class="auth-spinner"></div>
-            </button>
-            <button class="auth-platform-btn" data-platform="scheduler" title="Fazer login e acessar Scheduler">
-                <span class="button-text">Scheduler</span>
-                <div class="auth-spinner"></div>
-            </button>
-        </div>
-
-        <div class="auth-footer">
-            <a class="auth-home-link" href="/" title="Voltar ao site principal">← Voltar para o site</a>
-        </div>
-    </div>
-</div>
-
-<!-- Modal MFA -->
-<div class="auth-modal" id="mfa-modal" style="display: none;">
-    <div class="auth-modal-overlay"></div>
-    <div class="auth-modal-content">
-        <div class="auth-modal-header">
-            <h3>Autenticação de dois fatores</h3>
-        </div>
-        <div class="auth-modal-body">
-            <p>Digite o código de verificação do seu aplicativo autenticador:</p>
-            <form id="mfa-form">
-                <div class="auth-form-group">
-                    <label class="auth-label" for="mfa-code">Código MFA</label>
-                    <input autocomplete="off" autofocus class="auth-input" id="mfa-code"
-                           inputmode="numeric" maxlength="6" pattern="[0-9]{6}"
-                           placeholder="000000" required type="text"/>
-                </div>
-
-                <button class="auth-btn-primary" id="btnMfa" type="submit">
-                    <span class="button-text">Verificar</span>
-                    <div class="auth-spinner"></div>
-                </button>
-
-                <div class="auth-message error" id="mfa-error" role="alert"></div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<script src="/auth/js/auth-manager.js"></script>
-<script src="/auth/js/login.js"></script>
+<script src="/auth/js/auth-manager.js?v=8"></script>
+<script src="/auth/js/login.js?v=8"></script>
 </body>
 </html>

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Finnance.Api.Modules.User.Application.Interfaces;
 using Finnance.Api.Shared;
 using Finnance.Api.Shared.Utils;
 using System.Reflection;
@@ -9,7 +8,7 @@ using System.Reflection;
 namespace Finnance.Api.Security;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class AuthorizationAttribute(params long[] roles) : Attribute, IAuthorizationFilter
+public class AuthorizationAttribute(bool admin = false) : Attribute, IAuthorizationFilter
 {
     public void OnAuthorization(AuthorizationFilterContext context)
     {
@@ -20,11 +19,9 @@ public class AuthorizationAttribute(params long[] roles) : Attribute, IAuthoriza
         if (user <= 0)
             throw new ApplicationException(Constants.ErrorMessage.ErrorAccess);
 
-        if (roles.IsEmpty()) return;
+        if (!admin) return;
 
-        var userRoleService = context.HttpContext.RequestServices.GetService(typeof(IUserRoleService)) as IUserRoleService;
-        var userRoles = userRoleService.GetRoleIds(user);
-        if (!roles.Any(userRoles.Contains))
+        if (!context.HttpContext.IsAdminLogged())
             throw new ApplicationException(Constants.ErrorMessage.ErrorAuthorization);
     }
 }
@@ -34,7 +31,11 @@ public static class AccessExt
     public static (string schema, string token) GetToken(this HttpContext ctx)
     {
         var key = ctx.GetKeyHeader("Authorization");
-        if (key.IsEmpty()) return (string.Empty, string.Empty);
+        if (key.IsEmpty())
+        {
+            var cookie = ctx.Request.Cookies[Constants.CookieName];
+            return cookie.IsEmpty() ? (string.Empty, string.Empty) : ("bearer", cookie);
+        }
 
         var keySpt = key.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (keySpt.Length > 1)
@@ -48,6 +49,15 @@ public static class AccessExt
         var (_, token) = ctx.GetToken();
         if (token.IsEmpty()) return (0L, string.Empty, string.Empty);
         return ctx.DecodeJwt(token);
+    }
+
+    public static bool IsAdminLogged(this HttpContext ctx)
+    {
+        var (_, token) = ctx.GetToken();
+        if (token.IsEmpty()) return false;
+
+        var principal = JwtHelper.ValidateToken(token, Finnance.Api.Shared.Utils.JwtConstants.SecretKey);
+        return principal.FindFirst(JwtHelper.ClaimIsAdmin)?.Value == bool.TrueString;
     }
 
     public static (long user, string language, string timeZone) DecodeJwt(this HttpContext ctx, string token)

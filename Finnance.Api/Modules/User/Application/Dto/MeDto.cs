@@ -14,7 +14,5 @@ public class MeDto
 
     public string Locale { get; set; }
 
-    public List<long> Roles { get; set; } = [];
-
     public bool IsAdmin { get; set; }
 }

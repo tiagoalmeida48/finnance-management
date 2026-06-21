@@ -9,14 +9,14 @@ namespace Finnance.Api.Controllers;
 
 public class AuditLogController(IAuditLogService auditLogService) : ControllerBase
 {
-    [Authorization(Constants.RoleId.ADMIN)]
+    [Authorization(admin: true)]
     [HttpGet]
     public ResultApi<List<AuditLogDisplayDto>> List([FromQuery] int quantity = 0)
     {
         return new ResultApi<List<AuditLogDisplayDto>> { Result = auditLogService.List(quantity).MapTo<List<AuditLogDisplayDto>>() };
     }
 
-    [Authorization(Constants.RoleId.ADMIN)]
+    [Authorization(admin: true)]
     [HttpGet]
     public ResultApi<List<AuditLogDisplayDto>> Search([FromQuery] long changedBy = 0,
                                                       [FromQuery] string tableName = null,

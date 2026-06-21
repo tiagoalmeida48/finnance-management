@@ -7,8 +7,7 @@ using Finnance.Api.Shared.Utils;
 
 namespace Finnance.Api.Modules.User.Application.Services;
 
-public partial class UserService(IUserRepository userRepository,
-                                 IUserRoleService userRoleService) : BaseService<UserEntity>(userRepository), IUserService
+public partial class UserService(IUserRepository userRepository) : BaseService<UserEntity>(userRepository), IUserService
 {
     public long CreateUser(UserEntity entity, string rawPassword, bool isAdmin)
     {
@@ -17,10 +16,10 @@ public partial class UserService(IUserRepository userRepository,
         ValidateEmailUnique(entity.Email, 0);
 
         entity.PasswordHash = Argon2Helper.GenerateHashPassword(rawPassword);
+        entity.IsAdmin = isAdmin;
 
         using var tran = GetTransaction();
         var userId = userRepository.Create(entity);
-        userRoleService.AssignRole(userId, isAdmin ? Constants.RoleId.ADMIN : Constants.RoleId.USER);
         tran.Complete();
         return userId;
     }
@@ -33,12 +32,12 @@ public partial class UserService(IUserRepository userRepository,
         var current = Get(entity.User);
         current.Email = entity.Email;
         current.FullName = entity.FullName;
+        current.IsAdmin = isAdmin;
 
         using var tran = GetTransaction();
         userRepository.Update(current);
-        userRoleService.SyncAdminRole(entity.User, isAdmin);
         tran.Complete();
-        
+
         return true;
     }
 
@@ -64,15 +63,16 @@ public partial class UserService(IUserRepository userRepository,
         var current = Get(user);
 
         using var tran = GetTransaction();
-        userRoleService.DeleteByUser(user);
         userRepository.Delete(current);
         tran.Complete();
-        
+
         return true;
     }
 
     public void EnsureAdmin(long currentUser)
     {
-        userRoleService.EnsureAdmin(currentUser);
+        var current = Get(currentUser);
+        if (!current.IsAdmin)
+            throw new ApplicationException(Constants.ErrorMessage.ErrorAuthorization);
     }
 }

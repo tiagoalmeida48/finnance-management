@@ -5,6 +5,7 @@ using Finnance.Api.Security;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using System.Globalization;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Path = System.IO.Path;
 
 namespace Finnance.Api;
@@ -17,20 +18,16 @@ public static partial class Configuration
         {
             c.SwaggerDoc("v1", new OpenApiInfo
             {
-                Title = "WebApi - Base Project",
+                Title = "Finnance API",
                 Version = "v1"
             });
 
             c.TagActionsBy(api =>
             {
-                if (api.ActionDescriptor is not ControllerActionDescriptor controllerActionDescriptor) return ["Others"];
+                if (api.ActionDescriptor is not ControllerActionDescriptor controllerActionDescriptor) return ["others"];
 
-                var groupName = controllerActionDescriptor.ControllerName;
-                var groupAttr = controllerActionDescriptor.ControllerTypeInfo.GetCustomAttribute<AttributeBundler>(true);
-                if (groupAttr != null)
-                    return [$"{groupAttr.GroupOrder}) {groupName}"];
-
-                return ["Others"];
+                var groupName = Regex.Replace(controllerActionDescriptor.ControllerName, "([a-z])([A-Z])", "$1-$2").ToLower();
+                return [groupName];
             });
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -74,8 +71,8 @@ public static partial class Configuration
         {
             c.SwaggerEndpoint("/openapi/v1.json", "WebApi v1");
             c.DocExpansion(DocExpansion.None);
-            c.InjectJavascript("/auth/js/auth-manager.js");
-            c.InjectStylesheet("/auth/css/styles.css");
+            c.InjectJavascript("/auth/js/auth-manager.js?v=8");
+            c.InjectStylesheet("/auth/css/styles.css?v=8");
         });
 
         var supportedCultures = new[] { new CultureInfo("pt-BR"), new CultureInfo("en-US") };

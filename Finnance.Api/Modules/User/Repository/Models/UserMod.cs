@@ -30,4 +30,7 @@ public class UserMod : BaseModel
 
     [Column("active")]
     public bool Active { get; set; }
+
+    [Column("is_admin")]
+    public bool IsAdmin { get; set; }
 }

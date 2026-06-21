@@ -27,7 +27,6 @@ public partial class UserService
     public List<UserLightDto> ListManaged()
     {
         var users = userRepository.All().ToList();
-        var adminByUser = userRoleService.ListAdminFlags().ToDictionary(a => a.User, a => a.IsAdmin);
 
         return users.Select(u => new UserLightDto
         {
@@ -35,7 +34,7 @@ public partial class UserService
             Email = u.Email,
             FullName = u.FullName,
             Created = u.Created,
-            IsAdmin = adminByUser.TryGetValue(u.User, out var isAdmin) && isAdmin
+            IsAdmin = u.IsAdmin
         }).ToList();
     }
 }

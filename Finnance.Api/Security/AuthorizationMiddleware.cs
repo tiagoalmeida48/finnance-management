@@ -10,6 +10,8 @@ public class AuthorizationMiddleware(RequestDelegate next)
         var path = context.Request.Path.Value?.ToLower();
         if (path.StartsWith("/swagger"))
         {
+            PreventCache(context);
+
             var isValid = ValidateToken(context, path);
             if (!isValid) return;
 
@@ -22,24 +24,55 @@ public class AuthorizationMiddleware(RequestDelegate next)
 
     public static bool ValidateToken(HttpContext context, string path)
     {
-        var token = context.Request.Cookies[Constants.CookieName];
-        if (token.IsEmpty() && context.Request.Headers.TryGetValue("Authorization", out var value))
-        {
-            var authHeader = value.ToString();
-            if (authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-            {
-                token = authHeader.Substring("Bearer ".Length).Trim();
-            }
-            else if (authHeader.IsNotEmpty() && !authHeader.StartsWith("Basic"))
-            {
-                token = authHeader.Trim();
-            }
-        }
+        var token = ExtractToken(context);
 
-        if (token.IsNotEmpty())
+        if (token.IsNotEmpty() && IsTokenValid(token))
             return true;
 
         context.Response.Redirect($"/auth/login.html?returnUrl={Uri.EscapeDataString(path)}", false);
         return false;
+    }
+
+    private static string ExtractToken(HttpContext context)
+    {
+        var token = context.Request.Cookies[Constants.CookieName];
+        if (token.IsNotEmpty()) return token;
+
+        if (!context.Request.Headers.TryGetValue("Authorization", out var value))
+            return string.Empty;
+
+        var authHeader = value.ToString();
+        if (authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            return authHeader.Substring("Bearer ".Length).Trim();
+
+        if (authHeader.IsNotEmpty() && !authHeader.StartsWith("Basic"))
+            return authHeader.Trim();
+
+        return string.Empty;
+    }
+
+    private static bool IsTokenValid(string token)
+    {
+        try
+        {
+            JwtHelper.ValidateToken(token, JwtConstants.SecretKey);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static void PreventCache(HttpContext context)
+    {
+        context.Response.OnStarting(state =>
+        {
+            var response = ((HttpContext)state).Response;
+            response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+            response.Headers.Pragma = "no-cache";
+            response.Headers.Expires = "0";
+            return Task.CompletedTask;
+        }, context);
     }
 }

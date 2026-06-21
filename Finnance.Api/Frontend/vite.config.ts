@@ -21,7 +21,8 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: 'dist',
+    outDir: '../wwwroot',
+    emptyOutDir: false,
     modulePreload: false,
     rollupOptions: {
       output: {

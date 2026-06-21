@@ -57,7 +57,7 @@ Finnance.Api/
 │       └── Repository/    BaseRepository/Base/  BaseRepository/EntityHelper/  (Models/  Repositories/ por feature)
 └── Shared/                           # namespace Finnance.Api.Shared.*  (fora dos módulos)
     ├── BaseClass/ (BaseEntity, BaseModel)  Extensions/
-    └── Utils/ (ResultApi, BusinessError, JwtHelper, Argon2Helper, Constants…)
+    └── Utils/ (ResultApi, JwtHelper, Argon2Helper, HashHelper, Constants…)
 ```
 
 Cada feature de negócio vira um **módulo próprio** em `Finnance.Api/Modules/<Feature>/` (namespace `Finnance.Api.Modules.<Feature>.{Domain,Application,Repository}`), com suas próprias entidades, models, repos, services e o controller correspondente em `Controllers/`. O módulo **`Common`** guarda as classes base de cada camada (`BaseService`, `BaseRepository`, VOs, interfaces base) — reutilizável; não coloque lógica de negócio nele. **`Shared`** (na raiz, fora de `Modules/`) é cross-cutting puro: utils, extensions e classes base de Entity/Model.
@@ -73,8 +73,9 @@ Cada feature de negócio vira um **módulo próprio** em `Finnance.Api/Modules/<
 
 ### Estado atual: stubs do template ainda não reimplementados
 Vários serviços do template foram **removidos na consolidação** e marcam o lugar com `// Stub: ... sera reimplementado em Finnance.Api/Modules`. Hoje são apenas stubs:
-- **Autorização** (`Security/AuthorizationAttribute`): não valida acesso — só respeita `[AllowAnonymous]`.
 - **Logging** (`GlobalErrorHandle.TryLog`), **rate limiting** por política, **scheduler/attachments** no bootstrap.
+
+A **autorização já está implementada** (não é mais stub): `Security/AuthorizationAttribute` lê o usuário e o claim `is_admin` do JWT (ver §4.6).
 
 Ao implementar um módulo que dependa de algo assim, reimplemente o serviço correspondente — não presuma que já funciona.
 
@@ -85,11 +86,11 @@ Ao implementar um módulo que dependa de algo assim, reimplemente o serviço cor
 Estas regras vêm do template e o código novo deve segui-las (atualizadas para a estrutura consolidada):
 
 1. **Todo controller REST retorna `ResultApi<T>`** (`{ Success, Message, InternalError, Result }`). Nunca `IActionResult`/`ActionResult<T>`/tipo direto. Sucesso → 200 com `Result`; erro → capturado por `GlobalErrorHandle` (`/errors`).
-2. **Erros de negócio lançam `BusinessError(GeneralErrorNumber.X, FieldName.Y)`** — nunca `Exception`/`ArgumentException` genérica.
+2. **Erros de negócio lançam `ApplicationException` com constante pt-BR** (`throw new ApplicationException(Constants.ErrorMessage.X)`) — nunca `Exception`/`ArgumentException` genérica nem mensagem literal inline. Não existe `BusinessError`/`GeneralErrorNumber`/`FieldName` (foram removidos). `GlobalErrorHandle` mapeia `ApplicationException` → HTTP 400.
 3. **Validação é 100% imperativa** no Domain (`ValidateCreate`/`ValidateUpdate`/`ValidatePersistence` na Entity) e no Service (partial `ValidatePersistence.cs`). **Não use FluentValidation nem DataAnnotations.**
 4. **Nunca exponha a Entity na API.** Controllers recebem/retornam DTOs; conversão sempre via `.MapTo<T>()` (extension próprio), nunca propriedade a propriedade.
 5. **Models de banco têm sufixo `Mod`** e ficam em `Repository/Models/` do módulo da feature (namespace terminando em `.Repository.Models`). Entity (`...Entity`) nunca vai direto pro Dapper.
-6. **Autorização** via `[Authorization(Constants.AuthObject.X, Constants.AuthActivity.Y)]` (não `[Authorize]` padrão) — lembrando que hoje é stub (§3).
+6. **Autorização** via `[Authorization(admin: true)]` (somente admin) ou `[Authorization]` (apenas autenticado) — nunca `[Authorize]` padrão. O atributo lê o usuário e o claim `is_admin` do JWT; **não há tabelas `role`/`user_role` nem `IUserRoleService`** — o admin é a coluna booleana `is_admin` na tabela `user`. Sem token → `Constants.ErrorMessage.ErrorAccess`; logado sem ser admin → `ErrorAuthorization`.
 7. **Serviços grandes são `partial`** divididos por responsabilidade (`_FooService.cs`, `FooGetService.cs`, `ValidatePersistence.cs`). Arquivos de classe base usam prefixo `_`.
 
 | Artefato | Convenção | Exemplo |

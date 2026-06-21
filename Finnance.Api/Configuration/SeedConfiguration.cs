@@ -13,7 +13,6 @@ public static partial class Configuration
         using var con = new NpgsqlConnection(connStr);
         con.Open();
 
-        SeedRoles(con);
         SeedLookup(con, "transaction_type", ["Receita", "Despesa", "Transferência"]);
         SeedLookup(con, "account_type", ["Conta Corrente", "Poupança", "Carteira", "Investimento", "Outro"]);
         SeedLookup(con, "category_type", ["Receita", "Despesa"]);
@@ -21,12 +20,6 @@ public static partial class Configuration
         SeedLookup(con, "invoice_status", ["Aberta", "Parcial", "Paga"]);
         SeedLookup(con, "audit_action", ["INSERT", "UPDATE", "DELETE"]);
         SeedSystemConfig(con, Constants.SystemConfigKey.TetoInss, Constants.DefaultTetoInss);
-    }
-
-    private static void SeedRoles(NpgsqlConnection con)
-    {
-        SeedNamedRow(con, "\"role\"", "\"role\"", Constants.RoleId.ADMIN, "Administrador");
-        SeedNamedRow(con, "\"role\"", "\"role\"", Constants.RoleId.USER, "Usuário");
     }
 
     private static void SeedLookup(NpgsqlConnection con, string table, string[] names)

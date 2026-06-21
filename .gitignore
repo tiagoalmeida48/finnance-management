@@ -49,6 +49,13 @@ artifacts/
 .claude/scheduled_tasks.lock
 .claude/launch.json
 
+docs/Referencia/
+
+# Build do frontend publicado em wwwroot (preserva wwwroot/auth)
+Finnance.Api/wwwroot/assets/
+Finnance.Api/wwwroot/index.html
+Finnance.Api/wwwroot/finnance-icon.svg
+
 # OS generated files
 .DS_Store
 .DS_Store?
