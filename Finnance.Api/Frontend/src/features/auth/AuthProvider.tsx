@@ -11,6 +11,7 @@ export interface AuthContextType {
   isLoading: boolean;
   login: (input: LoginInput) => Promise<void>;
   logout: () => void;
+  refresh: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -52,12 +53,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         const session = await authService.login(input);
         tokenStorage.set(session.token);
-        setUser({
-          user: session.user,
-          fullName: session.fullName,
-          email: session.email,
-          isAdmin: session.isAdmin,
-        });
+        const me = await authService.me();
+        setUser(me);
         addToast('Bem-vindo!', 'success');
         navigate('/');
       } catch (error) {
@@ -74,6 +71,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     navigate('/login');
   }, [navigate]);
 
+  const refresh = useCallback(async () => {
+    if (!tokenStorage.get()) return;
+    try {
+      const me = await authService.me();
+      setUser(me);
+    } catch {
+      tokenStorage.clear();
+      setUser(null);
+    }
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -81,8 +89,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isLoading,
       login,
       logout,
+      refresh,
     }),
-    [user, isLoading, login, logout],
+    [user, isLoading, login, logout, refresh],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

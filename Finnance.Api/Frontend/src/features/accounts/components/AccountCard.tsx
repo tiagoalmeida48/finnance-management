@@ -12,7 +12,7 @@ interface AccountCardProps {
 
 export function AccountCard({ account, accountTypeName, onEdit, onDelete }: AccountCardProps) {
   return (
-    <Card className="flex flex-col gap-4">
+    <Card className="flex flex-col gap-4 transition-colors hover:border-primary/40">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div

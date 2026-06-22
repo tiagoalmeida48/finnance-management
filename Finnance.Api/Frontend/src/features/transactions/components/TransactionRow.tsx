@@ -73,7 +73,7 @@ export function TransactionRow({
         </button>
       </td>
       <td className="px-3 py-3 text-sm text-text-muted whitespace-nowrap">
-        {date ? formatDate(`${date}T12:00:00`) : '—'}
+        {date ? formatDate(`${date.slice(0, 10)}T12:00:00`) : '—'}
       </td>
       <td className="px-3 py-3">
         <div className="flex flex-wrap items-center gap-2">

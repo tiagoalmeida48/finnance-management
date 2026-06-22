@@ -11,7 +11,7 @@ import {
 } from '../constants';
 
 export function useProfilePageLogic() {
-  const { user } = useAuth();
+  const { user, refresh } = useAuth();
   const updateProfile = useUpdateProfile();
   const updatePassword = useUpdatePassword();
 
@@ -35,12 +35,15 @@ export function useProfilePageLogic() {
 
   const submitPersonal = personalForm.handleSubmit((values) => {
     if (!user) return;
-    updateProfile.mutate({
-      user: user.user,
-      email: user.email,
-      fullName: values.fullName.trim(),
-      isAdmin: user.isAdmin,
-    });
+    updateProfile.mutate(
+      {
+        user: user.user,
+        email: user.email,
+        fullName: values.fullName.trim(),
+        isAdmin: user.isAdmin,
+      },
+      { onSuccess: () => refresh() },
+    );
   });
 
   const submitPassword = passwordForm.handleSubmit((values) => {

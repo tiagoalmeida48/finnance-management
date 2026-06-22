@@ -245,11 +245,13 @@ public class TransactionRepository : BaseRepository<TransactionEntity, Transacti
             FROM "transaction"
             WHERE "user" = @user AND active = TRUE
             """);
+        sb.Append(' ');
 
         AppendReadFilters(sb, param, account, category, startDate, endDate, isPaid);
 
         using var con = Conn;
-        return con.QuerySingle<(decimal Income, decimal Expense, decimal Pending)>(sb.ToString(), param);
+        var row = con.QuerySingle<TransactionSummaryMod>(sb.ToString(), param);
+        return (row.Income, row.Expense, row.Pending);
     }
 
     private static void AppendReadFilters(StringBuilder sb,

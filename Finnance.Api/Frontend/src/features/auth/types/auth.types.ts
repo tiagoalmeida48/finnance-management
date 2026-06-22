@@ -1,15 +1,18 @@
 export interface Session {
   token: string;
   user: number;
-  fullName: string;
-  email: string;
-  isAdmin: boolean;
+  name: string;
+  authenticated: boolean;
+  idiom: string;
 }
 
 export interface Me {
   user: number;
-  fullName: string;
   email: string;
+  fullName: string;
+  avatarUrl: string;
+  currency: string;
+  locale: string;
   isAdmin: boolean;
 }
 

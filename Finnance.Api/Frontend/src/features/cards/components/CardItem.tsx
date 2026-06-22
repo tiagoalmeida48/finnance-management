@@ -18,7 +18,7 @@ export function CardItem({ card, stats, onView, onEdit, onDelete }: CardItemProp
   const accent = card.color || 'var(--color-primary)';
 
   return (
-    <Card className="flex flex-col gap-4">
+    <Card className="flex flex-col gap-4 transition-colors hover:border-primary/40">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-3">
           <span

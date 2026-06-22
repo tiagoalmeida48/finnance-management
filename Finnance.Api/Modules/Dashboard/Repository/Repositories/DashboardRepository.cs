@@ -140,11 +140,11 @@ public class DashboardRepository : BaseRepository<DashboardEntity, DashboardMod>
         if (card > 0)
         {
             param.Add("card", card);
-            sb.Append("AND card = @card ");
+            sb.Append(" AND card = @card");
         }
 
         AppendPeriod(sb, param, start, end);
-        sb.Append("GROUP BY to_char(payment_date, 'YYYY-MM') ORDER BY MonthKey");
+        sb.Append(" GROUP BY to_char(payment_date, 'YYYY-MM') ORDER BY MonthKey");
 
         using var con = Conn;
         return con.Query<ChartPointDto>(sb.ToString(), param).ToList();
@@ -166,7 +166,7 @@ public class DashboardRepository : BaseRepository<DashboardEntity, DashboardMod>
         param.Add("user", user);
         param.Add("expense", Constants.TransactionTypeId.EXPENSE);
         AppendPeriod(sb, param, start, end, "t.");
-        sb.Append("GROUP BY COALESCE(c.name, 'Geral') ORDER BY Total DESC");
+        sb.Append(" GROUP BY COALESCE(c.name, 'Geral') ORDER BY Total DESC");
 
         using var con = Conn;
         return con.Query<CategoryDistributionDto>(sb.ToString(), param).ToList();
@@ -177,13 +177,13 @@ public class DashboardRepository : BaseRepository<DashboardEntity, DashboardMod>
         if (start.HasValue)
         {
             param.Add("start", start.Value.Date);
-            sb.Append($"AND {prefix}payment_date >= @start ");
+            sb.Append($" AND {prefix}payment_date >= @start");
         }
 
         if (end.HasValue)
         {
             param.Add("end", end.Value.Date);
-            sb.Append($"AND {prefix}payment_date <= @end ");
+            sb.Append($" AND {prefix}payment_date <= @end");
         }
     }
 }

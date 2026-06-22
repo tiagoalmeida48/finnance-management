@@ -7,7 +7,9 @@ public partial class UserService
 {
     private void ValidateEmailUnique(string email, long ignoreUser)
     {
-        if (userRepository.Search(email: email, quantity: 1).IsNotEmpty())
+        var existing = userRepository.Search(email: email, quantity: 1);
+
+        if (existing.Any(item => item.User != ignoreUser))
             throw new ApplicationException(Constants.ErrorMessage.FieldAlreadyExists);
     }
 }
