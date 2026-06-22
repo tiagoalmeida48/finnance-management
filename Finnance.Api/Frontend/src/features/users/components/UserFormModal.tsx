@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
   Button,
+  Checkbox,
   Dialog,
   DialogContent,
   DialogFooter,
@@ -104,12 +105,7 @@ export function UserFormModal({
           )}
 
           <div className="flex items-center gap-2">
-            <input
-              id="user-is-admin"
-              type="checkbox"
-              className="h-4 w-4 accent-primary"
-              {...register('isAdmin')}
-            />
+            <Checkbox id="user-is-admin" {...register('isAdmin')} />
             <Label htmlFor="user-is-admin" className="mb-0">
               Usuário administrador
             </Label>

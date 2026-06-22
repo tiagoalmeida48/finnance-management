@@ -1,3 +1,5 @@
+import { Select } from '@/shared/components/ui';
+
 interface DashboardFiltersProps {
   selectedYear: number;
   setSelectedYear: (year: number) => void;
@@ -12,9 +14,9 @@ export function DashboardFilters({ selectedYear, setSelectedYear }: DashboardFil
       <label className="sr-only" htmlFor="dashboard-year">
         Ano
       </label>
-      <select
+      <Select
         id="dashboard-year"
-        className="h-9 min-w-[110px] rounded-md border border-border bg-surface-2 px-3 text-sm text-text focus-visible:border-primary focus-visible:outline-none"
+        className="h-9 min-w-[110px] bg-surface-2 text-sm"
         value={selectedYear}
         onChange={(event) => setSelectedYear(Number(event.target.value))}
       >
@@ -23,7 +25,7 @@ export function DashboardFilters({ selectedYear, setSelectedYear }: DashboardFil
             {year}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
   );
 }

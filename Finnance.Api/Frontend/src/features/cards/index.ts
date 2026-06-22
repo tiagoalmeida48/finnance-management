@@ -1,5 +1,6 @@
 export { CardItem } from './components/CardItem';
 export { CardFormModal } from './components/CardFormModal';
+export { DeleteCardDialog } from './components/DeleteCardDialog';
 export { CardDetailModal } from './components/CardDetailModal';
 export { CardDetailHeader } from './components/CardDetailHeader';
 export { StatementInvoiceList } from './components/StatementInvoiceList';

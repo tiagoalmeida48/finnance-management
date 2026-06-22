@@ -6,9 +6,10 @@ interface DialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
+  className?: string;
 }
 
-export function Dialog({ open, onOpenChange, children }: DialogProps) {
+export function Dialog({ open, onOpenChange, children, className }: DialogProps) {
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,7 +43,10 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
     >
       <div
         ref={contentRef}
-        className="bg-surface border border-border rounded-lg shadow-lg max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto"
+        className={cn(
+          'bg-surface border border-border rounded-lg shadow-lg max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto',
+          className,
+        )}
       >
         {children}
       </div>

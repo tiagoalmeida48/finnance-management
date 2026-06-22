@@ -32,7 +32,10 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
 
   return (
     <div
-      className={cn('px-4 py-3 rounded-md text-sm font-medium animate-in', colors[toast.variant])}
+      className={cn(
+        'px-4 py-3 rounded-md text-sm font-medium animate-toast-in',
+        colors[toast.variant],
+      )}
     >
       {toast.message}
     </div>

@@ -1,4 +1,4 @@
-import { Button, Card, CardContent, Input, Label } from '@/shared/components/ui';
+import { Button, Card, CardContent, Input, Label, Select } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import { buildSettingKey, formatValidity } from '../constants';
 import type { PayrollResult, SalarySetting } from '../types/salary.types';
@@ -39,11 +39,10 @@ export function SalarySimulatorPanel({
 
         <div>
           <Label htmlFor="salary-validity">Vigência selecionada</Label>
-          <select
+          <Select
             id="salary-validity"
             value={selectedSettingInputKey}
             onChange={(event) => onSelectedSettingChange(event.target.value)}
-            className="w-full rounded-md border border-border bg-surface px-3 py-2 text-text transition-colors focus-visible:border-primary"
           >
             {availableSettings.map((setting) => {
               const key = buildSettingKey(setting);
@@ -55,7 +54,7 @@ export function SalarySimulatorPanel({
                 </option>
               );
             })}
-          </select>
+          </Select>
         </div>
 
         <div>

@@ -1,5 +1,4 @@
-import { Button, Input, Label } from '@/shared/components/ui';
-import { Select } from './Select';
+import { Button, Input, Label, Select } from '@/shared/components/ui';
 import {
   useAccountsLookup,
   useCategoriesLookup,

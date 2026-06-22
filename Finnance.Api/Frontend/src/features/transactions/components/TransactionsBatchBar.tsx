@@ -8,8 +8,8 @@ import {
   DialogTitle,
   Input,
   Label,
+  Select,
 } from '@/shared/components/ui';
-import { Select } from './Select';
 import { useAccountsLookup } from '../hooks/useLookups';
 
 interface TransactionsBatchBarProps {

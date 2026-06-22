@@ -13,6 +13,7 @@ export function useCardsPageLogic() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<CreditCard | null>(null);
   const [detailCard, setDetailCard] = useState<CreditCard | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<CreditCard | null>(null);
 
   const statsByCard = useMemo(() => {
     const map = new Map<number, CreditCardStats>();
@@ -55,28 +56,32 @@ export function useCardsPageLogic() {
     [editing, createCard, updateCard],
   );
 
-  const handleDelete = useCallback(
-    (card: CreditCard) => {
-      const confirmed = window.confirm(`Excluir o cartão "${card.name}"?`);
-      if (confirmed) deleteCard.mutate(card.creditCard);
-    },
-    [deleteCard],
-  );
+  const confirmDelete = useCallback(() => {
+    if (!pendingDelete) return;
+    deleteCard.mutate(pendingDelete.creditCard, {
+      onSuccess: () => setPendingDelete(null),
+    });
+  }, [pendingDelete, deleteCard]);
 
   return {
     cards: cardsQuery.data ?? [],
     isLoading: cardsQuery.isLoading,
     isError: cardsQuery.isError,
+    refetch: cardsQuery.refetch,
     statsByCard,
     formOpen,
     editing,
     detailCard,
+    pendingDelete,
     saving: createCard.isPending || updateCard.isPending,
+    deleting: deleteCard.isPending,
     openCreate,
     openEdit,
     closeForm,
     handleSubmit,
-    handleDelete,
+    requestDelete: setPendingDelete,
+    cancelDelete: () => setPendingDelete(null),
+    confirmDelete,
     openDetail: setDetailCard,
     closeDetail: () => setDetailCard(null),
   };

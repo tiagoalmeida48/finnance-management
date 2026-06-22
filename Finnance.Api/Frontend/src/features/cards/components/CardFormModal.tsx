@@ -1,4 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import {
   Button,
   Dialog,
@@ -8,18 +11,23 @@ import {
   DialogTitle,
   Input,
   Label,
+  Select,
+  Checkbox,
+  Textarea,
 } from '@/shared/components/ui';
 import { useBankAccountsLookup } from '../hooks/useCards';
 import type { CreditCard } from '../types/cards.types';
 
-export interface CardFormValues {
-  bankAccount: number;
-  name: string;
-  color: string;
-  creditLimit: number;
-  notes: string;
-  active: boolean;
-}
+const cardSchema = z.object({
+  name: z.string().trim().min(1, 'Informe o nome do cartão.'),
+  bankAccount: z.number().positive('Selecione a conta vinculada.'),
+  creditLimit: z.number().positive('O limite deve ser maior que zero.'),
+  color: z.string(),
+  notes: z.string(),
+  active: z.boolean(),
+});
+
+export type CardFormValues = z.infer<typeof cardSchema>;
 
 interface CardFormModalProps {
   open: boolean;
@@ -40,13 +48,21 @@ const emptyForm: CardFormValues = {
 
 export function CardFormModal({ open, card, saving, onClose, onSubmit }: CardFormModalProps) {
   const { data: accounts, isLoading: loadingAccounts } = useBankAccountsLookup();
-  const [form, setForm] = useState<CardFormValues>(emptyForm);
-  const [error, setError] = useState('');
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors },
+  } = useForm<CardFormValues>({
+    resolver: zodResolver(cardSchema),
+    defaultValues: emptyForm,
+  });
 
   useEffect(() => {
     if (!open) return;
     if (card) {
-      setForm({
+      reset({
         bankAccount: card.bankAccount,
         name: card.name,
         color: card.color || '#d4a574',
@@ -55,26 +71,9 @@ export function CardFormModal({ open, card, saving, onClose, onSubmit }: CardFor
         active: card.active,
       });
     } else {
-      setForm(emptyForm);
+      reset(emptyForm);
     }
-    setError('');
-  }, [open, card]);
-
-  const handleSubmit = () => {
-    if (!form.name.trim()) {
-      setError('Informe o nome do cartão.');
-      return;
-    }
-    if (!form.bankAccount) {
-      setError('Selecione a conta vinculada.');
-      return;
-    }
-    if (form.creditLimit <= 0) {
-      setError('O limite deve ser maior que zero.');
-      return;
-    }
-    onSubmit(form);
-  };
+  }, [open, card, reset]);
 
   return (
     <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
@@ -83,50 +82,60 @@ export function CardFormModal({ open, card, saving, onClose, onSubmit }: CardFor
           <DialogTitle>{card ? 'Editar cartão' : 'Novo cartão'}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <Label htmlFor="card-account">Conta vinculada</Label>
-            <select
-              id="card-account"
-              className="input-base w-full"
-              value={form.bankAccount}
-              disabled={loadingAccounts}
-              onChange={(e) => setForm((prev) => ({ ...prev, bankAccount: Number(e.target.value) }))}
-            >
-              <option value={0}>Selecione uma conta</option>
-              {accounts?.map((account) => (
-                <option key={account.bankAccount} value={account.bankAccount}>
-                  {account.name}
-                </option>
-              ))}
-            </select>
+            <Controller
+              control={control}
+              name="bankAccount"
+              render={({ field }) => (
+                <Select
+                  id="card-account"
+                  value={field.value || 0}
+                  disabled={loadingAccounts}
+                  onChange={(event) => field.onChange(Number(event.target.value))}
+                >
+                  <option value={0}>Selecione uma conta</option>
+                  {accounts?.map((account) => (
+                    <option key={account.bankAccount} value={account.bankAccount}>
+                      {account.name}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            />
+            {errors.bankAccount && (
+              <p className="text-expense text-sm mt-1">{errors.bankAccount.message}</p>
+            )}
           </div>
 
           <div>
             <Label htmlFor="card-name">Nome</Label>
-            <Input
-              id="card-name"
-              className="w-full"
-              value={form.name}
-              maxLength={100}
-              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-            />
+            <Input id="card-name" className="w-full" maxLength={100} {...register('name')} />
+            {errors.name && <p className="text-expense text-sm mt-1">{errors.name.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="card-limit">Limite (R$)</Label>
-              <Input
-                id="card-limit"
-                type="number"
-                min={0}
-                step="0.01"
-                className="w-full"
-                value={form.creditLimit || ''}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, creditLimit: Number(e.target.value) }))
-                }
+              <Controller
+                control={control}
+                name="creditLimit"
+                render={({ field }) => (
+                  <Input
+                    id="card-limit"
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    className="w-full"
+                    value={field.value || ''}
+                    onChange={(event) => field.onChange(Number(event.target.value))}
+                  />
+                )}
               />
+              {errors.creditLimit && (
+                <p className="text-expense text-sm mt-1">{errors.creditLimit.message}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="card-color">Cor</Label>
@@ -134,45 +143,41 @@ export function CardFormModal({ open, card, saving, onClose, onSubmit }: CardFor
                 id="card-color"
                 type="color"
                 className="h-10 w-full rounded-md border border-border bg-surface"
-                value={form.color}
-                onChange={(e) => setForm((prev) => ({ ...prev, color: e.target.value }))}
+                {...register('color')}
               />
             </div>
           </div>
 
           <div>
             <Label htmlFor="card-notes">Observações</Label>
-            <textarea
-              id="card-notes"
-              className="input-base min-h-20 w-full resize-none"
-              value={form.notes}
-              maxLength={500}
-              onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))}
-            />
+            <Textarea id="card-notes" className="min-h-20" maxLength={500} {...register('notes')} />
           </div>
 
           {card ? (
-            <label className="flex items-center gap-2 text-sm text-text">
-              <input
-                type="checkbox"
-                checked={form.active}
-                onChange={(e) => setForm((prev) => ({ ...prev, active: e.target.checked }))}
-              />
-              Cartão ativo
-            </label>
+            <Controller
+              control={control}
+              name="active"
+              render={({ field }) => (
+                <label className="flex items-center gap-2 text-sm text-text">
+                  <Checkbox
+                    checked={field.value}
+                    onChange={(event) => field.onChange(event.target.checked)}
+                  />
+                  Cartão ativo
+                </label>
+              )}
+            />
           ) : null}
 
-          {error ? <p className="text-sm text-expense">{error}</p> : null}
-        </div>
-
-        <DialogFooter>
-          <Button variant="ghost" onClick={onClose} disabled={saving}>
-            Cancelar
-          </Button>
-          <Button onClick={handleSubmit} loading={saving}>
-            {card ? 'Salvar' : 'Criar'}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={onClose} disabled={saving}>
+              Cancelar
+            </Button>
+            <Button type="submit" loading={saving}>
+              {card ? 'Salvar' : 'Criar'}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

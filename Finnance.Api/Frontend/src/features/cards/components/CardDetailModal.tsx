@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { Button, Spinner } from '@/shared/components/ui';
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  Select,
+  Spinner,
+} from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import { useCardInvoices, useRecalculateInvoice } from '../hooks/useCards';
 import { InvoiceRow } from './InvoiceRow';
@@ -27,57 +34,33 @@ export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
     if (card) setYear(new Date().getFullYear());
   }, [card]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && card) onClose();
-    };
-    if (card) {
-      document.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'auto';
-    };
-  }, [card, onClose]);
-
-  if (!card) return null;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-lg">
-        <div className="flex items-center justify-between gap-4 border-b border-border p-6">
+  return (
+    <Dialog open={Boolean(card)} onOpenChange={(open) => !open && onClose()} className="max-w-2xl">
+      <DialogContent className="p-0">
+        <DialogHeader className="mb-0 flex items-center justify-between gap-4 p-6">
           <div className="flex items-center gap-3">
             <span
               className="h-8 w-8 rounded-md"
-              style={{ backgroundColor: card.color || 'var(--color-primary)' }}
+              style={{ backgroundColor: card?.color || 'var(--color-primary)' }}
               aria-hidden
             />
             <div>
-              <h2 className="text-xl font-bold text-text">{card.name}</h2>
-              <p className="text-xs text-text-muted">Limite {formatCurrency(card.creditLimit)}</p>
+              <h2 className="text-xl font-bold text-text">{card?.name}</h2>
+              <p className="text-xs text-text-muted">
+                Limite {formatCurrency(card?.creditLimit ?? 0)}
+              </p>
             </div>
           </div>
-          <select
-            className="input-base"
+          <Select
+            className="w-28"
             value={year}
             onChange={(e) => setYear(Number(e.target.value))}
             aria-label="Ano das faturas"
-          >
-            {years.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
-        </div>
+            options={years.map((y) => ({ value: y, label: String(y) }))}
+          />
+        </DialogHeader>
 
-        <div className="flex-1 space-y-3 overflow-y-auto p-6">
+        <div className="max-h-[60vh] space-y-3 overflow-y-auto p-6">
           {isLoading ? (
             <div className="py-10">
               <Spinner />
@@ -87,7 +70,9 @@ export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
               <InvoiceRow
                 key={invoice.creditCardInvoice}
                 invoice={invoice}
-                recalculating={recalculate.isPending && recalculate.variables === invoice.creditCardInvoice}
+                recalculating={
+                  recalculate.isPending && recalculate.variables === invoice.creditCardInvoice
+                }
                 onRecalculate={(id) => recalculate.mutate(id)}
               />
             ))
@@ -98,13 +83,12 @@ export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
           )}
         </div>
 
-        <div className="flex justify-end border-t border-border p-4">
+        <DialogFooter className="mt-0 p-4">
           <Button variant="ghost" onClick={onClose}>
             Fechar
           </Button>
-        </div>
-      </div>
-    </div>,
-    document.body,
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

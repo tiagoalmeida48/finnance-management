@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Button,
+  Checkbox,
   Dialog,
   DialogContent,
   DialogFooter,
@@ -10,9 +11,9 @@ import {
   DialogTitle,
   Input,
   Label,
+  Select,
 } from '@/shared/components/ui';
 import { TransactionTypeId } from '@/config/constants';
-import { Select } from './Select';
 import { transactionFormSchema, type TransactionFormData } from './transactionFormSchema';
 import { transactionTypeLabel } from './transactionMeta';
 import {
@@ -269,15 +270,15 @@ export function TransactionFormModal({ open, onClose }: TransactionFormModalProp
 
               <div className="flex flex-wrap gap-4">
                 <label className="flex items-center gap-2 text-sm text-text">
-                  <input type="checkbox" {...register('isInstallment')} disabled={isFixed} />
+                  <Checkbox {...register('isInstallment')} disabled={isFixed} />
                   Parcelado
                 </label>
                 <label className="flex items-center gap-2 text-sm text-text">
-                  <input type="checkbox" {...register('isFixed')} disabled={isInstallment} />
+                  <Checkbox {...register('isFixed')} disabled={isInstallment} />
                   Recorrente
                 </label>
                 <label className="flex items-center gap-2 text-sm text-text">
-                  <input type="checkbox" {...register('isPaid')} />
+                  <Checkbox {...register('isPaid')} />
                   Pago
                 </label>
               </div>

@@ -7,6 +7,7 @@ import {
   DialogTitle,
   Input,
   Label,
+  Textarea,
 } from '@/shared/components/ui';
 import type { useCardCyclesLogic } from '../hooks/useCardCyclesLogic';
 
@@ -79,9 +80,9 @@ export function CardCycleForm({ logic }: CardCycleFormProps) {
 
           <div>
             <Label htmlFor="cycle-notes">Observações</Label>
-            <textarea
+            <Textarea
               id="cycle-notes"
-              className="input-base min-h-20 w-full resize-none"
+              className="min-h-20"
               value={form.notes}
               maxLength={500}
               onChange={(e) => updateForm({ notes: e.target.value })}

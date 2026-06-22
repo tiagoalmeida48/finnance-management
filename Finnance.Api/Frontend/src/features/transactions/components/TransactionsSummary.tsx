@@ -21,13 +21,19 @@ export function TransactionsSummary({ summary, loading }: TransactionsSummaryPro
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
       {items.map((item) => (
-        <Card key={item.label} className="p-4">
-          <p className="text-sm text-text-muted">{item.label}</p>
-          <p className={`text-xl font-bold mt-1 ${item.className}`}>
-            {loading ? '—' : formatCurrency(item.value)}
+        <Card key={item.label}>
+          <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
+            {item.label}
           </p>
+          {loading ? (
+            <div className="mt-1.5 h-6 w-24 animate-pulse rounded bg-surface-2" />
+          ) : (
+            <p className={`mt-0.5 text-xl font-bold tracking-tight ${item.className}`}>
+              {formatCurrency(item.value)}
+            </p>
+          )}
         </Card>
       ))}
     </div>

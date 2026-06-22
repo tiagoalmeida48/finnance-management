@@ -1,4 +1,4 @@
-import { Button } from '@/shared/components/ui';
+import { Button, Checkbox } from '@/shared/components/ui';
 import { TransactionRow } from './TransactionRow';
 import {
   useAccountsLookup,
@@ -47,8 +47,7 @@ export function TransactionsTable({
           <thead>
             <tr className="border-b border-border bg-surface-2 text-left text-xs uppercase tracking-wider text-text-muted">
               <th className="px-3 py-3">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={allSelected}
                   onChange={(event) => onToggleSelectAll(event.target.checked)}
                   aria-label="Selecionar todos"

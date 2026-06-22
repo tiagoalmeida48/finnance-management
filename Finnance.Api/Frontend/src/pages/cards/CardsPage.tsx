@@ -3,6 +3,7 @@ import {
   CardDetailModal,
   CardFormModal,
   CardItem,
+  DeleteCardDialog,
   useCardsPageLogic,
 } from '@/features/cards';
 
@@ -11,16 +12,21 @@ export function CardsPage() {
     cards,
     isLoading,
     isError,
+    refetch,
     statsByCard,
     formOpen,
     editing,
     detailCard,
+    pendingDelete,
     saving,
+    deleting,
     openCreate,
     openEdit,
     closeForm,
     handleSubmit,
-    handleDelete,
+    requestDelete,
+    cancelDelete,
+    confirmDelete,
     openDetail,
     closeDetail,
   } = useCardsPageLogic();
@@ -44,7 +50,12 @@ export function CardsPage() {
       ) : isError ? (
         <Card>
           <CardContent>
-            <p className="text-expense">Não foi possível carregar os cartões.</p>
+            <div className="flex flex-col items-center gap-3 py-10 text-center">
+              <p className="text-expense">Não foi possível carregar os cartões.</p>
+              <Button variant="outline" onClick={() => refetch()}>
+                Tentar novamente
+              </Button>
+            </div>
           </CardContent>
         </Card>
       ) : cards.length === 0 ? (
@@ -68,7 +79,7 @@ export function CardsPage() {
               stats={statsByCard.get(card.creditCard)}
               onView={openDetail}
               onEdit={openEdit}
-              onDelete={handleDelete}
+              onDelete={requestDelete}
             />
           ))}
         </div>
@@ -83,6 +94,13 @@ export function CardsPage() {
       />
 
       <CardDetailModal card={detailCard} onClose={closeDetail} />
+
+      <DeleteCardDialog
+        card={pendingDelete}
+        deleting={deleting}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

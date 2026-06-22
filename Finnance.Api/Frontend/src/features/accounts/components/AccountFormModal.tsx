@@ -11,6 +11,8 @@ import {
   DialogTitle,
   Input,
   Label,
+  Select,
+  Textarea,
 } from '@/shared/components/ui';
 import { CurrencyInput } from './CurrencyInput';
 import { ACCOUNT_COLORS, ACCOUNT_ICONS } from '../constants';
@@ -106,11 +108,10 @@ export function AccountFormModal({
               control={control}
               name="accountType"
               render={({ field }) => (
-                <select
+                <Select
                   id="account-type"
                   value={field.value || ''}
                   onChange={(event) => field.onChange(Number(event.target.value))}
-                  className="input-base w-full"
                 >
                   <option value="" disabled>
                     Selecione...
@@ -120,7 +121,7 @@ export function AccountFormModal({
                       {type.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               )}
             />
             {errors.accountType && (
@@ -190,13 +191,7 @@ export function AccountFormModal({
 
           <div>
             <Label htmlFor="account-notes">Observações</Label>
-            <textarea
-              id="account-notes"
-              rows={3}
-              className="input-base w-full resize-none"
-              placeholder="Opcional"
-              {...register('notes')}
-            />
+            <Textarea id="account-notes" rows={3} placeholder="Opcional" {...register('notes')} />
           </div>
 
           <DialogFooter>

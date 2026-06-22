@@ -7,6 +7,7 @@ import {
   DialogTitle,
   Input,
   Label,
+  Select,
 } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import type { BankAccount } from '@/features/accounts';
@@ -29,9 +30,6 @@ interface SalaryLaunchDialogProps {
   onCategoryChange: (value: string) => void;
   onPaymentDateChange: (value: string) => void;
 }
-
-const selectClass =
-  'w-full rounded-md border border-border bg-surface px-3 py-2 text-text transition-colors focus-visible:border-primary disabled:opacity-60';
 
 export function SalaryLaunchDialog({
   open,
@@ -71,9 +69,8 @@ export function SalaryLaunchDialog({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="salary-launch-account">Conta</Label>
-              <select
+              <Select
                 id="salary-launch-account"
-                className={selectClass}
                 value={accountId}
                 onChange={(event) => onAccountChange(event.target.value)}
               >
@@ -82,7 +79,7 @@ export function SalaryLaunchDialog({
                     {account.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
             <div>
               <Label htmlFor="salary-launch-date">Data</Label>
@@ -99,9 +96,8 @@ export function SalaryLaunchDialog({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="salary-launch-category">Categoria</Label>
-              <select
+              <Select
                 id="salary-launch-category"
-                className={selectClass}
                 value={categoryId}
                 onChange={(event) => onCategoryChange(event.target.value)}
               >
@@ -110,7 +106,7 @@ export function SalaryLaunchDialog({
                     {category.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
             <div>
               <Label htmlFor="salary-launch-amount">Valor líquido</Label>

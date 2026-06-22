@@ -1,5 +1,5 @@
 import { TrendingDown, TrendingUp, Wallet } from 'lucide-react';
-import { Card, CardContent } from '@/shared/components/ui';
+import { Card } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import type { DashboardStats } from '../types/dashboard.types';
 
@@ -38,24 +38,24 @@ export function DashboardSummary({ stats, isLoading }: DashboardSummaryProps) {
       {cards.map((card) => {
         const Icon = card.icon;
         return (
-          <Card key={card.title} className="p-4 sm:p-5">
-            <CardContent className="flex flex-col gap-3 sm:gap-4">
-              <div
-                className={`flex h-10 w-10 items-center justify-center rounded-lg ${card.iconClass}`}
-              >
-                <Icon size={20} />
-              </div>
-              <div>
-                <p className="mb-1 text-xs font-medium text-text-muted sm:text-sm">{card.title}</p>
-                {isLoading ? (
-                  <div className="h-7 w-28 animate-pulse rounded bg-surface-2" />
-                ) : (
-                  <p className={`text-lg font-bold tracking-tight sm:text-2xl ${card.valueClass}`}>
-                    {formatCurrency(card.value)}
-                  </p>
-                )}
-              </div>
-            </CardContent>
+          <Card key={card.title} className="flex items-center gap-4">
+            <div
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${card.iconClass}`}
+            >
+              <Icon size={20} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
+                {card.title}
+              </p>
+              {isLoading ? (
+                <div className="mt-1.5 h-7 w-28 animate-pulse rounded bg-surface-2" />
+              ) : (
+                <p className={`mt-0.5 text-2xl font-bold tracking-tight ${card.valueClass}`}>
+                  {formatCurrency(card.value)}
+                </p>
+              )}
+            </div>
           </Card>
         );
       })}

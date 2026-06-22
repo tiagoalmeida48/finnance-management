@@ -1,4 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import {
   Button,
   Dialog,
@@ -19,12 +22,14 @@ import {
   DEFAULT_CATEGORY_ICON,
 } from './categoryOptions';
 
-export interface CategoryFormValues {
-  name: string;
-  categoryType: number;
-  color: string;
-  icon: string;
-}
+const categorySchema = z.object({
+  name: z.string().trim().min(1, 'Informe o nome da categoria.'),
+  categoryType: z.number().int().positive('Selecione o tipo da categoria.'),
+  color: z.string(),
+  icon: z.string(),
+});
+
+export type CategoryFormValues = z.infer<typeof categorySchema>;
 
 interface CategoryFormModalProps {
   open: boolean;
@@ -39,6 +44,13 @@ const TYPE_OPTIONS = [
   { value: CategoryTypeId.INCOME, label: 'Receita' },
 ];
 
+const emptyValues: CategoryFormValues = {
+  name: '',
+  categoryType: CategoryTypeId.EXPENSE,
+  color: DEFAULT_CATEGORY_COLOR,
+  icon: DEFAULT_CATEGORY_ICON,
+};
+
 export function CategoryFormModal({
   open,
   category,
@@ -46,29 +58,35 @@ export function CategoryFormModal({
   onClose,
   onSubmit,
 }: CategoryFormModalProps) {
-  const [name, setName] = useState('');
-  const [categoryType, setCategoryType] = useState<number>(CategoryTypeId.EXPENSE);
-  const [color, setColor] = useState<string>(DEFAULT_CATEGORY_COLOR);
-  const [icon, setIcon] = useState<string>(DEFAULT_CATEGORY_ICON);
-  const [error, setError] = useState('');
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<CategoryFormValues>({
+    resolver: zodResolver(categorySchema),
+    defaultValues: emptyValues,
+  });
 
   useEffect(() => {
     if (!open) return;
-    setError('');
-    setName(category?.name ?? '');
-    setCategoryType(category?.categoryType ?? CategoryTypeId.EXPENSE);
-    setColor(category?.color ?? DEFAULT_CATEGORY_COLOR);
-    setIcon(category?.icon ?? DEFAULT_CATEGORY_ICON);
-  }, [open, category]);
-
-  const handleSubmit = () => {
-    const trimmed = name.trim();
-    if (!trimmed) {
-      setError('Informe o nome da categoria.');
-      return;
+    if (category) {
+      reset({
+        name: category.name,
+        categoryType: category.categoryType ?? CategoryTypeId.EXPENSE,
+        color: category.color ?? DEFAULT_CATEGORY_COLOR,
+        icon: category.icon ?? DEFAULT_CATEGORY_ICON,
+      });
+    } else {
+      reset(emptyValues);
     }
-    onSubmit({ name: trimmed, categoryType, color, icon });
-  };
+  }, [open, category, reset]);
+
+  const selectedType = watch('categoryType');
+  const selectedColor = watch('color');
+  const selectedIcon = watch('icon');
 
   return (
     <Dialog open={open} onOpenChange={(value) => (value ? undefined : onClose())}>
@@ -77,18 +95,17 @@ export function CategoryFormModal({
           <DialogTitle>{category ? 'Editar categoria' : 'Nova categoria'}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <Label htmlFor="category-name">Nome</Label>
             <Input
               id="category-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
               placeholder="Ex.: Alimentação"
               autoFocus
               className="w-full"
+              {...register('name')}
             />
-            {error ? <p className="mt-1 text-sm text-expense">{error}</p> : null}
+            {errors.name && <p className="mt-1 text-sm text-expense">{errors.name.message}</p>}
           </div>
 
           <div>
@@ -98,10 +115,10 @@ export function CategoryFormModal({
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => setCategoryType(option.value)}
+                  onClick={() => setValue('categoryType', option.value, { shouldDirty: true })}
                   className={cn(
                     'rounded-md border px-3 py-2 text-sm font-medium transition-colors',
-                    categoryType === option.value
+                    selectedType === option.value
                       ? 'border-primary bg-primary/10 text-text'
                       : 'border-border bg-surface text-text-muted hover:bg-surface-2',
                   )}
@@ -110,6 +127,9 @@ export function CategoryFormModal({
                 </button>
               ))}
             </div>
+            {errors.categoryType && (
+              <p className="mt-1 text-sm text-expense">{errors.categoryType.message}</p>
+            )}
           </div>
 
           <div>
@@ -120,10 +140,10 @@ export function CategoryFormModal({
                   key={option}
                   type="button"
                   aria-label={`Selecionar cor ${option}`}
-                  onClick={() => setColor(option)}
+                  onClick={() => setValue('color', option, { shouldDirty: true })}
                   className={cn(
                     'h-7 w-7 rounded-full border-2 transition-transform',
-                    color === option ? 'border-text scale-110' : 'border-transparent',
+                    selectedColor === option ? 'border-text scale-110' : 'border-transparent',
                   )}
                   style={{ backgroundColor: option }}
                 />
@@ -139,10 +159,10 @@ export function CategoryFormModal({
                   key={option}
                   type="button"
                   aria-label={`Selecionar ícone ${option}`}
-                  onClick={() => setIcon(option)}
+                  onClick={() => setValue('icon', option, { shouldDirty: true })}
                   className={cn(
                     'flex h-9 w-9 items-center justify-center rounded-md border text-lg transition-colors',
-                    icon === option
+                    selectedIcon === option
                       ? 'border-primary bg-primary/10'
                       : 'border-border bg-surface hover:bg-surface-2',
                   )}
@@ -152,16 +172,16 @@ export function CategoryFormModal({
               ))}
             </div>
           </div>
-        </div>
 
-        <DialogFooter>
-          <Button variant="ghost" onClick={onClose} disabled={saving}>
-            Cancelar
-          </Button>
-          <Button onClick={handleSubmit} loading={saving}>
-            {category ? 'Salvar' : 'Criar'}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={onClose} disabled={saving}>
+              Cancelar
+            </Button>
+            <Button type="submit" loading={saving}>
+              {category ? 'Salvar' : 'Criar'}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
