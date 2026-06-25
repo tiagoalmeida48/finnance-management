@@ -1,3 +1,5 @@
+import { LayoutDashboard } from 'lucide-react';
+import { PageHeader } from '@/shared/components/ui';
 import {
   DashboardCharts,
   DashboardFilters,
@@ -19,15 +21,12 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-text">Dashboard</h1>
-          <p className="text-sm text-text-muted">
-            Acompanhe seu saldo, receitas, despesas e movimentações recentes.
-          </p>
-        </div>
-        <DashboardFilters selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
-      </div>
+      <PageHeader
+        icon={LayoutDashboard}
+        title="Dashboard"
+        description="Acompanhe seu saldo, receitas, despesas e movimentações recentes."
+        actions={<DashboardFilters selectedYear={selectedYear} setSelectedYear={setSelectedYear} />}
+      />
 
       <DashboardSummary stats={stats} isLoading={isLoading} />
 

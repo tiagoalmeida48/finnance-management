@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
-  Select,
+  SelectMenu,
   Spinner,
 } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
@@ -51,11 +51,10 @@ export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
               </p>
             </div>
           </div>
-          <Select
+          <SelectMenu
             className="w-28"
             value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-            aria-label="Ano das faturas"
+            onChange={(value) => setYear(Number(value))}
             options={years.map((y) => ({ value: y, label: String(y) }))}
           />
         </DialogHeader>

@@ -1,4 +1,13 @@
-import { Button, Card, CardContent, CardHeader, CardTitle, Spinner } from '@/shared/components/ui';
+import { Users } from 'lucide-react';
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  PageHeader,
+  Spinner,
+} from '@/shared/components/ui';
 import {
   DeleteUserDialog,
   UserFormModal,
@@ -32,15 +41,12 @@ export function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-text">Usuários</h1>
-          <p className="text-sm text-text-muted">
-            Gerencie os usuários com acesso ao sistema.
-          </p>
-        </div>
-        <Button onClick={openCreate}>Novo usuário</Button>
-      </div>
+      <PageHeader
+        icon={Users}
+        title="Usuários"
+        description="Gerencie os usuários com acesso ao sistema."
+        actions={<Button onClick={openCreate}>Novo usuário</Button>}
+      />
 
       {isLoading ? (
         <div className="py-16">

@@ -2,11 +2,15 @@ export { Button } from './Button';
 export { Input } from './Input';
 export { Textarea } from './Textarea';
 export { Select } from './Select';
+export { SelectMenu } from './SelectMenu';
 export { Checkbox } from './Checkbox';
 export { Label } from './Label';
 export { Card, CardHeader, CardTitle, CardContent, CardFooter } from './Card';
 export { Badge } from './Badge';
 export { Spinner } from './Spinner';
+export { EmptyState } from './EmptyState';
+export { PageHeader } from './PageHeader';
+export { SegmentedControl } from './SegmentedControl';
 export {
   Dialog,
   DialogContent,

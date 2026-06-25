@@ -7,7 +7,7 @@ import {
   DialogTitle,
   Input,
   Label,
-  Select,
+  SelectMenu,
 } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import type { BankAccount } from '@/features/accounts';
@@ -69,17 +69,16 @@ export function SalaryLaunchDialog({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="salary-launch-account">Conta</Label>
-              <Select
+              <SelectMenu
                 id="salary-launch-account"
                 value={accountId}
-                onChange={(event) => onAccountChange(event.target.value)}
-              >
-                {accounts.map((account) => (
-                  <option key={account.bankAccount} value={account.bankAccount}>
-                    {account.name}
-                  </option>
-                ))}
-              </Select>
+                onChange={onAccountChange}
+                placeholder="Selecione"
+                options={accounts.map((account) => ({
+                  value: account.bankAccount,
+                  label: account.name,
+                }))}
+              />
             </div>
             <div>
               <Label htmlFor="salary-launch-date">Data</Label>
@@ -96,17 +95,16 @@ export function SalaryLaunchDialog({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="salary-launch-category">Categoria</Label>
-              <Select
+              <SelectMenu
                 id="salary-launch-category"
                 value={categoryId}
-                onChange={(event) => onCategoryChange(event.target.value)}
-              >
-                {incomeCategories.map((category) => (
-                  <option key={category.category} value={category.category}>
-                    {category.name}
-                  </option>
-                ))}
-              </Select>
+                onChange={onCategoryChange}
+                placeholder="Selecione"
+                options={incomeCategories.map((category) => ({
+                  value: category.category,
+                  label: category.name,
+                }))}
+              />
             </div>
             <div>
               <Label htmlFor="salary-launch-amount">Valor líquido</Label>

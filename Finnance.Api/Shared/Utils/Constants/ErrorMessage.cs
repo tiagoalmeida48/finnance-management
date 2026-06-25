@@ -18,6 +18,7 @@ public static partial class Constants
         public const string ErrorAccess = "Acesso negado.";
         public const string ExpiredToken = "Sessão expirada. Faça login novamente.";
         public const string ErrorNotExpected = "Ocorreu um erro inesperado. Tente novamente mais tarde.";
+        public const string InvalidRequestBody = "Requisição inválida. Verifique os dados enviados.";
         public const string DatabaseAccessError = "Não foi possível acessar o banco de dados. Tente novamente mais tarde.";
         public const string ErrorLoginErp = "Falha na autenticação com o serviço externo.";
         public const string InvalidAmount = "O valor deve ser maior que zero.";

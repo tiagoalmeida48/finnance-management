@@ -34,7 +34,7 @@ export function Dialog({ open, onOpenChange, children, className }: DialogProps)
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center"
+      className="animate-overlay-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onOpenChange(false);
@@ -44,7 +44,7 @@ export function Dialog({ open, onOpenChange, children, className }: DialogProps)
       <div
         ref={contentRef}
         className={cn(
-          'bg-surface border border-border rounded-lg shadow-lg max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto',
+          'animate-dialog-in w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-border-strong bg-surface-gradient shadow-elevated',
           className,
         )}
       >
@@ -58,19 +58,19 @@ export function Dialog({ open, onOpenChange, children, className }: DialogProps)
 interface DialogContentProps extends HTMLAttributes<HTMLDivElement> {}
 
 export function DialogContent({ className, ...props }: DialogContentProps) {
-  return <div className={cn('p-6', className)} {...props} />;
+  return <div className={cn('p-5', className)} {...props} />;
 }
 
 export function DialogHeader({ className, ...props }: DialogContentProps) {
-  return <div className={cn('mb-4 pb-4 border-b border-border', className)} {...props} />;
+  return <div className={cn('mb-4 pb-3 border-b border-border', className)} {...props} />;
 }
 
 export function DialogTitle({ className, ...props }: DialogContentProps) {
-  return <h2 className={cn('text-xl font-bold text-text', className)} {...props} />;
+  return <h2 className={cn('text-lg font-bold text-text', className)} {...props} />;
 }
 
 export function DialogFooter({ className, ...props }: DialogContentProps) {
   return (
-    <div className={cn('mt-6 pt-4 border-t border-border flex gap-2 justify-end', className)} {...props} />
+    <div className={cn('mt-5 pt-3 border-t border-border flex gap-2 justify-end', className)} {...props} />
   );
 }

@@ -1,4 +1,4 @@
-import { Button, Card, CardContent, Input, Label, Select } from '@/shared/components/ui';
+import { Button, Card, CardContent, Input, Label, SelectMenu } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import { buildSettingKey, formatValidity } from '../constants';
 import type { PayrollResult, SalarySetting } from '../types/salary.types';
@@ -34,27 +34,22 @@ export function SalarySimulatorPanel({
 }: SimulatorPanelProps) {
   return (
     <Card className="h-full">
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         <h3 className="font-semibold text-text">Simular folha</h3>
 
         <div>
           <Label htmlFor="salary-validity">Vigência selecionada</Label>
-          <Select
+          <SelectMenu
             id="salary-validity"
             value={selectedSettingInputKey}
-            onChange={(event) => onSelectedSettingChange(event.target.value)}
-          >
-            {availableSettings.map((setting) => {
+            onChange={onSelectedSettingChange}
+            placeholder="Selecione"
+            options={availableSettings.map((setting) => {
               const key = buildSettingKey(setting);
               const isCurrent = currentSetting ? key === buildSettingKey(currentSetting) : false;
-              return (
-                <option key={`setting-${key}`} value={key}>
-                  {formatValidity(setting)}
-                  {isCurrent ? ' (atual)' : ''}
-                </option>
-              );
+              return { value: key, label: `${formatValidity(setting)}${isCurrent ? ' (atual)' : ''}` };
             })}
-          </Select>
+          />
         </div>
 
         <div>
@@ -72,10 +67,10 @@ export function SalarySimulatorPanel({
           />
         </div>
 
-        <div className="flex items-center justify-between rounded-lg border border-border bg-surface px-4 py-3">
-          <span className="text-sm font-medium uppercase tracking-wide text-text-muted">Líquido</span>
+        <div className="flex items-center justify-between rounded-lg border border-border-strong bg-bg/40 px-4 py-3.5">
+          <span className="mono-label text-[11px] text-text-muted">Líquido</span>
           <span
-            className={`text-3xl font-black tracking-tight ${isNetNegative ? 'text-expense' : 'text-income'}`}
+            className={`nums text-3xl font-semibold ${isNetNegative ? 'text-expense' : 'text-income'}`}
           >
             {formatCurrency(payroll.netPay)}
           </span>
@@ -171,9 +166,9 @@ function SummaryRow({
     tone === 'income' ? 'text-income' : tone === 'expense' ? 'text-expense' : 'text-text';
 
   return (
-    <div className="flex items-center justify-between border-b border-border/50 py-2 last:border-0">
+    <div className="flex items-center justify-between border-b border-border/50 py-1.5 last:border-0">
       <span className={`text-sm ${bold ? 'font-semibold text-text' : 'text-text-muted'}`}>{label}</span>
-      <span className={`text-sm font-bold ${valueClass}`}>{value}</span>
+      <span className={`nums text-sm font-semibold ${valueClass}`}>{value}</span>
     </div>
   );
 }

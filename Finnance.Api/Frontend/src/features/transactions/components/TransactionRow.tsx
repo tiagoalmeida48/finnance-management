@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, Clock, Copy, CreditCard, Trash2 } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, Copy, CreditCard, Pencil, Trash2 } from 'lucide-react';
 import { Badge } from '@/shared/components/ui';
 import { formatCurrency, formatDate } from '@/shared/utils';
 import { TransactionTypeId } from '@/config/constants';
@@ -18,6 +18,7 @@ interface TransactionRowProps {
   cards: CreditCardLookup[];
   onToggleSelect: (id: number) => void;
   onTogglePaid: (transaction: Transaction) => void;
+  onEdit: (transaction: Transaction) => void;
   onDuplicate: (transaction: Transaction) => void;
   onDelete: (transaction: Transaction) => void;
 }
@@ -36,6 +37,7 @@ export function TransactionRow({
   cards,
   onToggleSelect,
   onTogglePaid,
+  onEdit,
   onDuplicate,
   onDelete,
 }: TransactionRowProps) {
@@ -48,6 +50,11 @@ export function TransactionRow({
   const target = isTransfer
     ? findName(accounts, 'bankAccount', 'name', transaction.toAccount)
     : findName(categories, 'category', 'name', transaction.category);
+  const amountColor = isTransfer
+    ? 'text-transfer'
+    : transaction.transactionType === TransactionTypeId.INCOME
+      ? 'text-income'
+      : 'text-expense';
 
   return (
     <tr className={`border-b border-border transition-colors ${selected ? 'bg-primary/5' : 'hover:bg-surface-2'}`}>
@@ -72,7 +79,7 @@ export function TransactionRow({
           {isCard ? <CreditCard size={18} /> : transaction.paid ? <CheckCircle2 size={18} /> : <Clock size={18} />}
         </button>
       </td>
-      <td className="px-3 py-3 text-sm text-text-muted whitespace-nowrap">
+      <td className="nums px-3 py-3 text-xs text-text-muted whitespace-nowrap">
         {date ? formatDate(`${date.slice(0, 10)}T12:00:00`) : '—'}
       </td>
       <td className="px-3 py-3">
@@ -98,11 +105,19 @@ export function TransactionRow({
           <p className="text-xs">{isTransfer ? `→ ${target}` : target}</p>
         </div>
       </td>
-      <td className="px-3 py-3 text-right text-sm font-bold whitespace-nowrap">
+      <td className={`nums px-3 py-3 text-right text-sm font-semibold whitespace-nowrap ${amountColor}`}>
         {formatCurrency(transaction.amount ?? 0)}
       </td>
       <td className="px-3 py-3">
         <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => onEdit(transaction)}
+            className="text-text-muted hover:text-text"
+            aria-label="Editar"
+          >
+            <Pencil size={16} />
+          </button>
           <button
             type="button"
             onClick={() => onDuplicate(transaction)}
@@ -114,7 +129,7 @@ export function TransactionRow({
           <button
             type="button"
             onClick={() => onDelete(transaction)}
-            className="text-text-muted hover:text-expense"
+            className="text-expense transition-colors hover:brightness-125"
             aria-label="Excluir"
           >
             <Trash2 size={16} />

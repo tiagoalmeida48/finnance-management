@@ -11,7 +11,7 @@ import {
   DialogTitle,
   Input,
   Label,
-  Select,
+  SelectMenu,
   Textarea,
 } from '@/shared/components/ui';
 import { CurrencyInput } from './CurrencyInput';
@@ -95,37 +95,36 @@ export function AccountFormModal({
           <DialogTitle>{isEditing ? 'Editar conta' : 'Nova conta'}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2"
+        >
+          <div className="sm:col-span-2">
             <Label htmlFor="account-name">Nome</Label>
             <Input id="account-name" className="w-full" placeholder="Ex.: Conta corrente" {...register('name')} />
-            {errors.name && <p className="text-expense text-sm mt-1">{errors.name.message}</p>}
+            {errors.name && <p className="text-expense text-xs mt-1">{errors.name.message}</p>}
           </div>
 
-          <div>
+          <div className={isEditing ? 'sm:col-span-2' : ''}>
             <Label htmlFor="account-type">Tipo de conta</Label>
             <Controller
               control={control}
               name="accountType"
               render={({ field }) => (
-                <Select
+                <SelectMenu
                   id="account-type"
                   value={field.value || ''}
-                  onChange={(event) => field.onChange(Number(event.target.value))}
-                >
-                  <option value="" disabled>
-                    Selecione...
-                  </option>
-                  {accountTypes.map((type) => (
-                    <option key={type.accountType} value={type.accountType}>
-                      {type.name}
-                    </option>
-                  ))}
-                </Select>
+                  onChange={(value) => field.onChange(Number(value))}
+                  placeholder="Selecione..."
+                  options={accountTypes.map((type) => ({
+                    value: type.accountType,
+                    label: type.name,
+                  }))}
+                />
               )}
             />
             {errors.accountType && (
-              <p className="text-expense text-sm mt-1">{errors.accountType.message}</p>
+              <p className="text-expense text-xs mt-1">{errors.accountType.message}</p>
             )}
           </div>
 
@@ -146,7 +145,7 @@ export function AccountFormModal({
             </div>
           )}
 
-          <div>
+          <div className="sm:col-span-2">
             <Label>Cor</Label>
             <div className="flex flex-wrap gap-2">
               {ACCOUNT_COLORS.map((color) => (
@@ -167,7 +166,7 @@ export function AccountFormModal({
             </div>
           </div>
 
-          <div>
+          <div className="sm:col-span-2">
             <Label>Ícone</Label>
             <div className="flex flex-wrap gap-2">
               {ACCOUNT_ICONS.map((icon) => (
@@ -189,12 +188,12 @@ export function AccountFormModal({
             </div>
           </div>
 
-          <div>
+          <div className="sm:col-span-2">
             <Label htmlFor="account-notes">Observações</Label>
-            <Textarea id="account-notes" rows={3} placeholder="Opcional" {...register('notes')} />
+            <Textarea id="account-notes" rows={2} placeholder="Opcional" {...register('notes')} />
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="sm:col-span-2">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>

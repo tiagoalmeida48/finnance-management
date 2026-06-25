@@ -1,4 +1,4 @@
-import { Select } from '@/shared/components/ui';
+import { SelectMenu } from '@/shared/components/ui';
 
 interface DashboardFiltersProps {
   selectedYear: number;
@@ -14,18 +14,13 @@ export function DashboardFilters({ selectedYear, setSelectedYear }: DashboardFil
       <label className="sr-only" htmlFor="dashboard-year">
         Ano
       </label>
-      <Select
+      <SelectMenu
         id="dashboard-year"
-        className="h-9 min-w-[110px] bg-surface-2 text-sm"
+        className="min-w-[120px]"
         value={selectedYear}
-        onChange={(event) => setSelectedYear(Number(event.target.value))}
-      >
-        {years.map((year) => (
-          <option key={year} value={year}>
-            {year}
-          </option>
-        ))}
-      </Select>
+        onChange={(value) => setSelectedYear(Number(value))}
+        options={years.map((year) => ({ value: year, label: String(year) }))}
+      />
     </div>
   );
 }

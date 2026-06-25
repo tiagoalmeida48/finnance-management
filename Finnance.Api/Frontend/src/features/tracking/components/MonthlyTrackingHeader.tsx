@@ -18,7 +18,7 @@ export function MonthlyTrackingHeader({
           {monthName}
         </span>
         <span
-          className={`inline-flex h-[22px] shrink-0 items-center rounded-full border px-2 text-[11px] font-bold ${
+          className={`inline-flex h-[22px] shrink-0 items-center rounded-full border px-2 font-mono text-[0.6rem] uppercase tracking-wider ${
             isSettled
               ? 'border-income/35 bg-income/10 text-income'
               : 'border-primary/35 bg-primary/10 text-primary'
@@ -28,7 +28,7 @@ export function MonthlyTrackingHeader({
         </span>
       </div>
 
-      <span className={`text-sm font-bold ${isSettled ? 'text-income' : 'text-primary'}`}>
+      <span className={`nums text-base font-semibold ${isSettled ? 'text-income' : 'text-primary'}`}>
         {formatCurrency(totalAmount)}
       </span>
     </div>

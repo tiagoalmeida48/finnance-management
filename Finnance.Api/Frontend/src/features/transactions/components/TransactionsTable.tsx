@@ -15,6 +15,7 @@ interface TransactionsTableProps {
   onToggleSelect: (id: number) => void;
   onToggleSelectAll: (checked: boolean) => void;
   onTogglePaid: (transaction: Transaction) => void;
+  onEdit: (transaction: Transaction) => void;
   onDuplicate: (transaction: Transaction) => void;
   onDelete: (transaction: Transaction) => void;
   onPageChange: (page: number) => void;
@@ -30,6 +31,7 @@ export function TransactionsTable({
   onToggleSelect,
   onToggleSelectAll,
   onTogglePaid,
+  onEdit,
   onDuplicate,
   onDelete,
   onPageChange,
@@ -45,7 +47,7 @@ export function TransactionsTable({
       <div className="overflow-x-auto rounded-md border border-border">
         <table className="w-full min-w-[720px] border-collapse">
           <thead>
-            <tr className="border-b border-border bg-surface-2 text-left text-xs uppercase tracking-wider text-text-muted">
+            <tr className="border-b border-border bg-surface-2 text-left font-mono text-[0.65rem] uppercase tracking-wider text-text-muted">
               <th className="px-3 py-3">
                 <Checkbox
                   checked={allSelected}
@@ -71,6 +73,7 @@ export function TransactionsTable({
                 cards={cards.data ?? []}
                 onToggleSelect={onToggleSelect}
                 onTogglePaid={onTogglePaid}
+                onEdit={onEdit}
                 onDuplicate={onDuplicate}
                 onDelete={onDelete}
               />

@@ -12,7 +12,7 @@ export function PayrollCalculatorTab() {
   return (
     <div className="relative">
       <Card>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-2.5">
           <div className="relative rounded-lg bg-surface-2 px-4 py-3 text-right">
             <button
               type="button"
@@ -22,9 +22,9 @@ export function PayrollCalculatorTab() {
             >
               <History size={16} />
             </button>
-            <p className="block h-4 truncate text-xs text-text-muted">{calc.expression || ' '}</p>
+            <p className="nums block h-4 truncate text-xs text-text-muted">{calc.expression || ' '}</p>
             <p
-              className={`truncate text-3xl font-black tracking-tight ${isError ? 'text-expense' : 'text-text'}`}
+              className={`nums truncate text-3xl font-semibold ${isError ? 'text-expense' : 'text-text'}`}
             >
               {calc.display}
             </p>
@@ -90,7 +90,7 @@ function CalcButton({
     <button
       type="button"
       onClick={onClick}
-      className={`flex h-14 w-full select-none items-center justify-center rounded-lg text-lg font-semibold transition-all active:scale-95 ${styles[variant]}`}
+      className={`flex h-12 w-full select-none items-center justify-center rounded-lg font-mono text-lg font-medium transition-all active:scale-95 ${styles[variant]}`}
     >
       {label}
     </button>

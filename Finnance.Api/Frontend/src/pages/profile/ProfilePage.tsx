@@ -1,4 +1,5 @@
-import { Spinner } from '@/shared/components/ui';
+import { UserRound } from 'lucide-react';
+import { PageHeader, Spinner } from '@/shared/components/ui';
 import {
   PersonalInfoForm,
   SecurityForm,
@@ -27,12 +28,11 @@ export function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-text">Meu perfil</h1>
-        <p className="text-sm text-text-muted">
-          Atualize seus dados pessoais e a sua senha de acesso.
-        </p>
-      </div>
+      <PageHeader
+        icon={UserRound}
+        title="Meu perfil"
+        description="Atualize seus dados pessoais e a sua senha de acesso."
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <PersonalInfoForm

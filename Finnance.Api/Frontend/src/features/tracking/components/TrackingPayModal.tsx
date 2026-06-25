@@ -9,7 +9,7 @@ import {
   DialogTitle,
   Input,
   Label,
-  Select,
+  SelectMenu,
 } from '@/shared/components/ui';
 import { formatCurrency } from '../constants';
 import type { PayItemInput, TrackingItem } from '../types/tracking.types';
@@ -71,19 +71,18 @@ export function TrackingPayModal({
 
           <div className="flex flex-col gap-1">
             <Label htmlFor="tracking-account">Conta de débito</Label>
-            <Select
+            <SelectMenu
               id="tracking-account"
               value={accountId}
-              onChange={(e) => setAccountId(e.target.value)}
-              className="text-sm"
-            >
-              <option value="">Sem conta (apenas marcar como pago)</option>
-              {accounts.map((account) => (
-                <option key={account.bankAccount} value={account.bankAccount}>
-                  {account.name}
-                </option>
-              ))}
-            </Select>
+              onChange={setAccountId}
+              options={[
+                { value: '', label: 'Sem conta (apenas marcar como pago)' },
+                ...accounts.map((account) => ({
+                  value: account.bankAccount,
+                  label: account.name,
+                })),
+              ]}
+            />
           </div>
         </div>
 

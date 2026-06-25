@@ -1,4 +1,4 @@
-import { Button, Input, Label, Select } from '@/shared/components/ui';
+import { Button, Input, Label, SelectMenu } from '@/shared/components/ui';
 import {
   useAccountsLookup,
   useCategoriesLookup,
@@ -32,31 +32,35 @@ export function TransactionsFilters({ filter, onChange, onReset }: TransactionsF
   const accounts = useAccountsLookup();
   const categories = useCategoriesLookup();
 
-  const accountOptions = (accounts.data ?? []).map((a) => ({ value: a.bankAccount, label: a.name }));
-  const categoryOptions = (categories.data ?? []).map((c) => ({ value: c.category, label: c.name }));
+  const accountOptions = [
+    { value: '', label: 'Todas' },
+    ...(accounts.data ?? []).map((a) => ({ value: a.bankAccount, label: a.name })),
+  ];
+  const categoryOptions = [
+    { value: '', label: 'Todas' },
+    ...(categories.data ?? []).map((c) => ({ value: c.category, label: c.name })),
+  ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
       <div>
         <Label htmlFor="filter-account">Conta</Label>
-        <Select
+        <SelectMenu
           id="filter-account"
-          className="w-full"
           placeholder="Todas"
           options={accountOptions}
           value={filter.account || ''}
-          onChange={(e) => onChange({ account: Number(e.target.value) || 0, offset: 0 })}
+          onChange={(value) => onChange({ account: Number(value) || 0, offset: 0 })}
         />
       </div>
       <div>
         <Label htmlFor="filter-category">Categoria</Label>
-        <Select
+        <SelectMenu
           id="filter-category"
-          className="w-full"
           placeholder="Todas"
           options={categoryOptions}
           value={filter.category || ''}
-          onChange={(e) => onChange({ category: Number(e.target.value) || 0, offset: 0 })}
+          onChange={(value) => onChange({ category: Number(value) || 0, offset: 0 })}
         />
       </div>
       <div>
@@ -81,12 +85,11 @@ export function TransactionsFilters({ filter, onChange, onReset }: TransactionsF
       </div>
       <div>
         <Label htmlFor="filter-paid">Situação</Label>
-        <Select
+        <SelectMenu
           id="filter-paid"
-          className="w-full"
           options={paidOptions}
           value={paidToValue(filter.isPaid)}
-          onChange={(e) => onChange({ isPaid: valueToPaid(e.target.value), offset: 0 })}
+          onChange={(value) => onChange({ isPaid: valueToPaid(value), offset: 0 })}
         />
       </div>
       <Button type="button" variant="outline" onClick={onReset}>

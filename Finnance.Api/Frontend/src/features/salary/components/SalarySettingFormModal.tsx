@@ -84,12 +84,15 @@ export function SalarySettingFormModal({
           <DialogTitle>{isEdit ? 'Editar vigência salarial' : 'Nova vigência salarial'}</DialogTitle>
         </DialogHeader>
 
-        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+        <form
+          className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2"
+          onSubmit={handleSubmit(onSubmit)}
+        >
           <div>
             <Label htmlFor="dateStart">Data de início</Label>
             <Input id="dateStart" type="date" className="w-full" {...register('dateStart')} />
             {errors.dateStart && (
-              <p className="mt-1 text-sm text-expense">{errors.dateStart.message}</p>
+              <p className="mt-1 text-xs text-expense">{errors.dateStart.message}</p>
             )}
           </div>
 
@@ -104,7 +107,7 @@ export function SalarySettingFormModal({
               {...register('baseSalary', { valueAsNumber: true })}
             />
             {errors.baseSalary && (
-              <p className="mt-1 text-sm text-expense">{errors.baseSalary.message}</p>
+              <p className="mt-1 text-xs text-expense">{errors.baseSalary.message}</p>
             )}
           </div>
 
@@ -119,45 +122,43 @@ export function SalarySettingFormModal({
               {...register('hourlyRate', { valueAsNumber: true })}
             />
             {errors.hourlyRate && (
-              <p className="mt-1 text-sm text-expense">{errors.hourlyRate.message}</p>
+              <p className="mt-1 text-xs text-expense">{errors.hourlyRate.message}</p>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="inssDiscountPercentage">Desconto INSS (%)</Label>
-              <Input
-                id="inssDiscountPercentage"
-                type="number"
-                step="0.01"
-                min="0"
-                max="100"
-                className="w-full"
-                {...register('inssDiscountPercentage', { valueAsNumber: true })}
-              />
-              {errors.inssDiscountPercentage && (
-                <p className="mt-1 text-sm text-expense">{errors.inssDiscountPercentage.message}</p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="adminFeePercentage">Taxa administrativa (%)</Label>
-              <Input
-                id="adminFeePercentage"
-                type="number"
-                step="0.01"
-                min="0"
-                max="100"
-                className="w-full"
-                {...register('adminFeePercentage', { valueAsNumber: true })}
-              />
-              {errors.adminFeePercentage && (
-                <p className="mt-1 text-sm text-expense">{errors.adminFeePercentage.message}</p>
-              )}
-            </div>
+          <div>
+            <Label htmlFor="inssDiscountPercentage">Desconto INSS (%)</Label>
+            <Input
+              id="inssDiscountPercentage"
+              type="number"
+              step="0.01"
+              min="0"
+              max="100"
+              className="w-full"
+              {...register('inssDiscountPercentage', { valueAsNumber: true })}
+            />
+            {errors.inssDiscountPercentage && (
+              <p className="mt-1 text-xs text-expense">{errors.inssDiscountPercentage.message}</p>
+            )}
           </div>
 
-          <DialogFooter>
+          <div>
+            <Label htmlFor="adminFeePercentage">Taxa administrativa (%)</Label>
+            <Input
+              id="adminFeePercentage"
+              type="number"
+              step="0.01"
+              min="0"
+              max="100"
+              className="w-full"
+              {...register('adminFeePercentage', { valueAsNumber: true })}
+            />
+            {errors.adminFeePercentage && (
+              <p className="mt-1 text-xs text-expense">{errors.adminFeePercentage.message}</p>
+            )}
+          </div>
+
+          <DialogFooter className="sm:col-span-2">
             <Button
               type="button"
               variant="ghost"

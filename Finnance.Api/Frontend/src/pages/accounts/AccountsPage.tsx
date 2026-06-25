@@ -1,4 +1,5 @@
-import { Button, Card, CardContent, Spinner } from '@/shared/components/ui';
+import { Landmark } from 'lucide-react';
+import { Button, Card, CardContent, EmptyState, PageHeader, Spinner } from '@/shared/components/ui';
 import {
   AccountCard,
   AccountFormModal,
@@ -28,15 +29,12 @@ export function AccountsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-text">Contas</h1>
-          <p className="text-sm text-text-muted">
-            Gerencie suas contas bancárias e acompanhe os saldos.
-          </p>
-        </div>
-        <Button onClick={openCreate}>Nova conta</Button>
-      </div>
+      <PageHeader
+        icon={Landmark}
+        title="Contas"
+        description="Gerencie suas contas bancárias e acompanhe os saldos."
+        actions={<Button onClick={openCreate}>Nova conta</Button>}
+      />
 
       {isLoading ? (
         <div className="py-16">
@@ -51,17 +49,16 @@ export function AccountsPage() {
       ) : accounts.length === 0 ? (
         <Card>
           <CardContent>
-            <div className="flex flex-col items-center gap-3 py-10 text-center">
-              <p className="font-semibold text-text">Nenhuma conta cadastrada</p>
-              <p className="text-sm text-text-muted">
-                Crie sua primeira conta para começar a controlar suas finanças.
-              </p>
-              <Button onClick={openCreate}>Criar conta</Button>
-            </div>
+            <EmptyState
+              icon={Landmark}
+              title="Nenhuma conta cadastrada"
+              description="Crie sua primeira conta para começar a controlar suas finanças."
+              action={<Button onClick={openCreate}>Criar conta</Button>}
+            />
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {accounts.map((account) => (
             <AccountCard
               key={account.bankAccount}

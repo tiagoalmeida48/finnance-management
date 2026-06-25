@@ -1,4 +1,5 @@
 export { TransactionFormModal } from './components/TransactionFormModal';
+export { TransactionImportModal } from './components/TransactionImportModal';
 export { TransactionRow } from './components/TransactionRow';
 export { TransactionsBatchBar } from './components/TransactionsBatchBar';
 export { TransactionsFilters } from './components/TransactionsFilters';

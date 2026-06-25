@@ -20,6 +20,21 @@ public static partial class Configuration
         SeedLookup(con, "invoice_status", ["Aberta", "Parcial", "Paga"]);
         SeedLookup(con, "audit_action", ["INSERT", "UPDATE", "DELETE"]);
         SeedSystemConfig(con, Constants.SystemConfigKey.TetoInss, Constants.DefaultTetoInss);
+        SeedAdminUser(con, "admin@finnance.com", "admin123", "Administrador");
+    }
+
+    private static void SeedAdminUser(NpgsqlConnection con, string email, string password, string fullName)
+    {
+        const string sql =
+            "INSERT INTO \"user\" (email, password_hash, full_name, currency, locale, active, is_admin, created, updated) " +
+            "SELECT @email, @hash, @fullName, 'BRL', 'pt-BR', TRUE, TRUE, now(), now() " +
+            "WHERE NOT EXISTS (SELECT 1 FROM \"user\" WHERE email = @email)";
+
+        using var cmd = new NpgsqlCommand(sql, con);
+        cmd.Parameters.AddWithValue("email", email);
+        cmd.Parameters.AddWithValue("hash", Argon2Helper.GenerateHashPassword(password));
+        cmd.Parameters.AddWithValue("fullName", fullName);
+        cmd.ExecuteNonQuery();
     }
 
     private static void SeedLookup(NpgsqlConnection con, string table, string[] names)

@@ -12,11 +12,11 @@ interface AccountCardProps {
 
 export function AccountCard({ account, accountTypeName, onEdit, onDelete }: AccountCardProps) {
   return (
-    <Card className="flex flex-col gap-4 transition-colors hover:border-primary/40">
+    <Card className="flex flex-col gap-3 transition-colors hover:border-primary/40">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div
-            className="h-11 w-11 shrink-0 rounded-lg flex items-center justify-center text-xl"
+            className="h-11 w-11 shrink-0 rounded-lg flex items-center justify-center overflow-hidden text-xl leading-none"
             style={{ backgroundColor: `${account.color}33` }}
           >
             <span>{account.icon || '🏦'}</span>
@@ -30,8 +30,10 @@ export function AccountCard({ account, accountTypeName, onEdit, onDelete }: Acco
       </div>
 
       <div>
-        <p className="text-sm text-text-muted">Saldo atual</p>
-        <p className="text-2xl font-bold text-text">{formatCurrency(account.currentBalance)}</p>
+        <p className="mono-label text-[10px] text-text-muted">Saldo atual</p>
+        <p className="nums mt-1 text-2xl font-semibold text-text">
+          {formatCurrency(account.currentBalance)}
+        </p>
       </div>
 
       {account.notes && <p className="text-sm text-text-muted line-clamp-2">{account.notes}</p>}
@@ -49,7 +51,7 @@ export function AccountCard({ account, accountTypeName, onEdit, onDelete }: Acco
           variant="ghost"
           size="sm"
           aria-label="Excluir conta"
-          className="text-expense hover:text-expense"
+          className="text-expense hover:text-expense hover:brightness-125"
           onClick={() => onDelete(account)}
         >
           <Trash2 className="h-4 w-4" />

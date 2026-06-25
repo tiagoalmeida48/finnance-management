@@ -30,6 +30,8 @@ function createDefaultFilter(): TransactionFilter {
 export function useTransactionsPageLogic() {
   const [filter, setFilter] = useState<TransactionFilter>(createDefaultFilter);
   const [formOpen, setFormOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [editing, setEditing] = useState<Transaction | null>(null);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [pendingDelete, setPendingDelete] = useState<Transaction | null>(null);
 
@@ -121,10 +123,24 @@ export function useTransactionsPageLogic() {
     pageSize: PAGE_SIZE,
     hasNextPage,
     formOpen,
+    importOpen,
+    editing,
     selectedIds,
     pendingDelete,
-    openForm: () => setFormOpen(true),
-    closeForm: () => setFormOpen(false),
+    openImport: () => setImportOpen(true),
+    closeImport: () => setImportOpen(false),
+    openForm: () => {
+      setEditing(null);
+      setFormOpen(true);
+    },
+    openEdit: (transaction: Transaction) => {
+      setEditing(transaction);
+      setFormOpen(true);
+    },
+    closeForm: () => {
+      setFormOpen(false);
+      setEditing(null);
+    },
     updateFilter,
     resetFilter,
     goToPage,

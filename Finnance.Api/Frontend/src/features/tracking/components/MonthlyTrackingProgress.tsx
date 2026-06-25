@@ -12,7 +12,7 @@ export function MonthlyTrackingProgress({
   totalItems,
 }: MonthlyTrackingProgressProps) {
   return (
-    <div className="mb-3">
+    <div className="mb-2">
       <div className="mb-1 flex items-center justify-between">
         <span className="text-xs text-text-muted">
           {paidItems} de {totalItems} pagos

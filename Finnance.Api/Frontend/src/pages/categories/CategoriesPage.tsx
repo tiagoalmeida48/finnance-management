@@ -1,9 +1,11 @@
+import { Tags } from 'lucide-react';
 import {
   Button,
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
+  EmptyState,
+  PageHeader,
+  SegmentedControl,
   Spinner,
 } from '@/shared/components/ui';
 import {
@@ -15,7 +17,10 @@ import {
 
 export function CategoriesPage() {
   const {
-    groups,
+    categories,
+    hasCategories,
+    typeFilter,
+    setTypeFilter,
     isEmpty,
     isLoading,
     isError,
@@ -35,15 +40,12 @@ export function CategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-text">Categorias</h1>
-          <p className="text-sm text-text-muted">
-            Organize suas receitas e despesas por categoria.
-          </p>
-        </div>
-        <Button onClick={openCreate}>Nova categoria</Button>
-      </div>
+      <PageHeader
+        icon={Tags}
+        title="Categorias"
+        description="Organize suas receitas e despesas por categoria."
+        actions={<Button onClick={openCreate}>Nova categoria</Button>}
+      />
 
       {isLoading ? (
         <div className="py-16">
@@ -58,36 +60,44 @@ export function CategoriesPage() {
       ) : isEmpty ? (
         <Card>
           <CardContent>
-            <div className="flex flex-col items-center gap-3 py-10 text-center">
-              <p className="font-semibold text-text">Nenhuma categoria cadastrada</p>
-              <p className="text-sm text-text-muted">
-                Crie sua primeira categoria para começar a organizar suas finanças.
-              </p>
-              <Button onClick={openCreate}>Criar categoria</Button>
-            </div>
+            <EmptyState
+              icon={Tags}
+              title="Nenhuma categoria cadastrada"
+              description="Crie sua primeira categoria para começar a organizar suas finanças."
+              action={<Button onClick={openCreate}>Criar categoria</Button>}
+            />
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-6">
-          {groups.map((group) => (
-            <Card key={group.type}>
-              <CardHeader>
-                <CardTitle>{group.label}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {group.items.map((category) => (
-                    <CategoryCard
-                      key={category.category}
-                      category={category}
-                      onEdit={openEdit}
-                      onDelete={requestDelete}
-                    />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="space-y-4">
+          {hasCategories && (
+            <SegmentedControl
+              value={typeFilter}
+              onChange={setTypeFilter}
+              options={[
+                { value: 'all', label: 'Todas' },
+                { value: 'income', label: 'Receitas' },
+                { value: 'expense', label: 'Despesas' },
+              ]}
+            />
+          )}
+
+          {categories.length === 0 ? (
+            <p className="py-10 text-center text-sm text-text-muted">
+              Nenhuma categoria neste filtro.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {categories.map((category) => (
+                <CategoryCard
+                  key={category.category}
+                  category={category}
+                  onEdit={openEdit}
+                  onDelete={requestDelete}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 

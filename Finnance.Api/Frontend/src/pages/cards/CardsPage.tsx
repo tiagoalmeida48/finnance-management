@@ -1,4 +1,5 @@
-import { Button, Card, CardContent, Spinner } from '@/shared/components/ui';
+import { CreditCard as CreditCardIcon } from 'lucide-react';
+import { Button, Card, CardContent, EmptyState, PageHeader, Spinner } from '@/shared/components/ui';
 import {
   CardDetailModal,
   CardFormModal,
@@ -33,15 +34,12 @@ export function CardsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-text">Cartões</h1>
-          <p className="text-sm text-text-muted">
-            Acompanhe os limites e as faturas dos seus cartões de crédito.
-          </p>
-        </div>
-        <Button onClick={openCreate}>Novo cartão</Button>
-      </div>
+      <PageHeader
+        icon={CreditCardIcon}
+        title="Cartões"
+        description="Acompanhe os limites e as faturas dos seus cartões de crédito."
+        actions={<Button onClick={openCreate}>Novo cartão</Button>}
+      />
 
       {isLoading ? (
         <div className="py-16">
@@ -61,17 +59,16 @@ export function CardsPage() {
       ) : cards.length === 0 ? (
         <Card>
           <CardContent>
-            <div className="flex flex-col items-center gap-3 py-10 text-center">
-              <p className="font-semibold text-text">Nenhum cartão cadastrado</p>
-              <p className="text-sm text-text-muted">
-                Cadastre seu primeiro cartão para acompanhar limites e faturas.
-              </p>
-              <Button onClick={openCreate}>Criar cartão</Button>
-            </div>
+            <EmptyState
+              icon={CreditCardIcon}
+              title="Nenhum cartão cadastrado"
+              description="Cadastre seu primeiro cartão para acompanhar limites e faturas."
+              action={<Button onClick={openCreate}>Criar cartão</Button>}
+            />
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {cards.map((card) => (
             <CardItem
               key={card.creditCard}

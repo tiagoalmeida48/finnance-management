@@ -1,3 +1,4 @@
+import { Pencil, Trash2 } from 'lucide-react';
 import { Badge, Button, Card } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import { UsageBar } from './UsageBar';
@@ -18,7 +19,7 @@ export function CardItem({ card, stats, onView, onEdit, onDelete }: CardItemProp
   const accent = card.color || 'var(--color-primary)';
 
   return (
-    <Card className="flex flex-col gap-4 transition-colors hover:border-primary/40">
+    <Card className="flex flex-col gap-3 transition-colors hover:border-primary/40">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-3">
           <span
@@ -28,7 +29,9 @@ export function CardItem({ card, stats, onView, onEdit, onDelete }: CardItemProp
           />
           <div className="min-w-0">
             <h3 className="truncate text-lg font-bold text-text">{card.name}</h3>
-            <p className="text-xs text-text-muted">Limite {formatCurrency(limit)}</p>
+            <p className="text-xs text-text-muted">
+              Limite <span className="nums text-text">{formatCurrency(limit)}</span>
+            </p>
           </div>
         </div>
         {!card.active ? <Badge variant="expense">Inativo</Badge> : null}
@@ -36,26 +39,37 @@ export function CardItem({ card, stats, onView, onEdit, onDelete }: CardItemProp
 
       <UsageBar usage={usage} creditLimit={limit} />
 
-      <dl className="grid grid-cols-2 gap-3 text-sm">
+      <dl className="grid grid-cols-2 gap-3">
         <div>
-          <dt className="text-text-muted">Em uso</dt>
-          <dd className="font-semibold text-expense">{formatCurrency(usage)}</dd>
+          <dt className="mono-label text-[10px] text-text-muted">Em uso</dt>
+          <dd className="nums mt-0.5 font-semibold text-expense">{formatCurrency(usage)}</dd>
         </div>
         <div>
-          <dt className="text-text-muted">Disponível</dt>
-          <dd className="font-semibold text-income">{formatCurrency(available)}</dd>
+          <dt className="mono-label text-[10px] text-text-muted">Disponível</dt>
+          <dd className="nums mt-0.5 font-semibold text-income">{formatCurrency(available)}</dd>
         </div>
       </dl>
 
-      <div className="mt-auto flex gap-2 pt-2">
+      <div className="mt-auto flex items-center gap-2 pt-2">
         <Button variant="secondary" size="sm" className="flex-1" onClick={() => onView(card)}>
           Faturas
         </Button>
-        <Button variant="outline" size="sm" onClick={() => onEdit(card)}>
-          Editar
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label="Editar cartão"
+          onClick={() => onEdit(card)}
+        >
+          <Pencil className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => onDelete(card)}>
-          Excluir
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label="Excluir cartão"
+          className="text-expense hover:text-expense hover:brightness-125"
+          onClick={() => onDelete(card)}
+        >
+          <Trash2 className="h-4 w-4" />
         </Button>
       </div>
     </Card>

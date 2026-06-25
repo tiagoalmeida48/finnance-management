@@ -95,7 +95,10 @@ export function CategoryFormModal({
           <DialogTitle>{category ? 'Editar categoria' : 'Nova categoria'}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2"
+        >
           <div>
             <Label htmlFor="category-name">Nome</Label>
             <Input
@@ -105,7 +108,7 @@ export function CategoryFormModal({
               className="w-full"
               {...register('name')}
             />
-            {errors.name && <p className="mt-1 text-sm text-expense">{errors.name.message}</p>}
+            {errors.name && <p className="mt-1 text-xs text-expense">{errors.name.message}</p>}
           </div>
 
           <div>
@@ -128,11 +131,11 @@ export function CategoryFormModal({
               ))}
             </div>
             {errors.categoryType && (
-              <p className="mt-1 text-sm text-expense">{errors.categoryType.message}</p>
+              <p className="mt-1 text-xs text-expense">{errors.categoryType.message}</p>
             )}
           </div>
 
-          <div>
+          <div className="sm:col-span-2">
             <Label>Cor</Label>
             <div className="flex flex-wrap gap-2">
               {CATEGORY_COLORS.map((option) => (
@@ -151,7 +154,7 @@ export function CategoryFormModal({
             </div>
           </div>
 
-          <div>
+          <div className="sm:col-span-2">
             <Label>Ícone</Label>
             <div className="flex flex-wrap gap-2">
               {CATEGORY_ICONS.map((option) => (
@@ -173,7 +176,7 @@ export function CategoryFormModal({
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="sm:col-span-2">
             <Button type="button" variant="ghost" onClick={onClose} disabled={saving}>
               Cancelar
             </Button>

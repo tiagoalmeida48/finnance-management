@@ -8,57 +8,60 @@ interface DashboardSummaryProps {
   isLoading: boolean;
 }
 
+interface SummaryValueProps {
+  value: number;
+  isLoading: boolean;
+  className: string;
+}
+
+function SummaryValue({ value, isLoading, className }: SummaryValueProps) {
+  if (isLoading) return <div className="mt-2 h-8 w-32 animate-pulse rounded bg-surface-2" />;
+  return <p className={`nums font-semibold ${className}`}>{formatCurrency(value)}</p>;
+}
+
 export function DashboardSummary({ stats, isLoading }: DashboardSummaryProps) {
-  const cards = [
-    {
-      title: 'Saldo total',
-      value: stats?.totalBalance ?? 0,
-      icon: Wallet,
-      iconClass: 'bg-primary/15 text-primary',
-      valueClass: 'text-text',
-    },
-    {
-      title: 'Receitas',
-      value: stats?.monthlyIncome ?? 0,
-      icon: TrendingUp,
-      iconClass: 'bg-income/15 text-income',
-      valueClass: 'text-income',
-    },
-    {
-      title: 'Despesas',
-      value: stats?.monthlyExpenses ?? 0,
-      icon: TrendingDown,
-      iconClass: 'bg-expense/15 text-expense',
-      valueClass: 'text-expense',
-    },
-  ];
+  const balance = stats?.totalBalance ?? 0;
+  const income = stats?.monthlyIncome ?? 0;
+  const expenses = stats?.monthlyExpenses ?? 0;
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      {cards.map((card) => {
-        const Icon = card.icon;
-        return (
-          <Card key={card.title} className="flex items-center gap-4">
-            <div
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${card.iconClass}`}
-            >
-              <Icon size={20} />
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+      <Card className="relative overflow-hidden lg:col-span-2">
+        <div className="pointer-events-none absolute -right-12 -top-16 h-48 w-48 rounded-full bg-primary/12 blur-2xl" />
+        <div className="relative flex h-full flex-col justify-between gap-8">
+          <div className="flex items-center justify-between">
+            <span className="mono-label text-[11px] text-text-muted">Saldo total</span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-md border border-border-strong bg-bg/40 text-primary">
+              <Wallet size={17} strokeWidth={1.75} />
             </div>
-            <div className="min-w-0">
-              <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
-                {card.title}
-              </p>
-              {isLoading ? (
-                <div className="mt-1.5 h-7 w-28 animate-pulse rounded bg-surface-2" />
-              ) : (
-                <p className={`mt-0.5 text-2xl font-bold tracking-tight ${card.valueClass}`}>
-                  {formatCurrency(card.value)}
-                </p>
-              )}
-            </div>
-          </Card>
-        );
-      })}
+          </div>
+          <SummaryValue
+            value={balance}
+            isLoading={isLoading}
+            className="text-[2.6rem] leading-none text-text"
+          />
+        </div>
+      </Card>
+
+      <Card className="flex flex-col justify-between gap-6">
+        <div className="flex items-center justify-between">
+          <span className="mono-label text-[11px] text-text-muted">Receitas</span>
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-income/10 text-income">
+            <TrendingUp size={17} strokeWidth={1.9} />
+          </div>
+        </div>
+        <SummaryValue value={income} isLoading={isLoading} className="text-2xl text-income" />
+      </Card>
+
+      <Card className="flex flex-col justify-between gap-6">
+        <div className="flex items-center justify-between">
+          <span className="mono-label text-[11px] text-text-muted">Despesas</span>
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-expense/10 text-expense">
+            <TrendingDown size={17} strokeWidth={1.9} />
+          </div>
+        </div>
+        <SummaryValue value={expenses} isLoading={isLoading} className="text-2xl text-expense" />
+      </Card>
     </div>
   );
 }

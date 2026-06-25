@@ -11,7 +11,7 @@ import {
   DialogTitle,
   Input,
   Label,
-  Select,
+  SelectMenu,
   Checkbox,
   Textarea,
 } from '@/shared/components/ui';
@@ -82,75 +82,74 @@ export function CardFormModal({ open, card, saving, onClose, onSubmit }: CardFor
           <DialogTitle>{card ? 'Editar cartão' : 'Novo cartão'}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2"
+        >
           <div>
             <Label htmlFor="card-account">Conta vinculada</Label>
             <Controller
               control={control}
               name="bankAccount"
               render={({ field }) => (
-                <Select
+                <SelectMenu
                   id="card-account"
-                  value={field.value || 0}
+                  value={field.value || ''}
                   disabled={loadingAccounts}
-                  onChange={(event) => field.onChange(Number(event.target.value))}
-                >
-                  <option value={0}>Selecione uma conta</option>
-                  {accounts?.map((account) => (
-                    <option key={account.bankAccount} value={account.bankAccount}>
-                      {account.name}
-                    </option>
-                  ))}
-                </Select>
+                  onChange={(value) => field.onChange(Number(value))}
+                  placeholder="Selecione uma conta"
+                  options={(accounts ?? []).map((account) => ({
+                    value: account.bankAccount,
+                    label: account.name,
+                  }))}
+                />
               )}
             />
             {errors.bankAccount && (
-              <p className="text-expense text-sm mt-1">{errors.bankAccount.message}</p>
+              <p className="text-expense text-xs mt-1">{errors.bankAccount.message}</p>
             )}
           </div>
 
           <div>
             <Label htmlFor="card-name">Nome</Label>
             <Input id="card-name" className="w-full" maxLength={100} {...register('name')} />
-            {errors.name && <p className="text-expense text-sm mt-1">{errors.name.message}</p>}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="card-limit">Limite (R$)</Label>
-              <Controller
-                control={control}
-                name="creditLimit"
-                render={({ field }) => (
-                  <Input
-                    id="card-limit"
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    className="w-full"
-                    value={field.value || ''}
-                    onChange={(event) => field.onChange(Number(event.target.value))}
-                  />
-                )}
-              />
-              {errors.creditLimit && (
-                <p className="text-expense text-sm mt-1">{errors.creditLimit.message}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="card-color">Cor</Label>
-              <input
-                id="card-color"
-                type="color"
-                className="h-10 w-full rounded-md border border-border bg-surface"
-                {...register('color')}
-              />
-            </div>
+            {errors.name && <p className="text-expense text-xs mt-1">{errors.name.message}</p>}
           </div>
 
           <div>
+            <Label htmlFor="card-limit">Limite (R$)</Label>
+            <Controller
+              control={control}
+              name="creditLimit"
+              render={({ field }) => (
+                <Input
+                  id="card-limit"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  className="w-full"
+                  value={field.value || ''}
+                  onChange={(event) => field.onChange(Number(event.target.value))}
+                />
+              )}
+            />
+            {errors.creditLimit && (
+              <p className="text-expense text-xs mt-1">{errors.creditLimit.message}</p>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="card-color">Cor</Label>
+            <input
+              id="card-color"
+              type="color"
+              className="h-9 w-full rounded-lg border border-border bg-bg/60 p-1"
+              {...register('color')}
+            />
+          </div>
+
+          <div className="sm:col-span-2">
             <Label htmlFor="card-notes">Observações</Label>
-            <Textarea id="card-notes" className="min-h-20" maxLength={500} {...register('notes')} />
+            <Textarea id="card-notes" rows={2} maxLength={500} {...register('notes')} />
           </div>
 
           {card ? (
@@ -158,7 +157,7 @@ export function CardFormModal({ open, card, saving, onClose, onSubmit }: CardFor
               control={control}
               name="active"
               render={({ field }) => (
-                <label className="flex items-center gap-2 text-sm text-text">
+                <label className="flex items-center gap-2 text-sm text-text sm:col-span-2">
                   <Checkbox
                     checked={field.value}
                     onChange={(event) => field.onChange(event.target.checked)}
@@ -169,7 +168,7 @@ export function CardFormModal({ open, card, saving, onClose, onSubmit }: CardFor
             />
           ) : null}
 
-          <DialogFooter>
+          <DialogFooter className="sm:col-span-2">
             <Button type="button" variant="ghost" onClick={onClose} disabled={saving}>
               Cancelar
             </Button>

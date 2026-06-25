@@ -8,7 +8,7 @@ import {
   DialogTitle,
   Input,
   Label,
-  Select,
+  SelectMenu,
 } from '@/shared/components/ui';
 import { useAccountsLookup } from '../hooks/useLookups';
 
@@ -71,13 +71,12 @@ export function TransactionsBatchBar({
           <div className="space-y-4">
             <div>
               <Label htmlFor="batch-account">Conta de pagamento</Label>
-              <Select
+              <SelectMenu
                 id="batch-account"
-                className="w-full"
                 placeholder="Selecione"
                 options={accountOptions}
                 value={account || ''}
-                onChange={(e) => setAccount(Number(e.target.value) || 0)}
+                onChange={(value) => setAccount(Number(value) || 0)}
               />
             </div>
             <div>

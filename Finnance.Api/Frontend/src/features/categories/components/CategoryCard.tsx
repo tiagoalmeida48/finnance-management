@@ -1,5 +1,6 @@
 import { Pencil, Trash2 } from 'lucide-react';
-import { Button } from '@/shared/components/ui';
+import { Badge, Button } from '@/shared/components/ui';
+import { CategoryTypeId } from '@/config/constants';
 import type { Category } from '../types/categories.types';
 
 interface CategoryCardProps {
@@ -9,10 +10,12 @@ interface CategoryCardProps {
 }
 
 export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) {
+  const isIncome = category.categoryType === CategoryTypeId.INCOME;
+
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-border bg-surface-2 p-4 transition-colors hover:border-primary/40">
+    <div className="flex items-center gap-3 rounded-lg border border-border bg-surface-2 p-2.5 transition-colors hover:border-primary/40">
       <div
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl"
+        className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full text-lg leading-none"
         style={{ backgroundColor: `${category.color}26`, color: category.color }}
       >
         <span>{category.icon}</span>
@@ -20,7 +23,12 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
 
       <div className="min-w-0 flex-1">
         <p className="truncate font-semibold text-text">{category.name}</p>
-        {!category.active ? <p className="text-xs text-text-muted">Inativa</p> : null}
+        <div className="mt-1 flex items-center gap-2">
+          <Badge variant={isIncome ? 'income' : 'expense'}>
+            {isIncome ? 'Receita' : 'Despesa'}
+          </Badge>
+          {!category.active && <span className="text-xs text-text-muted">Inativa</span>}
+        </div>
       </div>
 
       <div className="flex shrink-0 gap-1">

@@ -47,7 +47,7 @@ export function MonthlyTrackingCard({ data }: MonthlyTrackingCardProps) {
           isSettled ? 'h-full border-income/35 bg-income/5' : 'h-full border-border bg-surface'
         }
       >
-        <CardContent className="p-4">
+        <CardContent className="p-3">
           <MonthlyTrackingHeader
             monthName={data.monthName}
             totalAmount={data.totalAmount}

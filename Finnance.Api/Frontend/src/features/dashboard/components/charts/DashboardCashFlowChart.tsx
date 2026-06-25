@@ -7,6 +7,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { LineChart as LineChartIcon } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/ui';
 import { CHART_COLORS } from '../../constants';
 import type { DashboardChartPoint } from '../../types/dashboard.types';
@@ -63,8 +64,11 @@ export function DashboardCashFlowChart({ chartData }: DashboardCashFlowChartProp
         </div>
         <div className="h-[200px] w-full min-w-0 sm:h-[280px]">
           {!hasData ? (
-            <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-border bg-surface-2/40 px-4 text-center text-sm text-text-muted">
-              Dados insuficientes para exibir o gráfico.
+            <div className="flex h-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-surface-2/30 px-4 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-2 text-text-muted">
+                <LineChartIcon size={22} />
+              </div>
+              <p className="text-sm text-text-muted">Dados insuficientes para exibir o gráfico.</p>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
@@ -74,13 +78,15 @@ export function DashboardCashFlowChart({ chartData }: DashboardCashFlowChartProp
                   dataKey="name"
                   axisLine={{ stroke: CHART_COLORS.tooltipBorder }}
                   tickLine={false}
-                  tick={{ fill: CHART_COLORS.axis, fontSize: 11 }}
+                  tick={{ fill: CHART_COLORS.axis, fontSize: 10, fontFamily: CHART_COLORS.fontFamily }}
+                  tickFormatter={(value) => String(value).split('/')[0]}
+                  minTickGap={8}
                   dy={10}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: CHART_COLORS.axis, fontSize: 11 }}
+                  tick={{ fill: CHART_COLORS.axis, fontSize: 11, fontFamily: CHART_COLORS.fontFamily }}
                   tickFormatter={formatCompact}
                   width={95}
                   domain={[0, domainMax]}
@@ -92,6 +98,8 @@ export function DashboardCashFlowChart({ chartData }: DashboardCashFlowChartProp
                     border: `1px solid ${CHART_COLORS.tooltipBorder}`,
                     borderRadius: '12px',
                     padding: '12px 16px',
+                    fontFamily: CHART_COLORS.fontFamily,
+                    fontSize: '12px',
                   }}
                   labelStyle={{ color: CHART_COLORS.axis, fontSize: '12px', marginBottom: 8 }}
                   formatter={(value, name) => [formatSignedBRL(Number(value) || 0), name ?? '']}

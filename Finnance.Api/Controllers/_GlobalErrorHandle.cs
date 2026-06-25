@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Npgsql;
@@ -6,6 +7,7 @@ using Finnance.Api.Shared;
 using Finnance.Api.Shared.Utils;
 using Refit;
 using System.Net;
+using System.Text;
 
 namespace Finnance.Api.Controllers;
 
@@ -61,6 +63,17 @@ public class GlobalErrorHandle : ControllerBase
             return StatusCode(BusinessErrorStatus, ret);
         }
 
+        if (IsInvalidRequestBody(ctx.Error))
+        {
+            var retInvalidBody = new ResultApi<object>
+            {
+                Message = Constants.ErrorMessage.InvalidRequestBody,
+                Success = false
+            };
+
+            return StatusCode(BusinessErrorStatus, retInvalidBody);
+        }
+
         var retErrNotExpected = new ResultApi<object>
         {
             Message = Constants.ErrorMessage.ErrorNotExpected,
@@ -69,6 +82,20 @@ public class GlobalErrorHandle : ControllerBase
         };
 
         return StatusCode(InternalErrorStatus, retErrNotExpected);
+    }
+
+    private static bool IsInvalidRequestBody(Exception exception)
+    {
+        for (var current = exception; current != null; current = current.InnerException)
+        {
+            if (current is BadHttpRequestException
+                or DecoderFallbackException
+                or System.Text.Json.JsonException
+                or Newtonsoft.Json.JsonException)
+                return true;
+        }
+
+        return false;
     }
 
     private static bool IsDatabaseTimeout(Exception exception)

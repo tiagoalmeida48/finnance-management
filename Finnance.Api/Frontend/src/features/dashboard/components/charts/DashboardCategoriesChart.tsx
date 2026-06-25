@@ -1,4 +1,5 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart as PieChartIcon } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/ui';
 import { CATEGORY_PALETTE } from '../../constants';
 import type { DashboardCategoryPoint } from '../../types/dashboard.types';
@@ -58,8 +59,11 @@ export function DashboardCategoriesChart({ categories }: DashboardCategoriesChar
       <CardContent>
         <h3 className="mb-2 text-base font-semibold text-text">Despesas por categoria</h3>
         {!hasData ? (
-          <div className="flex h-[180px] items-center justify-center rounded-lg border border-dashed border-border bg-surface-2/40 px-4 text-center text-sm text-text-muted">
-            Nenhuma despesa no período.
+          <div className="flex h-[180px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-surface-2/30 px-4 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-2 text-text-muted">
+              <PieChartIcon size={22} />
+            </div>
+            <p className="text-sm text-text-muted">Nenhuma despesa no período.</p>
           </div>
         ) : (
           <>

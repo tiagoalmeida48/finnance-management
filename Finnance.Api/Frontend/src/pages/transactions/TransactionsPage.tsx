@@ -1,3 +1,4 @@
+import { ArrowLeftRight, Upload } from 'lucide-react';
 import {
   Button,
   Card,
@@ -7,10 +8,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  EmptyState,
+  PageHeader,
   Spinner,
 } from '@/shared/components/ui';
 import {
   TransactionFormModal,
+  TransactionImportModal,
   TransactionsBatchBar,
   TransactionsFilters,
   TransactionsSummary,
@@ -30,9 +34,14 @@ export function TransactionsPage() {
     page,
     hasNextPage,
     formOpen,
+    importOpen,
+    editing,
     selectedIds,
     pendingDelete,
     openForm,
+    openImport,
+    closeImport,
+    openEdit,
     closeForm,
     updateFilter,
     resetFilter,
@@ -54,15 +63,20 @@ export function TransactionsPage() {
 
   return (
     <div className="space-y-6 pb-24">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-text">Transações</h1>
-          <p className="text-sm text-text-muted">
-            Acompanhe e gerencie suas receitas, despesas e transferências.
-          </p>
-        </div>
-        <Button onClick={openForm}>Nova transação</Button>
-      </div>
+      <PageHeader
+        icon={ArrowLeftRight}
+        title="Transações"
+        description="Acompanhe e gerencie suas receitas, despesas e transferências."
+        actions={
+          <>
+            <Button variant="outline" onClick={openImport}>
+              <Upload className="h-4 w-4" />
+              Importar CSV
+            </Button>
+            <Button onClick={openForm}>Nova transação</Button>
+          </>
+        }
+      />
 
       <TransactionsSummary summary={summary} loading={summaryLoading} />
 
@@ -79,13 +93,12 @@ export function TransactionsPage() {
               Não foi possível carregar os lançamentos.
             </p>
           ) : isEmpty ? (
-            <div className="flex flex-col items-center gap-3 py-10 text-center">
-              <p className="font-semibold text-text">Nenhum lançamento encontrado</p>
-              <p className="text-sm text-text-muted">
-                Ajuste os filtros ou registre uma nova transação.
-              </p>
-              <Button onClick={openForm}>Criar transação</Button>
-            </div>
+            <EmptyState
+              icon={ArrowLeftRight}
+              title="Nenhum lançamento encontrado"
+              description="Ajuste os filtros ou registre uma nova transação."
+              action={<Button onClick={openForm}>Criar transação</Button>}
+            />
           ) : (
             <TransactionsTable
               transactions={transactions}
@@ -95,6 +108,7 @@ export function TransactionsPage() {
               onToggleSelect={toggleSelection}
               onToggleSelectAll={toggleSelectAll}
               onTogglePaid={togglePaid}
+              onEdit={openEdit}
               onDuplicate={duplicate}
               onDelete={requestDelete}
               onPageChange={goToPage}
@@ -112,7 +126,9 @@ export function TransactionsPage() {
         onClear={clearSelection}
       />
 
-      <TransactionFormModal open={formOpen} onClose={closeForm} />
+      <TransactionFormModal open={formOpen} editing={editing} onClose={closeForm} />
+
+      <TransactionImportModal open={importOpen} onClose={closeImport} />
 
       <Dialog
         open={!!pendingDelete}

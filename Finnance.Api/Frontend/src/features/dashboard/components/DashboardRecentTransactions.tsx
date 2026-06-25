@@ -86,17 +86,17 @@ export function DashboardRecentTransactions({
                     <p className="truncate text-sm font-medium text-text">
                       {transaction.description}
                     </p>
-                    <p className="text-xs text-text-muted">
+                    <p className="nums text-[11px] text-text-muted">
                       {formatPaymentDate(transaction.paymentDate)}
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className={`text-sm font-semibold ${config.textClass}`}>
+                    <p className={`nums text-sm font-semibold ${config.textClass}`}>
                       {config.prefix}
                       {formatCurrency(transaction.amount ?? 0)}
                     </p>
                     {!transaction.paid && (
-                      <p className="text-[10px] font-medium text-primary">Pendente</p>
+                      <p className="mono-label text-[9px] text-primary">Pendente</p>
                     )}
                   </div>
                 </div>

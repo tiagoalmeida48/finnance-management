@@ -1,4 +1,4 @@
-import { Edit2, KeyRound, Trash2 } from 'lucide-react';
+import { Pencil, KeyRound, Trash2 } from 'lucide-react';
 import { Badge } from '@/shared/components/ui';
 import type { ManagedUser } from '../types/users.types';
 
@@ -14,18 +14,18 @@ export function UsersTable({ users, onEdit, onResetPassword, onDelete }: UsersTa
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-border text-text-muted">
-            <th className="px-3 py-2 font-medium">Nome</th>
-            <th className="px-3 py-2 font-medium">E-mail</th>
-            <th className="px-3 py-2 font-medium">Administrador</th>
-            <th className="px-3 py-2 font-medium text-right">Ações</th>
+          <tr className="border-b border-border font-mono text-[0.65rem] uppercase tracking-wider text-text-muted">
+            <th className="px-3 py-2.5 font-medium">Nome</th>
+            <th className="px-3 py-2.5 font-medium">E-mail</th>
+            <th className="px-3 py-2.5 font-medium">Administrador</th>
+            <th className="px-3 py-2.5 font-medium text-right">Ações</th>
           </tr>
         </thead>
         <tbody>
           {users.map((user) => (
             <tr key={user.user} className="border-b border-border/60">
-              <td className="px-3 py-2 text-text">{user.fullName || '-'}</td>
-              <td className="px-3 py-2 text-text-muted">{user.email}</td>
+              <td className="px-3 py-2.5 font-medium text-text">{user.fullName || '-'}</td>
+              <td className="nums px-3 py-2.5 text-xs text-text-muted">{user.email}</td>
               <td className="px-3 py-2">
                 <Badge variant={user.isAdmin ? 'primary' : 'default'}>
                   {user.isAdmin ? 'Sim' : 'Não'}
@@ -39,7 +39,7 @@ export function UsersTable({ users, onEdit, onResetPassword, onDelete }: UsersTa
                     onClick={() => onEdit(user)}
                     className="rounded-md p-1.5 text-text-muted hover:bg-surface-2 hover:text-text transition-colors"
                   >
-                    <Edit2 size={16} />
+                    <Pencil size={16} />
                   </button>
                   <button
                     type="button"

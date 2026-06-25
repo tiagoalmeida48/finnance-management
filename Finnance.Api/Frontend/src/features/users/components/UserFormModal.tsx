@@ -77,7 +77,10 @@ export function UserFormModal({
           <DialogTitle>{isEditing ? 'Editar usuário' : 'Novo usuário'}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2"
+        >
           <div>
             <Label htmlFor="user-full-name">Nome completo</Label>
             <Input id="user-full-name" className="w-full" {...register('fullName')} />
@@ -86,11 +89,11 @@ export function UserFormModal({
           <div>
             <Label htmlFor="user-email">E-mail</Label>
             <Input id="user-email" type="email" className="w-full" {...register('email')} />
-            {errors.email && <p className="text-expense text-sm mt-1">{errors.email.message}</p>}
+            {errors.email && <p className="text-expense text-xs mt-1">{errors.email.message}</p>}
           </div>
 
           {!isEditing && (
-            <div>
+            <div className="sm:col-span-2">
               <Label htmlFor="user-password">Senha inicial</Label>
               <Input
                 id="user-password"
@@ -99,19 +102,19 @@ export function UserFormModal({
                 {...register('password')}
               />
               {errors.password && (
-                <p className="text-expense text-sm mt-1">{errors.password.message}</p>
+                <p className="text-expense text-xs mt-1">{errors.password.message}</p>
               )}
             </div>
           )}
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:col-span-2">
             <Checkbox id="user-is-admin" {...register('isAdmin')} />
             <Label htmlFor="user-is-admin" className="mb-0">
               Usuário administrador
             </Label>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="sm:col-span-2">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>

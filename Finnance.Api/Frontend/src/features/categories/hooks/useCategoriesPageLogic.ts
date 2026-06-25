@@ -9,16 +9,7 @@ import {
 import type { CategoryFormValues } from '../components/CategoryFormModal';
 import type { Category } from '../types/categories.types';
 
-interface CategoryGroup {
-  type: number;
-  label: string;
-  items: Category[];
-}
-
-const GROUP_ORDER = [
-  { type: CategoryTypeId.INCOME, label: 'Receitas' },
-  { type: CategoryTypeId.EXPENSE, label: 'Despesas' },
-];
+export type CategoryTypeFilter = 'all' | 'income' | 'expense';
 
 export function useCategoriesPageLogic() {
   const categoriesQuery = useCategories();
@@ -29,16 +20,21 @@ export function useCategoriesPageLogic() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Category | null>(null);
+  const [typeFilter, setTypeFilter] = useState<CategoryTypeFilter>('all');
 
-  const groups = useMemo<CategoryGroup[]>(() => {
+  const allCategories = useMemo<Category[]>(() => {
     const items = categoriesQuery.data ?? [];
-    return GROUP_ORDER.map((group) => ({
-      ...group,
-      items: items
-        .filter((item) => item.categoryType === group.type)
-        .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })),
-    })).filter((group) => group.items.length > 0);
+    return [...items].sort((a, b) => {
+      if (a.categoryType !== b.categoryType) return a.categoryType - b.categoryType;
+      return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+    });
   }, [categoriesQuery.data]);
+
+  const categories = useMemo<Category[]>(() => {
+    if (typeFilter === 'all') return allCategories;
+    const target = typeFilter === 'income' ? CategoryTypeId.INCOME : CategoryTypeId.EXPENSE;
+    return allCategories.filter((item) => item.categoryType === target);
+  }, [allCategories, typeFilter]);
 
   const isEmpty = !categoriesQuery.isLoading && (categoriesQuery.data ?? []).length === 0;
 
@@ -76,7 +72,10 @@ export function useCategoriesPageLogic() {
   };
 
   return {
-    groups,
+    categories,
+    hasCategories: allCategories.length > 0,
+    typeFilter,
+    setTypeFilter,
     isEmpty,
     isLoading: categoriesQuery.isLoading,
     isError: categoriesQuery.isError,

@@ -1,5 +1,5 @@
 import { CalendarRange, ChevronLeft, ChevronRight, CreditCard as CardIcon } from 'lucide-react';
-import { Button } from '@/shared/components/ui';
+import { Button, SegmentedControl } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import { UsageBar } from './UsageBar';
 import type { CreditCard, CreditCardStats, StatementCycle } from '../types/cards.types';
@@ -48,26 +48,14 @@ export function CardDetailHeader({
             Ciclo de faturamento
           </Button>
 
-          <div className="inline-flex items-center rounded-md border border-border bg-surface-2 p-1">
-            <button
-              type="button"
-              onClick={() => onSetAllTime(false)}
-              className={`rounded px-3 py-1 text-sm font-semibold transition-colors ${
-                !isAllTime ? 'bg-primary/20 text-primary' : 'text-text-muted hover:text-text'
-              }`}
-            >
-              Anual
-            </button>
-            <button
-              type="button"
-              onClick={() => onSetAllTime(true)}
-              className={`rounded px-3 py-1 text-sm font-semibold transition-colors ${
-                isAllTime ? 'bg-primary/20 text-primary' : 'text-text-muted hover:text-text'
-              }`}
-            >
-              Tudo
-            </button>
-          </div>
+          <SegmentedControl
+            value={isAllTime ? 'all' : 'year'}
+            onChange={(value) => onSetAllTime(value === 'all')}
+            options={[
+              { value: 'year', label: 'Anual' },
+              { value: 'all', label: 'Tudo' },
+            ]}
+          />
 
           <div
             className={`inline-flex items-center gap-1 rounded-md border border-border bg-surface-2 p-1 ${
@@ -95,24 +83,39 @@ export function CardDetailHeader({
         </div>
       </div>
 
-      <div className="flex items-center gap-4 rounded-lg border border-border bg-surface p-6">
-        <span
-          className="flex h-12 w-16 shrink-0 items-center justify-center rounded-md"
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+        <div
+          className="relative h-44 w-full max-w-[19rem] shrink-0 overflow-hidden rounded-2xl p-5 shadow-elevated"
           style={{ backgroundColor: card.color || 'var(--color-primary)' }}
         >
-          <CardIcon size={22} className="text-white" />
-        </span>
+          <div className="absolute inset-0 bg-gradient-to-br from-white/15 via-transparent to-black/55" />
+          <div className="relative flex h-full flex-col justify-between text-white">
+            <div className="flex items-start justify-between">
+              <span className="mono-label text-[10px] text-white/75">Crédito</span>
+              <CardIcon size={22} className="text-white/90" />
+            </div>
+            <div className="h-7 w-10 rounded-md bg-white/25 ring-1 ring-white/20" />
+            <div>
+              <p className="nums text-sm tracking-[0.3em] text-white/80">•••• •••• •••• ••••</p>
+              <p className="mt-2 font-display text-lg font-semibold leading-none">{card.name}</p>
+            </div>
+          </div>
+        </div>
+
         <div>
-          <h1 className="text-2xl font-bold text-text">{card.name}</h1>
-          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-text-muted">
-            <span>
-              Vencimento <strong className="text-text">{openCycle?.dueDay ?? '—'}</strong>
-            </span>
-            <span>·</span>
-            <span>
-              Fechamento <strong className="text-text">{openCycle?.closingDay ?? '—'}</strong>
-            </span>
-          </p>
+          <h1 className="text-2xl font-semibold text-text">{card.name}</h1>
+          <div className="mt-4 flex gap-8">
+            <div>
+              <p className="mono-label text-[10px] text-text-muted">Vencimento</p>
+              <p className="nums mt-1 text-text">{openCycle?.dueDay ? `dia ${openCycle.dueDay}` : '—'}</p>
+            </div>
+            <div>
+              <p className="mono-label text-[10px] text-text-muted">Fechamento</p>
+              <p className="nums mt-1 text-text">
+                {openCycle?.closingDay ? `dia ${openCycle.closingDay}` : '—'}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -120,9 +123,9 @@ export function CardDetailHeader({
         <MetricCard label="Limite" value={formatCurrency(limit)} />
         <MetricCard label="Fatura atual" value={formatCurrency(currentInvoice)} />
         <MetricCard label="Disponível" value={formatCurrency(available)} />
-        <div className="rounded-lg border border-border bg-surface p-5">
-          <p className="text-xs font-semibold tracking-wide text-text-muted">Uso do limite</p>
-          <p className="mt-1 text-lg font-bold text-text">{formatCurrency(usage)}</p>
+        <div className="rounded-xl border border-border bg-surface-gradient p-5 shadow-card">
+          <p className="mono-label text-[10px] text-text-muted">Uso do limite</p>
+          <p className="nums mt-1.5 text-xl font-semibold text-text">{formatCurrency(usage)}</p>
           <div className="mt-3">
             <UsageBar usage={usage} creditLimit={limit} />
           </div>
@@ -134,9 +137,9 @@ export function CardDetailHeader({
 
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-border bg-surface p-5">
-      <p className="text-xs font-semibold tracking-wide text-text-muted">{label}</p>
-      <p className="mt-1 text-lg font-bold text-text">{value}</p>
+    <div className="rounded-xl border border-border bg-surface-gradient p-5 shadow-card">
+      <p className="mono-label text-[10px] text-text-muted">{label}</p>
+      <p className="nums mt-1.5 text-xl font-semibold text-text">{value}</p>
     </div>
   );
 }
