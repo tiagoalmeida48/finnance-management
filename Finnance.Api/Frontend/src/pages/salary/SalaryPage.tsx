@@ -3,6 +3,7 @@ import { Button, PageHeader, SegmentedControl, Spinner } from '@/shared/componen
 import {
   PayrollCalculatorTab,
   SalaryCloseDialog,
+  SalaryDeleteDialog,
   SalaryEditSettingDialog,
   SalaryLaunchDialog,
   SalarySettingFormModal,
@@ -85,6 +86,8 @@ export function SalaryPage() {
           onOpenEdit={logic.handleOpenEdit}
           onRequestClose={logic.handleRequestClose}
           closePending={logic.closeSetting.isPending}
+          onRequestDelete={logic.handleRequestDelete}
+          deletePending={logic.deleteSetting.isPending}
         />
       )}
 
@@ -108,6 +111,13 @@ export function SalaryPage() {
         isClosing={logic.closeSetting.isPending}
         onClose={logic.handleCancelClose}
         onConfirm={logic.handleConfirmClose}
+      />
+
+      <SalaryDeleteDialog
+        open={logic.deleteDialogOpen}
+        isDeleting={logic.deleteSetting.isPending}
+        onClose={logic.handleCancelDelete}
+        onConfirm={logic.handleConfirmDelete}
       />
 
       <SalaryLaunchDialog

@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/shared/components/feedback';
+import { ApiError } from '@/shared/types/api.types';
 import { cyclesService, invoicesService } from '../services/cardsService';
-import type { StatementCycleCreateInput } from '../types/cards.types';
+import type { StatementCycleCreateInput, StatementCycleUpdateInput } from '../types/cards.types';
 
 export const cycleKeys = {
   all: ['card-cycles'] as const,
@@ -75,6 +76,40 @@ export function useUpdateCycleEnd(card: number) {
       addToast('Encerramento da vigência atualizado.', 'success');
     },
     onError: () => addToast('Não foi possível atualizar o encerramento.', 'error'),
+  });
+}
+
+export function useUpdateCycle(card: number) {
+  const { addToast } = useToast();
+  const invalidate = useInvalidateCycles(card);
+  return useMutation({
+    mutationFn: (input: StatementCycleUpdateInput) => cyclesService.updateCycle(input),
+    onSuccess: () => {
+      invalidate();
+      addToast('Vigência atualizada.', 'success');
+    },
+    onError: (error: unknown) =>
+      addToast(
+        error instanceof ApiError ? error.message : 'Não foi possível atualizar a vigência.',
+        'error',
+      ),
+  });
+}
+
+export function useDeleteCycle(card: number) {
+  const { addToast } = useToast();
+  const invalidate = useInvalidateCycles(card);
+  return useMutation({
+    mutationFn: (cycle: number) => cyclesService.remove(cycle),
+    onSuccess: () => {
+      invalidate();
+      addToast('Vigência excluída.', 'success');
+    },
+    onError: (error: unknown) =>
+      addToast(
+        error instanceof ApiError ? error.message : 'Não foi possível excluir a vigência.',
+        'error',
+      ),
   });
 }
 

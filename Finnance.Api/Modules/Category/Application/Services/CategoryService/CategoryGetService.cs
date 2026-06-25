@@ -20,6 +20,6 @@ public partial class CategoryService
 
     public List<CategoryEntity> List(long userId)
     {
-        return categoryRepository.Search(user: userId);
+        return categoryRepository.Search(user: userId, active: true);
     }
 }

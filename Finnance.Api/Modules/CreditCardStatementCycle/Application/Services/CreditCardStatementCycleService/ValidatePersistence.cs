@@ -28,4 +28,15 @@ public partial class CreditCardStatementCycleService
 
         return target;
     }
+
+    private void ValidateNoCycleOverlap(long cardId, long userId, DateTime dateStart, DateTime dateEnd, long excludeCycleId)
+    {
+        var overlaps = creditCardStatementCycleRepository.SearchByCard(cardId, userId)
+            .Any(c => c.CreditCardStatementCycle != excludeCycleId
+                      && c.DateStart <= dateEnd
+                      && c.DateEnd >= dateStart);
+
+        if (overlaps)
+            throw new ApplicationException(Constants.ErrorMessage.CycleOverlap);
+    }
 }

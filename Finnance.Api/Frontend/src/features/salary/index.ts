@@ -17,4 +17,5 @@ export { SalarySettingsTab } from './components/SalarySettingsTab';
 export { PayrollCalculatorTab } from './components/PayrollCalculatorTab';
 export { SalaryEditSettingDialog } from './components/SalaryEditSettingDialog';
 export { SalaryCloseDialog } from './components/SalaryCloseDialog';
+export { SalaryDeleteDialog } from './components/SalaryDeleteDialog';
 export { SalaryLaunchDialog } from './components/SalaryLaunchDialog';

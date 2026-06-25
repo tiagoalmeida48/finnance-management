@@ -1,5 +1,10 @@
 import { useState } from 'react';
-import { useCloseSalarySetting, useCreateSalarySetting, useUpdateSalarySetting } from './useSalary';
+import {
+  useCloseSalarySetting,
+  useCreateSalarySetting,
+  useDeleteCurrentSalarySetting,
+  useUpdateSalarySetting,
+} from './useSalary';
 import { toNumber } from '../constants';
 import type { EditSettingForm, SalarySetting } from '../types/salary.types';
 import type { SalaryFormValues } from '../components/SalarySettingFormModal';
@@ -8,11 +13,13 @@ export function useSettingsTab() {
   const createSetting = useCreateSalarySetting();
   const updateSetting = useUpdateSalarySetting();
   const closeSetting = useCloseSalarySetting();
+  const deleteSetting = useDeleteCurrentSalarySetting();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState<EditSettingForm | null>(null);
   const [closeDialogOpen, setCloseDialogOpen] = useState(false);
   const [settingToClose, setSettingToClose] = useState<SalarySetting | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleOpenCreateDialog = () => setCreateDialogOpen(true);
 
@@ -90,13 +97,28 @@ export function useSettingsTab() {
     );
   };
 
+  const handleRequestDelete = () => setDeleteDialogOpen(true);
+
+  const handleCancelDelete = () => {
+    if (deleteSetting.isPending) return;
+    setDeleteDialogOpen(false);
+  };
+
+  const handleConfirmDelete = () => {
+    deleteSetting.mutate(undefined, {
+      onSuccess: () => setDeleteDialogOpen(false),
+    });
+  };
+
   return {
     createSetting,
     updateSetting,
     closeSetting,
+    deleteSetting,
     createDialogOpen,
     editForm,
     closeDialogOpen,
+    deleteDialogOpen,
     handleOpenCreateDialog,
     handleCloseCreateDialog,
     handleSaveSetting,
@@ -107,5 +129,8 @@ export function useSettingsTab() {
     handleRequestClose,
     handleCancelClose,
     handleConfirmClose,
+    handleRequestDelete,
+    handleCancelDelete,
+    handleConfirmDelete,
   };
 }

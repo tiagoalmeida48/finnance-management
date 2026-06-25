@@ -18,4 +18,14 @@ public interface ICreditCardInvoiceService : IBaseService<CreditCardInvoiceEntit
     void RecalculateInvoiceOwned(long invoiceId, long userId);
 
     void ReprocessInvoicesForCard(long cardId, long userId, DateTime fromDate);
+
+    bool UpdateCycleAndReprocess(long creditCardStatementCycle, long userId, short closingDay, short dueDay, string notes);
+
+    bool DeleteCycleAndReprocess(long creditCardStatementCycle, long userId);
+
+    long InsertCycleAndReprocess(long card, long userId, DateTime dateStart, short closingDay, short dueDay, string notes);
+
+    bool UpdateCycleStartAndReprocess(long creditCardStatementCycle, long userId, DateTime dateStart);
+
+    bool UpdateCycleEndAndReprocess(long creditCardStatementCycle, long userId, DateTime dateEnd);
 }

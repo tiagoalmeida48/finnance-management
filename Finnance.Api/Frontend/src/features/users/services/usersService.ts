@@ -16,7 +16,7 @@ export const usersService = {
     apiClient.put<boolean>('/user/update', input),
 
   updatePassword: (input: UpdateUserPasswordInput): Promise<boolean> =>
-    apiClient.put<boolean>('/user/updatePassword', input),
+    apiClient.put<boolean>('/user/update-password', input),
 
   remove: (user: number): Promise<boolean> => apiClient.delete<boolean>('/user/delete', user),
 };

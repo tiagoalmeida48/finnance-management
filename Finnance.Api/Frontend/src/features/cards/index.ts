@@ -26,6 +26,8 @@ export {
   useInsertCycle,
   useUpdateCycleStart,
   useUpdateCycleEnd,
+  useUpdateCycle,
+  useDeleteCycle,
   useReprocessInvoices,
   cycleKeys,
 } from './hooks/useCardCycles';
@@ -41,6 +43,7 @@ export type {
   CreditCardUpdateInput,
   StatementCycle,
   StatementCycleCreateInput,
+  StatementCycleUpdateInput,
   CreditCardInvoice,
   BankAccountOption,
 } from './types/cards.types';

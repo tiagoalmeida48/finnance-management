@@ -42,9 +42,10 @@ public partial class CategoryService(ICategoryRepository categoryRepository) : B
     public bool DeleteCategory(long category, long userId)
     {
         var current = Get(category, userId);
+        current.Active = false;
 
         using var tran = GetTransaction();
-        categoryRepository.Delete(current);
+        categoryRepository.Update(current);
         tran.Complete();
 
         return true;

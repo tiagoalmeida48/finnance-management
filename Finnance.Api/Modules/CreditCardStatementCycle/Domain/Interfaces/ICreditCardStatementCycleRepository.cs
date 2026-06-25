@@ -16,4 +16,6 @@ public interface ICreditCardStatementCycleRepository : IBaseRepository<CreditCar
     CreditCardStatementCycleEntity SearchOpen(long card, long user);
 
     CreditCardStatementCycleEntity SearchContaining(long card, long user, DateTime date);
+
+    bool DeleteById(long creditCardStatementCycle, long user);
 }

@@ -124,4 +124,51 @@ public partial class CreditCardInvoiceService(ICreditCardInvoiceRepository credi
 
         tran.Complete();
     }
+
+    public bool UpdateCycleAndReprocess(long creditCardStatementCycle, long userId, short closingDay, short dueDay, string notes)
+    {
+        using var tran = GetTransaction();
+        var cycle = creditCardStatementCycleService.UpdateCycle(creditCardStatementCycle, userId, closingDay, dueDay, notes);
+        ReprocessInvoicesForCard(cycle.Card, userId, cycle.DateStart);
+        tran.Complete();
+        return true;
+    }
+
+    public bool DeleteCycleAndReprocess(long creditCardStatementCycle, long userId)
+    {
+        using var tran = GetTransaction();
+        var deleted = creditCardStatementCycleService.DeleteCycle(creditCardStatementCycle, userId);
+        ReprocessInvoicesForCard(deleted.Card, userId, deleted.DateStart);
+        tran.Complete();
+        return true;
+    }
+
+    public long InsertCycleAndReprocess(long card, long userId, DateTime dateStart, short closingDay, short dueDay, string notes)
+    {
+        using var tran = GetTransaction();
+        var id = creditCardStatementCycleService.InsertCycle(card, userId, dateStart, closingDay, dueDay, notes);
+        ReprocessInvoicesForCard(card, userId, DateTime.MinValue);
+        tran.Complete();
+        return id;
+    }
+
+    public bool UpdateCycleStartAndReprocess(long creditCardStatementCycle, long userId, DateTime dateStart)
+    {
+        using var tran = GetTransaction();
+        creditCardStatementCycleService.UpdateCycleStart(creditCardStatementCycle, userId, dateStart);
+        var cycle = creditCardStatementCycleService.Get(creditCardStatementCycle, userId);
+        ReprocessInvoicesForCard(cycle.Card, userId, DateTime.MinValue);
+        tran.Complete();
+        return true;
+    }
+
+    public bool UpdateCycleEndAndReprocess(long creditCardStatementCycle, long userId, DateTime dateEnd)
+    {
+        using var tran = GetTransaction();
+        creditCardStatementCycleService.UpdateCycleEnd(creditCardStatementCycle, userId, dateEnd);
+        var cycle = creditCardStatementCycleService.Get(creditCardStatementCycle, userId);
+        ReprocessInvoicesForCard(cycle.Card, userId, DateTime.MinValue);
+        tran.Complete();
+        return true;
+    }
 }

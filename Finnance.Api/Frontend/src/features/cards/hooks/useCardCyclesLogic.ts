@@ -2,7 +2,9 @@ import { useCallback, useMemo, useState } from 'react';
 import {
   useCardCycles,
   useCreateCycle,
+  useDeleteCycle,
   useInsertCycle,
+  useUpdateCycle,
   useUpdateCycleEnd,
   useUpdateCycleStart,
 } from './useCardCycles';
@@ -32,11 +34,14 @@ export function useCardCyclesLogic(card: number, fallbackClosingDay: number, fal
   const insertCycle = useInsertCycle(card);
   const updateStart = useUpdateCycleStart(card);
   const updateEnd = useUpdateCycleEnd(card);
+  const updateCycle = useUpdateCycle(card);
+  const deleteCycle = useDeleteCycle(card);
 
   const [mode, setMode] = useState<FormMode>(null);
   const [editing, setEditing] = useState<StatementCycle | null>(null);
   const [form, setForm] = useState<CycleFormValues>(emptyForm);
   const [error, setError] = useState('');
+  const [pendingDelete, setPendingDelete] = useState<StatementCycle | null>(null);
 
   const cycles = useMemo<StatementCycle[]>(() => {
     const data = cyclesQuery.data ?? [];
@@ -45,7 +50,11 @@ export function useCardCyclesLogic(card: number, fallbackClosingDay: number, fal
 
   const hasCycles = cycles.length > 0;
   const isMutating =
-    createCycle.isPending || insertCycle.isPending || updateStart.isPending || updateEnd.isPending;
+    createCycle.isPending ||
+    insertCycle.isPending ||
+    updateStart.isPending ||
+    updateEnd.isPending ||
+    updateCycle.isPending;
 
   const openCreate = useCallback(() => {
     setEditing(null);
@@ -113,23 +122,56 @@ export function useCardCyclesLogic(card: number, fallbackClosingDay: number, fal
     }
 
     if (mode === 'edit' && editing) {
+      const target = editing;
+      const detailsChanged =
+        target.closingDay !== form.closingDay ||
+        target.dueDay !== form.dueDay ||
+        (target.notes ?? '') !== form.notes;
+
+      const finishEdit = () => {
+        if (!detailsChanged) {
+          setMode(null);
+          return;
+        }
+        updateCycle.mutate(
+          {
+            creditCardStatementCycle: target.creditCardStatementCycle,
+            closingDay: form.closingDay,
+            dueDay: form.dueDay,
+            notes: form.notes,
+          },
+          { onSuccess: () => setMode(null) },
+        );
+      };
+
       updateStart.mutate(
-        { cycle: editing.creditCardStatementCycle, dateStart: form.dateStart },
+        { cycle: target.creditCardStatementCycle, dateStart: form.dateStart },
         {
           onSuccess: () => {
             if (form.dateEnd) {
               updateEnd.mutate(
-                { cycle: editing.creditCardStatementCycle, dateEnd: form.dateEnd },
-                { onSuccess: () => setMode(null) },
+                { cycle: target.creditCardStatementCycle, dateEnd: form.dateEnd },
+                { onSuccess: finishEdit },
               );
             } else {
-              setMode(null);
+              finishEdit();
             }
           },
         },
       );
     }
-  }, [card, createCycle, editing, form, hasCycles, insertCycle, mode, updateEnd, updateStart]);
+  }, [card, createCycle, editing, form, hasCycles, insertCycle, mode, updateCycle, updateEnd, updateStart]);
+
+  const requestDelete = useCallback((cycle: StatementCycle) => setPendingDelete(cycle), []);
+
+  const cancelDelete = useCallback(() => setPendingDelete(null), []);
+
+  const confirmDelete = useCallback(() => {
+    if (!pendingDelete) return;
+    deleteCycle.mutate(pendingDelete.creditCardStatementCycle, {
+      onSuccess: () => setPendingDelete(null),
+    });
+  }, [pendingDelete, deleteCycle]);
 
   return {
     cycles,
@@ -139,10 +181,15 @@ export function useCardCyclesLogic(card: number, fallbackClosingDay: number, fal
     form,
     error,
     isMutating,
+    pendingDelete,
+    isDeleting: deleteCycle.isPending,
     openCreate,
     openEdit,
     closeForm,
     updateForm,
     submit,
+    requestDelete,
+    cancelDelete,
+    confirmDelete,
   };
 }

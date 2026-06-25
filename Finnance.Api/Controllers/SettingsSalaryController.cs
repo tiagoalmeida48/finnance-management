@@ -57,4 +57,11 @@ public class SettingsSalaryController(ISettingsSalaryService settingsSalaryServi
     {
         return new ResultApi<bool> { Result = settingsSalaryService.CloseSetting(UserLogged.user, dto.SettingsSalary, dto.DateEnd) };
     }
+
+    [Authorization()]
+    [HttpDelete]
+    public ResultApi<bool> DeleteCurrent()
+    {
+        return new ResultApi<bool> { Result = settingsSalaryService.DeleteCurrentAndRestorePrevious(UserLogged.user) };
+    }
 }

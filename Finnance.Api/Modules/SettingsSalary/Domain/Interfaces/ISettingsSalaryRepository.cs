@@ -11,4 +11,6 @@ public interface ISettingsSalaryRepository : IBaseRepository<SettingsSalaryEntit
                                       DateTime? dateEnd = null,
                                       bool active = false,
                                       int quantity = 0);
+
+    bool DeleteById(long settingsSalary, long user);
 }

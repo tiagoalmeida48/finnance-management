@@ -77,6 +77,18 @@ public class CreditCardStatementCycleRepository : BaseRepository<CreditCardState
         return model == null ? null : MapToEntity(model);
     }
 
+    public bool DeleteById(long creditCardStatementCycle, long user)
+    {
+        var param = new DynamicParameters();
+        param.Add("creditCardStatementCycle", creditCardStatementCycle);
+        param.Add("user", user);
+
+        const string sql = """DELETE FROM credit_card_statement_cycle WHERE credit_card_statement_cycle = @creditCardStatementCycle AND "user" = @user""";
+
+        using var con = Conn;
+        return con.Execute(sql, param) > 0;
+    }
+
     public CreditCardStatementCycleEntity SearchContaining(long card, long user, DateTime date)
     {
         var param = new DynamicParameters();

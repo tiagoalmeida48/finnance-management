@@ -40,9 +40,10 @@ public partial class BankAccountService(IBankAccountRepository bankAccountReposi
     public bool DeleteAccount(long bankAccount, long userId)
     {
         var current = Get(bankAccount, userId);
+        current.Active = false;
 
         using var tran = GetTransaction();
-        bankAccountRepository.Delete(current);
+        bankAccountRepository.Update(current);
         tran.Complete();
         return true;
     }

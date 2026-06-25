@@ -42,9 +42,12 @@ public static partial class Constants
         public const string CycleStartNotContained = "Não existe vigência que contenha a data informada.";
         public const string CycleStartMustBeGreater = "A data de início deve ser maior que o início da vigência atual.";
         public const string CycleCannotSplit = "Não foi possível dividir a vigência atual com a data informada.";
+        public const string CycleCannotDeleteOnly = "Não é possível excluir a única vigência do cartão.";
+        public const string CycleOverlap = "A vigência informada sobrepõe outro período já existente para o cartão.";
         public const string InvalidStatementDay = "O dia de fechamento e de vencimento deve estar entre 1 e 31.";
         public const string SalaryPeriodOverlap = "Já existe um período de salário que se sobrepõe ao informado.";
         public const string SalaryOpenNotFound = "Não existe período de salário em aberto.";
+        public const string SalaryPreviousNotFound = "Não existe vigência anterior para restaurar.";
         public const string InvalidGroupType = "Tipo de grupo inválido.";
         public const string TransactionNotInstallment = "A transação não pertence a um grupo de parcelamento.";
         public const string CategoryAlreadyExists = "Já existe uma categoria com este nome para o tipo informado.";

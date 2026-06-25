@@ -16,4 +16,6 @@ public interface ISettingsSalaryService : IBaseService<SettingsSalaryEntity>
     bool UpdateSetting(SettingsSalaryEntity entity, long userId);
 
     bool CloseSetting(long userId, long settingsSalary, DateTime newEnd);
+
+    bool DeleteCurrentAndRestorePrevious(long userId);
 }

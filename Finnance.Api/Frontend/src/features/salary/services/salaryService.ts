@@ -33,4 +33,8 @@ export const salaryService = {
       dateEnd: input.dateEnd,
     });
   },
+
+  deleteCurrent: async (): Promise<boolean> => {
+    return apiClient.delete<boolean>('/settings-salary/delete-current');
+  },
 };

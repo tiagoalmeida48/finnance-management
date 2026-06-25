@@ -59,6 +59,13 @@ export interface StatementCycleCreateInput {
   notes: string;
 }
 
+export interface StatementCycleUpdateInput {
+  creditCardStatementCycle: number;
+  closingDay: number;
+  dueDay: number;
+  notes: string;
+}
+
 export interface CreditCardInvoice {
   creditCardInvoice: number;
   card: number;

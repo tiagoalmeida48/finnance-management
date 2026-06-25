@@ -47,9 +47,10 @@ public partial class CreditCardService(ICreditCardRepository creditCardRepositor
     public bool DeleteCard(long creditCard, long userId)
     {
         var current = GetCard(creditCard, userId);
+        current.Active = false;
 
         using var tran = GetTransaction();
-        creditCardRepository.Delete(current);
+        creditCardRepository.Update(current);
         tran.Complete();
         return true;
     }

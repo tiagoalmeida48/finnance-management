@@ -10,6 +10,7 @@ import type {
   PayBillInput,
   StatementCycle,
   StatementCycleCreateInput,
+  StatementCycleUpdateInput,
 } from '../types/cards.types';
 
 export const cardsService = {
@@ -52,6 +53,14 @@ export const cyclesService = {
   updateEnd: (cycle: number, dateEnd: string): Promise<boolean> => {
     const query = new URLSearchParams({ cycle: String(cycle), dateEnd }).toString();
     return apiClient.put<boolean>(`/credit-card-statement-cycle/update-end?${query}`);
+  },
+
+  updateCycle: (input: StatementCycleUpdateInput): Promise<boolean> =>
+    apiClient.put<boolean>('/credit-card-statement-cycle/update-cycle', input),
+
+  remove: (cycle: number): Promise<boolean> => {
+    const query = new URLSearchParams({ cycle: String(cycle) }).toString();
+    return apiClient.delete<boolean>(`/credit-card-statement-cycle/delete?${query}`);
   },
 };
 

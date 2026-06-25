@@ -15,11 +15,12 @@ public partial class SettingsSalaryService(ISettingsSalaryRepository settingsSal
         entity.DateEnd = SettingsSalaryEntity.OpenEndDate();
         entity.ValidateCreate();
 
-        ValidateNoOverlap(userId, entity.DateStart, entity.DateEnd, 0);
+        var open = settingsSalaryRepository.Search(userId, dateEnd: SettingsSalaryEntity.OpenEndDate(), quantity: 1).FirstOrDefault();
+
+        ValidateNoOverlap(userId, entity.DateStart, entity.DateEnd, open?.SettingsSalary ?? 0);
 
         using var tran = GetTransaction();
 
-        var open = settingsSalaryRepository.Search(userId, dateEnd: SettingsSalaryEntity.OpenEndDate(), quantity: 1).FirstOrDefault();
         if (open != null)
         {
             open.DateEnd = entity.DateStart.AddDays(-1);
@@ -66,6 +67,26 @@ public partial class SettingsSalaryService(ISettingsSalaryRepository settingsSal
 
         using var tran = GetTransaction();
         settingsSalaryRepository.Update(current);
+        tran.Complete();
+        return true;
+    }
+
+    public bool DeleteCurrentAndRestorePrevious(long userId)
+    {
+        var open = settingsSalaryRepository.Search(userId, dateEnd: SettingsSalaryEntity.OpenEndDate(), quantity: 1).FirstOrDefault();
+        if (open == null)
+            throw new ApplicationException(Constants.ErrorMessage.SalaryOpenNotFound);
+
+        var previous = settingsSalaryRepository.Search(userId)
+            .FirstOrDefault(s => s.DateStart < open.DateStart && s.DateEnd != SettingsSalaryEntity.OpenEndDate());
+        if (previous == null)
+            throw new ApplicationException(Constants.ErrorMessage.SalaryPreviousNotFound);
+
+        previous.DateEnd = SettingsSalaryEntity.OpenEndDate();
+
+        using var tran = GetTransaction();
+        settingsSalaryRepository.DeleteById(open.SettingsSalary, userId);
+        settingsSalaryRepository.Update(previous);
         tran.Complete();
         return true;
     }

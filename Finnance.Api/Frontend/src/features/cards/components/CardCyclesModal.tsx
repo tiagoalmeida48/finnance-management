@@ -69,7 +69,12 @@ export function CardCyclesModal({
           ) : logic.cycles.length > 0 ? (
             <div className="space-y-2">
               {logic.cycles.map((cycle) => (
-                <CycleRow key={cycle.creditCardStatementCycle} cycle={cycle} onEdit={logic.openEdit} />
+                <CycleRow
+                  key={cycle.creditCardStatementCycle}
+                  cycle={cycle}
+                  onEdit={logic.openEdit}
+                  onDelete={logic.requestDelete}
+                />
               ))}
             </div>
           ) : (
@@ -88,6 +93,29 @@ export function CardCyclesModal({
 
       <CardCycleForm logic={logic} />
 
+      <Dialog
+        open={logic.pendingDelete !== null}
+        onOpenChange={(value) => !value && logic.cancelDelete()}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir vigência</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-text-muted">
+            A vigência será excluída e o período vizinho será estendido para manter a continuidade.
+            Esta ação não pode ser desfeita.
+          </p>
+          <DialogFooter>
+            <Button variant="ghost" onClick={logic.cancelDelete} disabled={logic.isDeleting}>
+              Cancelar
+            </Button>
+            <Button variant="danger" onClick={logic.confirmDelete} loading={logic.isDeleting}>
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {reprocessOpen && (
         <ReprocessDialog card={card} onClose={() => setReprocessOpen(false)} />
       )}
@@ -95,7 +123,15 @@ export function CardCyclesModal({
   );
 }
 
-function CycleRow({ cycle, onEdit }: { cycle: StatementCycle; onEdit: (cycle: StatementCycle) => void }) {
+function CycleRow({
+  cycle,
+  onEdit,
+  onDelete,
+}: {
+  cycle: StatementCycle;
+  onEdit: (cycle: StatementCycle) => void;
+  onDelete: (cycle: StatementCycle) => void;
+}) {
   return (
     <div className="flex items-center justify-between rounded-md border border-border bg-surface-2 p-3">
       <div>
@@ -108,9 +144,14 @@ function CycleRow({ cycle, onEdit }: { cycle: StatementCycle; onEdit: (cycle: St
           {cycle.active ? ' · ativa' : ''}
         </p>
       </div>
-      <Button variant="outline" size="sm" onClick={() => onEdit(cycle)}>
-        Editar
-      </Button>
+      <div className="flex items-center gap-1">
+        <Button variant="outline" size="sm" onClick={() => onEdit(cycle)}>
+          Editar
+        </Button>
+        <Button variant="ghost" size="sm" className="text-expense" onClick={() => onDelete(cycle)}>
+          Excluir
+        </Button>
+      </div>
     </div>
   );
 }

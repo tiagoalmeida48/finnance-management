@@ -8,6 +8,8 @@ interface SalarySettingsTabProps {
   onOpenEdit: (setting: SalarySetting) => void;
   onRequestClose: (setting: SalarySetting) => void;
   closePending: boolean;
+  onRequestDelete: () => void;
+  deletePending: boolean;
 }
 
 const headerClass =
@@ -20,6 +22,8 @@ export function SalarySettingsTab({
   onOpenEdit,
   onRequestClose,
   closePending,
+  onRequestDelete,
+  deletePending,
 }: SalarySettingsTabProps) {
   return (
     <Card>
@@ -77,14 +81,25 @@ export function SalarySettingsTab({
                           Editar
                         </Button>
                         {setting.active && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => onRequestClose(setting)}
-                            disabled={closePending}
-                          >
-                            Encerrar
-                          </Button>
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => onRequestClose(setting)}
+                              disabled={closePending}
+                            >
+                              Encerrar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-expense"
+                              onClick={onRequestDelete}
+                              disabled={deletePending}
+                            >
+                              Excluir
+                            </Button>
+                          </>
                         )}
                       </div>
                     </td>

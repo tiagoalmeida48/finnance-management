@@ -60,4 +60,16 @@ public class SettingsSalaryRepository : BaseRepository<SettingsSalaryEntity, Set
         var model = con.Query<SettingsSalaryMod>(sb.ToString(), param).ToList();
         return MapToEntity(model);
     }
+
+    public bool DeleteById(long settingsSalary, long user)
+    {
+        var param = new DynamicParameters();
+        param.Add("settingsSalary", settingsSalary);
+        param.Add("user", user);
+
+        const string sql = """DELETE FROM settings_salary WHERE settings_salary = @settingsSalary AND "user" = @user""";
+
+        using var con = Conn;
+        return con.Execute(sql, param) > 0;
+    }
 }

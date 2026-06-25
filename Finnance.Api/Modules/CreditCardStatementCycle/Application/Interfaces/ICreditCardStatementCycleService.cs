@@ -18,4 +18,8 @@ public interface ICreditCardStatementCycleService : IBaseService<CreditCardState
     bool UpdateCycleStart(long creditCardStatementCycle, long userId, DateTime dateStart);
 
     bool UpdateCycleEnd(long creditCardStatementCycle, long userId, DateTime dateEnd);
+
+    CreditCardStatementCycleEntity UpdateCycle(long creditCardStatementCycle, long userId, short closingDay, short dueDay, string notes);
+
+    CreditCardStatementCycleEntity DeleteCycle(long creditCardStatementCycle, long userId);
 }

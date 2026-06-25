@@ -89,3 +89,19 @@ export function useCloseSalarySetting() {
     },
   });
 }
+
+export function useDeleteCurrentSalarySetting() {
+  const queryClient = useQueryClient();
+  const { addToast } = useToast();
+
+  return useMutation({
+    mutationFn: () => salaryService.deleteCurrent(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: salaryKeys.all });
+      addToast('Vigência atual excluída e vigência anterior restaurada.', 'success');
+    },
+    onError: (error: unknown) => {
+      addToast(resolveErrorMessage(error, 'Erro ao excluir vigência salarial.'), 'error');
+    },
+  });
+}
