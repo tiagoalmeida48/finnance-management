@@ -1,11 +1,13 @@
 import { apiClient } from '@/config/http';
 import type {
   BankAccountOption,
+  CardTransaction,
   CreditCard,
   CreditCardCreateInput,
   CreditCardInvoice,
   CreditCardStats,
   CreditCardUpdateInput,
+  PayBillInput,
   StatementCycle,
   StatementCycleCreateInput,
 } from '../types/cards.types';
@@ -60,6 +62,9 @@ export const invoicesService = {
   getByMonth: (card: number, monthKey: string): Promise<CreditCardInvoice> =>
     apiClient.get<CreditCardInvoice>('/credit-card-invoice/get-by-month', { card, monthKey }),
 
+  transactions: (invoice: number): Promise<CardTransaction[]> =>
+    apiClient.post<CardTransaction[]>('/transaction/list', { invoice, sortAsc: false, limit: 200 }),
+
   recalculate: (invoice: number): Promise<boolean> =>
     apiClient.post<boolean>('/credit-card-invoice/recalculate', invoice),
 
@@ -67,6 +72,9 @@ export const invoicesService = {
     const query = new URLSearchParams({ card: String(card), fromDate }).toString();
     return apiClient.post<boolean>(`/credit-card-invoice/reprocess?${query}`);
   },
+
+  payBill: (input: PayBillInput): Promise<boolean> =>
+    apiClient.post<boolean>('/transaction/pay-bill', input),
 };
 
 export const bankAccountLookupService = {

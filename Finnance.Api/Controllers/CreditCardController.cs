@@ -38,7 +38,7 @@ public class CreditCardController(ICreditCardService creditCardService) : Contro
             CreditLimit = dto.CreditLimit,
             Notes = dto.Notes
         };
-        var id = creditCardService.CreateCard(entity, UserLogged.user);
+        var id = creditCardService.CreateCard(entity, dto.ClosingDay, dto.DueDay, UserLogged.user);
         return new ResultApi<long> { Result = id };
     }
 

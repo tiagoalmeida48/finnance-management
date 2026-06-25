@@ -8,6 +8,7 @@ import {
 import type {
   CreditCardCreateInput,
   CreditCardUpdateInput,
+  PayBillInput,
 } from '../types/cards.types';
 
 export const cardsKeys = {
@@ -17,6 +18,7 @@ export const cardsKeys = {
   card: (card: number) => ['cards', 'card', card] as const,
   stats: (card: number) => ['cards', 'stats', card] as const,
   invoices: (card: number, year: number) => ['cards', 'invoices', card, year] as const,
+  invoiceTransactions: (invoice: number) => ['cards', 'invoice-transactions', invoice] as const,
   bankAccounts: ['cards', 'bank-accounts'] as const,
 };
 
@@ -66,6 +68,14 @@ export function useCardInvoices(card: number | null, year: number) {
   });
 }
 
+export function useInvoiceTransactions(invoice: number | null) {
+  return useQuery({
+    queryKey: cardsKeys.invoiceTransactions(invoice ?? 0),
+    queryFn: () => invoicesService.transactions(invoice as number),
+    enabled: invoice !== null,
+  });
+}
+
 function useInvalidateCards() {
   const queryClient = useQueryClient();
   return () => {
@@ -109,6 +119,19 @@ export function useDeleteCard() {
       addToast('Cartão removido.', 'success');
     },
     onError: () => addToast('Não foi possível remover o cartão.', 'error'),
+  });
+}
+
+export function usePayBill() {
+  const queryClient = useQueryClient();
+  const { addToast } = useToast();
+  return useMutation({
+    mutationFn: (input: PayBillInput) => invoicesService.payBill(input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: cardsKeys.all });
+      addToast('Fatura paga.', 'success');
+    },
+    onError: () => addToast('Não foi possível pagar a fatura.', 'error'),
   });
 }
 

@@ -24,6 +24,8 @@ export interface CreditCardCreateInput {
   color: string;
   creditLimit: number;
   notes: string;
+  closingDay: number;
+  dueDay: number;
 }
 
 export interface CreditCardUpdateInput {
@@ -69,6 +71,23 @@ export interface CreditCardInvoice {
   closedAt: string | null;
   paidAt: string | null;
   active: boolean;
+}
+
+export interface PayBillInput {
+  invoice: number;
+  account: number;
+  paymentDate: string;
+}
+
+export interface CardTransaction {
+  transaction: number;
+  transactionType: number;
+  amount: number | null;
+  paymentDate: string | null;
+  purchaseDate: string | null;
+  description: string | null;
+  category: number | null;
+  paid: boolean;
 }
 
 export interface BankAccountOption {

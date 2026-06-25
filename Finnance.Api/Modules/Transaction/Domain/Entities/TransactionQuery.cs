@@ -1,6 +1,6 @@
-namespace Finnance.Api.Modules.Transaction.Application.Dto;
+namespace Finnance.Api.Modules.Transaction.Domain.Entities;
 
-public class TransactionFilterDto
+public class TransactionQuery
 {
     public long Account { get; set; }
 
@@ -27,12 +27,4 @@ public class TransactionFilterDto
     public DateTime? EndDate { get; set; }
 
     public bool? IsPaid { get; set; }
-
-    public bool SortAsc { get; set; }
-
-    public string SortField { get; set; }
-
-    public int Limit { get; set; } = 50;
-
-    public int Offset { get; set; }
 }

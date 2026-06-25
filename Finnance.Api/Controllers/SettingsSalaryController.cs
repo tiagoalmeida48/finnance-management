@@ -57,11 +57,4 @@ public class SettingsSalaryController(ISettingsSalaryService settingsSalaryServi
     {
         return new ResultApi<bool> { Result = settingsSalaryService.CloseSetting(UserLogged.user, dto.SettingsSalary, dto.DateEnd) };
     }
-
-    [Authorization()]
-    [HttpPost]
-    public ResultApi<SalarySimulationResultDto> Simulate([FromBody] SalarySimulationInputDto dto)
-    {
-        return new ResultApi<SalarySimulationResultDto> { Result = settingsSalaryService.SimulatePayroll(dto) };
-    }
 }

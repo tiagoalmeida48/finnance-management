@@ -36,12 +36,7 @@ export function useProfilePageLogic() {
   const submitPersonal = personalForm.handleSubmit((values) => {
     if (!user) return;
     updateProfile.mutate(
-      {
-        user: user.user,
-        email: user.email,
-        fullName: values.fullName.trim(),
-        isAdmin: user.isAdmin,
-      },
+      { fullName: values.fullName.trim() },
       { onSuccess: () => refresh() },
     );
   });
@@ -49,7 +44,7 @@ export function useProfilePageLogic() {
   const submitPassword = passwordForm.handleSubmit((values) => {
     if (!user) return;
     updatePassword.mutate(
-      { user: user.user, password: values.password },
+      { password: values.password },
       { onSuccess: () => passwordForm.reset({ password: '', confirmPassword: '' }) },
     );
   });

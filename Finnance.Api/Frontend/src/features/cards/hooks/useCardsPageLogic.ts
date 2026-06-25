@@ -49,6 +49,8 @@ export function useCardsPageLogic() {
           color: values.color,
           creditLimit: values.creditLimit,
           notes: values.notes,
+          closingDay: values.closingDay,
+          dueDay: values.dueDay,
         },
         { onSuccess: () => setFormOpen(false) },
       );

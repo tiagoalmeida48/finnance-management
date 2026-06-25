@@ -25,6 +25,16 @@ const cardSchema = z.object({
   color: z.string(),
   notes: z.string(),
   active: z.boolean(),
+  closingDay: z
+    .number()
+    .int()
+    .min(1, 'O dia de fechamento deve estar entre 1 e 31.')
+    .max(31, 'O dia de fechamento deve estar entre 1 e 31.'),
+  dueDay: z
+    .number()
+    .int()
+    .min(1, 'O dia de vencimento deve estar entre 1 e 31.')
+    .max(31, 'O dia de vencimento deve estar entre 1 e 31.'),
 });
 
 export type CardFormValues = z.infer<typeof cardSchema>;
@@ -44,6 +54,8 @@ const emptyForm: CardFormValues = {
   creditLimit: 0,
   notes: '',
   active: true,
+  closingDay: 1,
+  dueDay: 10,
 };
 
 export function CardFormModal({ open, card, saving, onClose, onSubmit }: CardFormModalProps) {
@@ -69,6 +81,8 @@ export function CardFormModal({ open, card, saving, onClose, onSubmit }: CardFor
         creditLimit: card.creditLimit,
         notes: card.notes ?? '',
         active: card.active,
+        closingDay: 1,
+        dueDay: 10,
       });
     } else {
       reset(emptyForm);
@@ -146,6 +160,59 @@ export function CardFormModal({ open, card, saving, onClose, onSubmit }: CardFor
               {...register('color')}
             />
           </div>
+
+          {!card ? (
+            <>
+              <div>
+                <Label htmlFor="card-closing-day">Dia de fechamento</Label>
+                <Controller
+                  control={control}
+                  name="closingDay"
+                  render={({ field }) => (
+                    <Input
+                      id="card-closing-day"
+                      type="number"
+                      min={1}
+                      max={31}
+                      className="w-full"
+                      value={field.value || ''}
+                      onChange={(event) => field.onChange(Number(event.target.value))}
+                    />
+                  )}
+                />
+                {errors.closingDay && (
+                  <p className="text-expense text-xs mt-1">{errors.closingDay.message}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="card-due-day">Dia de vencimento</Label>
+                <Controller
+                  control={control}
+                  name="dueDay"
+                  render={({ field }) => (
+                    <Input
+                      id="card-due-day"
+                      type="number"
+                      min={1}
+                      max={31}
+                      className="w-full"
+                      value={field.value || ''}
+                      onChange={(event) => field.onChange(Number(event.target.value))}
+                    />
+                  )}
+                />
+                {errors.dueDay && (
+                  <p className="text-expense text-xs mt-1">{errors.dueDay.message}</p>
+                )}
+              </div>
+
+              <p className="text-xs text-text-muted sm:col-span-2">
+                A primeira vigência de fatura será criada automaticamente com estes dias, a partir de
+                hoje.
+              </p>
+            </>
+          ) : null}
 
           <div className="sm:col-span-2">
             <Label htmlFor="card-notes">Observações</Label>

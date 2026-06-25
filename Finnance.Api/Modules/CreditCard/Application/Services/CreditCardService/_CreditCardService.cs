@@ -3,13 +3,14 @@ using Finnance.Api.Modules.Common.Application.Services;
 using Finnance.Api.Modules.CreditCard.Application.Interfaces;
 using Finnance.Api.Modules.CreditCard.Domain.Entities;
 using Finnance.Api.Modules.CreditCard.Domain.Interfaces;
+using Finnance.Api.Modules.CreditCardStatementCycle.Application.Interfaces;
 
 namespace Finnance.Api.Modules.CreditCard.Application.Services;
 
-public partial class CreditCardService(ICreditCardRepository creditCardRepository, IBankAccountService bankAccountService)
+public partial class CreditCardService(ICreditCardRepository creditCardRepository, IBankAccountService bankAccountService, ICreditCardStatementCycleService creditCardStatementCycleService)
     : BaseService<CreditCardEntity>(creditCardRepository), ICreditCardService
 {
-    public long CreateCard(CreditCardEntity entity, long userId)
+    public long CreateCard(CreditCardEntity entity, short closingDay, short dueDay, long userId)
     {
         entity.User = userId;
         entity.ValidateCreate();
@@ -18,6 +19,7 @@ public partial class CreditCardService(ICreditCardRepository creditCardRepositor
 
         using var tran = GetTransaction();
         var id = creditCardRepository.Create(entity);
+        creditCardStatementCycleService.CreateInitialCycle(id, userId, DateTime.Today, closingDay, dueDay, null);
         tran.Complete();
         return id;
     }

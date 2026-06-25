@@ -15,17 +15,4 @@ public partial class SettingsSalaryService
         if (overlap)
             throw new ApplicationException(Constants.ErrorMessage.SalaryPeriodOverlap);
     }
-
-    private decimal ResolveInssCeiling()
-    {
-        try
-        {
-            var config = systemConfigService.GetByKey(Constants.SystemConfigKey.TetoInss);
-            return config.Value > 0 ? config.Value : Constants.DefaultTetoInss;
-        }
-        catch (ApplicationException)
-        {
-            return Constants.DefaultTetoInss;
-        }
-    }
 }

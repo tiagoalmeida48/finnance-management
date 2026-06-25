@@ -86,6 +86,13 @@ public class TransactionController(ITransactionService transactionService) : Con
 
     [Authorization()]
     [HttpPost]
+    public ResultApi<bool> PayBill([FromBody] PayBillDto dto)
+    {
+        return new ResultApi<bool> { Result = transactionService.PayBill(dto.Invoice, dto.Account, dto.PaymentDate, UserLogged.user) };
+    }
+
+    [Authorization()]
+    [HttpPost]
     public ResultApi<bool> BatchUnpay([FromBody] BatchIdsDto dto)
     {
         return new ResultApi<bool> { Result = transactionService.BatchUnpay(dto.Ids, UserLogged.user) };

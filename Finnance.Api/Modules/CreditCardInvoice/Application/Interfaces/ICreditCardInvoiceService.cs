@@ -9,6 +9,8 @@ public interface ICreditCardInvoiceService : IBaseService<CreditCardInvoiceEntit
 
     CreditCardInvoiceEntity GetByMonth(long cardId, string monthKey, long userId);
 
+    CreditCardInvoiceEntity GetInvoice(long invoiceId, long userId);
+
     long? ResolveInvoiceForTransaction(long cardId, long userId, DateTime anchorDate);
 
     void RecalculateInvoiceTotal(long invoiceId);

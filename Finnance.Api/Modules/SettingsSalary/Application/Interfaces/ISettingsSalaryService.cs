@@ -1,5 +1,4 @@
 using Finnance.Api.Modules.Common.Application.Interfaces;
-using Finnance.Api.Modules.SettingsSalary.Application.Dto;
 using Finnance.Api.Modules.SettingsSalary.Domain.Entities;
 
 namespace Finnance.Api.Modules.SettingsSalary.Application.Interfaces;
@@ -17,6 +16,4 @@ public interface ISettingsSalaryService : IBaseService<SettingsSalaryEntity>
     bool UpdateSetting(SettingsSalaryEntity entity, long userId);
 
     bool CloseSetting(long userId, long settingsSalary, DateTime newEnd);
-
-    SalarySimulationResultDto SimulatePayroll(SalarySimulationInputDto input);
 }

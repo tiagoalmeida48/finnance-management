@@ -26,12 +26,9 @@ public partial class TransactionService
         filter ??= new TransactionFilterDto();
 
         return transactionRepository.GetPaginated(userId,
-                                                  filter.Account,
-                                                  filter.Category,
-                                                  filter.StartDate,
-                                                  filter.EndDate,
-                                                  filter.IsPaid,
+                                                  filter.MapTo<TransactionQuery>(),
                                                   filter.SortAsc,
+                                                  filter.SortField,
                                                   filter.Limit,
                                                   filter.Offset);
     }
@@ -40,12 +37,7 @@ public partial class TransactionService
     {
         filter ??= new TransactionFilterDto();
 
-        var totals = transactionRepository.GetSummary(userId,
-                                                      filter.Account,
-                                                      filter.Category,
-                                                      filter.StartDate,
-                                                      filter.EndDate,
-                                                      filter.IsPaid);
+        var totals = transactionRepository.GetSummary(userId, filter.MapTo<TransactionQuery>());
 
         return new TransactionSummaryDto
         {

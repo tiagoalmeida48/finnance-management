@@ -41,6 +41,21 @@ public partial class UserService(IUserRepository userRepository) : BaseService<U
         return true;
     }
 
+    public bool UpdateOwnProfile(long user, string fullName)
+    {
+        if (fullName.IsEmpty())
+            throw new ApplicationException(Constants.ErrorMessage.RequiredField);
+
+        var current = Get(user);
+        current.FullName = fullName;
+
+        using var tran = GetTransaction();
+        userRepository.Update(current);
+        tran.Complete();
+
+        return true;
+    }
+
     public bool UpdateUserPassword(long user, string rawPassword)
     {
         UserEntity.ValidatePassword(rawPassword);

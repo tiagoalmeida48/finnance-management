@@ -35,6 +35,9 @@ public class CreditCardStatementCycleEntity : BaseEntity
 
         if (DateStart == default)
             throw new ApplicationException(Constants.ErrorMessage.RequiredField);
+
+        if (ClosingDay < 1 || ClosingDay > 31 || DueDay < 1 || DueDay > 31)
+            throw new ApplicationException(Constants.ErrorMessage.InvalidStatementDay);
     }
 
     public override void ValidateUpdate()

@@ -6,7 +6,6 @@ import type {
   SalarySettingCloseInput,
   SalarySettingCreateInput,
   SalarySettingUpdateInput,
-  SalarySimulationInput,
 } from '../types/salary.types';
 
 export const salaryKeys = {
@@ -87,17 +86,6 @@ export function useCloseSalarySetting() {
     },
     onError: (error: unknown) => {
       addToast(resolveErrorMessage(error, 'Erro ao encerrar vigência salarial.'), 'error');
-    },
-  });
-}
-
-export function useSimulatePayroll() {
-  const { addToast } = useToast();
-
-  return useMutation({
-    mutationFn: (input: SalarySimulationInput) => salaryService.simulate(input),
-    onError: (error: unknown) => {
-      addToast(resolveErrorMessage(error, 'Erro ao simular a folha.'), 'error');
     },
   });
 }

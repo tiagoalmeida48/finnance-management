@@ -6,13 +6,9 @@ export interface ProfileInfo {
 }
 
 export interface UpdateProfileInput {
-  user: number;
-  email: string;
   fullName: string;
-  isAdmin: boolean;
 }
 
 export interface UpdatePasswordInput {
-  user: number;
   password: string;
 }

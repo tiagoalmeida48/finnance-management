@@ -4,8 +4,6 @@ import type {
   SalarySettingCloseInput,
   SalarySettingCreateInput,
   SalarySettingUpdateInput,
-  SalarySimulationInput,
-  SalarySimulationResult,
 } from '../types/salary.types';
 
 export const salaryService = {
@@ -34,9 +32,5 @@ export const salaryService = {
       settingsSalary: input.settingsSalary,
       dateEnd: input.dateEnd,
     });
-  },
-
-  simulate: async (input: SalarySimulationInput): Promise<SalarySimulationResult> => {
-    return apiClient.post<SalarySimulationResult>('/settings-salary/simulate', input);
   },
 };

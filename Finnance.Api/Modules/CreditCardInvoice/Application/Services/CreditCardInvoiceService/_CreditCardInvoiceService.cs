@@ -85,6 +85,11 @@ public partial class CreditCardInvoiceService(ICreditCardInvoiceRepository credi
 
     public void RecalculateInvoiceOwned(long invoiceId, long userId)
     {
+        RecalculateInvoiceTotal(GetInvoice(invoiceId, userId).CreditCardInvoice);
+    }
+
+    public CreditCardInvoiceEntity GetInvoice(long invoiceId, long userId)
+    {
         var invoice = creditCardInvoiceRepository.Search(creditCardInvoice: invoiceId, quantity: 1).FirstOrDefault();
         if (invoice == null)
             throw new ApplicationException(Constants.ErrorMessage.InvoiceNotFound);
@@ -92,7 +97,7 @@ public partial class CreditCardInvoiceService(ICreditCardInvoiceRepository credi
         if (invoice.User != userId)
             throw new ApplicationException(Constants.ErrorMessage.AccessDeniedResource);
 
-        RecalculateInvoiceTotal(invoiceId);
+        return invoice;
     }
 
     public void ReprocessInvoicesForCard(long cardId, long userId, DateTime fromDate)

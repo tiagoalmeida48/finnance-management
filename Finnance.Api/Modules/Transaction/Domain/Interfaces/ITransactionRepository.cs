@@ -23,26 +23,15 @@ public interface ITransactionRepository : IBaseRepository<TransactionEntity>
 
     List<TransactionEntity> GetByIds(List<long> ids, long user);
 
-    List<TransactionEntity> GetPaginated(long user,
-                                         long account,
-                                         long category,
-                                         DateTime? startDate,
-                                         DateTime? endDate,
-                                         bool? isPaid,
-                                         bool sortAsc,
-                                         int limit,
-                                         int offset);
+    List<TransactionEntity> GetPaginated(long user, TransactionQuery query, bool sortAsc, string sortField, int limit, int offset);
 
-    (decimal Income, decimal Expense, decimal Pending) GetSummary(long user,
-                                                                  long account,
-                                                                  long category,
-                                                                  DateTime? startDate,
-                                                                  DateTime? endDate,
-                                                                  bool? isPaid);
+    (decimal Income, decimal Expense, decimal Pending) GetSummary(long user, TransactionQuery query);
 
     void UpdateInvoiceLink(long transaction, long? invoice, long user);
 
     List<long> SearchInvoiceIdsByTransactions(List<long> ids, long user);
+
+    List<long> SearchUnpaidIdsByInvoice(long invoice, long user);
 
     List<long> SearchInvoiceIdsByGroup(long groupId, string groupColumn, long user);
 

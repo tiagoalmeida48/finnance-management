@@ -193,15 +193,7 @@ public class TransactionRepository : BaseRepository<TransactionEntity, Transacti
         return MapToEntity(model);
     }
 
-    public List<TransactionEntity> GetPaginated(long user,
-                                                long account,
-                                                long category,
-                                                DateTime? startDate,
-                                                DateTime? endDate,
-                                                bool? isPaid,
-                                                bool sortAsc,
-                                                int limit,
-                                                int offset)
+    public List<TransactionEntity> GetPaginated(long user, TransactionQuery query, bool sortAsc, string sortField, int limit, int offset)
     {
         var sb = new StringBuilder();
         var param = new DynamicParameters();
@@ -209,9 +201,9 @@ public class TransactionRepository : BaseRepository<TransactionEntity, Transacti
         param.Add("user", user);
         sb.Append("""SELECT * FROM "transaction" WHERE "user" = @user AND active = TRUE """);
 
-        AppendReadFilters(sb, param, account, category, startDate, endDate, isPaid);
+        AppendReadFilters(sb, param, query);
 
-        sb.Append(sortAsc ? "ORDER BY payment_date ASC " : "ORDER BY payment_date DESC ");
+        sb.Append($"ORDER BY {ResolveSortColumn(sortField)} {(sortAsc ? "ASC" : "DESC")} ");
 
         param.Add("limit", limit <= 0 ? Constants.MaxPageSizeLimit : limit);
         param.Add("offset", offset < 0 ? 0 : offset);
@@ -222,12 +214,7 @@ public class TransactionRepository : BaseRepository<TransactionEntity, Transacti
         return MapToEntity(model);
     }
 
-    public (decimal Income, decimal Expense, decimal Pending) GetSummary(long user,
-                                                                         long account,
-                                                                         long category,
-                                                                         DateTime? startDate,
-                                                                         DateTime? endDate,
-                                                                         bool? isPaid)
+    public (decimal Income, decimal Expense, decimal Pending) GetSummary(long user, TransactionQuery query)
     {
         var sb = new StringBuilder();
         var param = new DynamicParameters();
@@ -247,48 +234,93 @@ public class TransactionRepository : BaseRepository<TransactionEntity, Transacti
             """);
         sb.Append(' ');
 
-        AppendReadFilters(sb, param, account, category, startDate, endDate, isPaid);
+        AppendReadFilters(sb, param, query);
 
         using var con = Conn;
         var row = con.QuerySingle<TransactionSummaryMod>(sb.ToString(), param);
         return (row.Income, row.Expense, row.Pending);
     }
 
-    private static void AppendReadFilters(StringBuilder sb,
-                                          DynamicParameters param,
-                                          long account,
-                                          long category,
-                                          DateTime? startDate,
-                                          DateTime? endDate,
-                                          bool? isPaid)
+    private static readonly HashSet<string> SortableColumns = new(StringComparer.OrdinalIgnoreCase)
     {
-        if (account > 0)
+        "payment_date", "purchase_date", "amount", "paid", "payment_method", "description", "transaction_type"
+    };
+
+    private static string ResolveSortColumn(string sortField)
+    {
+        return !string.IsNullOrWhiteSpace(sortField) && SortableColumns.Contains(sortField)
+            ? sortField.ToLowerInvariant()
+            : "payment_date";
+    }
+
+    private static void AppendReadFilters(StringBuilder sb, DynamicParameters param, TransactionQuery query)
+    {
+        if (query.Account > 0)
         {
-            param.Add("account", account);
+            param.Add("account", query.Account);
             sb.Append("AND account = @account ");
         }
 
-        if (category > 0)
+        if (query.Category > 0)
         {
-            param.Add("category", category);
+            param.Add("category", query.Category);
             sb.Append("AND category = @category ");
         }
 
-        if (startDate.HasValue)
+        if (query.Card > 0)
         {
-            param.Add("startDate", startDate.Value.Date);
+            param.Add("card", query.Card);
+            sb.Append("AND card = @card ");
+        }
+
+        if (query.Invoice > 0)
+        {
+            param.Add("invoice", query.Invoice);
+            sb.Append("AND invoice = @invoice ");
+        }
+
+        if (query.TransactionType > 0)
+        {
+            param.Add("transactionType", query.TransactionType);
+            sb.Append("AND transaction_type = @transactionType ");
+        }
+
+        if (query.PaymentMethod > 0)
+        {
+            param.Add("paymentMethod", query.PaymentMethod);
+            sb.Append("AND payment_method = @paymentMethod ");
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            param.Add("search", $"%{query.Search.Trim()}%");
+            sb.Append("AND description ILIKE @search ");
+        }
+
+        if (query.HideCreditCards)
+            sb.Append("AND card IS NULL ");
+
+        if (query.OnlyCreditCards)
+            sb.Append("AND card IS NOT NULL ");
+
+        if (query.OnlyInstallments)
+            sb.Append("AND installment_group IS NOT NULL ");
+
+        if (query.StartDate.HasValue)
+        {
+            param.Add("startDate", query.StartDate.Value.Date);
             sb.Append("AND payment_date >= @startDate ");
         }
 
-        if (endDate.HasValue)
+        if (query.EndDate.HasValue)
         {
-            param.Add("endDate", endDate.Value.Date);
+            param.Add("endDate", query.EndDate.Value.Date);
             sb.Append("AND payment_date <= @endDate ");
         }
 
-        if (isPaid.HasValue)
+        if (query.IsPaid.HasValue)
         {
-            param.Add("isPaid", isPaid.Value);
+            param.Add("isPaid", query.IsPaid.Value);
             sb.Append("AND paid = @isPaid ");
         }
     }
@@ -319,6 +351,21 @@ public class TransactionRepository : BaseRepository<TransactionEntity, Transacti
         const string sql = """
             SELECT DISTINCT invoice FROM "transaction"
             WHERE "transaction" = ANY(@ids) AND "user" = @user AND invoice IS NOT NULL
+            """;
+
+        using var con = Conn;
+        return con.Query<long>(sql, param).ToList();
+    }
+
+    public List<long> SearchUnpaidIdsByInvoice(long invoice, long user)
+    {
+        var param = new DynamicParameters();
+        param.Add("invoice", invoice);
+        param.Add("user", user);
+
+        const string sql = """
+            SELECT "transaction" FROM "transaction"
+            WHERE invoice = @invoice AND "user" = @user AND active = TRUE AND paid = FALSE
             """;
 
         using var con = Conn;

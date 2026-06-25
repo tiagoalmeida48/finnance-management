@@ -8,7 +8,7 @@ public interface ICreditCardService : IBaseService<CreditCardEntity>
 {
     CreditCardEntity GetCard(long creditCard, long userId);
     List<CreditCardEntity> List(long userId);
-    long CreateCard(CreditCardEntity entity, long userId);
+    long CreateCard(CreditCardEntity entity, short closingDay, short dueDay, long userId);
     bool UpdateCard(CreditCardEntity entity, long userId);
     bool DeleteCard(long creditCard, long userId);
     void EnsureOwnership(long creditCard, long userId);

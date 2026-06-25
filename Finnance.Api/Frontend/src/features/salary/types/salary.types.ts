@@ -34,21 +34,6 @@ export interface SalarySettingCloseInput {
   dateEnd: string;
 }
 
-export interface SalarySimulationInput {
-  baseSalary: number;
-  hourlyRate: number;
-  extraHours: number;
-  inssDiscountPercentage: number;
-  adminFeePercentage: number;
-}
-
-export interface SalarySimulationResult {
-  gross: number;
-  inss: number;
-  adminFee: number;
-  net: number;
-}
-
 export interface PayrollInput {
   totalHours: number;
   hourlyRate: number;

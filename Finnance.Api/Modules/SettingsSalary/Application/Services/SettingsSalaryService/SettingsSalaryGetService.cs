@@ -1,4 +1,3 @@
-using Finnance.Api.Modules.SettingsSalary.Application.Dto;
 using Finnance.Api.Modules.SettingsSalary.Domain.Entities;
 using Finnance.Api.Shared.Utils;
 
@@ -27,25 +26,6 @@ public partial class SettingsSalaryService
             throw new ApplicationException(Constants.ErrorMessage.SalaryOpenNotFound);
 
         return open;
-    }
-
-    public SalarySimulationResultDto SimulatePayroll(SalarySimulationInputDto input)
-    {
-        var ceiling = ResolveInssCeiling();
-
-        var gross = input.BaseSalary + (input.HourlyRate * input.ExtraHours);
-        var inssBase = Math.Min(input.BaseSalary, ceiling);
-        var inss = inssBase * (input.InssDiscountPercentage / 100m);
-        var adminFee = gross * (input.AdminFeePercentage / 100m);
-        var net = gross - inss - adminFee;
-
-        return new SalarySimulationResultDto
-        {
-            Gross = Math.Round(gross, 2),
-            Inss = Math.Round(inss, 2),
-            AdminFee = Math.Round(adminFee, 2),
-            Net = Math.Round(net, 2)
-        };
     }
 
     private SettingsSalaryEntity GetOwned(long settingsSalary, long userId)

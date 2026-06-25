@@ -46,4 +46,18 @@ public class UserController(IUserService userService) : ControllerBase
     {
         return new ResultApi<bool> { Result = userService.DeleteUser(user, UserLogged.user) };
     }
+
+    [Authorization()]
+    [HttpPut]
+    public ResultApi<bool> UpdateProfile([FromBody] UserUpdateProfileDto dto)
+    {
+        return new ResultApi<bool> { Result = userService.UpdateOwnProfile(UserLogged.user, dto?.FullName) };
+    }
+
+    [Authorization()]
+    [HttpPut]
+    public ResultApi<bool> UpdateMyPassword([FromBody] UserUpdateOwnPasswordDto dto)
+    {
+        return new ResultApi<bool> { Result = userService.UpdateUserPassword(UserLogged.user, dto?.Password) };
+    }
 }

@@ -36,6 +36,50 @@ public partial class TransactionService
         return true;
     }
 
+    public bool PayBill(long invoice, long account, DateTime paymentDate, long userId)
+    {
+        if (invoice <= 0)
+            throw new ApplicationException(Constants.ErrorMessage.InvoiceNotFound);
+
+        var invoiceEntity = creditCardInvoiceService.GetInvoice(invoice, userId);
+        bankAccountService.Get(account, userId);
+
+        var ids = transactionRepository.SearchUnpaidIdsByInvoice(invoice, userId);
+        if (ids.Count == 0)
+            return true;
+
+        var items = transactionRepository.GetByIds(ids, userId);
+        var billTotal = items.Sum(item => item.Amount ?? 0);
+
+        using var tran = GetTransaction();
+
+        foreach (var current in items)
+        {
+            current.Paid = true;
+            transactionRepository.UpdateTransaction(current);
+        }
+
+        var payment = new TransactionEntity
+        {
+            User = userId,
+            TransactionType = Constants.TransactionTypeId.EXPENSE,
+            Amount = billTotal,
+            PaymentDate = paymentDate,
+            Description = $"Pgto Fatura {invoiceEntity.MonthKey}",
+            Account = account,
+            Paid = true
+        };
+
+        payment.ValidateCreate();
+        transactionRepository.Insert(payment);
+        ApplyBalance(payment, 1);
+
+        creditCardInvoiceService.RecalculateInvoiceTotal(invoice);
+
+        tran.Complete();
+        return true;
+    }
+
     public bool BatchUnpay(List<long> ids, long userId)
     {
         var items = LoadOwnedTransactions(ids, userId);

@@ -11,4 +11,8 @@ public class CreditCardCreateDto
     public decimal CreditLimit { get; set; }
 
     public string Notes { get; set; }
+
+    public short ClosingDay { get; set; }
+
+    public short DueDay { get; set; }
 }

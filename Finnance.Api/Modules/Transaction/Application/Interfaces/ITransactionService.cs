@@ -18,6 +18,8 @@ public interface ITransactionService : IBaseService<TransactionEntity>
 
     bool BatchPay(List<long> ids, long account, DateTime paymentDate, long userId);
 
+    bool PayBill(long invoice, long account, DateTime paymentDate, long userId);
+
     bool BatchUnpay(List<long> ids, long userId);
 
     bool BatchDelete(List<long> ids, long userId);

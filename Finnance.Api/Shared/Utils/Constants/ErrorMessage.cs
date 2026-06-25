@@ -42,6 +42,7 @@ public static partial class Constants
         public const string CycleStartNotContained = "Não existe vigência que contenha a data informada.";
         public const string CycleStartMustBeGreater = "A data de início deve ser maior que o início da vigência atual.";
         public const string CycleCannotSplit = "Não foi possível dividir a vigência atual com a data informada.";
+        public const string InvalidStatementDay = "O dia de fechamento e de vencimento deve estar entre 1 e 31.";
         public const string SalaryPeriodOverlap = "Já existe um período de salário que se sobrepõe ao informado.";
         public const string SalaryOpenNotFound = "Não existe período de salário em aberto.";
         public const string InvalidGroupType = "Tipo de grupo inválido.";
