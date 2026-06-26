@@ -31,8 +31,8 @@ export function AccountWithCards({
   onDeleteCard,
 }: AccountWithCardsProps) {
   return (
-    <Card className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <Card className="flex h-full flex-col gap-4">
+      <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <div
             className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg text-xl leading-none"
@@ -49,31 +49,12 @@ export function AccountWithCards({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <p className="nums text-xl font-semibold text-text">
-            {formatCurrency(account.currentBalance)}
-          </p>
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-label="Editar conta"
-            onClick={() => onEditAccount(account)}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-label="Excluir conta"
-            className="text-expense hover:text-expense hover:brightness-125"
-            onClick={() => onDeleteAccount(account)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
+        <p className="nums shrink-0 text-xl font-semibold text-text">
+          {formatCurrency(account.currentBalance)}
+        </p>
       </div>
 
-      <div className="space-y-2 border-t border-border pt-3">
+      <div className="flex-1 space-y-2 border-t border-border pt-3">
         {cards.length === 0 ? (
           <p className="text-sm text-text-muted">Nenhum cartão vinculado a esta conta.</p>
         ) : (
@@ -88,15 +69,30 @@ export function AccountWithCards({
             />
           ))
         )}
+      </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full sm:w-auto"
-          onClick={() => onAddCard(account.bankAccount)}
-        >
+      <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
+        <Button variant="outline" size="sm" onClick={() => onAddCard(account.bankAccount)}>
           <Plus className="h-4 w-4" />
           Adicionar cartão
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="ml-auto"
+          onClick={() => onEditAccount(account)}
+        >
+          <Pencil className="h-4 w-4" />
+          Editar
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-expense hover:text-expense hover:brightness-125"
+          onClick={() => onDeleteAccount(account)}
+        >
+          <Trash2 className="h-4 w-4" />
+          Excluir
         </Button>
       </div>
     </Card>

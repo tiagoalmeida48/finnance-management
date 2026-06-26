@@ -39,21 +39,23 @@ export function FinancesPage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {groups.map((group) => (
-            <AccountWithCards
-              key={group.account.bankAccount}
-              account={group.account}
-              accountTypeName={group.accountTypeName}
-              cards={group.cards}
-              statsByCard={cards.statsByCard}
-              onEditAccount={accounts.openEdit}
-              onDeleteAccount={accounts.setAccountToDelete}
-              onAddCard={cards.openCreate}
-              onViewCard={cards.openDetail}
-              onEditCard={cards.openEdit}
-              onDeleteCard={cards.requestDelete}
-            />
-          ))}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {groups.map((group) => (
+              <AccountWithCards
+                key={group.account.bankAccount}
+                account={group.account}
+                accountTypeName={group.accountTypeName}
+                cards={group.cards}
+                statsByCard={cards.statsByCard}
+                onEditAccount={accounts.openEdit}
+                onDeleteAccount={accounts.setAccountToDelete}
+                onAddCard={cards.openCreate}
+                onViewCard={cards.openDetail}
+                onEditCard={cards.openEdit}
+                onDeleteCard={cards.requestDelete}
+              />
+            ))}
+          </div>
 
           {orphanCards.length > 0 && (
             <Card className="space-y-3">
