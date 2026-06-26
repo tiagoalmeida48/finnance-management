@@ -12,6 +12,7 @@ export function useCardsPageLogic() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<CreditCard | null>(null);
+  const [createBankAccount, setCreateBankAccount] = useState<number | null>(null);
   const [detailCard, setDetailCard] = useState<CreditCard | null>(null);
   const [pendingDelete, setPendingDelete] = useState<CreditCard | null>(null);
 
@@ -21,13 +22,15 @@ export function useCardsPageLogic() {
     return map;
   }, [statsQuery.data]);
 
-  const openCreate = useCallback(() => {
+  const openCreate = useCallback((bankAccount?: number) => {
     setEditing(null);
+    setCreateBankAccount(typeof bankAccount === 'number' ? bankAccount : null);
     setFormOpen(true);
   }, []);
 
   const openEdit = useCallback((card: CreditCard) => {
     setEditing(card);
+    setCreateBankAccount(null);
     setFormOpen(true);
   }, []);
 
@@ -73,6 +76,7 @@ export function useCardsPageLogic() {
     statsByCard,
     formOpen,
     editing,
+    createBankAccount,
     detailCard,
     pendingDelete,
     saving: createCard.isPending || updateCard.isPending,

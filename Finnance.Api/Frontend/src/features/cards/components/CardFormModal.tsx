@@ -43,6 +43,7 @@ interface CardFormModalProps {
   open: boolean;
   card: CreditCard | null;
   saving: boolean;
+  defaultBankAccount?: number | null;
   onClose: () => void;
   onSubmit: (values: CardFormValues) => void;
 }
@@ -58,7 +59,14 @@ const emptyForm: CardFormValues = {
   dueDay: 10,
 };
 
-export function CardFormModal({ open, card, saving, onClose, onSubmit }: CardFormModalProps) {
+export function CardFormModal({
+  open,
+  card,
+  saving,
+  defaultBankAccount,
+  onClose,
+  onSubmit,
+}: CardFormModalProps) {
   const { data: accounts, isLoading: loadingAccounts } = useBankAccountsLookup();
   const {
     register,
@@ -85,9 +93,9 @@ export function CardFormModal({ open, card, saving, onClose, onSubmit }: CardFor
         dueDay: 10,
       });
     } else {
-      reset(emptyForm);
+      reset({ ...emptyForm, bankAccount: defaultBankAccount ?? 0 });
     }
-  }, [open, card, reset]);
+  }, [open, card, defaultBankAccount, reset]);
 
   return (
     <Dialog open={open} onOpenChange={(value) => !value && onClose()}>

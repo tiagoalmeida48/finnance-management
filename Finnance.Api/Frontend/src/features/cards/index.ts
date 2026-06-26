@@ -1,5 +1,5 @@
 export { CardItem } from './components/CardItem';
-export { CardsSection } from './components/CardsSection';
+export { CardRow } from './components/CardRow';
 export { CardFormModal } from './components/CardFormModal';
 export { DeleteCardDialog } from './components/DeleteCardDialog';
 export { CardDetailModal } from './components/CardDetailModal';
