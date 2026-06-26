@@ -13,6 +13,7 @@ import type {
 interface TransactionRowProps {
   transaction: Transaction;
   selected: boolean;
+  isChild?: boolean;
   accounts: BankAccountLookup[];
   categories: CategoryLookup[];
   cards: CreditCardLookup[];
@@ -21,6 +22,14 @@ interface TransactionRowProps {
   onEdit: (transaction: Transaction) => void;
   onDuplicate: (transaction: Transaction) => void;
   onDelete: (transaction: Transaction) => void;
+}
+
+function installmentLabel(transaction: Transaction, isChild: boolean): string | null {
+  if (!transaction.installmentNumber) return null;
+  if (isChild && transaction.totalInstallments) {
+    return `${transaction.installmentNumber}/${transaction.totalInstallments}`;
+  }
+  return `${transaction.installmentNumber}ª parcela`;
 }
 
 function findName<T>(items: T[], idKey: keyof T, nameKey: keyof T, id: number | null): string {
@@ -32,6 +41,7 @@ function findName<T>(items: T[], idKey: keyof T, nameKey: keyof T, id: number | 
 export function TransactionRow({
   transaction,
   selected,
+  isChild = false,
   accounts,
   categories,
   cards,
@@ -56,9 +66,11 @@ export function TransactionRow({
       ? 'text-income'
       : 'text-expense';
 
+  const rowBackground = selected ? 'bg-primary/5' : isChild ? 'bg-surface-2/40' : 'hover:bg-surface-2';
+
   return (
-    <tr className={`border-b border-border transition-colors ${selected ? 'bg-primary/5' : 'hover:bg-surface-2'}`}>
-      <td className="px-3 py-3">
+    <tr className={`border-b border-border transition-colors ${rowBackground}`}>
+      <td className={`px-3 py-3 ${isChild ? 'pl-8' : ''}`}>
         <button
           type="button"
           onClick={() => onToggleSelect(transaction.transaction)}
@@ -87,8 +99,8 @@ export function TransactionRow({
           <span className={`text-sm font-medium ${transaction.paid ? 'text-text' : 'text-text-muted'}`}>
             {transaction.description}
           </span>
-          {transaction.installmentNumber ? (
-            <Badge variant="primary">{transaction.installmentNumber}ª parcela</Badge>
+          {installmentLabel(transaction, isChild) ? (
+            <Badge variant="primary">{installmentLabel(transaction, isChild)}</Badge>
           ) : null}
           {transaction.fixed ? <Badge variant="primary">Recorrente</Badge> : null}
           {!transaction.paid ? <Badge variant="expense">Pendente</Badge> : null}

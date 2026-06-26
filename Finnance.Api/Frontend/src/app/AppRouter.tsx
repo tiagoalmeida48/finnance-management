@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Spinner } from '@/shared/components/ui';
 import { ProtectedRoute } from './ProtectedRoute';
 import { AdminRoute } from './AdminRoute';
@@ -12,11 +12,8 @@ const DashboardPage = lazy(() =>
 const TransactionsPage = lazy(() =>
   import('@/pages/transactions/TransactionsPage').then((m) => ({ default: m.TransactionsPage })),
 );
-const AccountsPage = lazy(() =>
-  import('@/pages/accounts/AccountsPage').then((m) => ({ default: m.AccountsPage })),
-);
-const CardsPage = lazy(() =>
-  import('@/pages/cards/CardsPage').then((m) => ({ default: m.CardsPage })),
+const FinancesPage = lazy(() =>
+  import('@/pages/finances/FinancesPage').then((m) => ({ default: m.FinancesPage })),
 );
 const CategoriesPage = lazy(() =>
   import('@/pages/categories/CategoriesPage').then((m) => ({ default: m.CategoriesPage })),
@@ -60,8 +57,9 @@ export function AppRouter() {
       >
         <Route path="/" element={<Lazy><DashboardPage /></Lazy>} />
         <Route path="/transactions" element={<Lazy><TransactionsPage /></Lazy>} />
-        <Route path="/accounts" element={<Lazy><AccountsPage /></Lazy>} />
-        <Route path="/cards" element={<Lazy><CardsPage /></Lazy>} />
+        <Route path="/finances" element={<Lazy><FinancesPage /></Lazy>} />
+        <Route path="/accounts" element={<Navigate to="/finances" replace />} />
+        <Route path="/cards" element={<Navigate to="/finances" replace />} />
         <Route path="/cards/:id" element={<Lazy><CreditCardDetailsPage /></Lazy>} />
         <Route path="/categories" element={<Lazy><CategoriesPage /></Lazy>} />
         <Route path="/salary" element={<Lazy><SalaryPage /></Lazy>} />

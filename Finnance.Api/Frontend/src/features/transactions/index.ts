@@ -1,6 +1,7 @@
 export { TransactionFormModal } from './components/TransactionFormModal';
 export { TransactionImportModal } from './components/TransactionImportModal';
 export { TransactionRow } from './components/TransactionRow';
+export { TransactionGroupRow } from './components/TransactionGroupRow';
 export { TransactionsBatchBar } from './components/TransactionsBatchBar';
 export { TransactionsFilters } from './components/TransactionsFilters';
 export { TransactionsSummary } from './components/TransactionsSummary';
@@ -18,6 +19,7 @@ export {
 export {
   transactionKeys,
   useTransactionsList,
+  useTransactionsGroupedList,
   useTransactionsSummary,
   useTransactionMutations,
 } from './hooks/useTransactions';
@@ -34,6 +36,9 @@ export { lookupsService } from './services/lookupsService';
 export type {
   Transaction,
   TransactionFilter,
+  TransactionGroup,
+  TransactionListItem,
+  TransactionListResult,
   TransactionSummary,
   TransactionCreateInput,
   TransactionUpdateInput,

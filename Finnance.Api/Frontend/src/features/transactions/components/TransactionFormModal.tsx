@@ -14,6 +14,7 @@ import {
   SelectMenu,
 } from '@/shared/components/ui';
 import { TransactionTypeId } from '@/config/constants';
+import { formatCurrency } from '@/shared/utils';
 import { transactionFormSchema, type TransactionFormData } from './transactionFormSchema';
 import { transactionTypeLabel } from './transactionMeta';
 import {
@@ -27,6 +28,7 @@ import type {
   Transaction,
   TransactionCreateInput,
   TransactionUpdateInput,
+  UpdateGroupInput,
 } from '../types/transactions.types';
 
 interface TransactionFormModalProps {
@@ -53,6 +55,7 @@ function toFormValues(t: Transaction): TransactionFormData {
     isInstallment: false,
     totalInstallments: 1,
     repeatCount: 1,
+    replicateToGroup: false,
   };
 }
 
@@ -72,7 +75,9 @@ export function TransactionFormModal({ open, editing, onClose }: TransactionForm
   const categories = useCategoriesLookup();
   const cards = useCardsLookup();
   const paymentMethods = usePaymentMethodsLookup();
-  const { create, update } = useTransactionMutations();
+  const { create, update, updateGroup } = useTransactionMutations();
+  const groupId = editing?.installmentGroup ?? editing?.recurringGroup ?? null;
+  const isGroupEditing = Boolean(editing && groupId != null);
 
   const {
     register,
@@ -92,6 +97,7 @@ export function TransactionFormModal({ open, editing, onClose }: TransactionForm
       isInstallment: false,
       totalInstallments: 1,
       repeatCount: 1,
+      replicateToGroup: false,
     },
   });
 
@@ -121,6 +127,7 @@ export function TransactionFormModal({ open, editing, onClose }: TransactionForm
             isInstallment: false,
             totalInstallments: 1,
             repeatCount: 1,
+            replicateToGroup: false,
           },
     );
     initialized.current = true;
@@ -132,6 +139,12 @@ export function TransactionFormModal({ open, editing, onClose }: TransactionForm
   const isFixed = watch('isFixed');
   const isTransfer = transactionType === TransactionTypeId.TRANSFER;
   const isCard = !isTransfer && card > 0;
+  const amountValue = Number(watch('amount')) || 0;
+  const installmentsCount = Number(watch('totalInstallments')) || 0;
+  const installmentPreview =
+    isInstallment && amountValue > 0 && installmentsCount > 1
+      ? `${installmentsCount}x de ${formatCurrency(amountValue / installmentsCount)}`
+      : null;
 
   const accountOptions = useMemo(
     () => (accounts.data ?? []).map((a) => ({ value: a.bankAccount, label: a.name })),
@@ -156,6 +169,23 @@ export function TransactionFormModal({ open, editing, onClose }: TransactionForm
   });
 
   const onSubmit = handleSubmit((data) => {
+    if (editing && data.replicateToGroup && groupId != null) {
+      const onCard = Number(data.card) > 0;
+      const groupPayload: UpdateGroupInput = {
+        groupId,
+        type: editing.installmentGroup != null ? 'installment' : 'recurring',
+        amount: Number(data.amount),
+        description: data.description.trim(),
+        paymentDate: data.paymentDate || null,
+        category: data.category ? Number(data.category) : null,
+        paymentMethod: data.paymentMethod ? Number(data.paymentMethod) : null,
+      };
+      if (onCard && data.purchaseDate) groupPayload.purchaseDate = data.purchaseDate;
+      else groupPayload.clearPurchaseDate = true;
+      updateGroup.mutate(groupPayload, { onSuccess: onClose });
+      return;
+    }
+
     if (editing) {
       const type = Number(data.transactionType);
       const transfer = type === TransactionTypeId.TRANSFER;
@@ -230,7 +260,7 @@ export function TransactionFormModal({ open, editing, onClose }: TransactionForm
           </div>
 
           <div>
-            <Label htmlFor="amount">Valor</Label>
+            <Label htmlFor="amount">{isInstallment ? 'Valor total' : 'Valor'}</Label>
             <Input
               id="amount"
               type="number"
@@ -354,6 +384,12 @@ export function TransactionFormModal({ open, editing, onClose }: TransactionForm
                   <Checkbox {...register('isPaid')} />
                   Pago
                 </label>
+                {isGroupEditing && (
+                  <label className="flex items-center gap-2 text-sm text-text">
+                    <Checkbox {...register('replicateToGroup')} />
+                    Replicar para todas as parcelas
+                  </label>
+                )}
               </div>
 
               {!editing && isInstallment ? (
@@ -367,6 +403,9 @@ export function TransactionFormModal({ open, editing, onClose }: TransactionForm
                     {...register('totalInstallments')}
                   />
                   {fieldError(errors.totalInstallments?.message)}
+                  {installmentPreview ? (
+                    <p className="mt-1 text-xs text-primary">{installmentPreview}</p>
+                  ) : null}
                 </div>
               ) : null}
 
@@ -395,7 +434,10 @@ export function TransactionFormModal({ open, editing, onClose }: TransactionForm
             <Button type="button" variant="ghost" onClick={onClose}>
               Cancelar
             </Button>
-            <Button type="submit" loading={editing ? update.isPending : create.isPending}>
+            <Button
+              type="submit"
+              loading={create.isPending || update.isPending || updateGroup.isPending}
+            >
               Salvar
             </Button>
           </DialogFooter>

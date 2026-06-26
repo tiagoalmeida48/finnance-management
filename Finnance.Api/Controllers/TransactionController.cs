@@ -18,6 +18,13 @@ public class TransactionController(ITransactionService transactionService) : Con
     }
 
     [Authorization()]
+    [HttpPost]
+    public ResultApi<TransactionListResultDto> ListGrouped([FromBody] TransactionFilterDto filter)
+    {
+        return new ResultApi<TransactionListResultDto> { Result = transactionService.GetGroupedPaginated(filter, UserLogged.user) };
+    }
+
+    [Authorization()]
     [HttpGet]
     public ResultApi<List<TransactionDisplayDto>> Recent([FromQuery] int quantity = 10)
     {

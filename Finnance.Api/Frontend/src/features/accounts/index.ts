@@ -1,6 +1,7 @@
 export { AccountCard } from './components/AccountCard';
 export { AccountFormModal } from './components/AccountFormModal';
 export { DeleteAccountDialog } from './components/DeleteAccountDialog';
+export { AccountsSection } from './components/AccountsSection';
 export { CurrencyInput } from './components/CurrencyInput';
 export {
   useAccounts,

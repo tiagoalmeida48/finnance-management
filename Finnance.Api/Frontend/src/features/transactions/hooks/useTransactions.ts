@@ -13,6 +13,7 @@ import type {
 export const transactionKeys = {
   all: ['transactions'] as const,
   list: (filter: TransactionFilter) => ['transactions', 'list', filter] as const,
+  grouped: (filter: TransactionFilter) => ['transactions', 'grouped', filter] as const,
   summary: (filter: TransactionFilter) => ['transactions', 'summary', filter] as const,
 };
 
@@ -20,6 +21,13 @@ export function useTransactionsList(filter: TransactionFilter) {
   return useQuery({
     queryKey: transactionKeys.list(filter),
     queryFn: () => transactionsService.list(filter),
+  });
+}
+
+export function useTransactionsGroupedList(filter: TransactionFilter) {
+  return useQuery({
+    queryKey: transactionKeys.grouped(filter),
+    queryFn: () => transactionsService.listGrouped(filter),
   });
 }
 
@@ -36,6 +44,9 @@ export function useTransactionMutations() {
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+    queryClient.invalidateQueries({ queryKey: ['accounts'] });
+    queryClient.invalidateQueries({ queryKey: ['cards'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] });
   };
 
   const onError = (error: unknown) => {

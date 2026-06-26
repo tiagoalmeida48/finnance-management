@@ -40,6 +40,8 @@ public class TransactionEntity : BaseEntity, IUserOwned
 
     public long? RecurringRule { get; set; }
 
+    public int? TotalInstallments { get; set; }
+
     public bool Fixed { get; set; }
 
     public bool Paid { get; set; }

@@ -9,26 +9,17 @@ import {
 import { ptBR } from 'date-fns/locale';
 import { TransactionTypeId } from '@/config/constants';
 import { calculateTrackingSummary } from '../utils/billTracking.utils';
-import { resolveStatementMonth } from '../utils/statementCycle.utils';
 import type { TrackingItem, TrackingItemType } from '../types/tracking.types';
-import {
-  useCardCycles,
-  useTrackingCards,
-  useTrackingTransactions,
-} from './useTracking';
+import { useTrackingTransactions } from './useTracking';
 import type { TrackingTransaction } from '../services/trackingService';
-
-const FALLBACK_CYCLE = { closingDay: 1, dueDay: 10 };
 
 export function useTrackingPageLogic() {
   const [currentYear, setCurrentYear] = useState(new Date());
 
-  const startDate = format(addMonths(startOfYear(currentYear), -1), 'yyyy-MM-dd');
+  const startDate = format(startOfYear(currentYear), 'yyyy-MM-dd');
   const endDate = format(endOfYear(currentYear), 'yyyy-MM-dd');
 
-  const { data: transactions, isLoading: loadingTx } = useTrackingTransactions(startDate, endDate);
-  const { data: cards, isLoading: loadingCards } = useTrackingCards();
-  const { cyclesByCard, isLoading: loadingCycles } = useCardCycles(cards);
+  const { data: transactions, isLoading } = useTrackingTransactions(startDate, endDate);
 
   const months = useMemo(
     () =>
@@ -43,38 +34,11 @@ export function useTrackingPageLogic() {
   const goToNextYear = () => setCurrentYear((prev) => addMonths(prev, 12));
 
   const monthlyData = useMemo(() => {
-    if (!transactions || !cards) return [];
+    if (!transactions) return [];
 
     return months.map((month) => {
       const monthStr = format(month, 'yyyy-MM');
-      const fixedItems = buildFixedItems(transactions, monthStr);
-      const cardItems = cards
-        .map((card) => {
-          const cycles = cyclesByCard.get(card.creditCard) ?? [];
-          const cardTransactions = transactions.filter((t) => t.card === card.creditCard);
-          const billTransactions = cardTransactions.filter((t) => {
-            const resolved = resolveStatementMonth(t, cycles, FALLBACK_CYCLE);
-            return resolved?.statementMonthKey === monthStr;
-          });
-
-          if (billTransactions.length === 0) return null;
-
-          const total = billTransactions.reduce((sum, t) => {
-            const amount = Number(t.amount) || 0;
-            return t.transactionType === TransactionTypeId.INCOME ? sum - amount : sum + amount;
-          }, 0);
-
-          return {
-            id: card.creditCard,
-            name: card.name,
-            total,
-            isPaid: billTransactions.every((t) => t.paid),
-            itemType: 'card' as TrackingItemType,
-          };
-        })
-        .filter((item): item is TrackingItem => item !== null);
-
-      const items: TrackingItem[] = [...fixedItems, ...cardItems];
+      const items = buildFixedItems(transactions, monthStr);
       const summary = calculateTrackingSummary(items);
 
       return {
@@ -87,13 +51,13 @@ export function useTrackingPageLogic() {
         totalAmount: summary.totalAmount,
       };
     });
-  }, [months, transactions, cards, cyclesByCard]);
+  }, [months, transactions]);
 
   return {
     currentYear,
     goToPreviousYear,
     goToNextYear,
-    isLoading: loadingTx || loadingCards || loadingCycles,
+    isLoading,
     monthlyData,
   };
 }

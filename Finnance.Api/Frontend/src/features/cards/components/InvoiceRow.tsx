@@ -1,11 +1,22 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { Badge, Button, Spinner } from '@/shared/components/ui';
+import {
+  Badge,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Spinner,
+} from '@/shared/components/ui';
 import { formatCurrency, formatDate } from '@/shared/utils';
+import { TransactionFormModal } from '@/features/transactions';
 import { getInvoiceStatusMeta } from './invoiceStatus';
 import { PayBillModal } from './PayBillModal';
-import { useInvoiceTransactions, usePayBill } from '../hooks/useCards';
-import type { CreditCardInvoice } from '../types/cards.types';
+import { InvoiceTransactionList } from './InvoiceTransactionList';
+import { useDeleteInvoiceTransaction, useInvoiceTransactions, usePayBill } from '../hooks/useCards';
+import type { CreditCardInvoice, Transaction } from '../types/cards.types';
 
 interface InvoiceRowProps {
   invoice: CreditCardInvoice;
@@ -16,7 +27,10 @@ interface InvoiceRowProps {
 export function InvoiceRow({ invoice, recalculating, onRecalculate }: InvoiceRowProps) {
   const [expanded, setExpanded] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
+  const [editing, setEditing] = useState<Transaction | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Transaction | null>(null);
   const payBill = usePayBill();
+  const deleteTransaction = useDeleteInvoiceTransaction();
   const status = getInvoiceStatusMeta(invoice.invoiceStatus);
   const remaining = invoice.totalAmount - invoice.paidAmount;
   const transactionsQuery = useInvoiceTransactions(expanded ? invoice.creditCardInvoice : null);
@@ -27,6 +41,13 @@ export function InvoiceRow({ invoice, recalculating, onRecalculate }: InvoiceRow
       { invoice: invoice.creditCardInvoice, account: input.account, paymentDate: input.paymentDate },
       { onSuccess: () => setPayOpen(false) },
     );
+  };
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    deleteTransaction.mutate(pendingDelete.transaction, {
+      onSuccess: () => setPendingDelete(null),
+    });
   };
 
   return (
@@ -81,29 +102,11 @@ export function InvoiceRow({ invoice, recalculating, onRecalculate }: InvoiceRow
               <Spinner />
             </div>
           ) : transactions.length > 0 ? (
-            <ul className="space-y-2">
-              {transactions.map((item) => (
-                <li
-                  key={item.transaction}
-                  className="flex items-center justify-between gap-3 text-sm"
-                >
-                  <div className="min-w-0">
-                    <p className={`truncate text-text ${item.paid ? '' : 'opacity-70'}`}>
-                      {item.description || 'Lançamento'}
-                    </p>
-                    <p className="text-xs text-text-muted">
-                      {item.purchaseDate || item.paymentDate
-                        ? formatDate((item.purchaseDate ?? item.paymentDate) as string)
-                        : '—'}
-                      {item.paid ? '' : ' · Pendente'}
-                    </p>
-                  </div>
-                  <span className="nums shrink-0 font-medium text-text">
-                    {formatCurrency(item.amount ?? 0)}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <InvoiceTransactionList
+              transactions={transactions}
+              onEdit={setEditing}
+              onDelete={setPendingDelete}
+            />
           ) : (
             <p className="py-2 text-sm text-text-muted">Nenhum lançamento nesta fatura.</p>
           )}
@@ -118,6 +121,50 @@ export function InvoiceRow({ invoice, recalculating, onRecalculate }: InvoiceRow
           onConfirm={handlePay}
         />
       ) : null}
+
+      <TransactionFormModal
+        open={editing !== null}
+        editing={editing}
+        onClose={() => setEditing(null)}
+      />
+
+      <Dialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir lançamento</DialogTitle>
+          </DialogHeader>
+
+          <p className="text-text-muted">
+            Tem certeza que deseja excluir{' '}
+            <span className="font-semibold text-text">
+              {pendingDelete?.description || 'este lançamento'}
+            </span>
+            ? A fatura será recalculada.
+          </p>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setPendingDelete(null)}
+              disabled={deleteTransaction.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              loading={deleteTransaction.isPending}
+              onClick={confirmDelete}
+            >
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -228,6 +228,9 @@ public partial class TransactionRepository
         if (query.OnlyInstallments)
             sb.Append("AND installment_group IS NOT NULL ");
 
+        if (query.OnlyFixed)
+            sb.Append("AND fixed = TRUE ");
+
         if (query.StartDate.HasValue)
         {
             param.Add("startDate", query.StartDate.Value.Date);

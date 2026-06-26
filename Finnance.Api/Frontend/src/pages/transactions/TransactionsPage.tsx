@@ -25,14 +25,17 @@ import {
 export function TransactionsPage() {
   const {
     filter,
-    transactions,
+    items,
     summary,
     summaryLoading,
     isLoading,
     isError,
     isEmpty,
     page,
+    totalLines,
     hasNextPage,
+    expandedGroups,
+    toggleGroup,
     formOpen,
     importOpen,
     editing,
@@ -101,10 +104,13 @@ export function TransactionsPage() {
             />
           ) : (
             <TransactionsTable
-              transactions={transactions}
+              items={items}
               selectedIds={selectedIds}
               page={page}
+              totalLines={totalLines}
               hasNextPage={hasNextPage}
+              expandedGroups={expandedGroups}
+              onToggleGroup={toggleGroup}
               onToggleSelect={toggleSelection}
               onToggleSelectAll={toggleSelectAll}
               onTogglePaid={togglePaid}

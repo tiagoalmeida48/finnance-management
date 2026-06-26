@@ -347,7 +347,7 @@ public partial class TransactionService
             if (isInstallment)
             {
                 var number = current.InstallmentNumber ?? 0;
-                current.Description = BuildInstallmentDescription(updates.Description, number, total);
+                current.Description = BuildInstallmentDescription(StripSuffix(updates.Description), number, total);
             }
             else
             {

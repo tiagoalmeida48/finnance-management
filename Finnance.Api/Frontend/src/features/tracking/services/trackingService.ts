@@ -1,21 +1,13 @@
 import { apiClient } from '@/config/http';
-import type { StatementCycleLike } from '../types/tracking.types';
 
 export interface TrackingTransaction {
   transaction: number;
   transactionType: number;
   amount: number | null;
   paymentDate: string | null;
-  purchaseDate: string | null;
   description: string;
-  card: number | null;
   fixed: boolean;
   paid: boolean;
-}
-
-export interface TrackingCard {
-  creditCard: number;
-  name: string;
 }
 
 export interface TrackingAccount {
@@ -42,18 +34,15 @@ export const trackingService = {
       startDate: filter.startDate,
       endDate: filter.endDate,
       isPaid: null,
+      onlyFixed: true,
+      hideCreditCards: true,
       sortAsc: true,
       limit: 5000,
       offset: 0,
     }),
 
-  listCards: (): Promise<TrackingCard[]> => apiClient.get<TrackingCard[]>('/credit-card/list'),
-
   listAccounts: (): Promise<TrackingAccount[]> =>
     apiClient.get<TrackingAccount[]>('/bank-account/list'),
-
-  cyclesByCard: (card: number): Promise<StatementCycleLike[]> =>
-    apiClient.get<StatementCycleLike[]>('/credit-card-statement-cycle/get-by-card', { card }),
 
   togglePaid: (transaction: number): Promise<boolean> =>
     apiClient.put<boolean>('/transaction/toggle-paid', transaction),

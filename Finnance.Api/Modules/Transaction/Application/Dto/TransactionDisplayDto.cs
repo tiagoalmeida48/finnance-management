@@ -32,6 +32,8 @@ public class TransactionDisplayDto
 
     public long? RecurringGroup { get; set; }
 
+    public int? TotalInstallments { get; set; }
+
     public bool Fixed { get; set; }
 
     public bool Paid { get; set; }

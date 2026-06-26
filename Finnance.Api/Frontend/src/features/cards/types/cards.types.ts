@@ -86,16 +86,7 @@ export interface PayBillInput {
   paymentDate: string;
 }
 
-export interface CardTransaction {
-  transaction: number;
-  transactionType: number;
-  amount: number | null;
-  paymentDate: string | null;
-  purchaseDate: string | null;
-  description: string | null;
-  category: number | null;
-  paid: boolean;
-}
+export type { Transaction } from '@/features/transactions';
 
 export interface BankAccountOption {
   bankAccount: number;

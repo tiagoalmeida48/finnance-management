@@ -27,6 +27,8 @@ public interface ITransactionRepository : IBaseRepository<TransactionEntity>
 
     List<TransactionEntity> GetPaginated(long user, TransactionQuery query, bool sortAsc, string sortField, int limit, int offset);
 
+    List<TransactionEntity> GetForGrouping(long user, TransactionQuery query, bool sortAsc, string sortField);
+
     (decimal Income, decimal Expense, decimal Pending) GetSummary(long user, TransactionQuery query);
 
     void UpdateInvoiceLink(long transaction, long? invoice, long user);

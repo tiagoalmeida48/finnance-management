@@ -34,7 +34,7 @@ export function useCardDetailLogic() {
 
   const openCycle = useMemo(() => openCycleOf(cyclesQuery.data), [cyclesQuery.data]);
 
-  const goBack = () => navigate('/cards');
+  const goBack = () => navigate('/finances');
   const prevYear = () => setYear((value) => value - 1);
   const nextYear = () => setYear((value) => value + 1);
 

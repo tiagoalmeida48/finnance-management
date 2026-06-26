@@ -1,17 +1,22 @@
+import { Fragment } from 'react';
 import { Button, Checkbox } from '@/shared/components/ui';
 import { TransactionRow } from './TransactionRow';
+import { TransactionGroupRow } from './TransactionGroupRow';
 import {
   useAccountsLookup,
   useCardsLookup,
   useCategoriesLookup,
 } from '../hooks/useLookups';
-import type { Transaction } from '../types/transactions.types';
+import type { Transaction, TransactionListItem } from '../types/transactions.types';
 
 interface TransactionsTableProps {
-  transactions: Transaction[];
+  items: TransactionListItem[];
   selectedIds: number[];
   page: number;
+  totalLines: number;
   hasNextPage: boolean;
+  expandedGroups: Record<string, boolean>;
+  onToggleGroup: (id: string) => void;
   onToggleSelect: (id: number) => void;
   onToggleSelectAll: (checked: boolean) => void;
   onTogglePaid: (transaction: Transaction) => void;
@@ -23,11 +28,24 @@ interface TransactionsTableProps {
 
 const columns = ['', '', 'Data', 'Descrição', 'Tipo', 'Origem', 'Valor', ''];
 
+function visibleIds(items: TransactionListItem[]): number[] {
+  return items.flatMap((item) =>
+    item.isGroup && item.group
+      ? item.group.items.map((t) => t.transaction)
+      : item.transaction
+        ? [item.transaction.transaction]
+        : [],
+  );
+}
+
 export function TransactionsTable({
-  transactions,
+  items,
   selectedIds,
   page,
+  totalLines,
   hasNextPage,
+  expandedGroups,
+  onToggleGroup,
   onToggleSelect,
   onToggleSelectAll,
   onTogglePaid,
@@ -40,7 +58,25 @@ export function TransactionsTable({
   const categories = useCategoriesLookup();
   const cards = useCardsLookup();
 
-  const allSelected = transactions.length > 0 && selectedIds.length === transactions.length;
+  const allIds = visibleIds(items);
+  const allSelected = allIds.length > 0 && allIds.every((id) => selectedIds.includes(id));
+
+  const renderRow = (transaction: Transaction, isChild: boolean) => (
+    <TransactionRow
+      key={transaction.transaction}
+      transaction={transaction}
+      isChild={isChild}
+      selected={selectedIds.includes(transaction.transaction)}
+      accounts={accounts.data ?? []}
+      categories={categories.data ?? []}
+      cards={cards.data ?? []}
+      onToggleSelect={onToggleSelect}
+      onTogglePaid={onTogglePaid}
+      onEdit={onEdit}
+      onDuplicate={onDuplicate}
+      onDelete={onDelete}
+    />
+  );
 
   return (
     <div className="space-y-3">
@@ -63,27 +99,35 @@ export function TransactionsTable({
             </tr>
           </thead>
           <tbody>
-            {transactions.map((transaction) => (
-              <TransactionRow
-                key={transaction.transaction}
-                transaction={transaction}
-                selected={selectedIds.includes(transaction.transaction)}
-                accounts={accounts.data ?? []}
-                categories={categories.data ?? []}
-                cards={cards.data ?? []}
-                onToggleSelect={onToggleSelect}
-                onTogglePaid={onTogglePaid}
-                onEdit={onEdit}
-                onDuplicate={onDuplicate}
-                onDelete={onDelete}
-              />
-            ))}
+            {items.map((item, index) => {
+              if (item.isGroup && item.group) {
+                const group = item.group;
+                const groupKey = `${group.type}-${group.groupId}`;
+                const expanded = Boolean(expandedGroups[groupKey]);
+                return (
+                  <Fragment key={groupKey}>
+                    <TransactionGroupRow
+                      group={group}
+                      expanded={expanded}
+                      selectedIds={selectedIds}
+                      onToggle={() => onToggleGroup(groupKey)}
+                      onToggleSelect={onToggleSelect}
+                    />
+                    {expanded && group.items.map((child) => renderRow(child, true))}
+                  </Fragment>
+                );
+              }
+              if (item.transaction) return renderRow(item.transaction, false);
+              return <Fragment key={`empty-${index}`} />;
+            })}
           </tbody>
         </table>
       </div>
 
       <div className="flex items-center justify-between">
-        <span className="text-sm text-text-muted">Página {page + 1}</span>
+        <span className="text-sm text-text-muted">
+          Página {page + 1} · {totalLines} lançamentos
+        </span>
         <div className="flex gap-2">
           <Button
             type="button"

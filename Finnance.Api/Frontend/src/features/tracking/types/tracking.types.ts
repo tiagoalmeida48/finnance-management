@@ -25,18 +25,6 @@ export interface TrackingSummary {
   totalAmount: number;
 }
 
-export interface StatementCycleLike {
-  dateStart: string;
-  dateEnd: string;
-  closingDay: number;
-  dueDay: number;
-}
-
-export interface StatementCycleFallback {
-  closingDay: number;
-  dueDay: number;
-}
-
 export interface PayItemInput {
   paymentDate: string;
   account: number | null;

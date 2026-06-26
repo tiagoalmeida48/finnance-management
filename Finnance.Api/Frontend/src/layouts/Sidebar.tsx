@@ -2,8 +2,6 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Wallet,
-  CreditCard,
-  TrendingUp,
   Tags,
   Receipt,
   CalendarCheck,
@@ -20,8 +18,7 @@ import { cn } from '@/shared/utils';
 const navigation = [
   { label: 'Dashboard', path: '/', icon: LayoutDashboard, adminOnly: false },
   { label: 'Transações', path: '/transactions', icon: Wallet, adminOnly: false },
-  { label: 'Contas', path: '/accounts', icon: TrendingUp, adminOnly: false },
-  { label: 'Cartões', path: '/cards', icon: CreditCard, adminOnly: false },
+  { label: 'Contas e Cartões', path: '/finances', icon: Wallet, adminOnly: false },
   { label: 'Categorias', path: '/categories', icon: Tags, adminOnly: false },
   { label: 'Salário', path: '/salary', icon: Receipt, adminOnly: false },
   { label: 'Acompanhamento', path: '/tracking', icon: CalendarCheck, adminOnly: false },

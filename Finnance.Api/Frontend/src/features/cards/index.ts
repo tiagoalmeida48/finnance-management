@@ -1,9 +1,11 @@
 export { CardItem } from './components/CardItem';
+export { CardsSection } from './components/CardsSection';
 export { CardFormModal } from './components/CardFormModal';
 export { DeleteCardDialog } from './components/DeleteCardDialog';
 export { CardDetailModal } from './components/CardDetailModal';
 export { CardDetailHeader } from './components/CardDetailHeader';
 export { StatementInvoiceList } from './components/StatementInvoiceList';
+export { InvoiceTransactionList } from './components/InvoiceTransactionList';
 export { CardCyclesModal } from './components/CardCyclesModal';
 export { CardCycleForm } from './components/CardCycleForm';
 export { UsageBar } from './components/UsageBar';
@@ -18,6 +20,9 @@ export {
   useUpdateCard,
   useDeleteCard,
   useRecalculateInvoice,
+  useInvoiceTransactions,
+  useUpdateInvoiceTransaction,
+  useDeleteInvoiceTransaction,
   cardsKeys,
 } from './hooks/useCards';
 export {

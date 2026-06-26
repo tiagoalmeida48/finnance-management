@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/shared/components/feedback';
+import { transactionsService } from '@/features/transactions';
+import type { TransactionUpdateInput } from '@/features/transactions';
 import {
   bankAccountLookupService,
   cardsService,
@@ -145,5 +147,41 @@ export function useRecalculateInvoice() {
       addToast('Fatura recalculada.', 'success');
     },
     onError: () => addToast('Não foi possível recalcular a fatura.', 'error'),
+  });
+}
+
+function useInvalidateInvoiceItems() {
+  const queryClient = useQueryClient();
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: cardsKeys.all });
+    void queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    void queryClient.invalidateQueries({ queryKey: ['accounts'] });
+    void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+  };
+}
+
+export function useUpdateInvoiceTransaction() {
+  const { addToast } = useToast();
+  const invalidate = useInvalidateInvoiceItems();
+  return useMutation({
+    mutationFn: (input: TransactionUpdateInput) => transactionsService.update(input),
+    onSuccess: () => {
+      invalidate();
+      addToast('Lançamento atualizado com sucesso.', 'success');
+    },
+    onError: () => addToast('Não foi possível atualizar o lançamento.', 'error'),
+  });
+}
+
+export function useDeleteInvoiceTransaction() {
+  const { addToast } = useToast();
+  const invalidate = useInvalidateInvoiceItems();
+  return useMutation({
+    mutationFn: (transaction: number) => transactionsService.delete(transaction),
+    onSuccess: () => {
+      invalidate();
+      addToast('Lançamento excluído.', 'success');
+    },
+    onError: () => addToast('Não foi possível excluir o lançamento.', 'error'),
   });
 }

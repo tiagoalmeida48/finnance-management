@@ -60,7 +60,7 @@ public partial class TransactionService(ITransactionRepository transactionReposi
         for (var i = 1; i <= total; i++)
         {
             var entity = BuildBaseEntity(input, userId);
-            entity.Amount = ResolveInstallmentAmount(input, i);
+            entity.Amount = ResolveInstallmentAmount(input, i, total);
             entity.PaymentDate = AddMonths(input.PaymentDate, i - 1);
             entity.PurchaseDate = AddMonths(input.PurchaseDate, i - 1);
             entity.Description = BuildInstallmentDescription(baseDescription, i, total);
@@ -156,12 +156,25 @@ public partial class TransactionService(ITransactionRepository transactionReposi
         };
     }
 
-    private static decimal ResolveInstallmentAmount(TransactionCreateDto input, int number)
+    private static decimal ResolveInstallmentAmount(TransactionCreateDto input, int number, int total)
     {
         if (input.InstallmentAmounts != null && input.InstallmentAmounts.Count >= number)
             return input.InstallmentAmounts[number - 1];
 
-        return input.Amount;
+        return SplitInstallment(input.Amount, number, total);
+    }
+
+    private static decimal SplitInstallment(decimal totalAmount, int number, int total)
+    {
+        if (total <= 1)
+            return totalAmount;
+
+        var totalCents = (long)Math.Round(totalAmount * 100m, MidpointRounding.AwayFromZero);
+        var baseCents = totalCents / total;
+        var remainder = totalCents - (baseCents * total);
+        var cents = baseCents + (number == total ? remainder : 0);
+
+        return cents / 100m;
     }
 
     private static DateTime? AddMonths(DateTime? date, int months)

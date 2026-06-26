@@ -19,6 +19,7 @@ export const transactionFormSchema = z
     isInstallment: z.boolean().default(false),
     totalInstallments: z.coerce.number().int().min(1).default(1),
     repeatCount: z.coerce.number().int().min(1).default(1),
+    replicateToGroup: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
     if (data.transactionType === TransactionTypeId.TRANSFER) {

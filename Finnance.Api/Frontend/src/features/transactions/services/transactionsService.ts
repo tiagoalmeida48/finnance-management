@@ -7,6 +7,7 @@ import type {
   Transaction,
   TransactionCreateInput,
   TransactionFilter,
+  TransactionListResult,
   TransactionSummary,
   TransactionUpdateInput,
   UpdateGroupInput,
@@ -15,6 +16,10 @@ import type {
 export const transactionsService = {
   list: async (filter: TransactionFilter): Promise<Transaction[]> => {
     return apiClient.post<Transaction[]>('/transaction/list', filter);
+  },
+
+  listGrouped: async (filter: TransactionFilter): Promise<TransactionListResult> => {
+    return apiClient.post<TransactionListResult>('/transaction/list-grouped', filter);
   },
 
   recent: async (quantity = 10): Promise<Transaction[]> => {

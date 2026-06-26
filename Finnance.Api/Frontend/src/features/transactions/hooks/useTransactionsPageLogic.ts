@@ -1,6 +1,24 @@
 import { useMemo, useState } from 'react';
-import { useTransactionsList, useTransactionsSummary, useTransactionMutations } from './useTransactions';
-import type { Transaction, TransactionFilter } from '../types/transactions.types';
+import {
+  useTransactionsGroupedList,
+  useTransactionsSummary,
+  useTransactionMutations,
+} from './useTransactions';
+import type {
+  Transaction,
+  TransactionFilter,
+  TransactionListItem,
+} from '../types/transactions.types';
+
+function flattenItems(items: TransactionListItem[]): Transaction[] {
+  return items.flatMap((item) =>
+    item.isGroup && item.group
+      ? item.group.items
+      : item.transaction
+        ? [item.transaction]
+        : [],
+  );
+}
 
 const PAGE_SIZE = 50;
 
@@ -34,15 +52,22 @@ export function useTransactionsPageLogic() {
   const [editing, setEditing] = useState<Transaction | null>(null);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [pendingDelete, setPendingDelete] = useState<Transaction | null>(null);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
-  const listQuery = useTransactionsList(filter);
+  const listQuery = useTransactionsGroupedList(filter);
   const summaryQuery = useTransactionsSummary(filter);
   const mutations = useTransactionMutations();
 
-  const transactions = useMemo(() => listQuery.data ?? [], [listQuery.data]);
+  const items = useMemo(() => listQuery.data?.items ?? [], [listQuery.data]);
+  const transactions = useMemo(() => flattenItems(items), [items]);
+  const totalLines = listQuery.data?.totalLines ?? 0;
+  const hasNextPage = listQuery.data?.hasNextPage ?? false;
   const page = Math.floor(filter.offset / PAGE_SIZE);
-  const hasNextPage = transactions.length === PAGE_SIZE;
-  const isEmpty = !listQuery.isLoading && transactions.length === 0;
+  const isEmpty = !listQuery.isLoading && items.length === 0;
+
+  const toggleGroup = (id: string) => {
+    setExpandedGroups((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const updateFilter = (patch: Partial<TransactionFilter>) => {
     setSelectedIds([]);
@@ -113,6 +138,7 @@ export function useTransactionsPageLogic() {
 
   return {
     filter,
+    items,
     transactions,
     summary: summaryQuery.data,
     summaryLoading: summaryQuery.isLoading,
@@ -121,7 +147,10 @@ export function useTransactionsPageLogic() {
     isEmpty,
     page,
     pageSize: PAGE_SIZE,
+    totalLines,
     hasNextPage,
+    expandedGroups,
+    toggleGroup,
     formOpen,
     importOpen,
     editing,

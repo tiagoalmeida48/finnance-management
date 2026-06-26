@@ -22,6 +22,8 @@ public class TransactionQuery
 
     public bool OnlyInstallments { get; set; }
 
+    public bool OnlyFixed { get; set; }
+
     public DateTime? StartDate { get; set; }
 
     public DateTime? EndDate { get; set; }

@@ -14,6 +14,7 @@ export interface Transaction {
   installmentGroup: number | null;
   installmentNumber: number | null;
   recurringGroup: number | null;
+  totalInstallments?: number | null;
   fixed: boolean;
   paid: boolean;
   notes: string;
@@ -26,6 +27,34 @@ export interface TransactionSummary {
   income: number;
   expense: number;
   pending: number;
+}
+
+export interface TransactionGroup {
+  groupId: number;
+  type: 'installment' | 'recurring';
+  totalInstallments: number;
+  totalItemsCount: number;
+  paidItemsCount: number;
+  paidItemsPercent: number;
+  totalAmount: number;
+  paidAmount: number;
+  isAllPaid: boolean;
+  category: number | null;
+  description: string;
+  mainTransaction: Transaction;
+  items: Transaction[];
+}
+
+export interface TransactionListItem {
+  isGroup: boolean;
+  group: TransactionGroup | null;
+  transaction: Transaction | null;
+}
+
+export interface TransactionListResult {
+  items: TransactionListItem[];
+  totalLines: number;
+  hasNextPage: boolean;
 }
 
 export interface TransactionFilter {

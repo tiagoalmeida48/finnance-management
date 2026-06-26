@@ -1,13 +1,11 @@
 import { Landmark } from 'lucide-react';
-import { Button, Card, CardContent, EmptyState, PageHeader, Spinner } from '@/shared/components/ui';
-import {
-  AccountCard,
-  AccountFormModal,
-  DeleteAccountDialog,
-  useAccountsPageLogic,
-} from '@/features/accounts';
+import { Button, Card, CardContent, EmptyState, Spinner } from '@/shared/components/ui';
+import { useAccountsPageLogic } from '../hooks/useAccountsPageLogic';
+import { AccountCard } from './AccountCard';
+import { AccountFormModal } from './AccountFormModal';
+import { DeleteAccountDialog } from './DeleteAccountDialog';
 
-export function AccountsPage() {
+export function AccountsSection() {
   const {
     accounts,
     isLoading,
@@ -28,13 +26,10 @@ export function AccountsPage() {
   } = useAccountsPageLogic();
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        icon={Landmark}
-        title="Contas"
-        description="Gerencie suas contas bancárias e acompanhe os saldos."
-        actions={<Button onClick={openCreate}>Nova conta</Button>}
-      />
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button onClick={openCreate}>Nova conta</Button>
+      </div>
 
       {isLoading ? (
         <div className="py-16">

@@ -1,14 +1,12 @@
 import { CreditCard as CreditCardIcon } from 'lucide-react';
-import { Button, Card, CardContent, EmptyState, PageHeader, Spinner } from '@/shared/components/ui';
-import {
-  CardDetailModal,
-  CardFormModal,
-  CardItem,
-  DeleteCardDialog,
-  useCardsPageLogic,
-} from '@/features/cards';
+import { Button, Card, CardContent, EmptyState, Spinner } from '@/shared/components/ui';
+import { useCardsPageLogic } from '../hooks/useCardsPageLogic';
+import { CardItem } from './CardItem';
+import { CardFormModal } from './CardFormModal';
+import { CardDetailModal } from './CardDetailModal';
+import { DeleteCardDialog } from './DeleteCardDialog';
 
-export function CardsPage() {
+export function CardsSection() {
   const {
     cards,
     isLoading,
@@ -33,13 +31,10 @@ export function CardsPage() {
   } = useCardsPageLogic();
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        icon={CreditCardIcon}
-        title="Cartões"
-        description="Acompanhe os limites e as faturas dos seus cartões de crédito."
-        actions={<Button onClick={openCreate}>Novo cartão</Button>}
-      />
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button onClick={openCreate}>Novo cartão</Button>
+      </div>
 
       {isLoading ? (
         <div className="py-16">
