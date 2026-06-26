@@ -20,12 +20,6 @@ interface TrackingFilter {
   endDate: string;
 }
 
-export interface BatchPayPayload {
-  ids: number[];
-  account: number;
-  paymentDate: string;
-}
-
 export const trackingService = {
   listTransactions: (filter: TrackingFilter): Promise<TrackingTransaction[]> =>
     apiClient.post<TrackingTransaction[]>('/transaction/list', {
@@ -47,6 +41,6 @@ export const trackingService = {
   togglePaid: (transaction: number): Promise<boolean> =>
     apiClient.put<boolean>('/transaction/toggle-paid', transaction),
 
-  batchPay: (payload: BatchPayPayload): Promise<boolean> =>
-    apiClient.post<boolean>('/transaction/batch-pay', payload),
+  pay: (transaction: number, account: number): Promise<boolean> =>
+    apiClient.put<boolean>('/transaction/update', { transaction, paid: true, account }),
 };

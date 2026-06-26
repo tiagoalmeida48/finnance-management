@@ -26,6 +26,5 @@ export interface TrackingSummary {
 }
 
 export interface PayItemInput {
-  paymentDate: string;
   account: number | null;
 }

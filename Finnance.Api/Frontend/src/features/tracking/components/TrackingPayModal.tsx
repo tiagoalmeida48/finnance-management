@@ -7,7 +7,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  Input,
   Label,
   SelectMenu,
 } from '@/shared/components/ui';
@@ -30,13 +29,10 @@ export function TrackingPayModal({
   onClose,
   onConfirm,
 }: TrackingPayModalProps) {
-  const today = new Date().toISOString().slice(0, 10);
-  const [paymentDate, setPaymentDate] = useState(today);
   const [accountId, setAccountId] = useState('');
 
   const handleConfirm = () => {
-    if (!paymentDate) return;
-    onConfirm({ paymentDate, account: accountId ? Number(accountId) : null });
+    onConfirm({ account: accountId ? Number(accountId) : null });
   };
 
   return (
@@ -60,16 +56,6 @@ export function TrackingPayModal({
 
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1">
-            <Label htmlFor="tracking-payment-date">Data de pagamento</Label>
-            <Input
-              id="tracking-payment-date"
-              type="date"
-              value={paymentDate}
-              onChange={(e) => setPaymentDate(e.target.value)}
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
             <Label htmlFor="tracking-account">Conta de débito</Label>
             <SelectMenu
               id="tracking-account"
@@ -90,7 +76,7 @@ export function TrackingPayModal({
           <Button variant="ghost" onClick={onClose} disabled={isPending}>
             Cancelar
           </Button>
-          <Button onClick={handleConfirm} loading={isPending} disabled={!paymentDate}>
+          <Button onClick={handleConfirm} loading={isPending}>
             Confirmar pagamento
           </Button>
         </DialogFooter>

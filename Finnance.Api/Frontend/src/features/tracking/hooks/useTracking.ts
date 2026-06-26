@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/shared/components/feedback';
-import { trackingService, type BatchPayPayload } from '../services/trackingService';
+import { trackingService } from '../services/trackingService';
 
 export const trackingKeys = {
   all: ['tracking'] as const,
@@ -32,6 +32,10 @@ export function useTrackingPayMutations() {
 
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: trackingKeys.all });
+    void queryClient.invalidateQueries({ queryKey: ['accounts'] });
+    void queryClient.invalidateQueries({ queryKey: ['cards'] });
+    void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    void queryClient.invalidateQueries({ queryKey: ['transactions'] });
   };
 
   const onError = () => addToast('Erro ao registrar pagamento.', 'error');
@@ -45,8 +49,9 @@ export function useTrackingPayMutations() {
     onError,
   });
 
-  const batchPay = useMutation({
-    mutationFn: (payload: BatchPayPayload) => trackingService.batchPay(payload),
+  const pay = useMutation({
+    mutationFn: ({ id, account }: { id: number; account: number }) =>
+      trackingService.pay(id, account),
     onSuccess: () => {
       invalidate();
       addToast('Pagamento registrado.', 'success');
@@ -54,5 +59,5 @@ export function useTrackingPayMutations() {
     onError,
   });
 
-  return { togglePaid, batchPay };
+  return { togglePaid, pay };
 }
