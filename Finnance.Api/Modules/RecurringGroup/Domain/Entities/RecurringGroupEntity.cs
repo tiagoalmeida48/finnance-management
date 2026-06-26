@@ -1,10 +1,11 @@
+using Finnance.Api.Modules.Common.Domain.Interfaces;
 using Finnance.Api.Shared;
 using Finnance.Api.Shared.BaseClass;
 using Finnance.Api.Shared.Utils;
 
 namespace Finnance.Api.Modules.RecurringGroup.Domain.Entities;
 
-public class RecurringGroupEntity : BaseEntity
+public class RecurringGroupEntity : BaseEntity, IUserOwned
 {
     public long RecurringGroup { get; set; }
 

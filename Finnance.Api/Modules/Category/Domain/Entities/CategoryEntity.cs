@@ -1,10 +1,11 @@
+using Finnance.Api.Modules.Common.Domain.Interfaces;
 using Finnance.Api.Shared;
 using Finnance.Api.Shared.Utils;
 using Finnance.Api.Shared.BaseClass;
 
 namespace Finnance.Api.Modules.Category.Domain.Entities;
 
-public class CategoryEntity : BaseEntity
+public class CategoryEntity : BaseEntity, IUserOwned
 {
     public long Category { get; set; }
 

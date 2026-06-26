@@ -1,10 +1,11 @@
+using Finnance.Api.Modules.Common.Domain.Interfaces;
 using Finnance.Api.Shared;
 using Finnance.Api.Shared.Utils;
 using Finnance.Api.Shared.BaseClass;
 
 namespace Finnance.Api.Modules.CreditCard.Domain.Entities;
 
-public class CreditCardEntity : BaseEntity
+public class CreditCardEntity : BaseEntity, IUserOwned
 {
     public long CreditCard { get; set; }
 

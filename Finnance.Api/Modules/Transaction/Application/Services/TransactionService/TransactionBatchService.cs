@@ -30,7 +30,7 @@ public partial class TransactionService
             ApplyBalance(current, 1);
         }
 
-        RecalcInvoices(affected);
+        RecalcInvoices(affected, userId);
 
         tran.Complete();
         return true;
@@ -74,7 +74,7 @@ public partial class TransactionService
         transactionRepository.Insert(payment);
         ApplyBalance(payment, 1);
 
-        creditCardInvoiceService.RecalculateInvoiceTotal(invoice);
+        creditCardInvoiceService.RecalculateInvoiceTotal(invoice, userId);
 
         tran.Complete();
         return true;
@@ -98,7 +98,7 @@ public partial class TransactionService
             ApplyBalance(current, 1);
         }
 
-        RecalcInvoices(affected);
+        RecalcInvoices(affected, userId);
 
         tran.Complete();
         return true;
@@ -118,7 +118,7 @@ public partial class TransactionService
             transactionRepository.DeleteById(current.Transaction, userId);
         }
 
-        RecalcInvoices(affected);
+        RecalcInvoices(affected, userId);
 
         tran.Complete();
         return true;
@@ -158,7 +158,7 @@ public partial class TransactionService
             ApplyBalance(current, 1);
         }
 
-        RecalcInvoices(affected);
+        RecalcInvoices(affected, userId);
 
         tran.Complete();
         return true;
@@ -245,7 +245,7 @@ public partial class TransactionService
         LinkInvoice(newId, inserted, userId, affected);
         ApplyBalance(inserted, 1);
 
-        RecalcInvoices(affected);
+        RecalcInvoices(affected, userId);
 
         tran.Complete();
         return newId;
@@ -268,7 +268,7 @@ public partial class TransactionService
 
         transactionRepository.DeleteByGroup(groupId, groupColumn, userId);
 
-        RecalcInvoices(affected);
+        RecalcInvoices(affected, userId);
 
         tran.Complete();
         return true;
@@ -306,7 +306,7 @@ public partial class TransactionService
             ApplyBalance(current, 1);
         }
 
-        RecalcInvoices(affected);
+        RecalcInvoices(affected, userId);
 
         tran.Complete();
         return changedIds;

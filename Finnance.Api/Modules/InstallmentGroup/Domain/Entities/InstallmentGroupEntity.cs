@@ -1,9 +1,10 @@
+using Finnance.Api.Modules.Common.Domain.Interfaces;
 using Finnance.Api.Shared.Utils;
 using Finnance.Api.Shared.BaseClass;
 
 namespace Finnance.Api.Modules.InstallmentGroup.Domain.Entities;
 
-public class InstallmentGroupEntity : BaseEntity
+public class InstallmentGroupEntity : BaseEntity, IUserOwned
 {
     public long InstallmentGroup { get; set; }
 

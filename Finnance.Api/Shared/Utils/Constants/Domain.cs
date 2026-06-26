@@ -13,8 +13,8 @@ public static partial class Constants
     {
         public const long CHECKING = 1;
         public const long SAVINGS = 2;
-        public const long WALLET = 3;
-        public const long INVESTMENT = 4;
+        public const long INVESTMENT = 3;
+        public const long WALLET = 4;
         public const long OTHER = 5;
     }
 
@@ -26,19 +26,22 @@ public static partial class Constants
 
     public static class PaymentMethodId
     {
-        public const long CASH = 1;
+        public const long CREDIT = 1;
         public const long DEBIT = 2;
-        public const long CREDIT = 3;
-        public const long PIX = 4;
-        public const long TRANSFER = 5;
-        public const long OTHER = 6;
+        public const long PIX = 3;
+        public const long CASH = 4;
+        public const long BILL_PAYMENT = 5;
+        public const long TRANSFER = 6;
+        public const long OTHER = 7;
     }
 
     public static class InvoiceStatusId
     {
         public const long OPEN = 1;
-        public const long PARTIAL = 2;
-        public const long PAID = 3;
+        public const long CLOSED = 2;
+        public const long PARTIAL = 3;
+        public const long PAID = 4;
+        public const long OVERDUE = 5;
     }
 
     public static class AuditActionId

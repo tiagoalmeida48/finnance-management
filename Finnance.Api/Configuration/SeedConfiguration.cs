@@ -14,11 +14,11 @@ public static partial class Configuration
         con.Open();
 
         SeedLookup(con, "transaction_type", ["Receita", "Despesa", "Transferência"]);
-        SeedLookup(con, "account_type", ["Conta Corrente", "Poupança", "Carteira", "Investimento", "Outro"]);
+        SeedLookup(con, "account_type", ["Conta Corrente", "Poupança", "Investimento", "Carteira", "Outro"]);
         SeedLookup(con, "category_type", ["Receita", "Despesa"]);
-        SeedLookup(con, "payment_method", ["Dinheiro", "Débito", "Crédito", "PIX", "Transferência", "Outro"]);
-        SeedLookup(con, "invoice_status", ["Aberta", "Parcial", "Paga"]);
-        SeedLookup(con, "audit_action", ["INSERT", "UPDATE", "DELETE"]);
+        SeedLookup(con, "payment_method", ["Crédito", "Débito", "PIX", "Dinheiro", "Pagamento de boleto", "Transferência", "Outro"]);
+        SeedLookup(con, "invoice_status", ["Aberta", "Fechada", "Parcial", "Paga", "Vencida"]);
+        SeedLookup(con, "audit_action", ["Inserção", "Alteração", "Exclusão"]);
         SeedSystemConfig(con, Constants.SystemConfigKey.TetoInss, Constants.DefaultTetoInss);
         SeedAdminUser(con, "admin@finnance.com", "admin123", "Administrador");
     }
@@ -41,6 +41,8 @@ public static partial class Configuration
     {
         for (var i = 0; i < names.Length; i++)
             SeedNamedRow(con, table, table, i + 1, names[i]);
+
+        AdvanceSequence(con, table, table);
     }
 
     private static void SeedNamedRow(NpgsqlConnection con, string table, string pkColumn, long id, string name)
@@ -48,8 +50,8 @@ public static partial class Configuration
         const string sqlTemplate =
             "INSERT INTO {0} ({1}, name, active, created, updated) " +
             "OVERRIDING SYSTEM VALUE " +
-            "SELECT @id, @name, TRUE, now(), now() " +
-            "WHERE NOT EXISTS (SELECT 1 FROM {0} WHERE {1} = @id)";
+            "VALUES (@id, @name, TRUE, now(), now()) " +
+            "ON CONFLICT ({1}) DO UPDATE SET name = EXCLUDED.name, active = TRUE, updated = now()";
 
         var sql = string.Format(sqlTemplate, table, pkColumn);
 
@@ -57,6 +59,17 @@ public static partial class Configuration
         cmd.Parameters.AddWithValue("id", id);
         cmd.Parameters.AddWithValue("name", name);
         cmd.ExecuteNonQuery();
+    }
+
+    private static void AdvanceSequence(NpgsqlConnection con, string table, string pkColumn)
+    {
+        const string sqlTemplate =
+            "SELECT setval(pg_get_serial_sequence('{0}', '{1}'), GREATEST((SELECT COALESCE(MAX({1}), 1) FROM {0}), 1))";
+
+        var sql = string.Format(sqlTemplate, table, pkColumn);
+
+        using var cmd = new NpgsqlCommand(sql, con);
+        cmd.ExecuteScalar();
     }
 
     private static void SeedSystemConfig(NpgsqlConnection con, string key, decimal value)

@@ -3,6 +3,7 @@ using Finnance.Api.Modules.Common.Repository;
 using Finnance.Api.Modules.Transaction.Domain.Entities;
 using Finnance.Api.Modules.Transaction.Domain.Interfaces;
 using Finnance.Api.Modules.Transaction.Repository.Models;
+using System.Text;
 
 namespace Finnance.Api.Modules.Transaction.Repository.Repositories;
 
@@ -14,16 +15,68 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
             INSERT INTO "transaction"
                 ("user", transaction_type, payment_method, amount, payment_date, purchase_date,
                  description, account, to_account, card, category, invoice, installment_group,
-                 installment_number, recurring_group, fixed, paid, notes, active, created, updated)
+                 installment_number, recurring_group, recurring_rule, fixed, paid, notes, active, created, updated)
             VALUES
                 (@user, @transactionType, @paymentMethod, @amount, @paymentDate, @purchaseDate,
                  @description, @account, @toAccount, @card, @category, @invoice, @installmentGroup,
-                 @installmentNumber, @recurringGroup, @fixed, @paid, @notes, @active, NOW(), NOW())
+                 @installmentNumber, @recurringGroup, @recurringRule, @fixed, @paid, @notes, @active, NOW(), NOW())
             RETURNING "transaction"
             """;
 
         using var con = Conn;
         return con.ExecuteScalar<long>(sql, BuildWriteParams(entity));
+    }
+
+    public List<long> InsertBatch(IReadOnlyList<TransactionEntity> entities)
+    {
+        if (entities.Count == 0)
+            return [];
+
+        var values = new StringBuilder();
+        var param = new DynamicParameters();
+
+        for (var i = 0; i < entities.Count; i++)
+        {
+            var entity = entities[i];
+
+            if (i > 0)
+                values.Append(',');
+
+            values.Append($"(@user{i}, @transactionType{i}, @paymentMethod{i}, @amount{i}, @paymentDate{i}, @purchaseDate{i}, @description{i}, @account{i}, @toAccount{i}, @card{i}, @category{i}, @invoice{i}, @installmentGroup{i}, @installmentNumber{i}, @recurringGroup{i}, @recurringRule{i}, @fixed{i}, @paid{i}, @notes{i}, @active{i}, NOW(), NOW())");
+
+            param.Add($"user{i}", entity.User);
+            param.Add($"transactionType{i}", entity.TransactionType);
+            param.Add($"paymentMethod{i}", entity.PaymentMethod);
+            param.Add($"amount{i}", entity.Amount);
+            param.Add($"paymentDate{i}", entity.PaymentDate);
+            param.Add($"purchaseDate{i}", entity.PurchaseDate);
+            param.Add($"description{i}", entity.Description);
+            param.Add($"account{i}", entity.Account);
+            param.Add($"toAccount{i}", entity.ToAccount);
+            param.Add($"card{i}", entity.Card);
+            param.Add($"category{i}", entity.Category);
+            param.Add($"invoice{i}", entity.Invoice);
+            param.Add($"installmentGroup{i}", entity.InstallmentGroup);
+            param.Add($"installmentNumber{i}", entity.InstallmentNumber);
+            param.Add($"recurringGroup{i}", entity.RecurringGroup);
+            param.Add($"recurringRule{i}", entity.RecurringRule);
+            param.Add($"fixed{i}", entity.Fixed);
+            param.Add($"paid{i}", entity.Paid);
+            param.Add($"notes{i}", entity.Notes);
+            param.Add($"active{i}", entity.Active);
+        }
+
+        var sql = $"""
+            INSERT INTO "transaction"
+                ("user", transaction_type, payment_method, amount, payment_date, purchase_date,
+                 description, account, to_account, card, category, invoice, installment_group,
+                 installment_number, recurring_group, recurring_rule, fixed, paid, notes, active, created, updated)
+            VALUES {values}
+            RETURNING "transaction"
+            """;
+
+        using var con = Conn;
+        return con.Query<long>(sql, param).ToList();
     }
 
     public bool UpdateTransaction(TransactionEntity entity)
@@ -44,6 +97,7 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
                 installment_group = @installmentGroup,
                 installment_number = @installmentNumber,
                 recurring_group = @recurringGroup,
+                recurring_rule = @recurringRule,
                 fixed = @fixed,
                 paid = @paid,
                 notes = @notes,
@@ -77,6 +131,7 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
         param.Add("installmentGroup", entity.InstallmentGroup);
         param.Add("installmentNumber", entity.InstallmentNumber);
         param.Add("recurringGroup", entity.RecurringGroup);
+        param.Add("recurringRule", entity.RecurringRule);
         param.Add("fixed", entity.Fixed);
         param.Add("paid", entity.Paid);
         param.Add("notes", entity.Notes);

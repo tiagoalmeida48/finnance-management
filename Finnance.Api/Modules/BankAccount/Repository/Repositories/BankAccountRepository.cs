@@ -3,6 +3,7 @@ using Finnance.Api.Modules.Common.Repository;
 using Finnance.Api.Modules.BankAccount.Domain.Entities;
 using Finnance.Api.Modules.BankAccount.Domain.Interfaces;
 using Finnance.Api.Modules.BankAccount.Repository.Models;
+using Finnance.Api.Shared.Utils;
 using System.Text;
 
 namespace Finnance.Api.Modules.BankAccount.Repository.Repositories;
@@ -68,5 +69,33 @@ public class BankAccountRepository : BaseRepository<BankAccountEntity, BankAccou
 
         using var con = Conn;
         return con.Execute(sql, param) > 0;
+    }
+
+    public int ReconcileBalances(long user)
+    {
+        var param = new DynamicParameters();
+        param.Add("user", user);
+        param.Add("income", Constants.TransactionTypeId.INCOME);
+        param.Add("transfer", Constants.TransactionTypeId.TRANSFER);
+
+        const string sql = """
+            UPDATE bank_account ba
+            SET current_balance = COALESCE(ba.initial_balance, 0)
+                + COALESCE((
+                    SELECT SUM(CASE WHEN t.transaction_type = @income THEN t.amount ELSE -t.amount END)
+                    FROM "transaction" t
+                    WHERE t.account = ba.bank_account AND t."user" = @user AND t.paid = TRUE AND t.card IS NULL AND t.active = TRUE
+                ), 0)
+                + COALESCE((
+                    SELECT SUM(t.amount)
+                    FROM "transaction" t
+                    WHERE t.to_account = ba.bank_account AND t."user" = @user AND t.paid = TRUE AND t.transaction_type = @transfer AND t.active = TRUE
+                ), 0),
+                updated = NOW()
+            WHERE ba."user" = @user AND ba.active = TRUE
+            """;
+
+        using var con = Conn;
+        return con.Execute(sql, param);
     }
 }

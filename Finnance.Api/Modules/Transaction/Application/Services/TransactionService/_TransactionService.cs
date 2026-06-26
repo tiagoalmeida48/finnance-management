@@ -55,7 +55,7 @@ public partial class TransactionService(ITransactionRepository transactionReposi
 
         var baseDescription = StripSuffix(input.Description);
         var affected = new HashSet<long>();
-        long lastId = 0;
+        var entities = new List<TransactionEntity>();
 
         for (var i = 1; i <= total; i++)
         {
@@ -71,14 +71,20 @@ public partial class TransactionService(ITransactionRepository transactionReposi
             entity.RecurringGroup = null;
 
             entity.ValidateCreate();
-            lastId = transactionRepository.Insert(entity);
-
-            LinkInvoice(lastId, entity, userId, affected);
-            ApplyBalance(entity, 1);
+            entities.Add(entity);
         }
 
-        RecalcInvoices(affected);
-        return (lastId, groupId);
+        var ids = transactionRepository.InsertBatch(entities);
+
+        for (var i = 0; i < entities.Count; i++)
+        {
+            entities[i].Transaction = ids[i];
+            LinkInvoice(ids[i], entities[i], userId, affected);
+            ApplyBalance(entities[i], 1);
+        }
+
+        RecalcInvoices(affected, userId);
+        return (ids[^1], groupId);
     }
 
     private (long Id, long? GroupId) CreateRecurringBranch(TransactionCreateDto input, long userId)
@@ -108,7 +114,7 @@ public partial class TransactionService(ITransactionRepository transactionReposi
             ApplyBalance(entity, 1);
         }
 
-        RecalcInvoices(affected);
+        RecalcInvoices(affected, userId);
         return (lastId, groupId);
     }
 
@@ -123,7 +129,7 @@ public partial class TransactionService(ITransactionRepository transactionReposi
         var affected = new HashSet<long>();
         LinkInvoice(id, entity, userId, affected);
         ApplyBalance(entity, 1);
-        RecalcInvoices(affected);
+        RecalcInvoices(affected, userId);
 
         return (id, null);
     }
@@ -145,7 +151,8 @@ public partial class TransactionService(ITransactionRepository transactionReposi
             Category = input.Category,
             Notes = input.Notes,
             Paid = input.IsPaid,
-            Fixed = input.IsFixed
+            Fixed = input.IsFixed,
+            RecurringRule = input.RecurringRule
         };
     }
 

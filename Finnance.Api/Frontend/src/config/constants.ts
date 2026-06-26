@@ -9,8 +9,8 @@ export const TransactionTypeId = {
 export const AccountTypeId = {
   CHECKING: 1,
   SAVINGS: 2,
-  WALLET: 3,
-  INVESTMENT: 4,
+  INVESTMENT: 3,
+  WALLET: 4,
   OTHER: 5,
 } as const;
 
@@ -19,10 +19,22 @@ export const CategoryTypeId = {
   EXPENSE: 2,
 } as const;
 
+export const PaymentMethodId = {
+  CREDIT: 1,
+  DEBIT: 2,
+  PIX: 3,
+  CASH: 4,
+  BILL_PAYMENT: 5,
+  TRANSFER: 6,
+  OTHER: 7,
+} as const;
+
 export const InvoiceStatusId = {
   OPEN: 1,
-  PARTIAL: 2,
-  PAID: 3,
+  CLOSED: 2,
+  PARTIAL: 3,
+  PAID: 4,
+  OVERDUE: 5,
 } as const;
 
 export const RoleId = {

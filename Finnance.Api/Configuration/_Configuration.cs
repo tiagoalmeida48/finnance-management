@@ -25,7 +25,11 @@ public static partial class Configuration
 
         var services = applicationBuilder.Services;
 
-        services.AddControllersWithViews(options => options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())))
+        services.AddControllersWithViews(options =>
+            {
+                options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer()));
+                options.Filters.Add<AuditActionFilter>();
+            })
             .AddNewtonsoftJson(options =>
             {
                 options.SerializerSettings.Formatting = Formatting.None;

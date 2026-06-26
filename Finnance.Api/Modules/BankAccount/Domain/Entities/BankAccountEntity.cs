@@ -1,10 +1,11 @@
+using Finnance.Api.Modules.Common.Domain.Interfaces;
 using Finnance.Api.Shared;
 using Finnance.Api.Shared.Utils;
 using Finnance.Api.Shared.BaseClass;
 
 namespace Finnance.Api.Modules.BankAccount.Domain.Entities;
 
-public class BankAccountEntity : BaseEntity
+public class BankAccountEntity : BaseEntity, IUserOwned
 {
     public long BankAccount { get; set; }
 

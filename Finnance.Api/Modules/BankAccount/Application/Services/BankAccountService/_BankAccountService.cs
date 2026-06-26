@@ -53,4 +53,12 @@ public partial class BankAccountService(IBankAccountRepository bankAccountReposi
         EnsureOwnership(bankAccount, userId);
         return bankAccountRepository.IncrementBalance(bankAccount, delta, userId);
     }
+
+    public int ReconcileBalances(long userId)
+    {
+        using var tran = GetTransaction();
+        var count = bankAccountRepository.ReconcileBalances(userId);
+        tran.Complete();
+        return count;
+    }
 }

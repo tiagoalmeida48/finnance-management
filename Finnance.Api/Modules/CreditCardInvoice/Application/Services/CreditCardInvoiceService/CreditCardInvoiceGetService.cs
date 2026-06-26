@@ -14,12 +14,9 @@ public partial class CreditCardInvoiceService
 
     public CreditCardInvoiceEntity GetByMonth(long cardId, string monthKey, long userId)
     {
-        var invoice = creditCardInvoiceRepository.SearchByCardMonth(cardId, monthKey);
+        var invoice = creditCardInvoiceRepository.SearchByCardMonth(cardId, userId, monthKey);
         if (invoice == null)
             throw new ApplicationException(Constants.ErrorMessage.InvoiceNotFound);
-
-        if (invoice.User != userId)
-            throw new ApplicationException(Constants.ErrorMessage.AccessDeniedResource);
 
         return invoice;
     }

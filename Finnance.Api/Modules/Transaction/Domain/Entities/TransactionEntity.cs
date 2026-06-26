@@ -1,9 +1,10 @@
+using Finnance.Api.Modules.Common.Domain.Interfaces;
 using Finnance.Api.Shared.Utils;
 using Finnance.Api.Shared.BaseClass;
 
 namespace Finnance.Api.Modules.Transaction.Domain.Entities;
 
-public class TransactionEntity : BaseEntity
+public class TransactionEntity : BaseEntity, IUserOwned
 {
     public long Transaction { get; set; }
 
@@ -36,6 +37,8 @@ public class TransactionEntity : BaseEntity
     public int? InstallmentNumber { get; set; }
 
     public long? RecurringGroup { get; set; }
+
+    public long? RecurringRule { get; set; }
 
     public bool Fixed { get; set; }
 

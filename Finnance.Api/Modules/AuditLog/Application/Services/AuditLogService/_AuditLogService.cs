@@ -12,4 +12,18 @@ public partial class AuditLogService(IAuditLogRepository auditLogRepository) : B
         ValidateCreate(entity);
         return auditLogRepository.Create(entity);
     }
+
+    public long Record(long auditAction, string tableName, long record, string newData, long changedBy)
+    {
+        var entity = new AuditLogEntity
+        {
+            AuditAction = auditAction,
+            TableName = tableName,
+            Record = record,
+            NewData = newData,
+            ChangedBy = changedBy
+        };
+
+        return auditLogRepository.Create(entity);
+    }
 }

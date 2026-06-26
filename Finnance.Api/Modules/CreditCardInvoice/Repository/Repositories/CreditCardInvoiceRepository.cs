@@ -63,15 +63,16 @@ public class CreditCardInvoiceRepository : BaseRepository<CreditCardInvoiceEntit
         return MapToEntity(model);
     }
 
-    public CreditCardInvoiceEntity SearchByCardMonth(long card, string monthKey)
+    public CreditCardInvoiceEntity SearchByCardMonth(long card, long user, string monthKey)
     {
         var param = new DynamicParameters();
         param.Add("card", card);
+        param.Add("user", user);
         param.Add("month_key", monthKey);
 
         const string sql = """
                            SELECT * FROM credit_card_invoice
-                           WHERE card = @card AND month_key = @month_key
+                           WHERE card = @card AND "user" = @user AND month_key = @month_key
                            LIMIT 1
                            """;
 
@@ -102,10 +103,11 @@ public class CreditCardInvoiceRepository : BaseRepository<CreditCardInvoiceEntit
         return MapToEntity(model);
     }
 
-    public void UpdateTotals(long creditCardInvoice, decimal totalAmount, decimal paidAmount, long invoiceStatus, DateTime? paidAt)
+    public void UpdateTotals(long creditCardInvoice, long user, decimal totalAmount, decimal paidAmount, long invoiceStatus, DateTime? paidAt)
     {
         var param = new DynamicParameters();
         param.Add("credit_card_invoice", creditCardInvoice);
+        param.Add("user", user);
         param.Add("total_amount", totalAmount);
         param.Add("paid_amount", paidAmount);
         param.Add("invoice_status", invoiceStatus);
@@ -118,17 +120,18 @@ public class CreditCardInvoiceRepository : BaseRepository<CreditCardInvoiceEntit
                                invoice_status = @invoice_status,
                                paid_at = @paid_at,
                                updated = NOW()
-                           WHERE credit_card_invoice = @credit_card_invoice
+                           WHERE credit_card_invoice = @credit_card_invoice AND "user" = @user
                            """;
 
         using var con = Conn;
         con.Execute(sql, param);
     }
 
-    public (decimal Total, decimal Paid) SumInvoiceAmounts(long invoice)
+    public (decimal Total, decimal Paid) SumInvoiceAmounts(long invoice, long user)
     {
         var param = new DynamicParameters();
         param.Add("invoice", invoice);
+        param.Add("user", user);
         param.Add("income", Constants.TransactionTypeId.INCOME);
 
         const string sql = """
@@ -136,7 +139,7 @@ public class CreditCardInvoiceRepository : BaseRepository<CreditCardInvoiceEntit
                                COALESCE(SUM(CASE WHEN transaction_type = @income THEN -amount ELSE amount END), 0) AS total,
                                COALESCE(SUM(CASE WHEN paid = TRUE AND transaction_type <> @income THEN amount ELSE 0 END), 0) AS paid
                            FROM "transaction"
-                           WHERE invoice = @invoice AND active = TRUE
+                           WHERE invoice = @invoice AND "user" = @user AND active = TRUE
                            """;
 
         using var con = Conn;
@@ -144,15 +147,32 @@ public class CreditCardInvoiceRepository : BaseRepository<CreditCardInvoiceEntit
         return row;
     }
 
-    public List<long> SearchTransactionIdsToReprocess(long card, DateTime fromDate)
+    public decimal SumPayments(long invoice, long user)
+    {
+        var param = new DynamicParameters();
+        param.Add("invoice", invoice);
+        param.Add("user", user);
+
+        const string sql = """
+                           SELECT COALESCE(SUM(amount), 0)
+                           FROM credit_card_invoice_payment
+                           WHERE invoice = @invoice AND "user" = @user AND active = TRUE
+                           """;
+
+        using var con = Conn;
+        return con.ExecuteScalar<decimal>(sql, param);
+    }
+
+    public List<long> SearchTransactionIdsToReprocess(long card, long user, DateTime fromDate)
     {
         var param = new DynamicParameters();
         param.Add("card", card);
+        param.Add("user", user);
         param.Add("from_date", fromDate.Date);
 
         const string sql = """
                            SELECT "transaction" FROM "transaction"
-                           WHERE card = @card AND active = TRUE
+                           WHERE card = @card AND "user" = @user AND active = TRUE
                              AND (payment_date >= @from_date OR purchase_date >= @from_date)
                            ORDER BY "transaction"
                            """;
@@ -161,15 +181,16 @@ public class CreditCardInvoiceRepository : BaseRepository<CreditCardInvoiceEntit
         return con.Query<long>(sql, param).ToList();
     }
 
-    public (long Card, DateTime AnchorDate) ResolveTransactionAnchor(long transaction)
+    public (long Card, DateTime AnchorDate) ResolveTransactionAnchor(long transaction, long user)
     {
         var param = new DynamicParameters();
         param.Add("transaction", transaction);
+        param.Add("user", user);
 
         const string sql = """
                            SELECT card, COALESCE(purchase_date, payment_date) AS anchor_date
                            FROM "transaction"
-                           WHERE "transaction" = @transaction
+                           WHERE "transaction" = @transaction AND "user" = @user
                            LIMIT 1
                            """;
 
@@ -177,55 +198,59 @@ public class CreditCardInvoiceRepository : BaseRepository<CreditCardInvoiceEntit
         return con.QuerySingle<(long Card, DateTime AnchorDate)>(sql, param);
     }
 
-    public void UpdateTransactionInvoice(long transaction, long? invoice)
+    public void UpdateTransactionInvoice(long transaction, long? invoice, long user)
     {
         var param = new DynamicParameters();
         param.Add("transaction", transaction);
         param.Add("invoice", invoice);
+        param.Add("user", user);
 
         const string sql = """
                            UPDATE "transaction"
                            SET invoice = @invoice, updated = NOW()
-                           WHERE "transaction" = @transaction
+                           WHERE "transaction" = @transaction AND "user" = @user
                            """;
 
         using var con = Conn;
         con.Execute(sql, param);
     }
 
-    public List<long> SearchInvoiceIdsByCard(long card)
+    public List<long> SearchInvoiceIdsByCard(long card, long user)
     {
         var param = new DynamicParameters();
         param.Add("card", card);
+        param.Add("user", user);
 
-        const string sql = "SELECT credit_card_invoice FROM credit_card_invoice WHERE card = @card";
+        const string sql = """SELECT credit_card_invoice FROM credit_card_invoice WHERE card = @card AND "user" = @user""";
 
         using var con = Conn;
         return con.Query<long>(sql, param).ToList();
     }
 
-    public List<long> SearchReferencedInvoiceIds(long card)
+    public List<long> SearchReferencedInvoiceIds(long card, long user)
     {
         var param = new DynamicParameters();
         param.Add("card", card);
+        param.Add("user", user);
 
         const string sql = """
                            SELECT DISTINCT invoice FROM "transaction"
-                           WHERE card = @card AND invoice IS NOT NULL
+                           WHERE card = @card AND "user" = @user AND invoice IS NOT NULL
                            """;
 
         using var con = Conn;
         return con.Query<long>(sql, param).ToList();
     }
 
-    public void DeleteUnreferenced(long card)
+    public void DeleteUnreferenced(long card, long user)
     {
         var param = new DynamicParameters();
         param.Add("card", card);
+        param.Add("user", user);
 
         const string sql = """
                            DELETE FROM credit_card_invoice ci
-                           WHERE ci.card = @card
+                           WHERE ci.card = @card AND ci."user" = @user
                              AND NOT EXISTS (
                                  SELECT 1 FROM "transaction" t
                                  WHERE t.invoice = ci.credit_card_invoice
@@ -234,5 +259,26 @@ public class CreditCardInvoiceRepository : BaseRepository<CreditCardInvoiceEntit
 
         using var con = Conn;
         con.Execute(sql, param);
+    }
+
+    public int MarkOverdue(long user)
+    {
+        var param = new DynamicParameters();
+        param.Add("user", user);
+        param.Add("overdue", Constants.InvoiceStatusId.OVERDUE);
+        param.Add("open", Constants.InvoiceStatusId.OPEN);
+        param.Add("partial", Constants.InvoiceStatusId.PARTIAL);
+
+        const string sql = """
+                           UPDATE credit_card_invoice
+                           SET invoice_status = @overdue, updated = NOW()
+                           WHERE "user" = @user AND active = TRUE
+                             AND due_date IS NOT NULL AND due_date < CURRENT_DATE
+                             AND invoice_status IN (@open, @partial)
+                             AND COALESCE(total_amount, 0) > COALESCE(paid_amount, 0)
+                           """;
+
+        using var con = Conn;
+        return con.Execute(sql, param);
     }
 }

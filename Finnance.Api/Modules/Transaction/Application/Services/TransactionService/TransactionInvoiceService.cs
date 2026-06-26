@@ -32,9 +32,9 @@ public partial class TransactionService
             affected.Add(invoiceId.Value);
     }
 
-    private void RecalcInvoices(HashSet<long> affected)
+    private void RecalcInvoices(HashSet<long> affected, long userId)
     {
         foreach (var invoiceId in affected)
-            creditCardInvoiceService.RecalculateInvoiceTotal(invoiceId);
+            creditCardInvoiceService.RecalculateInvoiceTotal(invoiceId, userId);
     }
 }

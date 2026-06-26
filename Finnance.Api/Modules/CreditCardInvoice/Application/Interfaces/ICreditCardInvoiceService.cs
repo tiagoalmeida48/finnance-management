@@ -13,7 +13,9 @@ public interface ICreditCardInvoiceService : IBaseService<CreditCardInvoiceEntit
 
     long? ResolveInvoiceForTransaction(long cardId, long userId, DateTime anchorDate);
 
-    void RecalculateInvoiceTotal(long invoiceId);
+    void RecalculateInvoiceTotal(long invoiceId, long userId);
+
+    int MarkOverdueInvoices(long userId);
 
     void RecalculateInvoiceOwned(long invoiceId, long userId);
 

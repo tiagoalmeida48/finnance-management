@@ -11,4 +11,5 @@ public interface IBankAccountService : IBaseService<BankAccountEntity>
     bool UpdateAccount(BankAccountEntity entity, long userId);
     bool DeleteAccount(long bankAccount, long userId);
     bool IncrementBalance(long bankAccount, decimal delta, long userId);
+    int ReconcileBalances(long userId);
 }

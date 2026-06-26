@@ -53,5 +53,9 @@ public static partial class Constants
         public const string CategoryAlreadyExists = "Já existe uma categoria com este nome para o tipo informado.";
         public const string AccessDeniedResource = "Você não tem acesso a este recurso.";
         public const string SystemConfigNotFound = "Configuração do sistema não encontrada.";
+        public const string RecurringRuleNotFound = "Regra de recorrência não encontrada.";
+        public const string InvalidDayOfMonth = "O dia do mês deve estar entre 1 e 31.";
+        public const string InvoicePaymentNotFound = "Pagamento de fatura não encontrado.";
+        public const string InvalidHorizon = "Informe uma data limite válida para a geração.";
     }
 }

@@ -17,6 +17,8 @@ public interface ITransactionRepository : IBaseRepository<TransactionEntity>
 
     long Insert(TransactionEntity entity);
 
+    List<long> InsertBatch(IReadOnlyList<TransactionEntity> entities);
+
     bool UpdateTransaction(TransactionEntity entity);
 
     TransactionEntity GetById(long transaction, long user);

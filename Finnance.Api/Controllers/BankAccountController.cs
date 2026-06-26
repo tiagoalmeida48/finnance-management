@@ -66,4 +66,11 @@ public class BankAccountController(IBankAccountService bankAccountService) : Con
     {
         return new ResultApi<bool> { Result = bankAccountService.DeleteAccount(bankAccount, UserLogged.user) };
     }
+
+    [Authorization()]
+    [HttpPost]
+    public ResultApi<int> Reconcile()
+    {
+        return new ResultApi<int> { Result = bankAccountService.ReconcileBalances(UserLogged.user) };
+    }
 }

@@ -1,4 +1,5 @@
 using Dapper;
+using Finnance.Api.Modules.Common.Domain.Interfaces;
 using Finnance.Api.Shared;
 using Finnance.Api.Shared.Utils;
 
@@ -8,6 +9,9 @@ public partial class BaseRepository<TEntity, TModel>
 {
     public long Create(TEntity entity)
     {
+        if (entity is IUserOwned owned && owned.User <= 0)
+            owned.User = ApiContext.User;
+
         entity.Created = entity.Updated = DateTime.Now;
         var model = MapToModel(entity);
 
@@ -35,11 +39,12 @@ public partial class BaseRepository<TEntity, TModel>
         entity.Updated = DateTime.Now;
         var model = MapToModel(entity);
 
-        using var con = Conn;
-        var upd = EntityHelper.GetUpdate<TModel>(Schema);
         var old = GetDataModelBase(model);
         model.Created = old.Created;
-        return con.Execute(upd, model) > 0;
+
+        using var con = Conn;
+        var upd = EntityHelper.GetUpdate<TModel>(Schema) + TenantClause;
+        return con.Execute(upd, IsUserOwned ? TenantParams(model) : model) > 0;
     }
 
     public bool Delete(TEntity entity)
@@ -53,9 +58,9 @@ public partial class BaseRepository<TEntity, TModel>
                 throw new ApplicationException(Constants.ErrorMessage.PendingRegistrationAnotherTable);
         }
 
-        var del = EntityHelper.GetDelete<TModel>(Schema);
+        var del = EntityHelper.GetDelete<TModel>(Schema) + TenantClause;
         using var con = Conn;
-        return con.Execute(del, model) > 0;
+        return con.Execute(del, IsUserOwned ? TenantParams(model) : model) > 0;
     }
 
     public bool CreateBatch(IEnumerable<TEntity> entities)

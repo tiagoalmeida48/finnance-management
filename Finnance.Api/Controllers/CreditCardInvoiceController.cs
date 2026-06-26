@@ -40,4 +40,11 @@ public class CreditCardInvoiceController(ICreditCardInvoiceService creditCardInv
         creditCardInvoiceService.ReprocessInvoicesForCard(card, UserLogged.user, fromDate);
         return new ResultApi<bool> { Result = true };
     }
+
+    [Authorization()]
+    [HttpPost]
+    public ResultApi<int> MarkOverdue()
+    {
+        return new ResultApi<int> { Result = creditCardInvoiceService.MarkOverdueInvoices(UserLogged.user) };
+    }
 }

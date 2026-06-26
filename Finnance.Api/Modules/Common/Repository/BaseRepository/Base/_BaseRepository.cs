@@ -1,3 +1,4 @@
+using Dapper;
 using Npgsql;
 using Finnance.Api.Modules.Common.Domain.Interfaces;
 using Finnance.Api.Modules.Common.Domain.Vo;
@@ -14,6 +15,17 @@ public partial class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity>
     protected readonly string _ConnStr;
     protected readonly ApiContextVo ApiContext;
     protected readonly string Schema;
+
+    protected static bool IsUserOwned => typeof(IUserOwned).IsAssignableFrom(typeof(TEntity));
+
+    protected string TenantClause => IsUserOwned ? """ AND "user" = @__tenant """ : string.Empty;
+
+    protected DynamicParameters TenantParams(TModel model)
+    {
+        var param = new DynamicParameters(model);
+        param.Add("__tenant", ApiContext.User);
+        return param;
+    }
 
     protected BaseRepository()
     {

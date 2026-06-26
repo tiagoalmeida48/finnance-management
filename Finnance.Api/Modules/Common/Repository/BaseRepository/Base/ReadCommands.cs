@@ -14,10 +14,10 @@ public partial class BaseRepository<TEntity, TModel>
     {
         var model = MapToModel(entity);
         var selFrom = EntityHelper.GetSelectFrom<TModel>(Schema);
-        var where = EntityHelper.GetWhereByKey<TModel>();
+        var where = EntityHelper.GetWhereByKey<TModel>() + TenantClause;
 
         using var con = Conn;
-        var result = con.QueryFirstOrDefault<TModel>($"{selFrom}{where}", model);
+        var result = con.QueryFirstOrDefault<TModel>($"{selFrom}{where}", IsUserOwned ? TenantParams(model) : model);
         return result != null ? MapToEntity(result) : null;
     }
 
@@ -25,6 +25,13 @@ public partial class BaseRepository<TEntity, TModel>
     {
         var selFrom = EntityHelper.GetSelectFrom<TModel>(Schema);
         using var con = Conn;
+
+        if (IsUserOwned)
+        {
+            var scoped = con.Query<TModel>($"""{selFrom} WHERE "user" = @__tenant """, new { __tenant = ApiContext.User });
+            return scoped.Select(MapToEntity);
+        }
+
         var models = con.Query<TModel>(selFrom);
         return models.Select(MapToEntity);
     }
@@ -33,11 +40,11 @@ public partial class BaseRepository<TEntity, TModel>
     {
         var model = MapToModel(entity);
         var tb = EntityHelper.GetTableName<TModel>(Schema);
-        var where = EntityHelper.GetWhereByKey<TModel>();
+        var where = EntityHelper.GetWhereByKey<TModel>() + TenantClause;
 
         var qr = $"SELECT COUNT(*) FROM {tb} {where}";
         using var con = Conn;
-        return con.ExecuteScalar<long>(qr, model) > 0;
+        return con.ExecuteScalar<long>(qr, IsUserOwned ? TenantParams(model) : model) > 0;
     }
 
     public IEnumerable<(string table, long quant)> GetReference(TEntity entity)
@@ -193,7 +200,10 @@ public partial class BaseRepository<TEntity, TModel>
     private TModel GetDataModelBase(TModel model)
     {
         using var con = Conn;
-        var sel = EntityHelper.GetSelectDates<TModel>(Schema);
-        return con.QueryFirst<TModel>(sel, model);
+        var sel = EntityHelper.GetSelectDates<TModel>(Schema) + TenantClause;
+        var result = con.QueryFirstOrDefault<TModel>(sel, IsUserOwned ? TenantParams(model) : model);
+        if (result == null)
+            throw new ApplicationException(Constants.ErrorMessage.RegisterNotFound);
+        return result;
     }
 }

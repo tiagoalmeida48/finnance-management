@@ -1,9 +1,10 @@
 using System.Globalization;
+using Finnance.Api.Modules.Common.Domain.Interfaces;
 using Finnance.Api.Shared.Utils;
 
 namespace Finnance.Api.Modules.SettingsSalary.Domain.Entities;
 
-public class SettingsSalaryEntity : Finnance.Api.Shared.BaseClass.BaseEntity
+public class SettingsSalaryEntity : Finnance.Api.Shared.BaseClass.BaseEntity, IUserOwned
 {
     public long SettingsSalary { get; set; }
 

@@ -55,6 +55,9 @@ public class TransactionMod : BaseModel
     [Column("recurring_group")]
     public long? RecurringGroup { get; set; }
 
+    [Column("recurring_rule")]
+    public long? RecurringRule { get; set; }
+
     [Column("fixed")]
     public bool Fixed { get; set; }
 

@@ -7,6 +7,8 @@ public interface IAuditLogService : IBaseService<AuditLogEntity>
 {
     long Create(AuditLogEntity entity);
 
+    long Record(long auditAction, string tableName, long record, string newData, long changedBy);
+
     List<AuditLogEntity> List(int quantity = 0);
 
     List<AuditLogEntity> Search(long changedBy = 0,

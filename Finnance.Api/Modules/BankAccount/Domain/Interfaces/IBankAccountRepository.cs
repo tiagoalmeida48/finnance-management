@@ -12,4 +12,6 @@ public interface IBankAccountRepository : IBaseRepository<BankAccountEntity>
                                    int quantity = 0);
 
     bool IncrementBalance(long bankAccount, decimal delta, long user);
+
+    int ReconcileBalances(long user);
 }

@@ -30,7 +30,7 @@ public partial class TransactionService
 
         ApplyBalance(current, 1);
 
-        RecalcInvoices(affected);
+        RecalcInvoices(affected, userId);
 
         tran.Complete();
         return true;
@@ -62,7 +62,7 @@ public partial class TransactionService
         ApplyBalance(current, -1);
         transactionRepository.DeleteById(transaction, userId);
 
-        RecalcInvoices(affected);
+        RecalcInvoices(affected, userId);
 
         tran.Complete();
         return true;

@@ -38,7 +38,7 @@ public partial class CreditCardInvoiceService(ICreditCardInvoiceRepository credi
         var closingDate = firstDay.AddDays(Math.Min(closingDay, lastDayOfMonth) - 1);
         var dueDate = firstDay.AddDays(Math.Min(dueDay, lastDayOfMonth) - 1);
 
-        var existing = creditCardInvoiceRepository.SearchByCardMonth(cardId, monthKey);
+        var existing = creditCardInvoiceRepository.SearchByCardMonth(cardId, userId, monthKey);
         if (existing != null)
             return existing.CreditCardInvoice;
 
@@ -59,19 +59,23 @@ public partial class CreditCardInvoiceService(ICreditCardInvoiceRepository credi
         return creditCardInvoiceRepository.Create(entity);
     }
 
-    public void RecalculateInvoiceTotal(long invoiceId)
+    public void RecalculateInvoiceTotal(long invoiceId, long userId)
     {
-        var amounts = creditCardInvoiceRepository.SumInvoiceAmounts(invoiceId);
+        var amounts = creditCardInvoiceRepository.SumInvoiceAmounts(invoiceId, userId);
+        var paid = amounts.Paid + creditCardInvoiceRepository.SumPayments(invoiceId, userId);
+
+        if (amounts.Total > 0 && paid > amounts.Total)
+            paid = amounts.Total;
 
         long status;
         DateTime? paidAt = null;
 
-        if (amounts.Total > 0 && amounts.Paid >= amounts.Total)
+        if (amounts.Total > 0 && paid >= amounts.Total)
         {
             status = Constants.InvoiceStatusId.PAID;
             paidAt = DateTime.UtcNow;
         }
-        else if (amounts.Paid > 0 && amounts.Paid < amounts.Total)
+        else if (paid > 0 && paid < amounts.Total)
         {
             status = Constants.InvoiceStatusId.PARTIAL;
         }
@@ -80,12 +84,20 @@ public partial class CreditCardInvoiceService(ICreditCardInvoiceRepository credi
             status = Constants.InvoiceStatusId.OPEN;
         }
 
-        creditCardInvoiceRepository.UpdateTotals(invoiceId, amounts.Total, amounts.Paid, status, paidAt);
+        creditCardInvoiceRepository.UpdateTotals(invoiceId, userId, amounts.Total, paid, status, paidAt);
     }
 
     public void RecalculateInvoiceOwned(long invoiceId, long userId)
     {
-        RecalculateInvoiceTotal(GetInvoice(invoiceId, userId).CreditCardInvoice);
+        RecalculateInvoiceTotal(GetInvoice(invoiceId, userId).CreditCardInvoice, userId);
+    }
+
+    public int MarkOverdueInvoices(long userId)
+    {
+        using var tran = GetTransaction();
+        var count = creditCardInvoiceRepository.MarkOverdue(userId);
+        tran.Complete();
+        return count;
     }
 
     public CreditCardInvoiceEntity GetInvoice(long invoiceId, long userId)
@@ -106,21 +118,21 @@ public partial class CreditCardInvoiceService(ICreditCardInvoiceRepository credi
 
         using var tran = GetTransaction();
 
-        var transactionIds = creditCardInvoiceRepository.SearchTransactionIdsToReprocess(cardId, fromDate.Date);
+        var transactionIds = creditCardInvoiceRepository.SearchTransactionIdsToReprocess(cardId, userId, fromDate.Date);
 
         foreach (var transactionId in transactionIds)
         {
-            var anchor = creditCardInvoiceRepository.ResolveTransactionAnchor(transactionId);
+            var anchor = creditCardInvoiceRepository.ResolveTransactionAnchor(transactionId, userId);
             var invoiceId = ResolveInvoiceForTransaction(anchor.Card, userId, anchor.AnchorDate);
-            creditCardInvoiceRepository.UpdateTransactionInvoice(transactionId, invoiceId);
+            creditCardInvoiceRepository.UpdateTransactionInvoice(transactionId, invoiceId, userId);
         }
 
-        var invoiceIds = creditCardInvoiceRepository.SearchInvoiceIdsByCard(cardId);
+        var invoiceIds = creditCardInvoiceRepository.SearchInvoiceIdsByCard(cardId, userId);
 
         foreach (var invoiceId in invoiceIds)
-            RecalculateInvoiceTotal(invoiceId);
+            RecalculateInvoiceTotal(invoiceId, userId);
 
-        creditCardInvoiceRepository.DeleteUnreferenced(cardId);
+        creditCardInvoiceRepository.DeleteUnreferenced(cardId, userId);
 
         tran.Complete();
     }
