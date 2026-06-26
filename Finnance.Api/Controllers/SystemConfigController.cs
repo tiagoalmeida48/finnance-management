@@ -29,4 +29,11 @@ public class SystemConfigController(ISystemConfigService systemConfigService) : 
     {
         return new ResultApi<SystemConfigDisplayDto> { Result = systemConfigService.GetByKey(key).MapTo<SystemConfigDisplayDto>() };
     }
+
+    [Authorization(admin: true)]
+    [HttpPut]
+    public ResultApi<bool> Update([FromBody] SystemConfigUpdateDto dto)
+    {
+        return new ResultApi<bool> { Result = systemConfigService.SetValue(dto.Key, dto.Value) };
+    }
 }

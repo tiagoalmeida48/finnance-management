@@ -10,4 +10,6 @@ public interface ISystemConfigService : IBaseService<SystemConfigEntity>
     SystemConfigEntity Get(long systemConfig);
 
     SystemConfigEntity GetByKey(string key);
+
+    bool SetValue(string key, decimal value);
 }

@@ -50,4 +50,16 @@ public class SystemConfigRepository : BaseRepository<SystemConfigEntity, SystemC
     {
         return Search(key: key, quantity: 1).FirstOrDefault();
     }
+
+    public bool SetValue(string key, decimal value)
+    {
+        var param = new DynamicParameters();
+        param.Add("key", key);
+        param.Add("value", value);
+
+        const string sql = """UPDATE system_config SET value = @value, updated = NOW() WHERE "key" = @key""";
+
+        using var con = Conn;
+        return con.Execute(sql, param) > 0;
+    }
 }

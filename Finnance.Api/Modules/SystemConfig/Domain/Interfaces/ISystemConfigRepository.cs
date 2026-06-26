@@ -11,4 +11,6 @@ public interface ISystemConfigRepository : IBaseRepository<SystemConfigEntity>
                                     int quantity = 0);
 
     SystemConfigEntity GetByKey(string key);
+
+    bool SetValue(string key, decimal value);
 }

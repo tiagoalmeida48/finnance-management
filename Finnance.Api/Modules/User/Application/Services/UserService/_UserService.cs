@@ -41,13 +41,14 @@ public partial class UserService(IUserRepository userRepository) : BaseService<U
         return true;
     }
 
-    public bool UpdateOwnProfile(long user, string fullName)
+    public bool UpdateOwnProfile(long user, string fullName, string avatarUrl)
     {
         if (fullName.IsEmpty())
             throw new ApplicationException(Constants.ErrorMessage.RequiredField);
 
         var current = Get(user);
         current.FullName = fullName;
+        current.AvatarUrl = avatarUrl ?? current.AvatarUrl;
 
         using var tran = GetTransaction();
         userRepository.Update(current);

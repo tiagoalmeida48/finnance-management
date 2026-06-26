@@ -51,7 +51,7 @@ public class UserController(IUserService userService) : ControllerBase
     [HttpPut]
     public ResultApi<bool> UpdateProfile([FromBody] UserUpdateProfileDto dto)
     {
-        return new ResultApi<bool> { Result = userService.UpdateOwnProfile(UserLogged.user, dto?.FullName) };
+        return new ResultApi<bool> { Result = userService.UpdateOwnProfile(UserLogged.user, dto?.FullName, dto?.AvatarUrl) };
     }
 
     [Authorization()]
