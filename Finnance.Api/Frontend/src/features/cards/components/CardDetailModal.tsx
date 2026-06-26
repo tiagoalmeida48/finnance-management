@@ -26,12 +26,22 @@ function buildYears(): number[] {
 export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
   const years = useMemo(() => buildYears(), []);
   const [year, setYear] = useState(() => new Date().getFullYear());
+  const [showAll, setShowAll] = useState(false);
   const cardId = card?.creditCard ?? null;
   const { data: invoices, isLoading } = useCardInvoices(cardId, year);
   const recalculate = useRecalculateInvoice();
 
+  const representative = useMemo(
+    () => invoices?.find((item) => item.totalAmount - item.paidAmount > 0) ?? invoices?.[0] ?? null,
+    [invoices],
+  );
+  const visibleInvoices = showAll ? (invoices ?? []) : representative ? [representative] : [];
+
   useEffect(() => {
-    if (card) setYear(new Date().getFullYear());
+    if (card) {
+      setYear(new Date().getFullYear());
+      setShowAll(false);
+    }
   }, [card]);
 
   return (
@@ -65,16 +75,29 @@ export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
               <Spinner />
             </div>
           ) : invoices && invoices.length > 0 ? (
-            invoices.map((invoice) => (
-              <InvoiceRow
-                key={invoice.creditCardInvoice}
-                invoice={invoice}
-                recalculating={
-                  recalculate.isPending && recalculate.variables === invoice.creditCardInvoice
-                }
-                onRecalculate={(id) => recalculate.mutate(id)}
-              />
-            ))
+            <>
+              {visibleInvoices.map((invoice) => (
+                <InvoiceRow
+                  key={invoice.creditCardInvoice}
+                  invoice={invoice}
+                  recalculating={
+                    recalculate.isPending && recalculate.variables === invoice.creditCardInvoice
+                  }
+                  onRecalculate={(id) => recalculate.mutate(id)}
+                />
+              ))}
+              {invoices.length > 1 ? (
+                <Button
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => setShowAll((value) => !value)}
+                >
+                  {showAll
+                    ? 'Mostrar só a fatura atual'
+                    : `Ver todas as ${invoices.length} faturas`}
+                </Button>
+              ) : null}
+            </>
           ) : (
             <p className="py-10 text-center text-text-muted">
               Nenhuma fatura encontrada para {year}.
