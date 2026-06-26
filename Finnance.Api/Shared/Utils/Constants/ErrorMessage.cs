@@ -57,5 +57,6 @@ public static partial class Constants
         public const string InvalidDayOfMonth = "O dia do mês deve estar entre 1 e 31.";
         public const string InvoicePaymentNotFound = "Pagamento de fatura não encontrado.";
         public const string InvalidHorizon = "Informe uma data limite válida para a geração.";
+        public const string CardPaymentViaInvoice = "Lançamentos de cartão são pagos pela fatura, não diretamente.";
     }
 }

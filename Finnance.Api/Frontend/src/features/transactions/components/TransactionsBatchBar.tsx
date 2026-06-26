@@ -14,6 +14,7 @@ import { useAccountsLookup } from '../hooks/useLookups';
 
 interface TransactionsBatchBarProps {
   selectedCount: number;
+  disablePayment?: boolean;
   onPay: (account: number, paymentDate: string) => void;
   onUnpay: () => void;
   onDelete: () => void;
@@ -25,6 +26,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 export function TransactionsBatchBar({
   selectedCount,
+  disablePayment = false,
   onPay,
   onUnpay,
   onDelete,
@@ -45,11 +47,16 @@ export function TransactionsBatchBar({
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-surface-2 px-4 py-3">
       <span className="text-sm font-semibold text-text">{selectedCount} selecionada(s)</span>
+      {disablePayment ? (
+        <span className="text-xs text-text-muted">
+          Lançamentos de cartão são pagos pela fatura.
+        </span>
+      ) : null}
       <div className="flex flex-wrap gap-2 ml-auto">
-        <Button size="sm" onClick={() => setPayOpen(true)}>
+        <Button size="sm" disabled={disablePayment} onClick={() => setPayOpen(true)}>
           Pagar
         </Button>
-        <Button size="sm" variant="secondary" onClick={onUnpay}>
+        <Button size="sm" variant="secondary" disabled={disablePayment} onClick={onUnpay}>
           Despagar
         </Button>
         <Button size="sm" variant="outline" onClick={() => setDayOpen(true)}>

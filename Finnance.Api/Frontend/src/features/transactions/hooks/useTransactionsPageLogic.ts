@@ -60,6 +60,10 @@ export function useTransactionsPageLogic() {
 
   const items = useMemo(() => listQuery.data?.items ?? [], [listQuery.data]);
   const transactions = useMemo(() => flattenItems(items), [items]);
+  const selectionHasCard = useMemo(
+    () => transactions.some((t) => selectedIds.includes(t.transaction) && t.card != null && t.card > 0),
+    [transactions, selectedIds],
+  );
   const totalLines = listQuery.data?.totalLines ?? 0;
   const hasNextPage = listQuery.data?.hasNextPage ?? false;
   const page = Math.floor(filter.offset / PAGE_SIZE);
@@ -114,7 +118,7 @@ export function useTransactionsPageLogic() {
   };
 
   const batchPay = (account: number, paymentDate: string) => {
-    if (selectedIds.length === 0) return;
+    if (selectedIds.length === 0 || selectionHasCard) return;
     mutations.batchPay.mutate(
       { ids: selectedIds, account, paymentDate },
       { onSuccess: clearSelection },
@@ -122,7 +126,7 @@ export function useTransactionsPageLogic() {
   };
 
   const batchUnpay = () => {
-    if (selectedIds.length === 0) return;
+    if (selectedIds.length === 0 || selectionHasCard) return;
     mutations.batchUnpay.mutate(selectedIds, { onSuccess: clearSelection });
   };
 
@@ -155,6 +159,7 @@ export function useTransactionsPageLogic() {
     importOpen,
     editing,
     selectedIds,
+    selectionHasCard,
     pendingDelete,
     openImport: () => setImportOpen(true),
     closeImport: () => setImportOpen(false),

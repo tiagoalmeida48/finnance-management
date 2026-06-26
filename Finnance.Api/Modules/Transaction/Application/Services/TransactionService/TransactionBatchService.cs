@@ -9,6 +9,7 @@ public partial class TransactionService
     public bool BatchPay(List<long> ids, long account, DateTime paymentDate, long userId)
     {
         var items = LoadOwnedTransactions(ids, userId);
+        EnsureNoCardTransactions(items);
         EnsureAccountOwnership(account, userId);
 
         var affected = new HashSet<long>();
@@ -83,6 +84,7 @@ public partial class TransactionService
     public bool BatchUnpay(List<long> ids, long userId)
     {
         var items = LoadOwnedTransactions(ids, userId);
+        EnsureNoCardTransactions(items);
         var affected = new HashSet<long>();
 
         using var tran = GetTransaction();
@@ -386,5 +388,11 @@ public partial class TransactionService
     {
         var items = transactionRepository.GetByIds(ids ?? [], userId);
         return items;
+    }
+
+    private static void EnsureNoCardTransactions(List<TransactionEntity> items)
+    {
+        if (items.Any(item => item.Card is > 0))
+            throw new ApplicationException(Constants.ErrorMessage.CardPaymentViaInvoice);
     }
 }

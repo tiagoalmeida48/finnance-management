@@ -40,6 +40,7 @@ export function TransactionsPage() {
     importOpen,
     editing,
     selectedIds,
+    selectionHasCard,
     pendingDelete,
     openForm,
     openImport,
@@ -125,6 +126,7 @@ export function TransactionsPage() {
 
       <TransactionsBatchBar
         selectedCount={selectedIds.length}
+        disablePayment={selectionHasCard}
         onPay={batchPay}
         onUnpay={batchUnpay}
         onDelete={batchDelete}
