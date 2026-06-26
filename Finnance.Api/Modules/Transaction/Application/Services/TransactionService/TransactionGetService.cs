@@ -42,7 +42,23 @@ public partial class TransactionService
                                                         filter.SortAsc,
                                                         filter.SortField);
 
-        var items = SortGroupedItems(BuildGroupedItems(rows), filter.SortField, filter.SortAsc);
+        var installmentIds = rows
+            .Where(r => r.InstallmentGroup is > 0)
+            .Select(r => r.InstallmentGroup.Value)
+            .Distinct()
+            .ToList();
+
+        var recurringIds = rows
+            .Where(r => r.InstallmentGroup is null or <= 0 && r.RecurringGroup is > 0)
+            .Select(r => r.RecurringGroup.Value)
+            .Distinct()
+            .ToList();
+
+        var groupRows = installmentIds.Count > 0 || recurringIds.Count > 0
+            ? transactionRepository.GetByGroupIds(installmentIds, recurringIds, userId)
+            : [];
+
+        var items = SortGroupedItems(BuildGroupedItems(rows, groupRows), filter.SortField, filter.SortAsc);
 
         var totalLines = items.Count;
         var offset = filter.Offset < 0 ? 0 : filter.Offset;
@@ -56,25 +72,35 @@ public partial class TransactionService
         };
     }
 
-    private static List<TransactionListItemDto> BuildGroupedItems(List<TransactionEntity> rows)
+    private static List<TransactionListItemDto> BuildGroupedItems(List<TransactionEntity> rows, List<TransactionEntity> groupRows)
     {
         var result = new List<TransactionListItemDto>();
 
         var installmentGroups = rows
-            .Where(r => r.InstallmentGroup.HasValue)
-            .GroupBy(r => r.InstallmentGroup.Value);
+            .Where(r => r.InstallmentGroup is > 0)
+            .Select(r => r.InstallmentGroup.Value)
+            .Distinct();
 
-        foreach (var group in installmentGroups)
-            result.Add(new TransactionListItemDto { IsGroup = true, Group = BuildGroup(group.Key, "installment", group.ToList()) });
+        foreach (var groupId in installmentGroups)
+        {
+            var groupItems = groupRows.Where(r => r.InstallmentGroup == groupId).ToList();
+            if (groupItems.Count > 0)
+                result.Add(new TransactionListItemDto { IsGroup = true, Group = BuildGroup(groupId, "installment", groupItems) });
+        }
 
         var recurringGroups = rows
-            .Where(r => !r.InstallmentGroup.HasValue && r.RecurringGroup.HasValue)
-            .GroupBy(r => r.RecurringGroup.Value);
+            .Where(r => r.InstallmentGroup is null or <= 0 && r.RecurringGroup is > 0)
+            .Select(r => r.RecurringGroup.Value)
+            .Distinct();
 
-        foreach (var group in recurringGroups)
-            result.Add(new TransactionListItemDto { IsGroup = true, Group = BuildGroup(group.Key, "recurring", group.ToList()) });
+        foreach (var groupId in recurringGroups)
+        {
+            var groupItems = groupRows.Where(r => (r.InstallmentGroup is null or <= 0) && r.RecurringGroup == groupId).ToList();
+            if (groupItems.Count > 0)
+                result.Add(new TransactionListItemDto { IsGroup = true, Group = BuildGroup(groupId, "recurring", groupItems) });
+        }
 
-        var singles = rows.Where(r => !r.InstallmentGroup.HasValue && !r.RecurringGroup.HasValue);
+        var singles = rows.Where(r => r.InstallmentGroup is null or <= 0 && r.RecurringGroup is null or <= 0);
 
         foreach (var single in singles)
             result.Add(new TransactionListItemDto { IsGroup = false, Transaction = single.MapTo<TransactionDisplayDto>() });
@@ -89,7 +115,10 @@ public partial class TransactionService
             : rows.OrderBy(r => r.PaymentDate ?? DateTime.MaxValue).ToList();
 
         var items = ordered.MapTo<List<TransactionDisplayDto>>();
-        var main = items.First();
+        var mainIndex = ordered.FindIndex(r => !r.Paid);
+        if (mainIndex < 0)
+            mainIndex = 0;
+        var main = items[mainIndex];
 
         var totalItems = ordered.Count;
         var paidItems = ordered.Count(r => r.Paid);

@@ -29,6 +29,8 @@ public interface ITransactionRepository : IBaseRepository<TransactionEntity>
 
     List<TransactionEntity> GetForGrouping(long user, TransactionQuery query, bool sortAsc, string sortField);
 
+    List<TransactionEntity> GetByGroupIds(List<long> installmentGroups, List<long> recurringGroups, long user);
+
     (decimal Income, decimal Expense, decimal Pending) GetSummary(long user, TransactionQuery query);
 
     void UpdateInvoiceLink(long transaction, long? invoice, long user);
