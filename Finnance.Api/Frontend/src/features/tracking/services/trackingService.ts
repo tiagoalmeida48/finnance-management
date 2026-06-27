@@ -8,6 +8,7 @@ export interface TrackingTransaction {
   description: string;
   fixed: boolean;
   paid: boolean;
+  account: number | null;
 }
 
 export interface TrackingAccount {

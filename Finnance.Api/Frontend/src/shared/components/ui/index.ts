@@ -4,6 +4,7 @@ export { Textarea } from './Textarea';
 export { Select } from './Select';
 export { SelectMenu } from './SelectMenu';
 export { Checkbox } from './Checkbox';
+export { Switch } from './Switch';
 export { Label } from './Label';
 export { Card, CardHeader, CardTitle, CardContent, CardFooter } from './Card';
 export { Badge } from './Badge';

@@ -29,10 +29,11 @@ export function TrackingPayModal({
   onClose,
   onConfirm,
 }: TrackingPayModalProps) {
-  const [accountId, setAccountId] = useState('');
+  const [accountId, setAccountId] = useState(item.account ? String(item.account) : '');
 
   const handleConfirm = () => {
-    onConfirm({ account: accountId ? Number(accountId) : null });
+    if (!accountId) return;
+    onConfirm({ account: Number(accountId) });
   };
 
   return (
@@ -61,13 +62,11 @@ export function TrackingPayModal({
               id="tracking-account"
               value={accountId}
               onChange={setAccountId}
-              options={[
-                { value: '', label: 'Sem conta (apenas marcar como pago)' },
-                ...accounts.map((account) => ({
-                  value: account.bankAccount,
-                  label: account.name,
-                })),
-              ]}
+              placeholder="Selecione a conta"
+              options={accounts.map((account) => ({
+                value: account.bankAccount,
+                label: account.name,
+              }))}
             />
           </div>
         </div>
@@ -76,7 +75,7 @@ export function TrackingPayModal({
           <Button variant="ghost" onClick={onClose} disabled={isPending}>
             Cancelar
           </Button>
-          <Button onClick={handleConfirm} loading={isPending}>
+          <Button onClick={handleConfirm} loading={isPending} disabled={!accountId}>
             Confirmar pagamento
           </Button>
         </DialogFooter>

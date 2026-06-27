@@ -22,22 +22,48 @@ function flattenItems(items: TransactionListItem[]): Transaction[] {
 
 const PAGE_SIZE = 50;
 
-function startOfCurrentMonth(): string {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+export type TransactionViewMode = 'month' | 'general' | 'installments';
+
+const MONTHS_PT = [
+  'Janeiro',
+  'Fevereiro',
+  'Março',
+  'Abril',
+  'Maio',
+  'Junho',
+  'Julho',
+  'Agosto',
+  'Setembro',
+  'Outubro',
+  'Novembro',
+  'Dezembro',
+];
+
+function isoDate(date: Date): string {
+  return date.toISOString().slice(0, 10);
 }
 
-function endOfCurrentMonth(): string {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
+function monthStart(date: Date): string {
+  return isoDate(new Date(date.getFullYear(), date.getMonth(), 1));
+}
+
+function monthEnd(date: Date): string {
+  return isoDate(new Date(date.getFullYear(), date.getMonth() + 1, 0));
 }
 
 function createDefaultFilter(): TransactionFilter {
+  const now = new Date();
   return {
     account: 0,
     category: 0,
-    startDate: startOfCurrentMonth(),
-    endDate: endOfCurrentMonth(),
+    card: 0,
+    paymentMethod: 0,
+    transactionType: 0,
+    search: '',
+    hideCreditCards: false,
+    onlyInstallments: false,
+    startDate: monthStart(now),
+    endDate: monthEnd(now),
     isPaid: null,
     sortAsc: false,
     limit: PAGE_SIZE,
@@ -47,6 +73,10 @@ function createDefaultFilter(): TransactionFilter {
 
 export function useTransactionsPageLogic() {
   const [filter, setFilter] = useState<TransactionFilter>(createDefaultFilter);
+  const [monthCursor, setMonthCursor] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
   const [formOpen, setFormOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
@@ -87,6 +117,51 @@ export function useTransactionsPageLogic() {
     const target = Math.max(0, next);
     setSelectedIds([]);
     setFilter((prev) => ({ ...prev, offset: target * PAGE_SIZE }));
+  };
+
+  const viewMode: TransactionViewMode = filter.onlyInstallments
+    ? 'installments'
+    : filter.startDate
+      ? 'month'
+      : 'general';
+
+  const monthLabel = `${MONTHS_PT[monthCursor.getMonth()]} ${monthCursor.getFullYear()}`;
+
+  const setTypeFilter = (type: number) => {
+    updateFilter({ transactionType: filter.transactionType === type ? 0 : type, offset: 0 });
+  };
+
+  const setStatusFilter = (isPaid: boolean | null) => {
+    updateFilter({ isPaid, offset: 0 });
+  };
+
+  const toggleHideCards = () => {
+    updateFilter({ hideCreditCards: !filter.hideCreditCards, offset: 0 });
+  };
+
+  const setViewMode = (mode: TransactionViewMode) => {
+    if (mode === 'month') {
+      updateFilter({
+        startDate: monthStart(monthCursor),
+        endDate: monthEnd(monthCursor),
+        onlyInstallments: false,
+        offset: 0,
+      });
+      return;
+    }
+    if (mode === 'general') {
+      updateFilter({ startDate: null, endDate: null, onlyInstallments: false, offset: 0 });
+      return;
+    }
+    updateFilter({ startDate: null, endDate: null, onlyInstallments: true, offset: 0 });
+  };
+
+  const shiftMonth = (delta: number) => {
+    const next = new Date(monthCursor.getFullYear(), monthCursor.getMonth() + delta, 1);
+    setMonthCursor(next);
+    if (viewMode === 'month') {
+      updateFilter({ startDate: monthStart(next), endDate: monthEnd(next), offset: 0 });
+    }
   };
 
   const toggleSelection = (id: number) => {
@@ -178,6 +253,14 @@ export function useTransactionsPageLogic() {
     updateFilter,
     resetFilter,
     goToPage,
+    viewMode,
+    monthLabel,
+    setTypeFilter,
+    setStatusFilter,
+    toggleHideCards,
+    setViewMode,
+    prevMonth: () => shiftMonth(-1),
+    nextMonth: () => shiftMonth(1),
     toggleSelection,
     toggleSelectAll,
     clearSelection,

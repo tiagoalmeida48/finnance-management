@@ -6,6 +6,7 @@ export interface TrackingItem {
   total: number;
   isPaid: boolean;
   itemType: TrackingItemType;
+  account: number | null;
 }
 
 export interface MonthlyTrackingData {

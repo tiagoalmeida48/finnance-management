@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { FileText, Upload } from 'lucide-react';
+import { Download, FileText, Upload } from 'lucide-react';
 import {
   Button,
   Dialog,
@@ -15,7 +15,12 @@ import { useToast } from '@/shared/components/feedback';
 import { useAccountsLookup, useCategoriesLookup } from '../hooks/useLookups';
 import { transactionKeys } from '../hooks/useTransactions';
 import { transactionsService } from '../services/transactionsService';
-import { CSV_TEMPLATE, parseTransactionsCsv, type ParsedCsvRow } from './transactionCsv';
+import {
+  CSV_TEMPLATE,
+  downloadCsvTemplate,
+  parseTransactionsCsv,
+  type ParsedCsvRow,
+} from './transactionCsv';
 
 interface TransactionImportModalProps {
   open: boolean;
@@ -75,6 +80,7 @@ export function TransactionImportModal({ open, onClose }: TransactionImportModal
     if (!account || rows.length === 0) return;
     setImporting(true);
     let ok = 0;
+    let failed = 0;
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
       try {
@@ -102,13 +108,17 @@ export function TransactionImportModal({ open, onClose }: TransactionImportModal
         });
         ok++;
       } catch {
-        /* mantém o restante da importação */
+        failed++;
       }
       setProgress(i + 1);
     }
     queryClient.invalidateQueries({ queryKey: transactionKeys.all });
     setImporting(false);
-    addToast(`${ok} de ${rows.length} transações importadas.`, ok > 0 ? 'success' : 'error');
+    const message =
+      failed > 0
+        ? `${ok} de ${rows.length} importadas · ${failed} com erro.`
+        : `${ok} de ${rows.length} transações importadas.`;
+    addToast(message, ok > 0 ? 'success' : 'error');
     resetState();
     setAccount('');
     onClose();
@@ -122,11 +132,25 @@ export function TransactionImportModal({ open, onClose }: TransactionImportModal
         </DialogHeader>
 
         <div className="space-y-4">
-          <p className="rounded-lg border border-border bg-bg/40 px-3 py-2 font-mono text-xs text-text-muted">
-            Colunas: <span className="text-primary">{CSV_TEMPLATE}</span>
-            <br />
-            tipo = receita ou despesa · valor com vírgula · data dd/mm/aaaa
-          </p>
+          <div className="rounded-lg border border-border bg-bg/40 px-3 py-2">
+            <div className="flex items-start justify-between gap-3">
+              <p className="font-mono text-xs text-text-muted">
+                Colunas: <span className="text-primary">{CSV_TEMPLATE}</span>
+                <br />
+                tipo = receita ou despesa · valor com vírgula · data dd/mm/aaaa
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={downloadCsvTemplate}
+                className="shrink-0"
+              >
+                <Download size={14} />
+                Baixar modelo
+              </Button>
+            </div>
+          </div>
 
           <input
             ref={fileRef}

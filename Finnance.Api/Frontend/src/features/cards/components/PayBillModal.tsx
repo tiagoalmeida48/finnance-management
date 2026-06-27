@@ -17,15 +17,22 @@ import type { CreditCardInvoice } from '../types/cards.types';
 interface PayBillModalProps {
   invoice: CreditCardInvoice;
   isPending: boolean;
+  defaultAccount?: number;
   onClose: () => void;
   onConfirm: (input: { account: number; paymentDate: string }) => void;
 }
 
-export function PayBillModal({ invoice, isPending, onClose, onConfirm }: PayBillModalProps) {
+export function PayBillModal({
+  invoice,
+  isPending,
+  defaultAccount,
+  onClose,
+  onConfirm,
+}: PayBillModalProps) {
   const today = new Date().toISOString().slice(0, 10);
   const { data: accounts, isLoading } = useBankAccountsLookup();
   const [paymentDate, setPaymentDate] = useState(today);
-  const [accountId, setAccountId] = useState('');
+  const [accountId, setAccountId] = useState(defaultAccount ? String(defaultAccount) : '');
   const remaining = invoice.totalAmount - invoice.paidAmount;
 
   const handleConfirm = () => {

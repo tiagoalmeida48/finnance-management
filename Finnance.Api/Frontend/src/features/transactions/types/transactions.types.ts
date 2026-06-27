@@ -60,6 +60,12 @@ export interface TransactionListResult {
 export interface TransactionFilter {
   account: number;
   category: number;
+  card: number;
+  paymentMethod: number;
+  transactionType: number;
+  search: string;
+  hideCreditCards: boolean;
+  onlyInstallments: boolean;
   startDate: string | null;
   endDate: string | null;
   isPaid: boolean | null;
@@ -136,8 +142,16 @@ export interface UpdateGroupInput {
   purchaseDate?: string | null;
   clearPurchaseDate?: boolean;
   description?: string;
+  transactionType?: number | null;
   category?: number | null;
   paymentMethod?: number | null;
+  account?: number | null;
+  toAccount?: number | null;
+  card?: number | null;
+  notes?: string;
+  clearAccount?: boolean;
+  clearToAccount?: boolean;
+  clearCard?: boolean;
 }
 
 export interface DeleteGroupInput {

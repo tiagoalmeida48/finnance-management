@@ -15,7 +15,12 @@ import { TransactionFormModal } from '@/features/transactions';
 import { getInvoiceStatusMeta } from './invoiceStatus';
 import { PayBillModal } from './PayBillModal';
 import { InvoiceTransactionList } from './InvoiceTransactionList';
-import { useDeleteInvoiceTransaction, useInvoiceTransactions, usePayBill } from '../hooks/useCards';
+import {
+  useCards,
+  useDeleteInvoiceTransaction,
+  useInvoiceTransactions,
+  usePayBill,
+} from '../hooks/useCards';
 import type { CreditCardInvoice, Transaction } from '../types/cards.types';
 
 interface InvoiceRowProps {
@@ -31,6 +36,8 @@ export function InvoiceRow({ invoice, recalculating, onRecalculate }: InvoiceRow
   const [pendingDelete, setPendingDelete] = useState<Transaction | null>(null);
   const payBill = usePayBill();
   const deleteTransaction = useDeleteInvoiceTransaction();
+  const cardsQuery = useCards();
+  const defaultAccount = cardsQuery.data?.find((c) => c.creditCard === invoice.card)?.bankAccount;
   const status = getInvoiceStatusMeta(invoice.invoiceStatus);
   const remaining = invoice.totalAmount - invoice.paidAmount;
   const transactionsQuery = useInvoiceTransactions(expanded ? invoice.creditCardInvoice : null);
@@ -117,6 +124,7 @@ export function InvoiceRow({ invoice, recalculating, onRecalculate }: InvoiceRow
         <PayBillModal
           invoice={invoice}
           isPending={payBill.isPending}
+          defaultAccount={defaultAccount}
           onClose={() => setPayOpen(false)}
           onConfirm={handlePay}
         />

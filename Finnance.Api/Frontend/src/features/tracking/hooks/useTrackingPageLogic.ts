@@ -80,5 +80,6 @@ function buildFixedItems(
       total: Number(t.amount) || 0,
       isPaid: t.paid,
       itemType: 'fixed' as TrackingItemType,
+      account: t.account ?? null,
     }));
 }

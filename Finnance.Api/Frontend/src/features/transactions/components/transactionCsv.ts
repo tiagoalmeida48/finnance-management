@@ -132,3 +132,22 @@ export function parseTransactionsCsv(text: string): CsvParseResult {
 }
 
 export const CSV_TEMPLATE = 'data;descricao;valor;tipo;categoria';
+
+const CSV_TEMPLATE_ROWS = [
+  CSV_TEMPLATE,
+  '05/06/2026;Salário;5000,00;receita;Salário',
+  '12/06/2026;Mercado;350,90;despesa;Alimentação',
+].join('\n');
+
+export function downloadCsvTemplate(): void {
+  const bom = String.fromCharCode(0xfeff);
+  const blob = new Blob([bom + CSV_TEMPLATE_ROWS + '\n'], {
+    type: 'text/csv;charset=utf-8;',
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = 'modelo-transacoes.csv';
+  anchor.click();
+  URL.revokeObjectURL(url);
+}

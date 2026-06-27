@@ -321,11 +321,38 @@ public partial class TransactionService
         if (updates.Amount.HasValue)
             current.Amount = updates.Amount.Value;
 
+        if (updates.TransactionType is > 0)
+            current.TransactionType = updates.TransactionType.Value;
+
         if (updates.Category is > 0)
             current.Category = updates.Category;
 
         if (updates.PaymentMethod is > 0)
             current.PaymentMethod = updates.PaymentMethod;
+
+        if (updates.ClearAccount)
+            current.Account = null;
+        else if (updates.Account is > 0)
+            current.Account = updates.Account;
+
+        if (updates.ClearToAccount)
+            current.ToAccount = null;
+        else if (updates.ToAccount is > 0)
+            current.ToAccount = updates.ToAccount;
+
+        if (updates.ClearCard)
+        {
+            current.Card = null;
+            relink = true;
+        }
+        else if (updates.Card is > 0)
+        {
+            current.Card = updates.Card;
+            relink = true;
+        }
+
+        if (updates.Notes != null)
+            current.Notes = updates.Notes;
 
         if (updates.PaymentDate.HasValue && current.PaymentDate.HasValue)
         {

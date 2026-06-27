@@ -1,6 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { Layers, Repeat } from 'lucide-react';
 import {
   Button,
   Checkbox,
@@ -11,25 +9,13 @@ import {
   DialogTitle,
   Input,
   Label,
+  Switch,
   SelectMenu,
 } from '@/shared/components/ui';
+import { cn } from '@/shared/utils';
 import { TransactionTypeId } from '@/config/constants';
-import { formatCurrency } from '@/shared/utils';
-import { transactionFormSchema, type TransactionFormData } from './transactionFormSchema';
-import { transactionTypeLabel } from './transactionMeta';
-import {
-  useAccountsLookup,
-  useCardsLookup,
-  useCategoriesLookup,
-  usePaymentMethodsLookup,
-} from '../hooks/useLookups';
-import { useTransactionMutations } from '../hooks/useTransactions';
-import type {
-  Transaction,
-  TransactionCreateInput,
-  TransactionUpdateInput,
-  UpdateGroupInput,
-} from '../types/transactions.types';
+import { useTransactionFormLogic } from '../hooks/useTransactionFormLogic';
+import type { Transaction } from '../types/transactions.types';
 
 interface TransactionFormModalProps {
   open: boolean;
@@ -37,207 +23,45 @@ interface TransactionFormModalProps {
   onClose: () => void;
 }
 
-function toFormValues(t: Transaction): TransactionFormData {
-  return {
-    transactionType: t.transactionType,
-    amount: t.amount ?? 0,
-    description: t.description,
-    paymentDate: (t.paymentDate ?? '').slice(0, 10),
-    purchaseDate: (t.purchaseDate ?? '').slice(0, 10),
-    account: t.account ?? 0,
-    toAccount: t.toAccount ?? 0,
-    card: t.card ?? 0,
-    category: t.category ?? 0,
-    paymentMethod: t.paymentMethod ?? 0,
-    notes: t.notes ?? '',
-    isPaid: t.paid,
-    isFixed: t.fixed,
-    isInstallment: false,
-    totalInstallments: 1,
-    repeatCount: 1,
-    replicateToGroup: false,
-  };
-}
-
-const typeOptions = [
-  { value: TransactionTypeId.EXPENSE, label: transactionTypeLabel(TransactionTypeId.EXPENSE) },
-  { value: TransactionTypeId.INCOME, label: transactionTypeLabel(TransactionTypeId.INCOME) },
-  { value: TransactionTypeId.TRANSFER, label: transactionTypeLabel(TransactionTypeId.TRANSFER) },
+const typeTabs = [
+  { value: TransactionTypeId.EXPENSE, label: 'Despesa', active: 'bg-expense/15 text-expense' },
+  { value: TransactionTypeId.INCOME, label: 'Receita', active: 'bg-income/15 text-income' },
+  { value: TransactionTypeId.TRANSFER, label: 'Transferência', active: 'bg-surface-3 text-text' },
 ];
 
-const today = () => new Date().toISOString().slice(0, 10);
+const labelClass = 'font-mono text-[0.65rem] uppercase tracking-wider text-text-muted';
+const sectionClass = 'border-t border-border pt-3 font-mono text-[0.65rem] uppercase tracking-wider text-text-muted';
 
 const fieldError = (message?: string) =>
-  message ? <p className="text-expense text-xs mt-1">{message}</p> : null;
+  message ? <p className="mt-1 text-xs text-expense">{message}</p> : null;
+
+function submitLabel(editing: boolean, transactionType: number): string {
+  if (editing) return 'Salvar';
+  if (transactionType === TransactionTypeId.INCOME) return 'Criar Receita';
+  if (transactionType === TransactionTypeId.TRANSFER) return 'Criar Transferência';
+  return 'Criar Despesa';
+}
 
 export function TransactionFormModal({ open, editing, onClose }: TransactionFormModalProps) {
-  const accounts = useAccountsLookup();
-  const categories = useCategoriesLookup();
-  const cards = useCardsLookup();
-  const paymentMethods = usePaymentMethodsLookup();
-  const { create, update, updateGroup } = useTransactionMutations();
-  const groupId = editing?.installmentGroup ?? editing?.recurringGroup ?? null;
-  const isGroupEditing = Boolean(editing && groupId != null);
-
   const {
     register,
-    handleSubmit,
-    watch,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm<TransactionFormData>({
-    resolver: zodResolver(transactionFormSchema),
-    defaultValues: {
-      transactionType: TransactionTypeId.EXPENSE,
-      paymentDate: today(),
-      purchaseDate: '',
-      isPaid: false,
-      isFixed: false,
-      isInstallment: false,
-      totalInstallments: 1,
-      repeatCount: 1,
-      replicateToGroup: false,
-    },
-  });
-
-  const initialized = useRef(false);
-  const lookupsReady =
-    !accounts.isLoading &&
-    !cards.isLoading &&
-    !categories.isLoading &&
-    !paymentMethods.isLoading;
-
-  useEffect(() => {
-    if (!open) {
-      initialized.current = false;
-      return;
-    }
-    if (initialized.current) return;
-    if (editing && !lookupsReady) return;
-    reset(
-      editing
-        ? toFormValues(editing)
-        : {
-            transactionType: TransactionTypeId.EXPENSE,
-            paymentDate: today(),
-            purchaseDate: '',
-            isPaid: false,
-            isFixed: false,
-            isInstallment: false,
-            totalInstallments: 1,
-            repeatCount: 1,
-            replicateToGroup: false,
-          },
-    );
-    initialized.current = true;
-  }, [open, editing, lookupsReady, reset]);
-
-  const transactionType = Number(watch('transactionType'));
-  const card = Number(watch('card'));
-  const isInstallment = watch('isInstallment');
-  const isFixed = watch('isFixed');
-  const isTransfer = transactionType === TransactionTypeId.TRANSFER;
-  const isCard = !isTransfer && card > 0;
-  const amountValue = Number(watch('amount')) || 0;
-  const installmentsCount = Number(watch('totalInstallments')) || 0;
-  const installmentPreview =
-    isInstallment && amountValue > 0 && installmentsCount > 1
-      ? `${installmentsCount}x de ${formatCurrency(amountValue / installmentsCount)}`
-      : null;
-
-  const accountOptions = useMemo(
-    () => (accounts.data ?? []).map((a) => ({ value: a.bankAccount, label: a.name })),
-    [accounts.data],
-  );
-  const cardOptions = useMemo(
-    () => (cards.data ?? []).map((c) => ({ value: c.creditCard, label: c.name })),
-    [cards.data],
-  );
-  const categoryOptions = useMemo(
-    () => (categories.data ?? []).map((c) => ({ value: c.category, label: c.name })),
-    [categories.data],
-  );
-  const paymentMethodOptions = useMemo(
-    () => (paymentMethods.data ?? []).map((p) => ({ value: p.paymentMethod, label: p.name })),
-    [paymentMethods.data],
-  );
-
-  const bind = (name: keyof TransactionFormData) => ({
-    value: (watch(name) as string | number | undefined) ?? '',
-    onChange: (value: string) => setValue(name, value, { shouldValidate: true }),
-  });
-
-  const onSubmit = handleSubmit((data) => {
-    if (editing && data.replicateToGroup && groupId != null) {
-      const onCard = Number(data.card) > 0;
-      const groupPayload: UpdateGroupInput = {
-        groupId,
-        type: editing.installmentGroup != null ? 'installment' : 'recurring',
-        amount: Number(data.amount),
-        description: data.description.trim(),
-        paymentDate: data.paymentDate || null,
-        category: data.category ? Number(data.category) : null,
-        paymentMethod: data.paymentMethod ? Number(data.paymentMethod) : null,
-      };
-      if (onCard && data.purchaseDate) groupPayload.purchaseDate = data.purchaseDate;
-      else groupPayload.clearPurchaseDate = true;
-      updateGroup.mutate(groupPayload, { onSuccess: onClose });
-      return;
-    }
-
-    if (editing) {
-      const type = Number(data.transactionType);
-      const transfer = type === TransactionTypeId.TRANSFER;
-      const onCard = !transfer && Number(data.card) > 0;
-      const updatePayload: TransactionUpdateInput = {
-        transaction: editing.transaction,
-        transactionType: type,
-        amount: Number(data.amount),
-        description: data.description.trim(),
-        paymentDate: data.paymentDate || null,
-        paid: Boolean(data.isPaid),
-        fixed: Boolean(data.isFixed),
-        notes: data.notes ?? '',
-      };
-      if (data.account) updatePayload.account = Number(data.account);
-      else updatePayload.clearAccount = true;
-      if (transfer && data.toAccount) updatePayload.toAccount = Number(data.toAccount);
-      else updatePayload.clearToAccount = true;
-      if (onCard) updatePayload.card = Number(data.card);
-      else updatePayload.clearCard = true;
-      if (!transfer && data.category) updatePayload.category = Number(data.category);
-      else updatePayload.clearCategory = true;
-      if (!transfer && data.paymentMethod) updatePayload.paymentMethod = Number(data.paymentMethod);
-      else updatePayload.clearPaymentMethod = true;
-      if (onCard && data.purchaseDate) updatePayload.purchaseDate = data.purchaseDate;
-      else updatePayload.clearPurchaseDate = true;
-      update.mutate(updatePayload, { onSuccess: onClose });
-      return;
-    }
-
-    const payload: TransactionCreateInput = {
-      transactionType: Number(data.transactionType),
-      amount: Number(data.amount),
-      description: data.description.trim(),
-      paymentDate: data.paymentDate || null,
-      purchaseDate: data.purchaseDate ? data.purchaseDate : null,
-      account: data.account ? Number(data.account) : null,
-      toAccount: isTransfer && data.toAccount ? Number(data.toAccount) : null,
-      card: !isTransfer && data.card ? Number(data.card) : null,
-      category: !isTransfer && data.category ? Number(data.category) : null,
-      paymentMethod: !isTransfer && data.paymentMethod ? Number(data.paymentMethod) : null,
-      notes: data.notes ?? '',
-      isPaid: Boolean(data.isPaid),
-      isFixed: Boolean(data.isFixed),
-      isInstallment: Boolean(data.isInstallment),
-      totalInstallments: data.isInstallment ? Number(data.totalInstallments) : 1,
-      repeatCount: data.isFixed ? Number(data.repeatCount) : 1,
-      installmentAmounts: null,
-      recurringGroup: null,
-    };
-    create.mutate(payload, { onSuccess: onClose });
-  });
+    errors,
+    onSubmit,
+    setType,
+    bind,
+    transactionType,
+    isTransfer,
+    isCard,
+    isInstallment,
+    isFixed,
+    installmentPreview,
+    isGroupEditing,
+    accountOptions,
+    cardOptions,
+    categoryOptions,
+    paymentMethodOptions,
+    isPending,
+  } = useTransactionFormLogic({ open, editing, onClose });
 
   return (
     <Dialog
@@ -247,198 +71,226 @@ export function TransactionFormModal({ open, editing, onClose }: TransactionForm
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{editing ? 'Editar transação' : 'Nova transação'}</DialogTitle>
+          <DialogTitle>{editing ? 'Editar Transação' : 'Nova Transação'}</DialogTitle>
         </DialogHeader>
 
-        <form
-          onSubmit={onSubmit}
-          className="grid grid-cols-1 gap-x-3 gap-y-3 sm:grid-cols-3"
-        >
-          <div>
-            <Label htmlFor="transactionType">Tipo</Label>
-            <SelectMenu id="transactionType" options={typeOptions} {...bind('transactionType')} />
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div className="grid grid-cols-3 gap-1 rounded-lg border border-border bg-surface-2 p-1">
+            {typeTabs.map((tab) => (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => setType(tab.value)}
+                className={cn(
+                  'rounded-md px-3 py-1.5 text-sm font-medium transition-all',
+                  transactionType === tab.value ? tab.active : 'text-text-muted hover:text-text',
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
-          <div>
-            <Label htmlFor="amount">{isInstallment ? 'Valor total' : 'Valor'}</Label>
-            <Input
-              id="amount"
-              type="number"
-              step="0.01"
-              min="0"
-              className="w-full"
-              placeholder="0,00"
-              {...register('amount')}
-            />
-            {fieldError(errors.amount?.message)}
-          </div>
-
-          <div>
-            <Label htmlFor="paymentDate">{isCard ? 'Vencimento' : 'Data'}</Label>
-            <Input id="paymentDate" type="date" className="w-full" {...register('paymentDate')} />
-            {fieldError(errors.paymentDate?.message)}
-          </div>
-
-          <div className="sm:col-span-3">
-            <Label htmlFor="description">Descrição</Label>
-            <Input
-              id="description"
-              className="w-full"
-              placeholder="Ex.: Mercado, salário, aluguel"
-              {...register('description')}
-            />
-            {fieldError(errors.description?.message)}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="sm:col-span-2">
+              <Label htmlFor="description" className={labelClass}>
+                Descrição *
+              </Label>
+              <Input
+                id="description"
+                placeholder="Ex.: Mercado, salário, aluguel"
+                {...register('description')}
+              />
+              {fieldError(errors.description?.message)}
+            </div>
+            <div>
+              <Label htmlFor="amount" className={labelClass}>
+                Valor total *
+              </Label>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-text-muted">
+                  R$
+                </span>
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  className="pl-9"
+                  placeholder="0,00"
+                  {...register('amount')}
+                />
+              </div>
+              {fieldError(errors.amount?.message)}
+            </div>
           </div>
 
           {isTransfer ? (
-            <>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div>
-                <Label htmlFor="account">Conta de origem</Label>
-                <SelectMenu
-                  id="account"
-                  placeholder="Selecione"
-                  options={accountOptions}
-                  {...bind('account')}
-                />
+                <Label htmlFor="account" className={labelClass}>
+                  Conta de origem *
+                </Label>
+                <SelectMenu id="account" placeholder="Selecione" options={accountOptions} {...bind('account')} />
                 {fieldError(errors.account?.message)}
               </div>
-              <div className="sm:col-span-2">
-                <Label htmlFor="toAccount">Conta de destino</Label>
-                <SelectMenu
-                  id="toAccount"
-                  placeholder="Selecione"
-                  options={accountOptions}
-                  {...bind('toAccount')}
-                />
+              <div>
+                <Label htmlFor="toAccount" className={labelClass}>
+                  Conta de destino *
+                </Label>
+                <SelectMenu id="toAccount" placeholder="Selecione" options={accountOptions} {...bind('toAccount')} />
                 {fieldError(errors.toAccount?.message)}
               </div>
-            </>
+              <div>
+                <Label htmlFor="paymentDate" className={labelClass}>
+                  Data *
+                </Label>
+                <Input id="paymentDate" type="date" {...register('paymentDate')} />
+                {fieldError(errors.paymentDate?.message)}
+              </div>
+            </div>
           ) : (
             <>
-              <div>
-                <Label htmlFor="account">Conta</Label>
-                <SelectMenu
-                  id="account"
-                  placeholder="Nenhuma"
-                  options={[{ value: '', label: 'Nenhuma' }, ...accountOptions]}
-                  {...bind('account')}
-                />
-                {fieldError(errors.account?.message)}
-              </div>
-              <div>
-                <Label htmlFor="card">Cartão</Label>
-                <SelectMenu
-                  id="card"
-                  placeholder="Nenhum"
-                  options={[{ value: '', label: 'Nenhum' }, ...cardOptions]}
-                  {...bind('card')}
-                />
-              </div>
-
-              {isCard ? (
+              <p className={sectionClass}>Pagamento</p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <Label htmlFor="purchaseDate">Data da compra</Label>
-                  <Input
-                    id="purchaseDate"
-                    type="date"
-                    className="w-full"
-                    {...register('purchaseDate')}
+                  <Label htmlFor="paymentMethod" className={labelClass}>
+                    Forma de pagamento
+                  </Label>
+                  <SelectMenu
+                    id="paymentMethod"
+                    placeholder="Não informado"
+                    options={[{ value: '', label: 'Não informado' }, ...paymentMethodOptions]}
+                    {...bind('paymentMethod')}
                   />
-                  {fieldError(errors.purchaseDate?.message)}
                 </div>
-              ) : null}
-
-              <div>
-                <Label htmlFor="category">Categoria</Label>
-                <SelectMenu
-                  id="category"
-                  placeholder="Sem categoria"
-                  options={[{ value: '', label: 'Sem categoria' }, ...categoryOptions]}
-                  {...bind('category')}
-                />
-              </div>
-              <div className={isCard ? '' : 'sm:col-span-2'}>
-                <Label htmlFor="paymentMethod">Forma de pagamento</Label>
-                <SelectMenu
-                  id="paymentMethod"
-                  placeholder="Não informado"
-                  options={[{ value: '', label: 'Não informado' }, ...paymentMethodOptions]}
-                  {...bind('paymentMethod')}
-                />
-              </div>
-
-              <div className="flex flex-wrap gap-4 sm:col-span-3">
-                {!editing && (
-                  <>
-                    <label className="flex items-center gap-2 text-sm text-text">
-                      <Checkbox {...register('isInstallment')} disabled={isFixed} />
-                      Parcelado
-                    </label>
-                    <label className="flex items-center gap-2 text-sm text-text">
-                      <Checkbox {...register('isFixed')} disabled={isInstallment} />
-                      Recorrente
-                    </label>
-                  </>
-                )}
-                <label className="flex items-center gap-2 text-sm text-text">
-                  <Checkbox {...register('isPaid')} />
-                  Pago
-                </label>
-                {isGroupEditing && (
-                  <label className="flex items-center gap-2 text-sm text-text">
-                    <Checkbox {...register('replicateToGroup')} />
-                    Replicar para todas as parcelas
-                  </label>
-                )}
-              </div>
-
-              {!editing && isInstallment ? (
                 <div>
-                  <Label htmlFor="totalInstallments">Número de parcelas</Label>
-                  <Input
-                    id="totalInstallments"
-                    type="number"
-                    min="2"
-                    className="w-full"
-                    {...register('totalInstallments')}
+                  <Label htmlFor="category" className={labelClass}>
+                    Categoria
+                  </Label>
+                  <SelectMenu
+                    id="category"
+                    placeholder="Sem categoria"
+                    options={[{ value: '', label: 'Sem categoria' }, ...categoryOptions]}
+                    {...bind('category')}
                   />
-                  {fieldError(errors.totalInstallments?.message)}
-                  {installmentPreview ? (
-                    <p className="mt-1 text-xs text-primary">{installmentPreview}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="account" className={labelClass}>
+                    Conta *
+                  </Label>
+                  <SelectMenu
+                    id="account"
+                    placeholder="Nenhuma"
+                    options={[{ value: '', label: 'Nenhuma' }, ...accountOptions]}
+                    {...bind('account')}
+                  />
+                  {fieldError(errors.account?.message)}
+                </div>
+                <div>
+                  <Label htmlFor="paymentDate" className={labelClass}>
+                    {isCard ? 'Vencimento *' : 'Data *'}
+                  </Label>
+                  <Input id="paymentDate" type="date" {...register('paymentDate')} />
+                  {fieldError(errors.paymentDate?.message)}
+                </div>
+                <div>
+                  <Label htmlFor="card" className={labelClass}>
+                    Cartão
+                  </Label>
+                  <SelectMenu
+                    id="card"
+                    placeholder="Nenhum"
+                    options={[{ value: '', label: 'Nenhum' }, ...cardOptions]}
+                    {...bind('card')}
+                  />
+                </div>
+                {isCard ? (
+                  <div>
+                    <Label htmlFor="purchaseDate" className={labelClass}>
+                      Data da compra *
+                    </Label>
+                    <Input id="purchaseDate" type="date" {...register('purchaseDate')} />
+                    {fieldError(errors.purchaseDate?.message)}
+                  </div>
+                ) : null}
+              </div>
+
+              {!editing ? (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="flex items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-text">
+                      <span className="flex items-center gap-2">
+                        <Repeat size={16} className="text-text-muted" />
+                        Recorrente
+                      </span>
+                      <Switch {...register('isFixed')} disabled={isInstallment} />
+                    </label>
+                    <label className="flex items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-text">
+                      <span className="flex items-center gap-2">
+                        <Layers size={16} className="text-text-muted" />
+                        Parcelar
+                      </span>
+                      <Switch {...register('isInstallment')} disabled={isFixed} />
+                    </label>
+                  </div>
+
+                  {isInstallment ? (
+                    <div>
+                      <Label htmlFor="totalInstallments" className={labelClass}>
+                        Número de parcelas
+                      </Label>
+                      <Input id="totalInstallments" type="number" min="2" {...register('totalInstallments')} />
+                      {fieldError(errors.totalInstallments?.message)}
+                      {installmentPreview ? (
+                        <p className="mt-1 text-xs text-primary">{installmentPreview}</p>
+                      ) : null}
+                    </div>
                   ) : null}
-                </div>
-              ) : null}
 
-              {!editing && isFixed ? (
-                <div>
-                  <Label htmlFor="repeatCount">Repetições</Label>
-                  <Input
-                    id="repeatCount"
-                    type="number"
-                    min="2"
-                    className="w-full"
-                    {...register('repeatCount')}
-                  />
-                  {fieldError(errors.repeatCount?.message)}
-                </div>
+                  {isFixed ? (
+                    <div>
+                      <Label htmlFor="repeatCount" className={labelClass}>
+                        Repetições
+                      </Label>
+                      <Input id="repeatCount" type="number" min="2" {...register('repeatCount')} />
+                      {fieldError(errors.repeatCount?.message)}
+                    </div>
+                  ) : null}
+                </>
               ) : null}
             </>
           )}
 
-          <div className="sm:col-span-3">
-            <Label htmlFor="notes">Observações</Label>
-            <Input id="notes" className="w-full" {...register('notes')} />
+          <div className="flex flex-wrap items-center gap-4 border-t border-border pt-3">
+            <label className="flex items-center gap-2 text-sm text-text">
+              <Checkbox {...register('isPaid')} />
+              Pago
+            </label>
+            {isGroupEditing ? (
+              <label className="flex items-center gap-2 text-sm text-text">
+                <Checkbox {...register('replicateToGroup')} />
+                Replicar para todas as parcelas
+              </label>
+            ) : null}
           </div>
 
-          <DialogFooter className="sm:col-span-3">
+          <div>
+            <Label htmlFor="notes" className={labelClass}>
+              Observações
+            </Label>
+            <Input id="notes" {...register('notes')} />
+          </div>
+
+          <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose}>
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              loading={create.isPending || update.isPending || updateGroup.isPending}
-            >
-              Salvar
+            <Button type="submit" loading={isPending}>
+              {submitLabel(Boolean(editing), transactionType)}
             </Button>
           </DialogFooter>
         </form>

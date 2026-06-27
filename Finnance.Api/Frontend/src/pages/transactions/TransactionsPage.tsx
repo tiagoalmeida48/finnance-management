@@ -48,8 +48,15 @@ export function TransactionsPage() {
     openEdit,
     closeForm,
     updateFilter,
-    resetFilter,
     goToPage,
+    viewMode,
+    monthLabel,
+    setTypeFilter,
+    setStatusFilter,
+    toggleHideCards,
+    setViewMode,
+    prevMonth,
+    nextMonth,
     toggleSelection,
     toggleSelectAll,
     clearSelection,
@@ -86,7 +93,18 @@ export function TransactionsPage() {
 
       <Card>
         <CardContent className="space-y-4">
-          <TransactionsFilters filter={filter} onChange={updateFilter} onReset={resetFilter} />
+          <TransactionsFilters
+            filter={filter}
+            viewMode={viewMode}
+            monthLabel={monthLabel}
+            onChange={updateFilter}
+            onTypeChange={setTypeFilter}
+            onStatusChange={setStatusFilter}
+            onToggleHideCards={toggleHideCards}
+            onViewChange={setViewMode}
+            onPrevMonth={prevMonth}
+            onNextMonth={nextMonth}
+          />
 
           {isLoading ? (
             <div className="py-16">
