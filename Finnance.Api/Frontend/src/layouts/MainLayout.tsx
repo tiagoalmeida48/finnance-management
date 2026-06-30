@@ -24,7 +24,7 @@ export function MainLayout() {
   return (
     <div className="flex h-screen">
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute inset-0 ring-grid opacity-40" />
+        <div className="absolute inset-0 ring-grid opacity-80" />
         <div className="animate-float-slow absolute -left-40 top-8 h-[26rem] w-[26rem] rounded-full bg-primary/[0.05] blur-3xl" />
         <div className="absolute -right-32 bottom-0 h-[30rem] w-[30rem] rounded-full bg-transfer/[0.10] blur-3xl" />
       </div>

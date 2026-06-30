@@ -200,8 +200,8 @@
 
   .ring-grid {
     background-image:
-      linear-gradient(rgba(150, 162, 180, 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(150, 162, 180, 0.05) 1px, transparent 1px);
+      linear-gradient(rgba(150, 162, 180, 0.11) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(150, 162, 180, 0.11) 1px, transparent 1px);
     background-size: 30px 30px;
   }
 

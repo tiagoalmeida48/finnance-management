@@ -1,5 +1,5 @@
 import { TrendingDown, TrendingUp, Wallet } from 'lucide-react';
-import { Card } from '@/shared/components/ui';
+import { Card, CountUp } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import type { DashboardStats } from '../types/dashboard.types';
 
@@ -16,7 +16,11 @@ interface SummaryValueProps {
 
 function SummaryValue({ value, isLoading, className }: SummaryValueProps) {
   if (isLoading) return <div className="mt-2 h-8 w-32 animate-pulse rounded bg-surface-2" />;
-  return <p className={`nums font-semibold ${className}`}>{formatCurrency(value)}</p>;
+  return (
+    <p className={`nums font-semibold ${className}`}>
+      <CountUp value={value} format={formatCurrency} />
+    </p>
+  );
 }
 
 export function DashboardSummary({ stats, isLoading }: DashboardSummaryProps) {

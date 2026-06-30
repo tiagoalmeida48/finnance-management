@@ -13,6 +13,7 @@ export { EmptyState } from './EmptyState';
 export { PageHeader } from './PageHeader';
 export { SegmentedControl } from './SegmentedControl';
 export { SortableTh } from './SortableTh';
+export { CountUp } from './CountUp';
 export {
   Dialog,
   DialogContent,

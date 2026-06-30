@@ -1,4 +1,4 @@
-import { Card } from '@/shared/components/ui';
+import { Card, CountUp } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import type { TransactionSummary } from '../types/transactions.types';
 
@@ -31,7 +31,7 @@ export function TransactionsSummary({ summary, loading }: TransactionsSummaryPro
             <div className="mt-1.5 h-6 w-24 animate-pulse rounded bg-surface-2" />
           ) : (
             <p className={`mt-0.5 text-xl font-bold tracking-tight ${item.className}`}>
-              {formatCurrency(item.value)}
+              <CountUp value={item.value} format={formatCurrency} />
             </p>
           )}
         </Card>

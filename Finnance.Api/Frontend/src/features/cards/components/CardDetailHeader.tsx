@@ -1,5 +1,5 @@
 import { CalendarRange, ChevronLeft, ChevronRight, CreditCard as CardIcon } from 'lucide-react';
-import { Button, SegmentedControl } from '@/shared/components/ui';
+import { Button, CountUp, SegmentedControl } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import { UsageBar } from './UsageBar';
 import type { CreditCard, CreditCardStats, StatementCycle } from '../types/cards.types';
@@ -120,12 +120,14 @@ export function CardDetailHeader({
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <MetricCard label="Limite" value={formatCurrency(limit)} />
-        <MetricCard label="Fatura atual" value={formatCurrency(currentInvoice)} />
-        <MetricCard label="Disponível" value={formatCurrency(available)} />
+        <MetricCard label="Limite" value={limit} />
+        <MetricCard label="Fatura atual" value={currentInvoice} />
+        <MetricCard label="Disponível" value={available} />
         <div className="rounded-xl border border-border bg-surface-gradient p-5 shadow-card">
           <p className="mono-label text-[10px] text-text-muted">Uso do limite</p>
-          <p className="nums mt-1.5 text-xl font-semibold text-text">{formatCurrency(usage)}</p>
+          <p className="nums mt-1.5 text-xl font-semibold text-text">
+            <CountUp value={usage} format={formatCurrency} />
+          </p>
           <div className="mt-3">
             <UsageBar usage={usage} creditLimit={limit} />
           </div>
@@ -135,11 +137,13 @@ export function CardDetailHeader({
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: string }) {
+function MetricCard({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-xl border border-border bg-surface-gradient p-5 shadow-card">
       <p className="mono-label text-[10px] text-text-muted">{label}</p>
-      <p className="nums mt-1.5 text-xl font-semibold text-text">{value}</p>
+      <p className="nums mt-1.5 text-xl font-semibold text-text">
+        <CountUp value={value} format={formatCurrency} />
+      </p>
     </div>
   );
 }

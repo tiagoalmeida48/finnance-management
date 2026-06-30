@@ -62,7 +62,14 @@ export function AppRouter() {
         <Route path="/cards" element={<Navigate to="/finances" replace />} />
         <Route path="/cards/:id" element={<Lazy><CreditCardDetailsPage /></Lazy>} />
         <Route path="/categories" element={<Lazy><CategoriesPage /></Lazy>} />
-        <Route path="/salary" element={<Lazy><SalaryPage /></Lazy>} />
+        <Route
+          path="/salary"
+          element={
+            <AdminRoute>
+              <Lazy><SalaryPage /></Lazy>
+            </AdminRoute>
+          }
+        />
         <Route path="/tracking" element={<Lazy><TrackingPage /></Lazy>} />
         <Route path="/profile" element={<Lazy><ProfilePage /></Lazy>} />
         <Route
