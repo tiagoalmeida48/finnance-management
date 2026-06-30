@@ -49,6 +49,9 @@ export function TransactionsPage() {
     closeForm,
     updateFilter,
     goToPage,
+    setSort,
+    sortField,
+    sortAsc,
     viewMode,
     monthLabel,
     setTypeFilter,
@@ -137,6 +140,9 @@ export function TransactionsPage() {
               onDuplicate={duplicate}
               onDelete={requestDelete}
               onPageChange={goToPage}
+              sortField={sortField}
+              sortAsc={sortAsc}
+              onSort={setSort}
             />
           )}
         </CardContent>

@@ -85,4 +85,8 @@ export const transactionsService = {
   updateGroup: async (input: UpdateGroupInput): Promise<number[]> => {
     return apiClient.put<number[]>('/transaction/update-group', input);
   },
+
+  importTemplate: async (): Promise<string> => {
+    return apiClient.get<string>('/transaction/import-template');
+  },
 };

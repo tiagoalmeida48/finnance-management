@@ -37,6 +37,4 @@ public class TransactionCreateDto
     public List<decimal> InstallmentAmounts { get; set; }
 
     public long? RecurringGroup { get; set; }
-
-    public long? RecurringRule { get; set; }
 }

@@ -77,9 +77,10 @@ public partial class UserService(IUserRepository userRepository) : BaseService<U
             throw new ApplicationException(Constants.ErrorMessage.CannotDeleteSelf);
 
         var current = Get(user);
+        current.Active = false;
 
         using var tran = GetTransaction();
-        userRepository.Delete(current);
+        userRepository.Update(current);
         tran.Complete();
 
         return true;

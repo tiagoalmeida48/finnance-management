@@ -36,8 +36,7 @@ Validação **imperativa** na Entity (`ValidateCreate`/`ValidateUpdate`) e no se
 (`ValidatePersistence`), lançando `ApplicationException(Constants.ErrorMessage.X)`.
 **Reforço no banco** (CHECKs `NOT VALID` já validados sobre o legado em 2026-06-26):
 `chk_transaction_amount_positive`, `chk_transaction_card_has_account`,
-`chk_transaction_transfer_account`, `chk_cycle_days`, `chk_settings_salary_percent`, e os
-CHECKs inline das tabelas novas (`recurring_rule`, `credit_card_invoice_payment`).
+`chk_transaction_transfer_account`, `chk_cycle_days`, `chk_settings_salary_percent`.
 
 ### "transaction"
 - `transaction_type` ∈ `transaction_type` (income/expense/transfer) — FK + validação.
@@ -50,8 +49,8 @@ CHECKs inline das tabelas novas (`recurring_rule`, `credit_card_invoice_payment`
 ### credit_card_invoice
 - `invoice_status` ∈ `invoice_status` — FK.
 - `total_amount >= 0`, `paid_amount >= 0`. O recálculo (`RecalculateInvoiceTotal`)
-  deriva `paid` de transações pagas **+ ledger `credit_card_invoice_payment`** e o
-  limita a `total` (estorno/income reduz `total`; ver spec RC-ALG-02).
+  deriva `paid` das transações pagas e o limita a `total` (estorno/income reduz
+  `total`; ver spec RC-ALG-02).
 
 ### settings_salary
 - `hourly_rate >= 0`, `base_salary >= 0`; percentuais em `[0,100]` (Entity + CHECK);
@@ -128,7 +127,7 @@ repositórios (não LINQ/EF):
 - uso/limite por cartão: `total_usage = Σ GREATEST(total_amount − paid_amount, 0)` sobre
   faturas não pagas; `available_limit = credit_limit − total_usage`. O `GREATEST(...,0)`
   evita inflar o limite quando estorno deixa `total < paid`.
-- agregações por `installment_group` / `recurring_group` (e regras via `recurring_rule`).
+- agregações por `installment_group` / `recurring_group`.
 
 **Tabela extra?** Não. (Se virar gargalo: cache/coluna materializada — decisão futura.)
 
@@ -155,8 +154,7 @@ Autorização por atributo: `[Authorization]` (autenticado) ou `[Authorization(a
 
 Contrato de acesso (aplicado por código, não por tabela de permissões):
 - **Usuário**: CRUD apenas das próprias linhas (account, transaction, category, card,
-  invoice, statement_cycle, salary_settings, recurring_rule, invoice_payment); lê
-  `system_config`.
+  invoice, statement_cycle, salary_settings); lê `system_config`.
 - **Admin** (+): listar/criar/editar/excluir usuários, resetar senha, escrever
   `system_config`, ler `audit_log` de todos. "Admin não pode se auto-deletar" é regra de
   serviço. Não há integração Pluggy no stack atual.

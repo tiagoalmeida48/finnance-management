@@ -12,6 +12,11 @@ public partial class CreditCardInvoiceService
         return creditCardInvoiceRepository.SearchByCardYear(cardId, userId, year);
     }
 
+    public List<CreditCardInvoiceEntity> ListByYear(int year, long userId)
+    {
+        return creditCardInvoiceRepository.SearchByYear(userId, year);
+    }
+
     public CreditCardInvoiceEntity GetByMonth(long cardId, string monthKey, long userId)
     {
         var invoice = creditCardInvoiceRepository.SearchByCardMonth(cardId, userId, monthKey);

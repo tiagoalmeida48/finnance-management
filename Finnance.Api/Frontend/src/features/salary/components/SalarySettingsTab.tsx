@@ -1,6 +1,16 @@
-import { Button, Card, CardContent, Spinner } from '@/shared/components/ui';
+import { Button, Card, CardContent, SortableTh, Spinner } from '@/shared/components/ui';
+import { useSortableData, type SortAccessors } from '@/shared/hooks';
 import { formatCurrency, formatDate } from '@/shared/utils';
 import type { SalarySetting } from '../types/salary.types';
+
+const accessors: SortAccessors<SalarySetting> = {
+  dateStart: (s) => s.dateStart,
+  hourlyRate: (s) => s.hourlyRate,
+  baseSalary: (s) => s.baseSalary,
+  inss: (s) => s.inssDiscountPercentage,
+  adminFee: (s) => s.adminFeePercentage,
+  active: (s) => s.active,
+};
 
 interface SalarySettingsTabProps {
   loadingHistory: boolean;
@@ -25,6 +35,8 @@ export function SalarySettingsTab({
   onRequestDelete,
   deletePending,
 }: SalarySettingsTabProps) {
+  const { sorted, sortKey, direction, toggleSort } = useSortableData(history, accessors, 'dateStart');
+
   return (
     <Card>
       <CardContent className="space-y-3">
@@ -38,18 +50,18 @@ export function SalarySettingsTab({
           <div className="overflow-x-auto rounded-lg border border-border">
             <table className="w-full min-w-[640px] text-sm">
               <thead>
-                <tr className="bg-surface-2/40">
-                  <th className={`${headerClass} text-left`}>Vigência</th>
-                  <th className={`${headerClass} text-right`}>Valor hora</th>
-                  <th className={`${headerClass} text-right`}>Pró-labore</th>
-                  <th className={`${headerClass} text-right`}>INSS</th>
-                  <th className={`${headerClass} text-right`}>Taxa adm.</th>
-                  <th className={`${headerClass} text-center`}>Status</th>
+                <tr className="bg-surface-2/40 text-text-muted">
+                  <SortableTh label="Vigência" sortKey="dateStart" activeKey={sortKey} direction={direction} onSort={toggleSort} className={headerClass} />
+                  <SortableTh label="Valor hora" sortKey="hourlyRate" activeKey={sortKey} direction={direction} onSort={toggleSort} align="right" className={headerClass} />
+                  <SortableTh label="Pró-labore" sortKey="baseSalary" activeKey={sortKey} direction={direction} onSort={toggleSort} align="right" className={headerClass} />
+                  <SortableTh label="INSS" sortKey="inss" activeKey={sortKey} direction={direction} onSort={toggleSort} align="right" className={headerClass} />
+                  <SortableTh label="Taxa adm." sortKey="adminFee" activeKey={sortKey} direction={direction} onSort={toggleSort} align="right" className={headerClass} />
+                  <SortableTh label="Status" sortKey="active" activeKey={sortKey} direction={direction} onSort={toggleSort} align="center" className={headerClass} />
                   <th className={`${headerClass} text-center`}>Ações</th>
                 </tr>
               </thead>
               <tbody>
-                {history.map((setting) => (
+                {sorted.map((setting) => (
                   <tr
                     key={setting.settingsSalary}
                     className={`border-t border-border ${setting.active ? 'bg-primary/5' : ''}`}

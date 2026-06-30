@@ -139,4 +139,11 @@ public class TransactionController(ITransactionService transactionService) : Con
     {
         return new ResultApi<List<long>> { Result = transactionService.UpdateGroup(dto, UserLogged.user) };
     }
+
+    [Authorization()]
+    [HttpGet]
+    public ResultApi<string> ImportTemplate()
+    {
+        return new ResultApi<string> { Result = transactionService.GetImportTemplate() };
+    }
 }

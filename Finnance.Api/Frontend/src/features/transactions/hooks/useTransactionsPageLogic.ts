@@ -65,7 +65,8 @@ function createDefaultFilter(): TransactionFilter {
     startDate: monthStart(now),
     endDate: monthEnd(now),
     isPaid: null,
-    sortAsc: false,
+    sortAsc: true,
+    sortField: 'payment_date',
     limit: PAGE_SIZE,
     offset: 0,
   };
@@ -117,6 +118,16 @@ export function useTransactionsPageLogic() {
     const target = Math.max(0, next);
     setSelectedIds([]);
     setFilter((prev) => ({ ...prev, offset: target * PAGE_SIZE }));
+  };
+
+  const setSort = (field: string) => {
+    setSelectedIds([]);
+    setFilter((prev) => ({
+      ...prev,
+      sortField: field,
+      sortAsc: prev.sortField === field ? !prev.sortAsc : true,
+      offset: 0,
+    }));
   };
 
   const viewMode: TransactionViewMode = filter.onlyInstallments
@@ -253,6 +264,9 @@ export function useTransactionsPageLogic() {
     updateFilter,
     resetFilter,
     goToPage,
+    setSort,
+    sortField: filter.sortField,
+    sortAsc: filter.sortAsc,
     viewMode,
     monthLabel,
     setTypeFilter,

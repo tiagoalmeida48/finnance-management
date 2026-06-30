@@ -16,11 +16,11 @@ public interface ICreditCardInvoiceRepository : IBaseRepository<CreditCardInvoic
 
     List<CreditCardInvoiceEntity> SearchByCardYear(long card, long user, int year);
 
+    List<CreditCardInvoiceEntity> SearchByYear(long user, int year);
+
     void UpdateTotals(long creditCardInvoice, long user, decimal totalAmount, decimal paidAmount, long invoiceStatus, DateTime? paidAt);
 
     (decimal Total, decimal Paid) SumInvoiceAmounts(long invoice, long user);
-
-    decimal SumPayments(long invoice, long user);
 
     List<long> SearchTransactionIdsToReprocess(long card, long user, DateTime fromDate);
 

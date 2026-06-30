@@ -78,6 +78,7 @@ export interface CreditCardInvoice {
   closedAt: string | null;
   paidAt: string | null;
   active: boolean;
+  itemsCount: number;
 }
 
 export interface PayBillInput {

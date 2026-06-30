@@ -15,11 +15,11 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
             INSERT INTO "transaction"
                 ("user", transaction_type, payment_method, amount, payment_date, purchase_date,
                  description, account, to_account, card, category, invoice, installment_group,
-                 installment_number, recurring_group, recurring_rule, fixed, paid, notes, active, created, updated)
+                 installment_number, recurring_group, fixed, paid, notes, active, created, updated)
             VALUES
                 (@user, @transactionType, @paymentMethod, @amount, @paymentDate, @purchaseDate,
                  @description, @account, @toAccount, @card, @category, @invoice, @installmentGroup,
-                 @installmentNumber, @recurringGroup, @recurringRule, @fixed, @paid, @notes, @active, NOW(), NOW())
+                 @installmentNumber, @recurringGroup, @fixed, @paid, @notes, @active, NOW(), NOW())
             RETURNING "transaction"
             """;
 
@@ -42,7 +42,7 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
             if (i > 0)
                 values.Append(',');
 
-            values.Append($"(@user{i}, @transactionType{i}, @paymentMethod{i}, @amount{i}, @paymentDate{i}, @purchaseDate{i}, @description{i}, @account{i}, @toAccount{i}, @card{i}, @category{i}, @invoice{i}, @installmentGroup{i}, @installmentNumber{i}, @recurringGroup{i}, @recurringRule{i}, @fixed{i}, @paid{i}, @notes{i}, @active{i}, NOW(), NOW())");
+            values.Append($"(@user{i}, @transactionType{i}, @paymentMethod{i}, @amount{i}, @paymentDate{i}, @purchaseDate{i}, @description{i}, @account{i}, @toAccount{i}, @card{i}, @category{i}, @invoice{i}, @installmentGroup{i}, @installmentNumber{i}, @recurringGroup{i}, @fixed{i}, @paid{i}, @notes{i}, @active{i}, NOW(), NOW())");
 
             param.Add($"user{i}", entity.User);
             param.Add($"transactionType{i}", entity.TransactionType);
@@ -59,7 +59,6 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
             param.Add($"installmentGroup{i}", entity.InstallmentGroup);
             param.Add($"installmentNumber{i}", entity.InstallmentNumber);
             param.Add($"recurringGroup{i}", entity.RecurringGroup);
-            param.Add($"recurringRule{i}", entity.RecurringRule);
             param.Add($"fixed{i}", entity.Fixed);
             param.Add($"paid{i}", entity.Paid);
             param.Add($"notes{i}", entity.Notes);
@@ -70,7 +69,7 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
             INSERT INTO "transaction"
                 ("user", transaction_type, payment_method, amount, payment_date, purchase_date,
                  description, account, to_account, card, category, invoice, installment_group,
-                 installment_number, recurring_group, recurring_rule, fixed, paid, notes, active, created, updated)
+                 installment_number, recurring_group, fixed, paid, notes, active, created, updated)
             VALUES {values}
             RETURNING "transaction"
             """;
@@ -97,7 +96,6 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
                 installment_group = @installmentGroup,
                 installment_number = @installmentNumber,
                 recurring_group = @recurringGroup,
-                recurring_rule = @recurringRule,
                 fixed = @fixed,
                 paid = @paid,
                 notes = @notes,
@@ -131,7 +129,6 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
         param.Add("installmentGroup", entity.InstallmentGroup);
         param.Add("installmentNumber", entity.InstallmentNumber);
         param.Add("recurringGroup", entity.RecurringGroup);
-        param.Add("recurringRule", entity.RecurringRule);
         param.Add("fixed", entity.Fixed);
         param.Add("paid", entity.Paid);
         param.Add("notes", entity.Notes);

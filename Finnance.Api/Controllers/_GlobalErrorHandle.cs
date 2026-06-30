@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Npgsql;
+using Finnance.Api.Modules.AuditLog.Application.Interfaces;
+using Finnance.Api.Security;
 using Finnance.Api.Shared;
 using Finnance.Api.Shared.Utils;
 using Refit;
@@ -12,15 +14,27 @@ using System.Text;
 namespace Finnance.Api.Controllers;
 
 [ApiExplorerSettings(IgnoreApi = true)]
-public class GlobalErrorHandle : ControllerBase
+public class GlobalErrorHandle(IAuditLogService auditLogService) : ControllerBase
 {
     private const int InternalErrorStatus = 500;
     private const int BusinessErrorStatus = 400;
+    private const int MaxLogLength = 4000;
 
-    private static long TryLog(Exception err)
+    private long TryLog(Exception err)
     {
-        _ = err;
-        return Constants.DefaultErrorLog;
+        try
+        {
+            var description = $"{err.GetType().Name}: {err.Message}\n{err.StackTrace}";
+            if (description.Length > MaxLogLength)
+                description = description[..MaxLogLength];
+
+            var (user, _, _) = HttpContext.GetUserLogged();
+            return auditLogService.RecordError(description, user);
+        }
+        catch
+        {
+            return Constants.DefaultErrorLog;
+        }
     }
 
     [Route("/errors")]

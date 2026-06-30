@@ -35,4 +35,8 @@ public class UpdateGroupDto
     public bool ClearToAccount { get; set; }
 
     public bool ClearCard { get; set; }
+
+    public bool ClearCategory { get; set; }
+
+    public bool ClearPaymentMethod { get; set; }
 }

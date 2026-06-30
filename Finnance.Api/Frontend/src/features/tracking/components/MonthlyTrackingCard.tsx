@@ -18,16 +18,26 @@ interface MonthlyTrackingCardProps {
 export function MonthlyTrackingCard({ data }: MonthlyTrackingCardProps) {
   const [payingItem, setPayingItem] = useState<TrackingItem | null>(null);
   const { data: accounts = [] } = useTrackingAccounts();
-  const { togglePaid, pay } = useTrackingPayMutations();
+  const { togglePaid, pay, payBill } = useTrackingPayMutations();
 
   const progress = Math.round(data.progress || 0);
   const isSettled = progress === 100 && data.totalItems > 0;
-  const isPending = togglePaid.isPending || pay.isPending;
+  const isPending = togglePaid.isPending || pay.isPending || payBill.isPending;
 
   const handleConfirm = (input: PayItemInput) => {
     if (!payingItem) return;
 
     const onSuccess = () => setPayingItem(null);
+
+    if (payingItem.itemType === 'card') {
+      if (!input.account) return;
+      const paymentDate = new Date().toISOString().slice(0, 10);
+      payBill.mutate(
+        { invoice: payingItem.id, account: input.account, paymentDate },
+        { onSuccess },
+      );
+      return;
+    }
 
     if (input.account) {
       pay.mutate({ id: payingItem.id, account: input.account }, { onSuccess });

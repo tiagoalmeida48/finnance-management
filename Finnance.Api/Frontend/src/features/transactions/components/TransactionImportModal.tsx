@@ -1,219 +1,159 @@
-import { useMemo, useRef, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { Download, FileText, Upload } from 'lucide-react';
+import { useRef } from 'react';
+import { Check, Download, FileText, Upload } from 'lucide-react';
 import {
+  Badge,
   Button,
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  Label,
   SelectMenu,
 } from '@/shared/components/ui';
-import { useToast } from '@/shared/components/feedback';
-import { useAccountsLookup, useCategoriesLookup } from '../hooks/useLookups';
-import { transactionKeys } from '../hooks/useTransactions';
-import { transactionsService } from '../services/transactionsService';
-import {
-  CSV_TEMPLATE,
-  downloadCsvTemplate,
-  parseTransactionsCsv,
-  type ParsedCsvRow,
-} from './transactionCsv';
+import { useTransactionImportLogic } from '../hooks/useTransactionImportLogic';
+import { ImportPreviewTable } from './ImportPreviewTable';
 
 interface TransactionImportModalProps {
   open: boolean;
   onClose: () => void;
 }
 
+const labelClass = 'font-mono text-[0.65rem] uppercase tracking-wider text-text-muted';
+
 export function TransactionImportModal({ open, onClose }: TransactionImportModalProps) {
-  const accounts = useAccountsLookup();
-  const categories = useCategoriesLookup();
-  const queryClient = useQueryClient();
-  const { addToast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
-
-  const [rows, setRows] = useState<ParsedCsvRow[]>([]);
-  const [errors, setErrors] = useState<string[]>([]);
-  const [account, setAccount] = useState('');
-  const [fileName, setFileName] = useState('');
-  const [importing, setImporting] = useState(false);
-  const [progress, setProgress] = useState(0);
-
-  const accountOptions = (accounts.data ?? []).map((a) => ({
-    value: a.bankAccount,
-    label: a.name,
-  }));
-
-  const categoryByName = useMemo(() => {
-    const map = new Map<string, number>();
-    (categories.data ?? []).forEach((c) => map.set(c.name.trim().toLowerCase(), c.category));
-    return map;
-  }, [categories.data]);
-
-  const resetState = () => {
-    setRows([]);
-    setErrors([]);
-    setFileName('');
-    setProgress(0);
-  };
-
-  const handleClose = () => {
-    if (importing) return;
-    resetState();
-    setAccount('');
-    onClose();
-  };
-
-  const handleFile = async (file?: File) => {
-    if (!file) return;
-    const text = await file.text();
-    const result = parseTransactionsCsv(text);
-    setRows(result.rows);
-    setErrors(result.errors);
-    setFileName(file.name);
-    setProgress(0);
-  };
-
-  const runImport = async () => {
-    if (!account || rows.length === 0) return;
-    setImporting(true);
-    let ok = 0;
-    let failed = 0;
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      try {
-        await transactionsService.create({
-          transactionType: row.transactionType,
-          amount: row.amount,
-          description: row.description,
-          paymentDate: row.paymentDate,
-          purchaseDate: null,
-          account: Number(account),
-          toAccount: null,
-          card: null,
-          category: row.categoryName
-            ? categoryByName.get(row.categoryName.toLowerCase()) ?? null
-            : null,
-          paymentMethod: null,
-          notes: '',
-          isPaid: true,
-          isFixed: false,
-          isInstallment: false,
-          totalInstallments: 1,
-          repeatCount: 1,
-          installmentAmounts: null,
-          recurringGroup: null,
-        });
-        ok++;
-      } catch {
-        failed++;
-      }
-      setProgress(i + 1);
-    }
-    queryClient.invalidateQueries({ queryKey: transactionKeys.all });
-    setImporting(false);
-    const message =
-      failed > 0
-        ? `${ok} de ${rows.length} importadas · ${failed} com erro.`
-        : `${ok} de ${rows.length} transações importadas.`;
-    addToast(message, ok > 0 ? 'success' : 'error');
-    resetState();
-    setAccount('');
-    onClose();
-  };
+  const logic = useTransactionImportLogic(open, onClose);
 
   return (
-    <Dialog open={open} onOpenChange={(value) => (value ? undefined : handleClose())}>
+    <Dialog
+      open={open}
+      onOpenChange={(value) => (value ? undefined : logic.handleClose())}
+      className="max-w-5xl"
+    >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Importar transações (CSV)</DialogTitle>
+          <DialogTitle>Importar Transações (CSV)</DialogTitle>
         </DialogHeader>
 
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".csv,text/csv"
+          className="hidden"
+          onChange={(event) => logic.handleFile(event.target.files?.[0])}
+        />
+
         <div className="space-y-4">
-          <div className="rounded-lg border border-border bg-bg/40 px-3 py-2">
-            <div className="flex items-start justify-between gap-3">
-              <p className="font-mono text-xs text-text-muted">
-                Colunas: <span className="text-primary">{CSV_TEMPLATE}</span>
-                <br />
-                tipo = receita ou despesa · valor com vírgula · data dd/mm/aaaa
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={downloadCsvTemplate}
-                className="shrink-0"
-              >
-                <Download size={14} />
-                Baixar modelo
+          {logic.fileInfo ? (
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface-2 px-4 py-3">
+              <div className="flex items-center gap-3">
+                <FileText size={20} className="text-primary" />
+                <div>
+                  <p className="font-semibold text-text">{logic.fileInfo.name}</p>
+                  <p className="text-xs text-text-muted">
+                    {(logic.fileInfo.size / 1024).toFixed(1)} KB • {logic.fileInfo.lines} linhas
+                  </p>
+                </div>
+              </div>
+              <Button type="button" variant="ghost" size="sm" onClick={() => fileRef.current?.click()}>
+                Trocar arquivo
               </Button>
             </div>
-          </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border-strong bg-bg/30 px-4 py-6 text-sm text-text-muted transition-colors hover:border-primary/50 hover:text-text"
+            >
+              <Upload size={18} />
+              Selecionar arquivo CSV
+            </button>
+          )}
 
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".csv,text/csv"
-            className="hidden"
-            onChange={(event) => handleFile(event.target.files?.[0])}
-          />
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border-strong bg-bg/30 px-4 py-6 text-sm text-text-muted transition-colors hover:border-primary/50 hover:text-text"
-          >
-            {fileName ? <FileText size={18} /> : <Upload size={18} />}
-            {fileName || 'Selecionar arquivo CSV'}
-          </button>
+          {logic.fileInfo ? (
+            <>
+              <div className="rounded-lg border border-border bg-surface-2/40 p-3">
+                <p className={`${labelClass} mb-2`}>Configurações globais da importação</p>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  <SelectMenu
+                    placeholder="Forma de pagamento"
+                    options={logic.paymentMethodOptions}
+                    value={logic.paymentMethodId}
+                    onChange={(value) => logic.setPaymentMethodId(Number(value))}
+                  />
+                  <SelectMenu
+                    placeholder="Conta"
+                    options={logic.accountOptions}
+                    value={logic.accountId}
+                    onChange={(value) => logic.setAccountId(Number(value))}
+                  />
+                  <SelectMenu
+                    placeholder={logic.isCreditMethod ? 'Selecione o cartão' : 'Só para crédito'}
+                    disabled={!logic.isCreditMethod}
+                    options={[{ value: 0, label: 'Sem cartão' }, ...logic.cardOptions]}
+                    value={logic.cardId}
+                    onChange={(value) => logic.setCardId(Number(value))}
+                  />
+                </div>
+              </div>
 
-          {(rows.length > 0 || errors.length > 0) && (
-            <div className="space-y-2 text-sm">
-              <p className="font-semibold text-income">
-                {rows.length} {rows.length === 1 ? 'transação válida' : 'transações válidas'}
-              </p>
-              {errors.length > 0 && (
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold text-text">Preview dos Dados</p>
+                <Badge variant={logic.validCount === logic.rows.length ? 'income' : 'expense'}>
+                  {logic.validCount} de {logic.rows.length} válidos
+                </Badge>
+              </div>
+
+              {logic.rows.length > 0 ? (
+                <ImportPreviewTable
+                  rows={logic.rows}
+                  categoryOptions={logic.categoryOptions}
+                  onChange={logic.updateRow}
+                  onRemove={logic.removeRow}
+                />
+              ) : (
+                <p className="py-6 text-center text-sm text-text-muted">
+                  Nenhuma linha válida no arquivo.
+                </p>
+              )}
+
+              {logic.errors.length > 0 && (
                 <div className="max-h-24 space-y-0.5 overflow-auto rounded-lg border border-expense/30 bg-expense/5 p-2 text-xs text-expense">
-                  {errors.slice(0, 8).map((error) => (
+                  {logic.errors.slice(0, 8).map((error) => (
                     <p key={error}>{error}</p>
                   ))}
-                  {errors.length > 8 && <p>+{errors.length - 8} erros…</p>}
+                  {logic.errors.length > 8 && <p>+{logic.errors.length - 8} erros…</p>}
                 </div>
               )}
-            </div>
-          )}
 
-          <div>
-            <Label htmlFor="import-account">Conta de destino</Label>
-            <SelectMenu
-              id="import-account"
-              placeholder="Selecione a conta"
-              options={accountOptions}
-              value={account}
-              onChange={setAccount}
-            />
-          </div>
-
-          {importing && (
-            <p className="text-center text-sm text-text-muted">
-              Importando… {progress}/{rows.length}
-            </p>
-          )}
+              {logic.importing && (
+                <p className="text-center text-sm text-text-muted">
+                  Importando… {logic.progress}/{logic.validCount}
+                </p>
+              )}
+            </>
+          ) : null}
         </div>
 
-        <DialogFooter>
-          <Button type="button" variant="ghost" onClick={handleClose} disabled={importing}>
-            Cancelar
-          </Button>
+        <DialogFooter className="sm:justify-between">
           <Button
             type="button"
-            onClick={runImport}
-            loading={importing}
-            disabled={!account || rows.length === 0}
+            variant="secondary"
+            onClick={logic.downloadTemplate}
+            disabled={!logic.hasTemplate}
           >
-            Importar {rows.length > 0 ? rows.length : ''}
+            <Download size={14} />
+            Baixar modelo
           </Button>
+          <div className="flex gap-2">
+            <Button type="button" variant="ghost" onClick={logic.handleClose} disabled={logic.importing}>
+              Cancelar
+            </Button>
+            <Button type="button" onClick={logic.runImport} loading={logic.importing} disabled={!logic.canImport}>
+              <Check size={16} />
+              Importar {logic.validCount} {logic.validCount === 1 ? 'Transação' : 'Transações'}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

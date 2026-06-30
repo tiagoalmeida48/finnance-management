@@ -62,7 +62,7 @@ public partial class CreditCardInvoiceService(ICreditCardInvoiceRepository credi
     public void RecalculateInvoiceTotal(long invoiceId, long userId)
     {
         var amounts = creditCardInvoiceRepository.SumInvoiceAmounts(invoiceId, userId);
-        var paid = amounts.Paid + creditCardInvoiceRepository.SumPayments(invoiceId, userId);
+        var paid = amounts.Paid;
 
         if (amounts.Total > 0 && paid > amounts.Total)
             paid = amounts.Total;

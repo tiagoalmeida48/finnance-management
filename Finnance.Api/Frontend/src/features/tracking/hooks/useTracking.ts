@@ -6,7 +6,9 @@ export const trackingKeys = {
   all: ['tracking'] as const,
   transactions: (startDate: string, endDate: string) =>
     ['tracking', 'transactions', startDate, endDate] as const,
+  invoices: (year: number) => ['tracking', 'invoices', year] as const,
   accounts: ['tracking', 'accounts'] as const,
+  cards: ['tracking', 'cards'] as const,
 };
 
 const ACCOUNTS_STALE_TIME = 5 * 60 * 1000;
@@ -18,10 +20,25 @@ export function useTrackingTransactions(startDate: string, endDate: string) {
   });
 }
 
+export function useTrackingInvoices(year: number) {
+  return useQuery({
+    queryKey: trackingKeys.invoices(year),
+    queryFn: () => trackingService.listInvoices(year),
+  });
+}
+
 export function useTrackingAccounts() {
   return useQuery({
     queryKey: trackingKeys.accounts,
     queryFn: trackingService.listAccounts,
+    staleTime: ACCOUNTS_STALE_TIME,
+  });
+}
+
+export function useTrackingCards() {
+  return useQuery({
+    queryKey: trackingKeys.cards,
+    queryFn: trackingService.listCards,
     staleTime: ACCOUNTS_STALE_TIME,
   });
 }
@@ -59,5 +76,15 @@ export function useTrackingPayMutations() {
     onError,
   });
 
-  return { togglePaid, pay };
+  const payBill = useMutation({
+    mutationFn: ({ invoice, account, paymentDate }: { invoice: number; account: number; paymentDate: string }) =>
+      trackingService.payBill(invoice, account, paymentDate),
+    onSuccess: () => {
+      invalidate();
+      addToast('Fatura paga.', 'success');
+    },
+    onError,
+  });
+
+  return { togglePaid, pay, payBill };
 }

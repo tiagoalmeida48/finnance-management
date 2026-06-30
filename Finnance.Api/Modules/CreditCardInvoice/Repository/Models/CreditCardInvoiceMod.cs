@@ -42,4 +42,8 @@ public class CreditCardInvoiceMod : BaseModel
 
     [Column("active")]
     public bool Active { get; set; }
+
+    [Computed]
+    [Column("items_count")]
+    public int ItemsCount { get; set; }
 }

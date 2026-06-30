@@ -12,6 +12,7 @@ export { Spinner } from './Spinner';
 export { EmptyState } from './EmptyState';
 export { PageHeader } from './PageHeader';
 export { SegmentedControl } from './SegmentedControl';
+export { SortableTh } from './SortableTh';
 export {
   Dialog,
   DialogContent,

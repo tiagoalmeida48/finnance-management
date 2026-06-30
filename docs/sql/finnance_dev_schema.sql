@@ -252,7 +252,6 @@ CREATE TABLE "transaction" (
                                installment_group int8 NULL,
                                installment_number int4 NULL,
                                recurring_group int8 NULL,
-                               recurring_rule int8 NULL,
                                fixed bool NOT NULL,
                                paid bool NOT NULL,
                                notes text NULL,
@@ -267,7 +266,6 @@ CREATE TABLE "transaction" (
                                CONSTRAINT fk_transaction_invoice FOREIGN KEY (invoice) REFERENCES credit_card_invoice(credit_card_invoice),
                                CONSTRAINT fk_transaction_method FOREIGN KEY (payment_method) REFERENCES payment_method(payment_method),
                                CONSTRAINT fk_transaction_recurring FOREIGN KEY (recurring_group) REFERENCES recurring_group(recurring_group),
-                               CONSTRAINT fk_transaction_recurring_rule FOREIGN KEY (recurring_rule) REFERENCES recurring_rule(recurring_rule),
                                CONSTRAINT fk_transaction_to_account FOREIGN KEY (to_account) REFERENCES bank_account(bank_account),
                                CONSTRAINT fk_transaction_type FOREIGN KEY (transaction_type) REFERENCES transaction_type(transaction_type),
                                CONSTRAINT fk_transaction_user FOREIGN KEY ("user") REFERENCES "user"("user")
@@ -281,60 +279,6 @@ CREATE INDEX idx_transaction_recurring ON public.transaction USING btree (recurr
 CREATE INDEX idx_transaction_to_account_paid ON public.transaction USING btree (to_account, paid) WHERE (to_account IS NOT NULL);
 CREATE INDEX idx_transaction_user_payment_date ON public.transaction USING btree ("user", payment_date DESC);
 CREATE INDEX idx_transaction_user_type_date ON public.transaction USING btree ("user", transaction_type, payment_date DESC) INCLUDE (amount, card, paid, category);
-CREATE INDEX idx_transaction_recurring_rule ON public.transaction USING btree (recurring_rule) WHERE (recurring_rule IS NOT NULL);
-
-CREATE TABLE recurring_rule (
-                                recurring_rule int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
-                                "user" int8 NOT NULL,
-                                description text NOT NULL,
-                                amount numeric(15, 2) NOT NULL,
-                                transaction_type int8 NOT NULL,
-                                category int8 NULL,
-                                account int8 NULL,
-                                card int8 NULL,
-                                payment_method int8 NULL,
-                                day_of_month int2 NOT NULL,
-                                frequency int2 NOT NULL DEFAULT 1,
-                                date_start date NOT NULL,
-                                date_end date NOT NULL DEFAULT DATE '9999-12-31',
-                                active bool NOT NULL DEFAULT true,
-                                created timestamptz NOT NULL DEFAULT now(),
-                                updated timestamptz NOT NULL DEFAULT now(),
-                                CONSTRAINT pk_recurring_rule PRIMARY KEY (recurring_rule),
-                                CONSTRAINT fk_recurring_rule_user FOREIGN KEY ("user") REFERENCES "user"("user"),
-                                CONSTRAINT fk_recurring_rule_type FOREIGN KEY (transaction_type) REFERENCES transaction_type(transaction_type),
-                                CONSTRAINT fk_recurring_rule_category FOREIGN KEY (category) REFERENCES category(category),
-                                CONSTRAINT fk_recurring_rule_account FOREIGN KEY (account) REFERENCES bank_account(bank_account),
-                                CONSTRAINT fk_recurring_rule_card FOREIGN KEY (card) REFERENCES credit_card(credit_card),
-                                CONSTRAINT fk_recurring_rule_method FOREIGN KEY (payment_method) REFERENCES payment_method(payment_method),
-                                CONSTRAINT chk_recurring_rule_amount CHECK (amount > 0),
-                                CONSTRAINT chk_recurring_rule_day CHECK (day_of_month BETWEEN 1 AND 31),
-                                CONSTRAINT chk_recurring_rule_frequency CHECK (frequency >= 1),
-                                CONSTRAINT chk_recurring_rule_dates CHECK (date_start <= date_end)
-);
-CREATE INDEX idx_recurring_rule_user ON public.recurring_rule USING btree ("user") WHERE active;
-
-CREATE TABLE credit_card_invoice_payment (
-                                credit_card_invoice_payment int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
-                                "user" int8 NOT NULL,
-                                invoice int8 NOT NULL,
-                                account int8 NULL,
-                                payment_method int8 NULL,
-                                amount numeric(15, 2) NOT NULL,
-                                paid_at timestamptz NOT NULL DEFAULT now(),
-                                notes text NULL,
-                                active bool NOT NULL DEFAULT true,
-                                created timestamptz NOT NULL DEFAULT now(),
-                                updated timestamptz NOT NULL DEFAULT now(),
-                                CONSTRAINT pk_credit_card_invoice_payment PRIMARY KEY (credit_card_invoice_payment),
-                                CONSTRAINT fk_invoice_payment_user FOREIGN KEY ("user") REFERENCES "user"("user"),
-                                CONSTRAINT fk_invoice_payment_invoice FOREIGN KEY (invoice) REFERENCES credit_card_invoice(credit_card_invoice),
-                                CONSTRAINT fk_invoice_payment_account FOREIGN KEY (account) REFERENCES bank_account(bank_account),
-                                CONSTRAINT fk_invoice_payment_method FOREIGN KEY (payment_method) REFERENCES payment_method(payment_method),
-                                CONSTRAINT chk_invoice_payment_amount CHECK (amount > 0)
-);
-CREATE INDEX idx_invoice_payment_invoice ON public.credit_card_invoice_payment USING btree (invoice);
-CREATE INDEX idx_invoice_payment_user ON public.credit_card_invoice_payment USING btree ("user") WHERE active;
 
 CREATE UNIQUE INDEX uq_transaction_type_name ON public.transaction_type USING btree (name);
 CREATE UNIQUE INDEX uq_account_type_name ON public.account_type USING btree (name);

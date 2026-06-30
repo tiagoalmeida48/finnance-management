@@ -1,5 +1,6 @@
 import { Pencil, KeyRound, Trash2 } from 'lucide-react';
-import { Badge } from '@/shared/components/ui';
+import { Badge, SortableTh } from '@/shared/components/ui';
+import { useSortableData, type SortAccessors } from '@/shared/hooks';
 import type { ManagedUser } from '../types/users.types';
 
 interface UsersTableProps {
@@ -9,20 +10,28 @@ interface UsersTableProps {
   onDelete: (user: ManagedUser) => void;
 }
 
+const accessors: SortAccessors<ManagedUser> = {
+  fullName: (u) => u.fullName,
+  email: (u) => u.email,
+  isAdmin: (u) => u.isAdmin,
+};
+
 export function UsersTable({ users, onEdit, onResetPassword, onDelete }: UsersTableProps) {
+  const { sorted, sortKey, direction, toggleSort } = useSortableData(users, accessors, 'fullName');
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b border-border font-mono text-[0.65rem] uppercase tracking-wider text-text-muted">
-            <th className="px-3 py-2.5 font-medium">Nome</th>
-            <th className="px-3 py-2.5 font-medium">E-mail</th>
-            <th className="px-3 py-2.5 font-medium">Administrador</th>
+            <SortableTh label="Nome" sortKey="fullName" activeKey={sortKey} direction={direction} onSort={toggleSort} />
+            <SortableTh label="E-mail" sortKey="email" activeKey={sortKey} direction={direction} onSort={toggleSort} />
+            <SortableTh label="Administrador" sortKey="isAdmin" activeKey={sortKey} direction={direction} onSort={toggleSort} />
             <th className="px-3 py-2.5 font-medium text-right">Ações</th>
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => (
+          {sorted.map((user) => (
             <tr key={user.user} className="border-b border-border/60">
               <td className="px-3 py-2.5 font-medium text-text">{user.fullName || '-'}</td>
               <td className="nums px-3 py-2.5 text-xs text-text-muted">{user.email}</td>

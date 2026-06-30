@@ -7,6 +7,16 @@ namespace Finnance.Api.Modules.Transaction.Application.Services;
 
 public partial class TransactionService
 {
+    private const string ImportTemplateCsv =
+        "Data;Descrição;Valor;Categoria;Notas\n" +
+        "05/06/2026;Salário;5000,00;Salário;Receita (valor positivo)\n" +
+        "12/06/2026;Mercado;-350,90;Alimentação;Despesa (valor negativo)\n";
+
+    public string GetImportTemplate()
+    {
+        return ImportTemplateCsv;
+    }
+
     public TransactionEntity GetById(long transaction, long userId)
     {
         var current = transactionRepository.GetById(transaction, userId);

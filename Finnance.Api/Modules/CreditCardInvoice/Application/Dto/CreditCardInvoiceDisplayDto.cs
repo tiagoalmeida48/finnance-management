@@ -23,4 +23,6 @@ public class CreditCardInvoiceDisplayDto
     public DateTime? PaidAt { get; set; }
 
     public bool Active { get; set; }
+
+    public int ItemsCount { get; set; }
 }

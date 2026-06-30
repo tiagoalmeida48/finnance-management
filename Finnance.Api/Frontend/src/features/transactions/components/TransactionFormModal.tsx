@@ -1,4 +1,4 @@
-import { Layers, Repeat } from 'lucide-react';
+import { CheckCircle2, Layers, Repeat } from 'lucide-react';
 import {
   Button,
   Checkbox,
@@ -31,6 +31,8 @@ const typeTabs = [
 
 const labelClass = 'font-mono text-[0.65rem] uppercase tracking-wider text-text-muted';
 const sectionClass = 'border-t border-border pt-3 font-mono text-[0.65rem] uppercase tracking-wider text-text-muted';
+const toggleBoxClass =
+  'flex items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-text';
 
 const fieldError = (message?: string) =>
   message ? <p className="mt-1 text-xs text-expense">{message}</p> : null;
@@ -52,6 +54,7 @@ export function TransactionFormModal({ open, editing, onClose }: TransactionForm
     transactionType,
     isTransfer,
     isCard,
+    isCreditMethod,
     isInstallment,
     isFixed,
     installmentPreview,
@@ -191,92 +194,91 @@ export function TransactionFormModal({ open, editing, onClose }: TransactionForm
                   {fieldError(errors.account?.message)}
                 </div>
                 <div>
-                  <Label htmlFor="paymentDate" className={labelClass}>
-                    {isCard ? 'Vencimento *' : 'Data *'}
-                  </Label>
-                  <Input id="paymentDate" type="date" {...register('paymentDate')} />
-                  {fieldError(errors.paymentDate?.message)}
-                </div>
-                <div>
                   <Label htmlFor="card" className={labelClass}>
                     Cartão
                   </Label>
                   <SelectMenu
                     id="card"
-                    placeholder="Nenhum"
+                    placeholder={isCreditMethod ? 'Nenhum' : 'Só para crédito'}
+                    disabled={!isCreditMethod}
                     options={[{ value: '', label: 'Nenhum' }, ...cardOptions]}
                     {...bind('card')}
                   />
                 </div>
-                {isCard ? (
-                  <div>
-                    <Label htmlFor="purchaseDate" className={labelClass}>
-                      Data da compra *
-                    </Label>
-                    <Input id="purchaseDate" type="date" {...register('purchaseDate')} />
-                    {fieldError(errors.purchaseDate?.message)}
-                  </div>
-                ) : null}
               </div>
 
-              {!editing ? (
-                <>
-                  <div className="grid grid-cols-2 gap-3">
-                    <label className="flex items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-text">
-                      <span className="flex items-center gap-2">
-                        <Repeat size={16} className="text-text-muted" />
-                        Recorrente
-                      </span>
-                      <Switch {...register('isFixed')} disabled={isInstallment} />
-                    </label>
-                    <label className="flex items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-text">
-                      <span className="flex items-center gap-2">
-                        <Layers size={16} className="text-text-muted" />
-                        Parcelar
-                      </span>
-                      <Switch {...register('isInstallment')} disabled={isFixed} />
-                    </label>
-                  </div>
-
-                  {isInstallment ? (
-                    <div>
-                      <Label htmlFor="totalInstallments" className={labelClass}>
-                        Número de parcelas
-                      </Label>
-                      <Input id="totalInstallments" type="number" min="2" {...register('totalInstallments')} />
-                      {fieldError(errors.totalInstallments?.message)}
-                      {installmentPreview ? (
-                        <p className="mt-1 text-xs text-primary">{installmentPreview}</p>
-                      ) : null}
-                    </div>
-                  ) : null}
-
-                  {isFixed ? (
-                    <div>
-                      <Label htmlFor="repeatCount" className={labelClass}>
-                        Repetições
-                      </Label>
-                      <Input id="repeatCount" type="number" min="2" {...register('repeatCount')} />
-                      {fieldError(errors.repeatCount?.message)}
-                    </div>
-                  ) : null}
-                </>
-              ) : null}
+              <div>
+                <Label htmlFor="paymentDate" className={labelClass}>
+                  {isCard ? 'Data da compra *' : 'Data *'}
+                </Label>
+                <Input id="paymentDate" type="date" {...register('paymentDate')} />
+                {fieldError(errors.paymentDate?.message)}
+              </div>
             </>
           )}
 
-          <div className="flex flex-wrap items-center gap-4 border-t border-border pt-3">
-            <label className="flex items-center gap-2 text-sm text-text">
-              <Checkbox {...register('isPaid')} />
-              Pago
-            </label>
-            {isGroupEditing ? (
-              <label className="flex items-center gap-2 text-sm text-text">
-                <Checkbox {...register('replicateToGroup')} />
-                Replicar para todas as parcelas
-              </label>
+          <div
+            className={cn(
+              'grid grid-cols-1 gap-3 border-t border-border pt-3',
+              !editing && !isTransfer ? 'sm:grid-cols-3' : '',
+            )}
+          >
+            {!editing && !isTransfer ? (
+              <>
+                <label className={toggleBoxClass}>
+                  <span className="flex items-center gap-2">
+                    <Repeat size={16} className="text-text-muted" />
+                    Recorrente
+                  </span>
+                  <Switch {...register('isFixed')} disabled={isInstallment} />
+                </label>
+                <label className={toggleBoxClass}>
+                  <span className="flex items-center gap-2">
+                    <Layers size={16} className="text-text-muted" />
+                    Parcelar
+                  </span>
+                  <Switch {...register('isInstallment')} disabled={isFixed} />
+                </label>
+              </>
             ) : null}
+            <label className={toggleBoxClass}>
+              <span className="flex items-center gap-2">
+                <CheckCircle2 size={16} className="text-text-muted" />
+                Pago
+              </span>
+              <Switch {...register('isPaid')} />
+            </label>
           </div>
+
+          {!editing && !isTransfer && isInstallment ? (
+            <div>
+              <Label htmlFor="totalInstallments" className={labelClass}>
+                Número de parcelas
+              </Label>
+              <Input id="totalInstallments" type="number" min="2" {...register('totalInstallments')} />
+              {fieldError(errors.totalInstallments?.message)}
+              {installmentPreview ? (
+                <p className="mt-1 text-xs text-primary">{installmentPreview}</p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {!editing && !isTransfer && isFixed ? (
+            <div>
+              <Label htmlFor="repeatCount" className={labelClass}>
+                Repetições
+              </Label>
+              <Input id="repeatCount" type="number" min="2" {...register('repeatCount')} />
+              {fieldError(errors.repeatCount?.message)}
+            </div>
+          ) : null}
+
+          {isGroupEditing ? (
+            <label className="flex items-center gap-2 text-sm text-text">
+              <Checkbox {...register('replicateToGroup')} />
+              Replicar para todas as parcelas
+            </label>
+          ) : null}
 
           <div>
             <Label htmlFor="notes" className={labelClass}>

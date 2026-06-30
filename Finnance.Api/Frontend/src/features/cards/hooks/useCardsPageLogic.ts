@@ -1,9 +1,11 @@
 import { useCallback, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCards, useCardsStats, useCreateCard, useDeleteCard, useUpdateCard } from './useCards';
 import type { CardFormValues } from '../components/CardFormModal';
 import type { CreditCard, CreditCardStats } from '../types/cards.types';
 
 export function useCardsPageLogic() {
+  const navigate = useNavigate();
   const cardsQuery = useCards();
   const statsQuery = useCardsStats();
   const createCard = useCreateCard();
@@ -13,7 +15,6 @@ export function useCardsPageLogic() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<CreditCard | null>(null);
   const [createBankAccount, setCreateBankAccount] = useState<number | null>(null);
-  const [detailCard, setDetailCard] = useState<CreditCard | null>(null);
   const [pendingDelete, setPendingDelete] = useState<CreditCard | null>(null);
 
   const statsByCard = useMemo(() => {
@@ -77,7 +78,6 @@ export function useCardsPageLogic() {
     formOpen,
     editing,
     createBankAccount,
-    detailCard,
     pendingDelete,
     saving: createCard.isPending || updateCard.isPending,
     deleting: deleteCard.isPending,
@@ -88,7 +88,6 @@ export function useCardsPageLogic() {
     requestDelete: setPendingDelete,
     cancelDelete: () => setPendingDelete(null),
     confirmDelete,
-    openDetail: setDetailCard,
-    closeDetail: () => setDetailCard(null),
+    openDetail: (card: CreditCard) => navigate(`/cards/${card.creditCard}`),
   };
 }

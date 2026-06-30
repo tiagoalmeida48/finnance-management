@@ -27,10 +27,10 @@ export function useCardDetailLogic() {
   const cyclesQuery = useCardCycles(cardId);
   const invoicesQuery = useCardInvoices(cardId, isAllTime ? 0 : year);
 
-  const invoices = useMemo<CreditCardInvoice[]>(() => {
-    const data = invoicesQuery.data ?? [];
-    return [...data].sort((a, b) => b.monthKey.localeCompare(a.monthKey));
-  }, [invoicesQuery.data]);
+  const invoices = useMemo<CreditCardInvoice[]>(
+    () => invoicesQuery.data ?? [],
+    [invoicesQuery.data],
+  );
 
   const openCycle = useMemo(() => openCycleOf(cyclesQuery.data), [cyclesQuery.data]);
 

@@ -41,4 +41,6 @@ public interface ITransactionService : IBaseService<TransactionEntity>
     TransactionListResultDto GetGroupedPaginated(TransactionFilterDto filter, long userId);
 
     TransactionSummaryDto GetSummary(TransactionFilterDto filter, long userId);
+
+    string GetImportTemplate();
 }

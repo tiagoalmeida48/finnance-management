@@ -31,6 +31,8 @@ public class CreditCardInvoiceEntity : BaseEntity, IUserOwned
 
     public bool Active { get; set; }
 
+    public int ItemsCount { get; set; }
+
     public override void ValidateCreate()
     {
         Active = true;

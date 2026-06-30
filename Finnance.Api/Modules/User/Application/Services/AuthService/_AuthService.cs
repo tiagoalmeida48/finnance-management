@@ -15,6 +15,9 @@ public class AuthService(IUserService userSrv) : IAuthService
         if (!Argon2Helper.VerifyPassword(password, user.PasswordHash))
             throw new ApplicationException(Constants.ErrorMessage.UserInvalidPassword);
 
+        if (!user.Active)
+            throw new ApplicationException(Constants.ErrorMessage.UserInactive);
+
         var language = user.Locale.IsEmpty() ? Constants.LanguageDefault : user.Locale;
         var claims = new List<Claim>
         {

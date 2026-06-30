@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { Button, Checkbox } from '@/shared/components/ui';
+import { Button, Checkbox, SortableTh } from '@/shared/components/ui';
 import { TransactionRow } from './TransactionRow';
 import { TransactionGroupRow } from './TransactionGroupRow';
 import {
@@ -24,9 +24,10 @@ interface TransactionsTableProps {
   onDuplicate: (transaction: Transaction) => void;
   onDelete: (transaction: Transaction) => void;
   onPageChange: (page: number) => void;
+  sortField: string;
+  sortAsc: boolean;
+  onSort: (field: string) => void;
 }
-
-const columns = ['', '', 'Data', 'Descrição', 'Tipo', 'Origem', 'Valor', ''];
 
 function visibleIds(items: TransactionListItem[]): number[] {
   return items.flatMap((item) =>
@@ -53,7 +54,11 @@ export function TransactionsTable({
   onDuplicate,
   onDelete,
   onPageChange,
+  sortField,
+  sortAsc,
+  onSort,
 }: TransactionsTableProps) {
+  const direction = sortAsc ? 'asc' : 'desc';
   const accounts = useAccountsLookup();
   const categories = useCategoriesLookup();
   const cards = useCardsLookup();
@@ -91,11 +96,13 @@ export function TransactionsTable({
                   aria-label="Selecionar todos"
                 />
               </th>
-              {columns.slice(1).map((label, index) => (
-                <th key={index} className={`px-3 py-3 ${label === 'Valor' ? 'text-right' : ''}`}>
-                  {label}
-                </th>
-              ))}
+              <th className="px-3 py-3" />
+              <SortableTh label="Data" sortKey="payment_date" activeKey={sortField} direction={direction} onSort={onSort} className="py-3" />
+              <SortableTh label="Descrição" sortKey="description" activeKey={sortField} direction={direction} onSort={onSort} className="py-3" />
+              <SortableTh label="Tipo" sortKey="transaction_type" activeKey={sortField} direction={direction} onSort={onSort} className="py-3" />
+              <th className="px-3 py-3">Origem</th>
+              <SortableTh label="Valor" sortKey="amount" activeKey={sortField} direction={direction} onSort={onSort} align="right" className="py-3" />
+              <th className="px-3 py-3" />
             </tr>
           </thead>
           <tbody>

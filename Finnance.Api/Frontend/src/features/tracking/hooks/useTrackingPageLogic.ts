@@ -7,19 +7,32 @@ import {
   startOfYear,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { TransactionTypeId } from '@/config/constants';
+import { InvoiceStatusId, TransactionTypeId } from '@/config/constants';
 import { calculateTrackingSummary } from '../utils/billTracking.utils';
 import type { TrackingItem, TrackingItemType } from '../types/tracking.types';
-import { useTrackingTransactions } from './useTracking';
-import type { TrackingTransaction } from '../services/trackingService';
+import { useTrackingCards, useTrackingInvoices, useTrackingTransactions } from './useTracking';
+import type {
+  TrackingCard,
+  TrackingInvoice,
+  TrackingTransaction,
+} from '../services/trackingService';
 
 export function useTrackingPageLogic() {
   const [currentYear, setCurrentYear] = useState(new Date());
 
   const startDate = format(startOfYear(currentYear), 'yyyy-MM-dd');
   const endDate = format(endOfYear(currentYear), 'yyyy-MM-dd');
+  const year = currentYear.getFullYear();
 
   const { data: transactions, isLoading } = useTrackingTransactions(startDate, endDate);
+  const { data: invoices } = useTrackingInvoices(year);
+  const { data: cards } = useTrackingCards();
+
+  const cardMap = useMemo(() => {
+    const map = new Map<number, TrackingCard>();
+    (cards ?? []).forEach((card) => map.set(card.creditCard, card));
+    return map;
+  }, [cards]);
 
   const months = useMemo(
     () =>
@@ -34,11 +47,12 @@ export function useTrackingPageLogic() {
   const goToNextYear = () => setCurrentYear((prev) => addMonths(prev, 12));
 
   const monthlyData = useMemo(() => {
-    if (!transactions) return [];
-
     return months.map((month) => {
       const monthStr = format(month, 'yyyy-MM');
-      const items = buildFixedItems(transactions, monthStr);
+      const items = [
+        ...buildFixedItems(transactions ?? [], monthStr),
+        ...buildCardItems(invoices ?? [], cardMap, monthStr),
+      ];
       const summary = calculateTrackingSummary(items);
 
       return {
@@ -51,7 +65,7 @@ export function useTrackingPageLogic() {
         totalAmount: summary.totalAmount,
       };
     });
-  }, [months, transactions]);
+  }, [months, transactions, invoices, cardMap]);
 
   return {
     currentYear,
@@ -62,10 +76,7 @@ export function useTrackingPageLogic() {
   };
 }
 
-function buildFixedItems(
-  transactions: TrackingTransaction[],
-  monthStr: string,
-): TrackingItem[] {
+function buildFixedItems(transactions: TrackingTransaction[], monthStr: string): TrackingItem[] {
   return transactions
     .filter(
       (t) =>
@@ -82,4 +93,24 @@ function buildFixedItems(
       itemType: 'fixed' as TrackingItemType,
       account: t.account ?? null,
     }));
+}
+
+function buildCardItems(
+  invoices: TrackingInvoice[],
+  cardMap: Map<number, TrackingCard>,
+  monthStr: string,
+): TrackingItem[] {
+  return invoices
+    .filter((invoice) => invoice.monthKey === monthStr && invoice.totalAmount > 0)
+    .map((invoice) => {
+      const card = cardMap.get(invoice.card);
+      return {
+        id: invoice.creditCardInvoice,
+        name: `Fatura ${card?.name ?? 'Cartão'}`,
+        total: invoice.totalAmount,
+        isPaid: invoice.invoiceStatus === InvoiceStatusId.PAID,
+        itemType: 'card' as TrackingItemType,
+        account: card?.bankAccount ?? null,
+      };
+    });
 }

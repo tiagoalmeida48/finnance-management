@@ -3,6 +3,7 @@ import { Spinner } from '@/shared/components/ui';
 import {
   CardCyclesModal,
   CardDetailHeader,
+  InvoiceTrendChart,
   StatementInvoiceList,
   useCardDetailLogic,
   useRecalculateInvoice,
@@ -54,10 +55,12 @@ export function CreditCardDetailsPage() {
         onOpenCycles={() => setCyclesOpen(true)}
       />
 
+      {!invoicesLoading ? <InvoiceTrendChart invoices={invoices} /> : null}
+
       <StatementInvoiceList
         invoices={invoices}
         isLoading={invoicesLoading}
-        recalculatingId={recalculate.isPending ? (recalculate.variables ?? null) : null}
+        isRecalculating={recalculate.isPending}
         onRecalculate={(id) => recalculate.mutate(id)}
       />
 

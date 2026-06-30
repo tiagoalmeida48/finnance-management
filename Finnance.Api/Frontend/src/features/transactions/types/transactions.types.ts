@@ -70,6 +70,7 @@ export interface TransactionFilter {
   endDate: string | null;
   isPaid: boolean | null;
   sortAsc: boolean;
+  sortField: string;
   limit: number;
   offset: number;
 }
@@ -152,6 +153,8 @@ export interface UpdateGroupInput {
   clearAccount?: boolean;
   clearToAccount?: boolean;
   clearCard?: boolean;
+  clearCategory?: boolean;
+  clearPaymentMethod?: boolean;
 }
 
 export interface DeleteGroupInput {

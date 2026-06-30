@@ -33,7 +33,6 @@ export function PayBillModal({
   const { data: accounts, isLoading } = useBankAccountsLookup();
   const [paymentDate, setPaymentDate] = useState(today);
   const [accountId, setAccountId] = useState(defaultAccount ? String(defaultAccount) : '');
-  const remaining = invoice.totalAmount - invoice.paidAmount;
 
   const handleConfirm = () => {
     if (!paymentDate || !accountId) return;
@@ -48,8 +47,8 @@ export function PayBillModal({
         </DialogHeader>
 
         <div className="mb-4 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2">
-          <p className="text-sm text-text-muted">Valor em aberto</p>
-          <p className="text-lg font-bold text-text">{formatCurrency(remaining)}</p>
+          <p className="text-sm text-text-muted">Valor total da fatura</p>
+          <p className="text-lg font-bold text-text">{formatCurrency(invoice.totalAmount)}</p>
         </div>
 
         <div className="flex flex-col gap-3">

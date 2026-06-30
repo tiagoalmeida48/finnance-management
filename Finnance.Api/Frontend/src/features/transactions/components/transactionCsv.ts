@@ -2,11 +2,12 @@ import { TransactionTypeId } from '@/config/constants';
 
 export interface ParsedCsvRow {
   line: number;
+  date: string;
   description: string;
   amount: number;
-  paymentDate: string;
   transactionType: number;
   categoryName: string;
+  notes: string;
 }
 
 export interface CsvParseResult {
@@ -40,7 +41,7 @@ function parseAmount(raw: string): number {
     cleaned.includes(',') && cleaned.lastIndexOf(',') > cleaned.lastIndexOf('.')
       ? cleaned.replace(/\./g, '').replace(',', '.')
       : cleaned.replace(/,/g, '');
-  return Math.abs(Number(normalized));
+  return Number(normalized);
 }
 
 function parseDate(raw: string): string {
@@ -53,20 +54,12 @@ function parseDate(raw: string): string {
   return `${year}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
 }
 
-function parseType(raw: string): number {
-  const value = normalize(raw);
-  if (value.startsWith('receita') || value === 'r' || value === 'income') {
-    return TransactionTypeId.INCOME;
-  }
-  return TransactionTypeId.EXPENSE;
-}
-
 const HEADER_ALIASES: Record<string, string[]> = {
   date: ['data', 'date', 'dia'],
-  description: ['descricao', 'descrição', 'description', 'historico', 'histórico', 'nome'],
-  amount: ['valor', 'amount', 'value', 'preco', 'preço'],
-  type: ['tipo', 'type'],
+  description: ['descricao', 'description', 'historico', 'nome'],
+  amount: ['valor', 'amount', 'value', 'preco'],
   category: ['categoria', 'category'],
+  notes: ['notas', 'nota', 'notes', 'observacao', 'observacoes', 'obs'],
 };
 
 function findIndex(header: string[], key: string): number {
@@ -86,14 +79,14 @@ export function parseTransactionsCsv(text: string): CsvParseResult {
     date: findIndex(header, 'date'),
     description: findIndex(header, 'description'),
     amount: findIndex(header, 'amount'),
-    type: findIndex(header, 'type'),
     category: findIndex(header, 'category'),
+    notes: findIndex(header, 'notes'),
   };
 
   if (idx.description < 0 || idx.amount < 0 || idx.date < 0) {
     return {
       rows: [],
-      errors: ['Cabeçalho inválido. Use as colunas: data, descricao, valor, tipo, categoria.'],
+      errors: ['Cabeçalho inválido. Use as colunas: Data; Descrição; Valor; Categoria; Notas.'],
     };
   }
 
@@ -102,52 +95,43 @@ export function parseTransactionsCsv(text: string): CsvParseResult {
     const cells = table[i];
     const line = i + 1;
     const description = (cells[idx.description] ?? '').trim();
-    const amount = parseAmount(cells[idx.amount] ?? '');
-    const paymentDate = parseDate(cells[idx.date] ?? '');
+    const signedAmount = parseAmount(cells[idx.amount] ?? '');
+    const date = parseDate(cells[idx.date] ?? '');
 
     if (!description) {
       errors.push(`Linha ${line}: descrição vazia.`);
       continue;
     }
-    if (!Number.isFinite(amount) || amount <= 0) {
+    if (!Number.isFinite(signedAmount) || signedAmount === 0) {
       errors.push(`Linha ${line}: valor inválido.`);
       continue;
     }
-    if (!paymentDate) {
+    if (!date) {
       errors.push(`Linha ${line}: data inválida.`);
       continue;
     }
 
     rows.push({
       line,
+      date,
       description,
-      amount,
-      paymentDate,
-      transactionType: idx.type >= 0 ? parseType(cells[idx.type] ?? '') : TransactionTypeId.EXPENSE,
+      amount: Math.abs(signedAmount),
+      transactionType: signedAmount < 0 ? TransactionTypeId.EXPENSE : TransactionTypeId.INCOME,
       categoryName: idx.category >= 0 ? (cells[idx.category] ?? '').trim() : '',
+      notes: idx.notes >= 0 ? (cells[idx.notes] ?? '').trim() : '',
     });
   }
 
   return { rows, errors };
 }
 
-export const CSV_TEMPLATE = 'data;descricao;valor;tipo;categoria';
-
-const CSV_TEMPLATE_ROWS = [
-  CSV_TEMPLATE,
-  '05/06/2026;Salário;5000,00;receita;Salário',
-  '12/06/2026;Mercado;350,90;despesa;Alimentação',
-].join('\n');
-
-export function downloadCsvTemplate(): void {
+export function downloadCsv(content: string, fileName: string): void {
   const bom = String.fromCharCode(0xfeff);
-  const blob = new Blob([bom + CSV_TEMPLATE_ROWS + '\n'], {
-    type: 'text/csv;charset=utf-8;',
-  });
+  const blob = new Blob([bom + content], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
   anchor.href = url;
-  anchor.download = 'modelo-transacoes.csv';
+  anchor.download = fileName;
   anchor.click();
   URL.revokeObjectURL(url);
 }

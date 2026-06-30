@@ -86,9 +86,35 @@ public class CreditCardInvoiceRepository : BaseRepository<CreditCardInvoiceEntit
         var param = new DynamicParameters();
         param.Add("card", card);
         param.Add("user", user);
+        param.Add("paid", Constants.InvoiceStatusId.PAID);
 
         var sb = new StringBuilder();
-        sb.Append("""SELECT * FROM credit_card_invoice WHERE card = @card AND "user" = @user """);
+        sb.Append("SELECT ci.*, ");
+        sb.Append("""(SELECT COUNT(*) FROM "transaction" t WHERE t.invoice = ci.credit_card_invoice AND t.active = TRUE) AS items_count """);
+        sb.Append("FROM credit_card_invoice ci ");
+        sb.Append("""WHERE ci.card = @card AND ci."user" = @user """);
+
+        if (year > 0)
+        {
+            param.Add("year_prefix", year.ToString() + "-%");
+            sb.Append("AND ci.month_key LIKE @year_prefix ");
+        }
+
+        sb.Append("ORDER BY CASE WHEN ci.invoice_status = @paid THEN 1 ELSE 0 END, ci.month_key DESC");
+
+        using var con = Conn;
+        var model = con.Query<CreditCardInvoiceMod>(sb.ToString(), param).ToList();
+        return MapToEntity(model);
+    }
+
+    public List<CreditCardInvoiceEntity> SearchByYear(long user, int year)
+    {
+        var param = new DynamicParameters();
+        param.Add("user", user);
+        param.Add("paid", Constants.InvoiceStatusId.PAID);
+
+        var sb = new StringBuilder();
+        sb.Append("""SELECT * FROM credit_card_invoice WHERE "user" = @user """);
 
         if (year > 0)
         {
@@ -96,7 +122,7 @@ public class CreditCardInvoiceRepository : BaseRepository<CreditCardInvoiceEntit
             sb.Append("AND month_key LIKE @year_prefix ");
         }
 
-        sb.Append("ORDER BY month_key");
+        sb.Append("ORDER BY CASE WHEN invoice_status = @paid THEN 1 ELSE 0 END, month_key");
 
         using var con = Conn;
         var model = con.Query<CreditCardInvoiceMod>(sb.ToString(), param).ToList();
@@ -145,22 +171,6 @@ public class CreditCardInvoiceRepository : BaseRepository<CreditCardInvoiceEntit
         using var con = Conn;
         var row = con.QuerySingle<(decimal Total, decimal Paid)>(sql, param);
         return row;
-    }
-
-    public decimal SumPayments(long invoice, long user)
-    {
-        var param = new DynamicParameters();
-        param.Add("invoice", invoice);
-        param.Add("user", user);
-
-        const string sql = """
-                           SELECT COALESCE(SUM(amount), 0)
-                           FROM credit_card_invoice_payment
-                           WHERE invoice = @invoice AND "user" = @user AND active = TRUE
-                           """;
-
-        using var con = Conn;
-        return con.ExecuteScalar<decimal>(sql, param);
     }
 
     public List<long> SearchTransactionIdsToReprocess(long card, long user, DateTime fromDate)

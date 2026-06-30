@@ -7,6 +7,8 @@ public interface ICreditCardInvoiceService : IBaseService<CreditCardInvoiceEntit
 {
     List<CreditCardInvoiceEntity> GetByCard(long cardId, long userId, int year = 0);
 
+    List<CreditCardInvoiceEntity> ListByYear(int year, long userId);
+
     CreditCardInvoiceEntity GetByMonth(long cardId, string monthKey, long userId);
 
     CreditCardInvoiceEntity GetInvoice(long invoiceId, long userId);

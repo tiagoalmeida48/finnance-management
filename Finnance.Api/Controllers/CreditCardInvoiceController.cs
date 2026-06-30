@@ -19,6 +19,14 @@ public class CreditCardInvoiceController(ICreditCardInvoiceService creditCardInv
 
     [Authorization()]
     [HttpGet]
+    public ResultApi<List<CreditCardInvoiceDisplayDto>> List([FromQuery] int year = 0)
+    {
+        var invoices = creditCardInvoiceService.ListByYear(year, UserLogged.user);
+        return new ResultApi<List<CreditCardInvoiceDisplayDto>> { Result = invoices.MapTo<List<CreditCardInvoiceDisplayDto>>() };
+    }
+
+    [Authorization()]
+    [HttpGet]
     public ResultApi<CreditCardInvoiceDisplayDto> GetByMonth([FromQuery] long card, [FromQuery] string monthKey)
     {
         var invoice = creditCardInvoiceService.GetByMonth(card, monthKey, UserLogged.user);

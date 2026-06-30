@@ -49,6 +49,7 @@ public static partial class Constants
         public const long INSERT = 1;
         public const long UPDATE = 2;
         public const long DELETE = 3;
+        public const long ERROR = 4;
     }
 
     public static class GroupType

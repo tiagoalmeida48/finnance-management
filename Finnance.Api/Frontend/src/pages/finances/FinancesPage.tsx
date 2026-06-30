@@ -1,7 +1,7 @@
 import { Landmark, Wallet } from 'lucide-react';
 import { Button, Card, CardContent, EmptyState, PageHeader, Spinner } from '@/shared/components/ui';
 import { AccountFormModal, DeleteAccountDialog } from '@/features/accounts';
-import { CardDetailModal, CardFormModal, CardRow, DeleteCardDialog } from '@/features/cards';
+import { CardFormModal, CardRow, DeleteCardDialog } from '@/features/cards';
 import { AccountWithCards, useFinancesPageLogic } from '@/features/finances';
 
 export function FinancesPage() {
@@ -103,7 +103,6 @@ export function FinancesPage() {
         onClose={cards.closeForm}
         onSubmit={cards.handleSubmit}
       />
-      <CardDetailModal card={cards.detailCard} onClose={cards.closeDetail} />
       <DeleteCardDialog
         card={cards.pendingDelete}
         deleting={cards.deleting}

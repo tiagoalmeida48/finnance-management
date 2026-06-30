@@ -2,6 +2,7 @@ using Finnance.Api.Modules.AuditLog.Application.Interfaces;
 using Finnance.Api.Modules.AuditLog.Domain.Entities;
 using Finnance.Api.Modules.AuditLog.Domain.Interfaces;
 using Finnance.Api.Modules.Common.Application.Services;
+using Finnance.Api.Shared.Utils;
 
 namespace Finnance.Api.Modules.AuditLog.Application.Services;
 
@@ -21,6 +22,20 @@ public partial class AuditLogService(IAuditLogRepository auditLogRepository) : B
             TableName = tableName,
             Record = record,
             NewData = newData,
+            ChangedBy = changedBy
+        };
+
+        return auditLogRepository.Create(entity);
+    }
+
+    public long RecordError(string description, long changedBy)
+    {
+        var entity = new AuditLogEntity
+        {
+            AuditAction = Constants.AuditActionId.ERROR,
+            TableName = "error",
+            Record = 0,
+            Description = description,
             ChangedBy = changedBy
         };
 

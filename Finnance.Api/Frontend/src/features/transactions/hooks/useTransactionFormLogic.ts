@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { TransactionTypeId } from '@/config/constants';
+import { CategoryTypeId, PaymentMethodId, TransactionTypeId } from '@/config/constants';
 import { formatCurrency } from '@/shared/utils';
 import {
   transactionFormSchema,
@@ -48,13 +48,13 @@ function toFormValues(t: Transaction): TransactionFormData {
     transactionType: t.transactionType,
     amount: t.amount ?? 0,
     description: t.description,
-    paymentDate: (t.paymentDate ?? '').slice(0, 10),
-    purchaseDate: (t.purchaseDate ?? '').slice(0, 10),
+    paymentDate: ((t.card ? (t.purchaseDate ?? t.paymentDate) : t.paymentDate) ?? '').slice(0, 10),
+    purchaseDate: '',
     account: t.account ?? 0,
     toAccount: t.toAccount ?? 0,
     card: t.card ?? 0,
     category: t.category ?? 0,
-    paymentMethod: t.paymentMethod ?? 0,
+    paymentMethod: t.card ? PaymentMethodId.CREDIT : (t.paymentMethod ?? 0),
     notes: t.notes ?? '',
     isPaid: t.paid,
     isFixed: t.fixed,
@@ -93,6 +93,7 @@ export function useTransactionFormLogic({ open, editing, onClose }: UseTransacti
   useEffect(() => {
     if (!open) {
       initialized.current = false;
+      reset(defaultValues());
       return;
     }
     if (initialized.current) return;
@@ -103,11 +104,38 @@ export function useTransactionFormLogic({ open, editing, onClose }: UseTransacti
 
   const transactionType = Number(watch('transactionType'));
   const card = Number(watch('card'));
+  const account = Number(watch('account'));
+  const paymentMethod = Number(watch('paymentMethod'));
   const isInstallment = watch('isInstallment');
   const isFixed = watch('isFixed');
   const isTransfer = transactionType === TransactionTypeId.TRANSFER;
-  const isCard = !isTransfer && card > 0;
+  const isCreditMethod = !isTransfer && paymentMethod === PaymentMethodId.CREDIT;
+  const isCard = isCreditMethod && card > 0;
   const amountValue = Number(watch('amount')) || 0;
+
+  useEffect(() => {
+    if (paymentMethod === PaymentMethodId.DEBIT) setValue('isPaid', true);
+  }, [paymentMethod, setValue]);
+
+  useEffect(() => {
+    const current = Number(watch('card'));
+    if (!current || !cards.data?.length) return;
+    const stillValid =
+      isCreditMethod && cards.data.some((c) => c.creditCard === current && (!account || c.bankAccount === account));
+    if (!stillValid) setValue('card', 0, { shouldValidate: true });
+  }, [isCreditMethod, account, cards.data, setValue, watch]);
+
+  const categoryType =
+    transactionType === TransactionTypeId.INCOME ? CategoryTypeId.INCOME : CategoryTypeId.EXPENSE;
+
+  useEffect(() => {
+    const current = Number(watch('category'));
+    if (!current || !categories.data?.length) return;
+    const valid = categories.data.some(
+      (c) => c.category === current && c.categoryType === categoryType,
+    );
+    if (!valid) setValue('category', 0, { shouldValidate: true });
+  }, [categoryType, categories.data, setValue, watch]);
   const installmentsCount = Number(watch('totalInstallments')) || 0;
   const installmentPreview =
     isInstallment && amountValue > 0 && installmentsCount > 1
@@ -119,12 +147,18 @@ export function useTransactionFormLogic({ open, editing, onClose }: UseTransacti
     [accounts.data],
   );
   const cardOptions = useMemo(
-    () => (cards.data ?? []).map((c) => ({ value: c.creditCard, label: c.name })),
-    [cards.data],
+    () =>
+      (cards.data ?? [])
+        .filter((c) => !account || c.bankAccount === account)
+        .map((c) => ({ value: c.creditCard, label: c.name })),
+    [cards.data, account],
   );
   const categoryOptions = useMemo(
-    () => (categories.data ?? []).map((c) => ({ value: c.category, label: c.name })),
-    [categories.data],
+    () =>
+      (categories.data ?? [])
+        .filter((c) => c.categoryType === categoryType)
+        .map((c) => ({ value: c.category, label: c.name })),
+    [categories.data, categoryType],
   );
   const paymentMethodOptions = useMemo(
     () => (paymentMethods.data ?? []).map((p) => ({ value: p.paymentMethod, label: p.name })),
@@ -150,8 +184,6 @@ export function useTransactionFormLogic({ open, editing, onClose }: UseTransacti
         amount: Number(data.amount),
         description: data.description.trim(),
         paymentDate: data.paymentDate || null,
-        category: !transfer && data.category ? Number(data.category) : null,
-        paymentMethod: !transfer && data.paymentMethod ? Number(data.paymentMethod) : null,
         notes: data.notes ?? '',
       };
       if (data.account) groupPayload.account = Number(data.account);
@@ -160,7 +192,11 @@ export function useTransactionFormLogic({ open, editing, onClose }: UseTransacti
       else groupPayload.clearToAccount = true;
       if (onCard) groupPayload.card = Number(data.card);
       else groupPayload.clearCard = true;
-      if (onCard && data.purchaseDate) groupPayload.purchaseDate = data.purchaseDate;
+      if (!transfer && data.category) groupPayload.category = Number(data.category);
+      else groupPayload.clearCategory = true;
+      if (!transfer && data.paymentMethod) groupPayload.paymentMethod = Number(data.paymentMethod);
+      else groupPayload.clearPaymentMethod = true;
+      if (onCard && data.paymentDate) groupPayload.purchaseDate = data.paymentDate;
       else groupPayload.clearPurchaseDate = true;
       updateGroup.mutate(groupPayload, { onSuccess: onClose });
       return;
@@ -190,7 +226,7 @@ export function useTransactionFormLogic({ open, editing, onClose }: UseTransacti
       else updatePayload.clearCategory = true;
       if (!transfer && data.paymentMethod) updatePayload.paymentMethod = Number(data.paymentMethod);
       else updatePayload.clearPaymentMethod = true;
-      if (onCard && data.purchaseDate) updatePayload.purchaseDate = data.purchaseDate;
+      if (onCard && data.paymentDate) updatePayload.purchaseDate = data.paymentDate;
       else updatePayload.clearPurchaseDate = true;
       update.mutate(updatePayload, { onSuccess: onClose });
       return;
@@ -201,7 +237,7 @@ export function useTransactionFormLogic({ open, editing, onClose }: UseTransacti
       amount: Number(data.amount),
       description: data.description.trim(),
       paymentDate: data.paymentDate || null,
-      purchaseDate: data.purchaseDate ? data.purchaseDate : null,
+      purchaseDate: !isTransfer && data.card && data.paymentDate ? data.paymentDate : null,
       account: data.account ? Number(data.account) : null,
       toAccount: isTransfer && data.toAccount ? Number(data.toAccount) : null,
       card: !isTransfer && data.card ? Number(data.card) : null,
@@ -228,6 +264,7 @@ export function useTransactionFormLogic({ open, editing, onClose }: UseTransacti
     transactionType,
     isTransfer,
     isCard,
+    isCreditMethod,
     isInstallment,
     isFixed,
     installmentPreview,

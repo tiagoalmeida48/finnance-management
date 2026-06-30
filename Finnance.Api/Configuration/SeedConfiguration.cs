@@ -18,7 +18,7 @@ public static partial class Configuration
         SeedLookup(con, "category_type", ["Receita", "Despesa"]);
         SeedLookup(con, "payment_method", ["Crédito", "Débito", "PIX", "Dinheiro", "Pagamento de boleto", "Transferência", "Outro"]);
         SeedLookup(con, "invoice_status", ["Aberta", "Fechada", "Parcial", "Paga", "Vencida"]);
-        SeedLookup(con, "audit_action", ["Inserção", "Alteração", "Exclusão"]);
+        SeedLookup(con, "audit_action", ["Inserção", "Alteração", "Exclusão", "Erro"]);
         SeedSystemConfig(con, Constants.SystemConfigKey.TetoInss, Constants.DefaultTetoInss);
         SeedAdminUser(con, "admin@finnance.com", "admin123", "Administrador");
     }

@@ -11,7 +11,6 @@ using Finnance.Api.Modules.Transaction.Application.Dto;
 using Finnance.Api.Modules.Transaction.Application.Interfaces;
 using Finnance.Api.Modules.Transaction.Domain.Entities;
 using Finnance.Api.Modules.Transaction.Domain.Interfaces;
-using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace Finnance.Api.Modules.Transaction.Application.Services;
@@ -63,7 +62,7 @@ public partial class TransactionService(ITransactionRepository transactionReposi
             entity.Amount = ResolveInstallmentAmount(input, i, total);
             entity.PaymentDate = AddMonths(input.PaymentDate, i - 1);
             entity.PurchaseDate = AddMonths(input.PurchaseDate, i - 1);
-            entity.Description = BuildInstallmentDescription(baseDescription, i, total);
+            entity.Description = baseDescription;
             entity.Paid = false;
             entity.Fixed = false;
             entity.InstallmentGroup = groupId;
@@ -151,8 +150,7 @@ public partial class TransactionService(ITransactionRepository transactionReposi
             Category = input.Category,
             Notes = input.Notes,
             Paid = input.IsPaid,
-            Fixed = input.IsFixed,
-            RecurringRule = input.RecurringRule
+            Fixed = input.IsFixed
         };
     }
 
@@ -185,12 +183,5 @@ public partial class TransactionService(ITransactionRepository transactionReposi
     private static string StripSuffix(string description)
     {
         return description == null ? null : InstallmentSuffix.Replace(description, string.Empty);
-    }
-
-    private static string BuildInstallmentDescription(string baseDescription, int number, int total)
-    {
-        var numberPart = number.ToString(CultureInfo.InvariantCulture).PadLeft(2, '0');
-        var totalPart = total.ToString(CultureInfo.InvariantCulture).PadLeft(2, '0');
-        return $"{baseDescription} ({numberPart}/{totalPart})";
     }
 }

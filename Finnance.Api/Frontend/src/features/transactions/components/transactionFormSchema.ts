@@ -46,13 +46,6 @@ export const transactionFormSchema = z
         message: 'Selecione uma conta ou um cartão.',
       });
     }
-    if (data.card && !data.purchaseDate) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['purchaseDate'],
-        message: 'Data da compra obrigatória para cartão.',
-      });
-    }
     if (data.isInstallment && data.totalInstallments < 2) {
       ctx.addIssue({
         code: 'custom',

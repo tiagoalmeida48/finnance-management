@@ -50,7 +50,7 @@ public partial class TransactionService
             return true;
 
         var items = transactionRepository.GetByIds(ids, userId);
-        var billTotal = items.Sum(item => item.Amount ?? 0);
+        var billTotal = invoiceEntity.TotalAmount;
 
         using var tran = GetTransaction();
 
@@ -193,29 +193,23 @@ public partial class TransactionService
 
         foreach (var sibling in siblings.OrderByDescending(s => s.InstallmentNumber ?? 0))
         {
-            CollectInvoice(sibling, affected);
-
             var number = sibling.InstallmentNumber ?? 0;
 
-            if (number >= insertionNumber)
-            {
-                ApplyBalance(sibling, -1);
+            if (number < insertionNumber)
+                continue;
 
-                sibling.InstallmentNumber = number + 1;
-                sibling.PaymentDate = AddMonths(sibling.PaymentDate, 1);
-                sibling.PurchaseDate = AddMonths(sibling.PurchaseDate, 1);
-                sibling.Description = BuildInstallmentDescription(baseDescription, number + 1, newTotal);
+            CollectInvoice(sibling, affected);
+            ApplyBalance(sibling, -1);
 
-                transactionRepository.UpdateTransaction(sibling);
+            sibling.InstallmentNumber = number + 1;
+            sibling.PaymentDate = AddMonths(sibling.PaymentDate, 1);
+            sibling.PurchaseDate = AddMonths(sibling.PurchaseDate, 1);
+            sibling.Description = baseDescription;
 
-                LinkInvoice(sibling.Transaction, sibling, userId, affected);
-                ApplyBalance(sibling, 1);
-            }
-            else
-            {
-                sibling.Description = BuildInstallmentDescription(baseDescription, number, newTotal);
-                transactionRepository.UpdateTransaction(sibling);
-            }
+            transactionRepository.UpdateTransaction(sibling);
+
+            LinkInvoice(sibling.Transaction, sibling, userId, affected);
+            ApplyBalance(sibling, 1);
         }
 
         transactionRepository.UpdateGroupTotal(groupId, newTotal, userId);
@@ -228,7 +222,7 @@ public partial class TransactionService
             Amount = selected.Amount,
             PaymentDate = newPaymentDate,
             PurchaseDate = newPurchaseDate,
-            Description = BuildInstallmentDescription(baseDescription, insertionNumber, newTotal),
+            Description = baseDescription,
             Account = selected.Account,
             ToAccount = selected.ToAccount,
             Card = selected.Card,
@@ -279,10 +273,8 @@ public partial class TransactionService
     public List<long> UpdateGroup(UpdateGroupDto updates, long userId)
     {
         var groupColumn = ResolveGroupColumn(updates.Type);
-        var isInstallment = updates.Type == Constants.GroupType.Installment;
         var items = transactionRepository.SearchByGroup(updates.GroupId, groupColumn, userId);
 
-        var total = items.Count;
         var changedIds = new List<long>();
         var affected = new HashSet<long>();
 
@@ -294,7 +286,7 @@ public partial class TransactionService
 
             ApplyBalance(current, -1);
 
-            var relink = ApplyGroupUpdate(current, updates, isInstallment, total);
+            var relink = ApplyGroupUpdate(current, updates);
 
             current.ValidateUpdate();
             transactionRepository.UpdateTransaction(current);
@@ -314,7 +306,7 @@ public partial class TransactionService
         return changedIds;
     }
 
-    private static bool ApplyGroupUpdate(TransactionEntity current, UpdateGroupDto updates, bool isInstallment, int total)
+    private static bool ApplyGroupUpdate(TransactionEntity current, UpdateGroupDto updates)
     {
         var relink = false;
 
@@ -324,10 +316,14 @@ public partial class TransactionService
         if (updates.TransactionType is > 0)
             current.TransactionType = updates.TransactionType.Value;
 
-        if (updates.Category is > 0)
+        if (updates.ClearCategory)
+            current.Category = null;
+        else if (updates.Category is > 0)
             current.Category = updates.Category;
 
-        if (updates.PaymentMethod is > 0)
+        if (updates.ClearPaymentMethod)
+            current.PaymentMethod = null;
+        else if (updates.PaymentMethod is > 0)
             current.PaymentMethod = updates.PaymentMethod;
 
         if (updates.ClearAccount)
@@ -372,17 +368,7 @@ public partial class TransactionService
         }
 
         if (updates.Description != null)
-        {
-            if (isInstallment)
-            {
-                var number = current.InstallmentNumber ?? 0;
-                current.Description = BuildInstallmentDescription(StripSuffix(updates.Description), number, total);
-            }
-            else
-            {
-                current.Description = updates.Description;
-            }
-        }
+            current.Description = StripSuffix(updates.Description);
 
         return relink;
     }

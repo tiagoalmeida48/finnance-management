@@ -26,7 +26,7 @@ public partial class UserService
 
     public List<UserLightDto> ListManaged()
     {
-        var users = userRepository.All().ToList();
+        var users = userRepository.Search(active: true);
 
         return users.Select(u => new UserLightDto
         {

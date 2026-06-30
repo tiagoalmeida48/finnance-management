@@ -15,13 +15,17 @@ export function useFinancesPageLogic() {
   const cards = useCardsPageLogic();
 
   const { groups, orphanCards } = useMemo(() => {
+    const byName = (a: { name: string }, b: { name: string }) =>
+      a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
     const accountIds = new Set(accounts.accounts.map((account) => account.bankAccount));
-    const grouped: AccountGroup[] = accounts.accounts.map((account) => ({
+    const grouped: AccountGroup[] = [...accounts.accounts].sort(byName).map((account) => ({
       account,
       accountTypeName: accounts.accountTypeNames.get(account.accountType),
-      cards: cards.cards.filter((card) => card.bankAccount === account.bankAccount),
+      cards: cards.cards
+        .filter((card) => card.bankAccount === account.bankAccount)
+        .sort(byName),
     }));
-    const orphans = cards.cards.filter((card) => !accountIds.has(card.bankAccount));
+    const orphans = cards.cards.filter((card) => !accountIds.has(card.bankAccount)).sort(byName);
     return { groups: grouped, orphanCards: orphans };
   }, [accounts.accounts, accounts.accountTypeNames, cards.cards]);
 
