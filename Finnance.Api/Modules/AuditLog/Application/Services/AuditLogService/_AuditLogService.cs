@@ -22,7 +22,7 @@ public partial class AuditLogService(IAuditLogRepository auditLogRepository) : B
             TableName = tableName,
             Record = record,
             NewData = newData,
-            ChangedBy = changedBy
+            ChangedBy = changedBy > 0 ? changedBy : null
         };
 
         return auditLogRepository.Create(entity);
@@ -36,7 +36,7 @@ public partial class AuditLogService(IAuditLogRepository auditLogRepository) : B
             TableName = "error",
             Record = 0,
             Description = description,
-            ChangedBy = changedBy
+            ChangedBy = changedBy > 0 ? changedBy : null
         };
 
         return auditLogRepository.Create(entity);

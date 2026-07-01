@@ -26,7 +26,7 @@ public class AuditLogMod : BaseModel
     public string NewData { get; set; }
 
     [Column("changed_by")]
-    public long ChangedBy { get; set; }
+    public long? ChangedBy { get; set; }
 
     [Column("description")]
     public string Description { get; set; }

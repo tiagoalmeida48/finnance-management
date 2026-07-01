@@ -17,7 +17,7 @@ public class AuditLogEntity : BaseEntity
 
     public string NewData { get; set; }
 
-    public long ChangedBy { get; set; }
+    public long? ChangedBy { get; set; }
 
     public string Description { get; set; }
 

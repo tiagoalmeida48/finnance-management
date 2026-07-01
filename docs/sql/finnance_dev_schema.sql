@@ -6,6 +6,7 @@ CREATE TABLE account_type (
                               updated timestamptz NOT NULL,
                               CONSTRAINT pk_account_type PRIMARY KEY (account_type)
 );
+CREATE UNIQUE INDEX uq_account_type_name ON public.account_type USING btree (name);
 
 CREATE TABLE audit_action (
                               audit_action int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
@@ -15,6 +16,7 @@ CREATE TABLE audit_action (
                               updated timestamptz NOT NULL,
                               CONSTRAINT pk_audit_action PRIMARY KEY (audit_action)
 );
+CREATE UNIQUE INDEX uq_audit_action_name ON public.audit_action USING btree (name);
 
 CREATE TABLE category_type (
                                category_type int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
@@ -24,6 +26,7 @@ CREATE TABLE category_type (
                                updated timestamptz NOT NULL,
                                CONSTRAINT pk_category_type PRIMARY KEY (category_type)
 );
+CREATE UNIQUE INDEX uq_category_type_name ON public.category_type USING btree (name);
 
 CREATE TABLE invoice_status (
                                 invoice_status int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
@@ -33,6 +36,7 @@ CREATE TABLE invoice_status (
                                 updated timestamptz NOT NULL,
                                 CONSTRAINT pk_invoice_status PRIMARY KEY (invoice_status)
 );
+CREATE UNIQUE INDEX uq_invoice_status_name ON public.invoice_status USING btree (name);
 
 CREATE TABLE payment_method (
                                 payment_method int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
@@ -42,6 +46,7 @@ CREATE TABLE payment_method (
                                 updated timestamptz NOT NULL,
                                 CONSTRAINT pk_payment_method PRIMARY KEY (payment_method)
 );
+CREATE UNIQUE INDEX uq_payment_method_name ON public.payment_method USING btree (name);
 
 CREATE TABLE system_config (
                                system_config int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
@@ -62,6 +67,7 @@ CREATE TABLE transaction_type (
                                   updated timestamptz NOT NULL,
                                   CONSTRAINT pk_transaction_type PRIMARY KEY (transaction_type)
 );
+CREATE UNIQUE INDEX uq_transaction_type_name ON public.transaction_type USING btree (name);
 
 CREATE TABLE "user" (
                         "user" int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
@@ -73,18 +79,18 @@ CREATE TABLE "user" (
                         locale text NULL,
                         active bool NOT NULL,
                         is_admin bool DEFAULT false NOT NULL,
-                        email_verified bool NOT NULL DEFAULT false,
+                        created timestamptz NULL,
+                        updated timestamptz NULL,
+                        email_verified bool DEFAULT false NOT NULL,
                         verify_token text NULL,
                         verify_token_expires timestamptz NULL,
                         reset_token text NULL,
                         reset_token_expires timestamptz NULL,
-                        created timestamptz NULL,
-                        updated timestamptz NULL,
                         CONSTRAINT pk_user PRIMARY KEY ("user"),
                         CONSTRAINT uq_user_email UNIQUE (email)
 );
-CREATE INDEX idx_user_verify_token ON "user" (verify_token) WHERE verify_token IS NOT NULL;
-CREATE INDEX idx_user_reset_token ON "user" (reset_token) WHERE reset_token IS NOT NULL;
+CREATE INDEX idx_user_reset_token ON public."user" USING btree (reset_token) WHERE (reset_token IS NOT NULL);
+CREATE INDEX idx_user_verify_token ON public."user" USING btree (verify_token) WHERE (verify_token IS NOT NULL);
 
 CREATE TABLE audit_log (
                            audit_log int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
@@ -98,11 +104,12 @@ CREATE TABLE audit_log (
                            created timestamptz NOT NULL,
                            updated timestamptz NOT NULL,
                            CONSTRAINT pk_audit_log PRIMARY KEY (audit_log),
-                           CONSTRAINT fk_audit_log_action FOREIGN KEY (audit_action) REFERENCES audit_action(audit_action)
+                           CONSTRAINT fk_audit_log_action FOREIGN KEY (audit_action) REFERENCES audit_action(audit_action),
+                           CONSTRAINT fk_audit_log_user FOREIGN KEY (changed_by) REFERENCES "user"("user")
 );
 CREATE INDEX idx_audit_log_actor ON public.audit_log USING btree (changed_by, created DESC);
 CREATE INDEX idx_audit_log_record ON public.audit_log USING btree (table_name, record);
-CREATE INDEX idx_audit_log_time ON public.audit_log USING btree (created DESC);
+CREATE INDEX idx_audit_log_time_brin ON public.audit_log USING brin (created);
 
 CREATE TABLE bank_account (
                               bank_account int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
@@ -120,7 +127,12 @@ CREATE TABLE bank_account (
                               CONSTRAINT pk_bank_account PRIMARY KEY (bank_account),
                               CONSTRAINT fk_bank_account_type FOREIGN KEY (account_type) REFERENCES account_type(account_type),
                               CONSTRAINT fk_bank_account_user FOREIGN KEY ("user") REFERENCES "user"("user")
-);
+)
+    WITH (
+        fillfactor=85,
+        autovacuum_vacuum_scale_factor=0.05,
+        autovacuum_analyze_scale_factor=0.02
+        );
 CREATE INDEX idx_bank_account_user ON public.bank_account USING btree ("user") WHERE active;
 
 CREATE TABLE category (
@@ -178,7 +190,12 @@ CREATE TABLE credit_card_invoice (
                                      CONSTRAINT fk_credit_card_invoice_card FOREIGN KEY (card) REFERENCES credit_card(credit_card),
                                      CONSTRAINT fk_credit_card_invoice_status FOREIGN KEY (invoice_status) REFERENCES invoice_status(invoice_status),
                                      CONSTRAINT fk_credit_card_invoice_user FOREIGN KEY ("user") REFERENCES "user"("user")
-);
+)
+    WITH (
+        fillfactor=85,
+        autovacuum_vacuum_scale_factor=0.05,
+        autovacuum_analyze_scale_factor=0.02
+        );
 CREATE INDEX idx_credit_card_invoice_card_status ON public.credit_card_invoice USING btree (card, invoice_status);
 CREATE INDEX idx_credit_card_invoice_user_status ON public.credit_card_invoice USING btree ("user", invoice_status);
 
@@ -194,6 +211,7 @@ CREATE TABLE credit_card_statement_cycle (
                                              active bool NOT NULL,
                                              created timestamptz NOT NULL,
                                              updated timestamptz NOT NULL,
+                                             CONSTRAINT chk_cycle_days CHECK ((((closing_day IS NULL) OR ((closing_day >= 1) AND (closing_day <= 31))) AND ((due_day IS NULL) OR ((due_day >= 1) AND (due_day <= 31))))),
                                              CONSTRAINT pk_credit_card_statement_cycle PRIMARY KEY (credit_card_statement_cycle),
                                              CONSTRAINT uq_credit_card_statement_cycle_card_start UNIQUE (card, date_start),
                                              CONSTRAINT fk_credit_card_statement_cycle_card FOREIGN KEY (card) REFERENCES credit_card(credit_card),
@@ -201,6 +219,7 @@ CREATE TABLE credit_card_statement_cycle (
 );
 CREATE INDEX idx_credit_card_statement_cycle_card ON public.credit_card_statement_cycle USING btree (card);
 CREATE INDEX idx_credit_card_statement_cycle_user ON public.credit_card_statement_cycle USING btree ("user");
+CREATE UNIQUE INDEX uq_card_open_cycle ON public.credit_card_statement_cycle USING btree (card) WHERE (date_end = '9999-12-31'::date);
 
 CREATE TABLE installment_group (
                                    installment_group int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
@@ -237,6 +256,7 @@ CREATE TABLE settings_salary (
                                  active bool NOT NULL,
                                  created timestamptz NOT NULL,
                                  updated timestamptz NOT NULL,
+                                 CONSTRAINT chk_settings_salary_percent CHECK ((((inss_discount_percentage IS NULL) OR ((inss_discount_percentage >= (0)::numeric) AND (inss_discount_percentage <= (100)::numeric))) AND ((admin_fee_percentage IS NULL) OR ((admin_fee_percentage >= (0)::numeric) AND (admin_fee_percentage <= (100)::numeric))))),
                                  CONSTRAINT pk_settings_salary PRIMARY KEY (settings_salary),
                                  CONSTRAINT uq_settings_salary_period UNIQUE ("user", date_start, date_end),
                                  CONSTRAINT fk_settings_salary_user FOREIGN KEY ("user") REFERENCES "user"("user")
@@ -265,6 +285,9 @@ CREATE TABLE "transaction" (
                                active bool NOT NULL,
                                created timestamptz NOT NULL,
                                updated timestamptz NOT NULL,
+                               CONSTRAINT chk_transaction_amount_positive CHECK (((amount IS NULL) OR (amount > (0)::numeric))),
+                               CONSTRAINT chk_transaction_card_has_account CHECK (((card IS NULL) OR (account IS NOT NULL))),
+                               CONSTRAINT chk_transaction_transfer_account CHECK (((to_account IS NULL) OR (transaction_type = 3))),
                                CONSTRAINT pk_transaction PRIMARY KEY (transaction),
                                CONSTRAINT fk_transaction_account FOREIGN KEY (account) REFERENCES bank_account(bank_account),
                                CONSTRAINT fk_transaction_card FOREIGN KEY (card) REFERENCES credit_card(credit_card),
@@ -276,7 +299,10 @@ CREATE TABLE "transaction" (
                                CONSTRAINT fk_transaction_to_account FOREIGN KEY (to_account) REFERENCES bank_account(bank_account),
                                CONSTRAINT fk_transaction_type FOREIGN KEY (transaction_type) REFERENCES transaction_type(transaction_type),
                                CONSTRAINT fk_transaction_user FOREIGN KEY ("user") REFERENCES "user"("user")
-);
+)
+    WITH (
+        fillfactor=90
+        );
 CREATE INDEX idx_transaction_account_paid ON public.transaction USING btree (account, paid) WHERE (account IS NOT NULL);
 CREATE INDEX idx_transaction_card ON public.transaction USING btree (card) WHERE (card IS NOT NULL);
 CREATE INDEX idx_transaction_category ON public.transaction USING btree (category) WHERE (category IS NOT NULL);
@@ -286,11 +312,3 @@ CREATE INDEX idx_transaction_recurring ON public.transaction USING btree (recurr
 CREATE INDEX idx_transaction_to_account_paid ON public.transaction USING btree (to_account, paid) WHERE (to_account IS NOT NULL);
 CREATE INDEX idx_transaction_user_payment_date ON public.transaction USING btree ("user", payment_date DESC);
 CREATE INDEX idx_transaction_user_type_date ON public.transaction USING btree ("user", transaction_type, payment_date DESC) INCLUDE (amount, card, paid, category);
-
-CREATE UNIQUE INDEX uq_transaction_type_name ON public.transaction_type USING btree (name);
-CREATE UNIQUE INDEX uq_account_type_name ON public.account_type USING btree (name);
-CREATE UNIQUE INDEX uq_category_type_name ON public.category_type USING btree (name);
-CREATE UNIQUE INDEX uq_payment_method_name ON public.payment_method USING btree (name);
-CREATE UNIQUE INDEX uq_invoice_status_name ON public.invoice_status USING btree (name);
-CREATE UNIQUE INDEX uq_audit_action_name ON public.audit_action USING btree (name);
-CREATE UNIQUE INDEX uq_card_open_cycle ON public.credit_card_statement_cycle USING btree (card) WHERE (date_end = DATE '9999-12-31');
