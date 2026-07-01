@@ -9,4 +9,24 @@ export const authService = {
   me: async (): Promise<Me> => {
     return apiClient.get<Me>('/auth/me');
   },
+
+  register: async (input: { email: string; fullName: string; password: string }): Promise<number> => {
+    return apiClient.post<number>('/auth/register', input);
+  },
+
+  verifyEmail: async (token: string): Promise<boolean> => {
+    return apiClient.get<boolean>('/auth/verify-email', { token });
+  },
+
+  forgotPassword: async (email: string): Promise<boolean> => {
+    return apiClient.post<boolean>('/auth/forgot-password', { email });
+  },
+
+  resetPassword: async (token: string, password: string): Promise<boolean> => {
+    return apiClient.post<boolean>('/auth/reset-password', { token, password });
+  },
+
+  exportData: async (): Promise<string> => {
+    return apiClient.get<string>('/user/export-data');
+  },
 };

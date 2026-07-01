@@ -15,4 +15,9 @@ public interface IUserService : IBaseService<UserEntity>
     bool DeleteUser(long user, long currentUser);
     List<UserLightDto> ListManaged();
     void EnsureAdmin(long currentUser);
+    long Register(string email, string fullName, string rawPassword);
+    bool VerifyEmail(string token);
+    bool ForgotPassword(string email);
+    bool ResetPassword(string token, string rawPassword);
+    string ExportData(long user);
 }

@@ -18,6 +18,9 @@ public class AuthService(IUserService userSrv) : IAuthService
         if (!user.Active)
             throw new ApplicationException(Constants.ErrorMessage.UserInactive);
 
+        if (!user.EmailVerified)
+            throw new ApplicationException(Constants.ErrorMessage.EmailNotVerified);
+
         var language = user.Locale.IsEmpty() ? Constants.LanguageDefault : user.Locale;
         var claims = new List<Claim>
         {

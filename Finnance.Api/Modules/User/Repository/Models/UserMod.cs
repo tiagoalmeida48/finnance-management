@@ -33,4 +33,19 @@ public class UserMod : BaseModel
 
     [Column("is_admin")]
     public bool IsAdmin { get; set; }
+
+    [Column("email_verified")]
+    public bool EmailVerified { get; set; }
+
+    [Column("verify_token")]
+    public string VerifyToken { get; set; }
+
+    [Column("verify_token_expires")]
+    public DateTime? VerifyTokenExpires { get; set; }
+
+    [Column("reset_token")]
+    public string ResetToken { get; set; }
+
+    [Column("reset_token_expires")]
+    public DateTime? ResetTokenExpires { get; set; }
 }

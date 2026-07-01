@@ -48,6 +48,13 @@ public class UserController(IUserService userService) : ControllerBase
     }
 
     [Authorization()]
+    [HttpGet]
+    public ResultApi<string> ExportData()
+    {
+        return new ResultApi<string> { Result = userService.ExportData(UserLogged.user) };
+    }
+
+    [Authorization()]
     [HttpPut]
     public ResultApi<bool> UpdateProfile([FromBody] UserUpdateProfileDto dto)
     {

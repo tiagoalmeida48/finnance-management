@@ -55,5 +55,7 @@ public static partial class Constants
         public const string SystemConfigNotFound = "Configuração do sistema não encontrada.";
         public const string CardPaymentViaInvoice = "Lançamentos de cartão são pagos pela fatura, não diretamente.";
         public const string UserInactive = "Usuário inativo.";
+        public const string InvalidToken = "Token inválido ou expirado.";
+        public const string EmailNotVerified = "Confirme seu e-mail antes de entrar.";
     }
 }

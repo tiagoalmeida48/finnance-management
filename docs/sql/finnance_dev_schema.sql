@@ -73,11 +73,18 @@ CREATE TABLE "user" (
                         locale text NULL,
                         active bool NOT NULL,
                         is_admin bool DEFAULT false NOT NULL,
+                        email_verified bool NOT NULL DEFAULT false,
+                        verify_token text NULL,
+                        verify_token_expires timestamptz NULL,
+                        reset_token text NULL,
+                        reset_token_expires timestamptz NULL,
                         created timestamptz NULL,
                         updated timestamptz NULL,
                         CONSTRAINT pk_user PRIMARY KEY ("user"),
                         CONSTRAINT uq_user_email UNIQUE (email)
 );
+CREATE INDEX idx_user_verify_token ON "user" (verify_token) WHERE verify_token IS NOT NULL;
+CREATE INDEX idx_user_reset_token ON "user" (reset_token) WHERE reset_token IS NOT NULL;
 
 CREATE TABLE audit_log (
                            audit_log int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,

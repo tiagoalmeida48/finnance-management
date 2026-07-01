@@ -9,8 +9,32 @@ using Finnance.Api.Shared.Utils;
 namespace Finnance.Api.Controllers;
 
 [AllowAnonymous]
-public class AuthController(IAuthService authService) : ControllerBase
+public class AuthController(IAuthService authService, IUserService userService) : ControllerBase
 {
+    [HttpPost]
+    public ResultApi<long> Register([FromBody] RegisterDto dto)
+    {
+        return new ResultApi<long> { Result = userService.Register(dto?.Email, dto?.FullName, dto?.Password) };
+    }
+
+    [HttpGet]
+    public ResultApi<bool> VerifyEmail([FromQuery] string token)
+    {
+        return new ResultApi<bool> { Result = userService.VerifyEmail(token) };
+    }
+
+    [HttpPost]
+    public ResultApi<bool> ForgotPassword([FromBody] ForgotPasswordDto dto)
+    {
+        return new ResultApi<bool> { Result = userService.ForgotPassword(dto?.Email) };
+    }
+
+    [HttpPost]
+    public ResultApi<bool> ResetPassword([FromBody] ResetPasswordDto dto)
+    {
+        return new ResultApi<bool> { Result = userService.ResetPassword(dto?.Token, dto?.Password) };
+    }
+
     [HttpPost]
     public ResultApi<SessionDto> Login([FromBody] LoginDto dto)
     {

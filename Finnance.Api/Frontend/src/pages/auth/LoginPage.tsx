@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -109,6 +110,15 @@ export function LoginPage() {
             <Button type="submit" size="lg" className="w-full" loading={isLoading}>
               Entrar
             </Button>
+
+            <div className="flex items-center justify-between text-sm text-text-muted">
+              <Link to="/forgot-password" className="hover:text-text">
+                Esqueci minha senha
+              </Link>
+              <Link to="/register" className="text-primary hover:underline">
+                Criar conta
+              </Link>
+            </div>
           </form>
         </div>
       </div>

@@ -26,8 +26,8 @@ public static partial class Configuration
     private static void SeedAdminUser(NpgsqlConnection con, string email, string password, string fullName)
     {
         const string sql =
-            "INSERT INTO \"user\" (email, password_hash, full_name, currency, locale, active, is_admin, created, updated) " +
-            "SELECT @email, @hash, @fullName, 'BRL', 'pt-BR', TRUE, TRUE, now(), now() " +
+            "INSERT INTO \"user\" (email, password_hash, full_name, currency, locale, active, is_admin, email_verified, created, updated) " +
+            "SELECT @email, @hash, @fullName, 'BRL', 'pt-BR', TRUE, TRUE, TRUE, now(), now() " +
             "WHERE NOT EXISTS (SELECT 1 FROM \"user\" WHERE email = @email)";
 
         using var cmd = new NpgsqlCommand(sql, con);

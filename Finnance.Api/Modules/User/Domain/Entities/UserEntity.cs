@@ -24,6 +24,16 @@ public class UserEntity : BaseEntity
 
     public bool IsAdmin { get; set; }
 
+    public bool EmailVerified { get; set; }
+
+    public string VerifyToken { get; set; }
+
+    public DateTime? VerifyTokenExpires { get; set; }
+
+    public string ResetToken { get; set; }
+
+    public DateTime? ResetTokenExpires { get; set; }
+
     public override void ValidateCreate()
     {
         Currency = Currency.IsEmpty() ? "BRL" : Currency;

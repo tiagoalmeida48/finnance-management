@@ -9,4 +9,8 @@ public interface IUserRepository : IBaseRepository<UserEntity>
                             string email = null,
                             bool active = false,
                             int quantity = 0);
+
+    UserEntity SearchByToken(string column, string token);
+
+    string ExportData(long user);
 }
