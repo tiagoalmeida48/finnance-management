@@ -1,5 +1,5 @@
 import { Pencil, Trash2 } from 'lucide-react';
-import { Badge, Button } from '@/shared/components/ui';
+import { Badge, Button, EntityIcon } from '@/shared/components/ui';
 import { CategoryTypeId } from '@/config/constants';
 import type { Category } from '../types/categories.types';
 
@@ -15,10 +15,10 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
   return (
     <div className="flex items-center gap-3 rounded-lg border border-border bg-surface-2 p-2.5 transition-colors hover:border-primary/40">
       <div
-        className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full text-lg leading-none"
+        className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full"
         style={{ backgroundColor: `${category.color}26`, color: category.color }}
       >
-        <span>{category.icon}</span>
+        <EntityIcon name={category.icon} size={18} />
       </div>
 
       <div className="min-w-0 flex-1">

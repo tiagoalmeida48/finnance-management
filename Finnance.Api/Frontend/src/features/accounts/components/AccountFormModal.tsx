@@ -9,13 +9,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  EntityIcon,
   Input,
   Label,
   SelectMenu,
   Textarea,
 } from '@/shared/components/ui';
 import { CurrencyInput } from './CurrencyInput';
-import { ACCOUNT_COLORS, ACCOUNT_ICONS } from '../constants';
+import { ACCOUNT_COLORS, ACCOUNT_ICONS, DEFAULT_ACCOUNT_ICON } from '../constants';
 import type { AccountType, BankAccount } from '../types/accounts.types';
 
 const accountSchema = z.object({
@@ -43,7 +44,7 @@ const emptyValues: AccountFormValues = {
   accountType: 0,
   initialBalance: 0,
   color: ACCOUNT_COLORS[0],
-  icon: ACCOUNT_ICONS[0],
+  icon: DEFAULT_ACCOUNT_ICON,
   notes: '',
 };
 
@@ -77,7 +78,7 @@ export function AccountFormModal({
         accountType: account.accountType,
         initialBalance: account.initialBalance,
         color: account.color || ACCOUNT_COLORS[0],
-        icon: account.icon || ACCOUNT_ICONS[0],
+        icon: account.icon || DEFAULT_ACCOUNT_ICON,
         notes: account.notes ?? '',
       });
     } else {
@@ -168,7 +169,7 @@ export function AccountFormModal({
 
           <div className="sm:col-span-2">
             <Label>Ícone</Label>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid max-h-44 grid-cols-8 gap-2 overflow-y-auto rounded-md border border-border bg-surface-2/30 p-2">
               {ACCOUNT_ICONS.map((icon) => (
                 <button
                   key={icon}
@@ -176,13 +177,13 @@ export function AccountFormModal({
                   aria-label={`Selecionar ícone ${icon}`}
                   onClick={() => setValue('icon', icon, { shouldDirty: true })}
                   className={
-                    'h-9 w-9 rounded-md border text-lg flex items-center justify-center transition-colors ' +
+                    'flex h-9 w-9 items-center justify-center rounded-md border text-text-muted transition-colors ' +
                     (selectedIcon === icon
-                      ? 'border-primary bg-surface-2'
-                      : 'border-border hover:bg-surface-2')
+                      ? 'border-primary bg-primary/10 text-text'
+                      : 'border-border bg-surface hover:bg-surface-2')
                   }
                 >
-                  {icon}
+                  <EntityIcon name={icon} size={18} />
                 </button>
               ))}
             </div>

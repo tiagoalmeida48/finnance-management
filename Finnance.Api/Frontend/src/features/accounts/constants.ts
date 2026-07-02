@@ -9,4 +9,6 @@ export const ACCOUNT_COLORS = [
   '#ec4899',
 ] as const;
 
-export const ACCOUNT_ICONS = ['🏦', '💳', '💰', '👛', '📈', '🪙', '💵', '🏷️'] as const;
+export { ENTITY_ICON_NAMES as ACCOUNT_ICONS } from '@/shared/components/ui';
+
+export const DEFAULT_ACCOUNT_ICON = 'Wallet';

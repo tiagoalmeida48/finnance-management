@@ -25,8 +25,4 @@ export const authService = {
   resetPassword: async (token: string, password: string): Promise<boolean> => {
     return apiClient.post<boolean>('/auth/reset-password', { token, password });
   },
-
-  exportData: async (): Promise<string> => {
-    return apiClient.get<string>('/user/export-data');
-  },
 };

@@ -9,6 +9,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  EntityIcon,
   Input,
   Label,
 } from '@/shared/components/ui';
@@ -156,7 +157,7 @@ export function CategoryFormModal({
 
           <div className="sm:col-span-2">
             <Label>Ícone</Label>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid max-h-44 grid-cols-8 gap-2 overflow-y-auto rounded-md border border-border bg-surface-2/30 p-2">
               {CATEGORY_ICONS.map((option) => (
                 <button
                   key={option}
@@ -164,13 +165,13 @@ export function CategoryFormModal({
                   aria-label={`Selecionar ícone ${option}`}
                   onClick={() => setValue('icon', option, { shouldDirty: true })}
                   className={cn(
-                    'flex h-9 w-9 items-center justify-center rounded-md border text-lg transition-colors',
+                    'flex h-9 w-9 items-center justify-center rounded-md border text-text-muted transition-colors',
                     selectedIcon === option
-                      ? 'border-primary bg-primary/10'
+                      ? 'border-primary bg-primary/10 text-text'
                       : 'border-border bg-surface hover:bg-surface-2',
                   )}
                 >
-                  {option}
+                  <EntityIcon name={option} size={18} />
                 </button>
               ))}
             </div>

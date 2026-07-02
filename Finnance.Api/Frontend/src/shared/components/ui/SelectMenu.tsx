@@ -1,5 +1,6 @@
 import {
   type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
   useEffect,
   useId,
   useLayoutEffect,
@@ -13,6 +14,7 @@ import { cn } from '@/shared/utils';
 interface SelectMenuOption {
   value: string | number;
   label: string;
+  icon?: ReactNode;
 }
 
 interface SelectMenuProps {
@@ -147,8 +149,9 @@ export function SelectMenu({
         onKeyDown={onKeyDown}
         className="flex h-9 w-full items-center justify-between gap-2 rounded-lg border border-border bg-bg/60 px-3 text-left text-sm text-text transition-all hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <span className={cn('truncate', !selected && 'text-text-muted')}>
-          {selected ? selected.label : placeholder}
+        <span className={cn('flex min-w-0 items-center gap-2 truncate', !selected && 'text-text-muted')}>
+          {selected?.icon ? <span className="shrink-0">{selected.icon}</span> : null}
+          <span className="truncate">{selected ? selected.label : placeholder}</span>
         </span>
         <ChevronDown
           size={16}
@@ -181,7 +184,10 @@ export function SelectMenu({
                       isHighlighted ? 'bg-surface-2' : isSelected ? 'bg-primary/10' : '',
                     )}
                   >
-                    <span className="truncate">{option.label}</span>
+                    <span className="flex min-w-0 items-center gap-2">
+                      {option.icon ? <span className="shrink-0">{option.icon}</span> : null}
+                      <span className="truncate">{option.label}</span>
+                    </span>
                     {isSelected && <Check size={15} className="shrink-0" />}
                   </button>
                 </li>

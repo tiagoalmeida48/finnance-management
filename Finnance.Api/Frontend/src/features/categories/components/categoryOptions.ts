@@ -17,24 +17,7 @@ export const CATEGORY_COLORS = [
   '#d4a574',
 ] as const;
 
-export const CATEGORY_ICONS = [
-  '🛒',
-  '🍔',
-  '🏠',
-  '🚗',
-  '💊',
-  '🎓',
-  '🎉',
-  '✈️',
-  '👕',
-  '💼',
-  '💰',
-  '🎁',
-  '📱',
-  '⚡',
-  '🐾',
-  '📈',
-] as const;
+export { ENTITY_ICON_NAMES as CATEGORY_ICONS } from '@/shared/components/ui';
 
 export const DEFAULT_CATEGORY_COLOR = CATEGORY_COLORS[15];
-export const DEFAULT_CATEGORY_ICON = CATEGORY_ICONS[0];
+export const DEFAULT_CATEGORY_ICON = 'Tag';

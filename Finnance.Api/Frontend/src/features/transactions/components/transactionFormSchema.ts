@@ -20,6 +20,7 @@ export const transactionFormSchema = z
     totalInstallments: z.coerce.number().int().min(1).default(1),
     repeatCount: z.coerce.number().int().min(1).default(1),
     replicateToGroup: z.boolean().default(false),
+    isEditing: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
     if (data.transactionType === TransactionTypeId.TRANSFER) {
@@ -46,14 +47,14 @@ export const transactionFormSchema = z
         message: 'Selecione uma conta ou um cartão.',
       });
     }
-    if (data.isInstallment && data.totalInstallments < 2) {
+    if (!data.isEditing && data.isInstallment && data.totalInstallments < 2) {
       ctx.addIssue({
         code: 'custom',
         path: ['totalInstallments'],
         message: 'Parcelamento exige ao menos 2 parcelas.',
       });
     }
-    if (data.isFixed && data.repeatCount < 2) {
+    if (!data.isEditing && data.isFixed && data.repeatCount < 2) {
       ctx.addIssue({
         code: 'custom',
         path: ['repeatCount'],

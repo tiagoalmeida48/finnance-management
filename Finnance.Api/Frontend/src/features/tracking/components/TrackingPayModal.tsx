@@ -20,6 +20,7 @@ interface TrackingPayModalProps {
   isPending: boolean;
   onClose: () => void;
   onConfirm: (input: PayItemInput) => void;
+  onEdit?: () => void;
 }
 
 export function TrackingPayModal({
@@ -28,6 +29,7 @@ export function TrackingPayModal({
   isPending,
   onClose,
   onConfirm,
+  onEdit,
 }: TrackingPayModalProps) {
   const [accountId, setAccountId] = useState(item.account ? String(item.account) : '');
 
@@ -55,29 +57,44 @@ export function TrackingPayModal({
           </div>
         </div>
 
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1">
-            <Label htmlFor="tracking-account">Conta de débito</Label>
-            <SelectMenu
-              id="tracking-account"
-              value={accountId}
-              onChange={setAccountId}
-              placeholder="Selecione a conta"
-              options={accounts.map((account) => ({
-                value: account.bankAccount,
-                label: account.name,
-              }))}
-            />
+        {item.isPaid ? (
+          <p className="text-sm text-text-muted">Lançamento já pago.</p>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="tracking-account">Conta de débito</Label>
+              <SelectMenu
+                id="tracking-account"
+                value={accountId}
+                onChange={setAccountId}
+                placeholder="Selecione a conta"
+                options={accounts.map((account) => ({
+                  value: account.bankAccount,
+                  label: account.name,
+                }))}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
-        <DialogFooter>
-          <Button variant="ghost" onClick={onClose} disabled={isPending}>
-            Cancelar
-          </Button>
-          <Button onClick={handleConfirm} loading={isPending} disabled={!accountId}>
-            Confirmar pagamento
-          </Button>
+        <DialogFooter className="sm:justify-between">
+          {onEdit ? (
+            <Button variant="outline" onClick={onEdit} disabled={isPending}>
+              Editar
+            </Button>
+          ) : (
+            <span />
+          )}
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={onClose} disabled={isPending}>
+              {item.isPaid ? 'Fechar' : 'Cancelar'}
+            </Button>
+            {!item.isPaid ? (
+              <Button onClick={handleConfirm} loading={isPending} disabled={!accountId}>
+                Confirmar pagamento
+              </Button>
+            ) : null}
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

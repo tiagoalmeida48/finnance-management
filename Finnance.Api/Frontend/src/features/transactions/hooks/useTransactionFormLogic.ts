@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { createElement, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { EntityIcon } from '@/shared/components/ui';
 import { CategoryTypeId, PaymentMethodId, TransactionTypeId } from '@/config/constants';
 import { formatCurrency } from '@/shared/utils';
 import {
@@ -29,6 +30,9 @@ interface UseTransactionFormLogicArgs {
 
 const today = () => new Date().toISOString().slice(0, 10);
 
+const optionIcon = (name: string | null | undefined, color: string | null | undefined): ReactNode =>
+  createElement(EntityIcon, { name, size: 16, style: { color: color || undefined } });
+
 function defaultValues(): TransactionFormData {
   return {
     transactionType: TransactionTypeId.EXPENSE,
@@ -40,6 +44,7 @@ function defaultValues(): TransactionFormData {
     totalInstallments: 1,
     repeatCount: 1,
     replicateToGroup: false,
+    isEditing: false,
   } as TransactionFormData;
 }
 
@@ -62,6 +67,7 @@ function toFormValues(t: Transaction): TransactionFormData {
     totalInstallments: 1,
     repeatCount: 1,
     replicateToGroup: false,
+    isEditing: true,
   };
 }
 
@@ -143,21 +149,34 @@ export function useTransactionFormLogic({ open, editing, onClose }: UseTransacti
       : null;
 
   const accountOptions = useMemo(
-    () => (accounts.data ?? []).map((a) => ({ value: a.bankAccount, label: a.name })),
+    () =>
+      (accounts.data ?? []).map((a) => ({
+        value: a.bankAccount,
+        label: a.name,
+        icon: optionIcon(a.icon, a.color),
+      })),
     [accounts.data],
   );
   const cardOptions = useMemo(
     () =>
       (cards.data ?? [])
         .filter((c) => !account || c.bankAccount === account)
-        .map((c) => ({ value: c.creditCard, label: c.name })),
+        .map((c) => ({
+          value: c.creditCard,
+          label: c.name,
+          icon: optionIcon('CreditCard', c.color),
+        })),
     [cards.data, account],
   );
   const categoryOptions = useMemo(
     () =>
       (categories.data ?? [])
         .filter((c) => c.categoryType === categoryType)
-        .map((c) => ({ value: c.category, label: c.name })),
+        .map((c) => ({
+          value: c.category,
+          label: c.name,
+          icon: optionIcon(c.icon, c.color),
+        })),
     [categories.data, categoryType],
   );
   const paymentMethodOptions = useMemo(

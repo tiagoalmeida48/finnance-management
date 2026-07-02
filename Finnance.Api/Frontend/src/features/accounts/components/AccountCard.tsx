@@ -1,5 +1,5 @@
 import { Pencil, Trash2 } from 'lucide-react';
-import { Badge, Button, Card } from '@/shared/components/ui';
+import { Badge, Button, Card, EntityIcon } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import type { AccountType, BankAccount } from '../types/accounts.types';
 
@@ -16,10 +16,10 @@ export function AccountCard({ account, accountTypeName, onEdit, onDelete }: Acco
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div
-            className="h-11 w-11 shrink-0 rounded-lg flex items-center justify-center overflow-hidden text-xl leading-none"
-            style={{ backgroundColor: `${account.color}33` }}
+            className="h-11 w-11 shrink-0 rounded-lg flex items-center justify-center overflow-hidden"
+            style={{ backgroundColor: `${account.color}33`, color: account.color }}
           >
-            <span>{account.icon || '🏦'}</span>
+            <EntityIcon name={account.icon} size={20} fallback="Wallet" />
           </div>
           <div className="min-w-0">
             <p className="font-semibold text-text truncate">{account.name}</p>

@@ -5,7 +5,6 @@ import {
   SecurityForm,
   useProfilePageLogic,
 } from '@/features/profile';
-import { DataExportCard } from '@/features/profile/components/DataExportCard';
 
 export function ProfilePage() {
   const {
@@ -48,8 +47,6 @@ export function ProfilePage() {
           onSubmit={submitPassword}
         />
       </div>
-
-      <DataExportCard />
     </div>
   );
 }

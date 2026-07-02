@@ -1,5 +1,5 @@
 import { Pencil, Plus, Trash2 } from 'lucide-react';
-import { Badge, Button, Card } from '@/shared/components/ui';
+import { Badge, Button, Card, EntityIcon } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import { CardRow } from '@/features/cards';
 import type { BankAccount } from '@/features/accounts';
@@ -35,10 +35,10 @@ export function AccountWithCards({
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <div
-            className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg text-xl leading-none"
-            style={{ backgroundColor: `${account.color}33` }}
+            className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg"
+            style={{ backgroundColor: `${account.color}33`, color: account.color }}
           >
-            <span>{account.icon || '🏦'}</span>
+            <EntityIcon name={account.icon} size={20} fallback="Wallet" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">

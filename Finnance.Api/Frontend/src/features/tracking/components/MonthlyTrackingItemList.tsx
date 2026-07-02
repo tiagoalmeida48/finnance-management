@@ -4,10 +4,10 @@ import type { TrackingItem } from '../types/tracking.types';
 
 interface MonthlyTrackingItemListProps {
   items: TrackingItem[];
-  onPayItem: (item: TrackingItem) => void;
+  onSelectItem: (item: TrackingItem) => void;
 }
 
-export function MonthlyTrackingItemList({ items, onPayItem }: MonthlyTrackingItemListProps) {
+export function MonthlyTrackingItemList({ items, onSelectItem }: MonthlyTrackingItemListProps) {
   if (items.length === 0) {
     return (
       <p className="rounded-lg border border-dashed border-border py-2 text-center text-sm text-text-muted">
@@ -19,14 +19,11 @@ export function MonthlyTrackingItemList({ items, onPayItem }: MonthlyTrackingIte
   return (
     <div className="flex flex-col gap-1">
       {items.map((item) => {
-        const clickable = !item.isPaid;
         return (
           <div
             key={`${item.itemType}-${item.id}`}
-            onClick={clickable ? () => onPayItem(item) : undefined}
-            className={`flex items-center justify-between gap-2 rounded-md px-1 py-1 transition-colors ${
-              clickable ? 'cursor-pointer hover:bg-surface-2' : ''
-            }`}
+            onClick={() => onSelectItem(item)}
+            className="flex cursor-pointer items-center justify-between gap-2 rounded-md px-1 py-1 transition-colors hover:bg-surface-2"
           >
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <div className="grid h-[18px] w-[18px] shrink-0 place-items-center rounded-md border border-border bg-surface">
