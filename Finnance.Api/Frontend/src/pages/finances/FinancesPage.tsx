@@ -11,6 +11,7 @@ export function FinancesPage() {
     <div className="space-y-6">
       <PageHeader
         icon={Wallet}
+        eyebrow="Patrimônio"
         title="Contas e Cartões"
         description="Gerencie suas contas bancárias e os cartões de crédito vinculados a elas."
         actions={<Button onClick={accounts.openCreate}>Nova conta</Button>}

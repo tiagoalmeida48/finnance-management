@@ -23,12 +23,13 @@ export function DashboardPage() {
     <div className="space-y-6">
       <PageHeader
         icon={LayoutDashboard}
+        eyebrow="Visão geral"
         title="Dashboard"
         description="Acompanhe seu saldo, receitas, despesas e movimentações recentes."
         actions={<DashboardFilters selectedYear={selectedYear} setSelectedYear={setSelectedYear} />}
       />
 
-      <DashboardSummary stats={stats} isLoading={isLoading} />
+      <DashboardSummary stats={stats} chartData={chartData} isLoading={isLoading} />
 
       <DashboardCharts chartData={chartData} categories={categories} />
 

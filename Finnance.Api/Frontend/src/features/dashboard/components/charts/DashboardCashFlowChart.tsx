@@ -1,7 +1,7 @@
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -72,7 +72,17 @@ export function DashboardCashFlowChart({ chartData }: DashboardCashFlowChartProp
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+              <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="flow-income" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={CHART_COLORS.income} stopOpacity={0.22} />
+                    <stop offset="100%" stopColor={CHART_COLORS.income} stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="flow-expense" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={CHART_COLORS.expense} stopOpacity={0.14} />
+                    <stop offset="100%" stopColor={CHART_COLORS.expense} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={CHART_COLORS.grid} />
                 <XAxis
                   dataKey="name"
@@ -104,26 +114,28 @@ export function DashboardCashFlowChart({ chartData }: DashboardCashFlowChartProp
                   labelStyle={{ color: CHART_COLORS.axis, fontSize: '12px', marginBottom: 8 }}
                   formatter={(value, name) => [formatSignedBRL(Number(value) || 0), name ?? '']}
                 />
-                <Line
+                <Area
                   type="monotone"
                   dataKey="receita"
                   name="Receitas"
                   stroke={CHART_COLORS.income}
                   strokeWidth={2.5}
-                  dot={{ fill: CHART_COLORS.income, r: 3, strokeWidth: 0 }}
-                  activeDot={{ r: 5 }}
+                  fill="url(#flow-income)"
+                  dot={false}
+                  activeDot={{ r: 5, strokeWidth: 0 }}
                 />
-                <Line
+                <Area
                   type="monotone"
                   dataKey="despesa"
                   name="Despesas"
                   stroke={CHART_COLORS.expense}
                   strokeWidth={2}
                   strokeDasharray="6 3"
-                  dot={{ fill: CHART_COLORS.expense, r: 3, strokeWidth: 0 }}
-                  activeDot={{ r: 5 }}
+                  fill="url(#flow-expense)"
+                  dot={false}
+                  activeDot={{ r: 5, strokeWidth: 0 }}
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           )}
         </div>

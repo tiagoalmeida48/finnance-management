@@ -42,6 +42,7 @@ export function CategoriesPage() {
     <div className="space-y-6">
       <PageHeader
         icon={Tags}
+        eyebrow="Organização"
         title="Categorias"
         description="Organize suas receitas e despesas por categoria."
         actions={<Button onClick={openCreate}>Nova categoria</Button>}

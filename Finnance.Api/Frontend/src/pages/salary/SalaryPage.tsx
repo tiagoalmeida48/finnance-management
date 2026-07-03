@@ -28,6 +28,7 @@ export function SalaryPage() {
     <div className="space-y-6">
       <PageHeader
         icon={Receipt}
+        eyebrow="Renda"
         title="Simulador de salário"
         description="Simule sua folha, gerencie vigências e lance o salário como transação."
         actions={<Button onClick={logic.handleOpenCreateDialog}>Nova vigência</Button>}

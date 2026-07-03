@@ -66,7 +66,7 @@ export function MainLayout() {
         <main className="flex-1 overflow-auto">
           <div
             key={location.pathname}
-            className="route-reveal mx-auto w-[90%] p-4 sm:p-6 lg:p-8"
+            className="route-reveal mx-auto w-[92%] max-w-[1440px] p-4 sm:p-6 lg:p-8"
           >
             <ErrorBoundary key={location.pathname}>
               <Outlet />

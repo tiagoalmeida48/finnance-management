@@ -67,17 +67,23 @@ export function DashboardCategoriesChart({ categories }: DashboardCategoriesChar
           </div>
         ) : (
           <>
-            <div className="flex h-[180px] w-full min-w-0 justify-center">
+            <div className="relative flex h-[180px] w-full min-w-0 justify-center">
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                <span className="mono-label text-[10px] text-text-muted">Total</span>
+                <span className="nums mt-1 text-base font-semibold text-text">
+                  {formatBRL(total)}
+                </span>
+              </div>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={points}
                     cx="50%"
                     cy="50%"
-                    innerRadius={55}
+                    innerRadius={64}
                     outerRadius={80}
-                    paddingAngle={3}
-                    cornerRadius={4}
+                    paddingAngle={2.5}
+                    cornerRadius={6}
                     dataKey="value"
                     stroke="none"
                   >

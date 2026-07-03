@@ -43,6 +43,7 @@ export function UsersPage() {
     <div className="space-y-6">
       <PageHeader
         icon={Users}
+        eyebrow="Administração"
         title="Usuários"
         description="Gerencie os usuários com acesso ao sistema."
         actions={<Button onClick={openCreate}>Novo usuário</Button>}

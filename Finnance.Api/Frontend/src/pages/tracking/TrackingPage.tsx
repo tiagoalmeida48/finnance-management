@@ -11,6 +11,7 @@ export function TrackingPage() {
     <div className="space-y-6">
       <PageHeader
         icon={CalendarCheck}
+        eyebrow="Mês a mês"
         title="Acompanhamento"
         description="Acompanhe o pagamento das contas mês a mês."
         actions={

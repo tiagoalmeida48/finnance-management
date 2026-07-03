@@ -30,6 +30,7 @@ export function ProfilePage() {
     <div className="space-y-6">
       <PageHeader
         icon={UserRound}
+        eyebrow="Sua conta"
         title="Meu perfil"
         description="Atualize seus dados pessoais e a sua senha de acesso."
       />
