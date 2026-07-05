@@ -81,6 +81,12 @@ export interface CreditCardInvoice {
   itemsCount: number;
 }
 
+export interface InvoiceListResult {
+  items: CreditCardInvoice[];
+  totalCount: number;
+  hasNextPage: boolean;
+}
+
 export interface PayBillInput {
   invoice: number;
   account: number;

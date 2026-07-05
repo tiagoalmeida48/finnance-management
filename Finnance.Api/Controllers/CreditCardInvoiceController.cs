@@ -11,10 +11,20 @@ public class CreditCardInvoiceController(ICreditCardInvoiceService creditCardInv
 {
     [Authorization()]
     [HttpGet]
-    public ResultApi<List<CreditCardInvoiceDisplayDto>> GetByCard([FromQuery] long card, [FromQuery] int year = 0)
+    public ResultApi<InvoiceListResultDto> GetByCard([FromQuery] long card, [FromQuery] int year = 0, [FromQuery] int limit = 0, [FromQuery] int offset = 0)
     {
-        var invoices = creditCardInvoiceService.GetByCard(card, UserLogged.user, year);
-        return new ResultApi<List<CreditCardInvoiceDisplayDto>> { Result = invoices.MapTo<List<CreditCardInvoiceDisplayDto>>() };
+        var invoices = creditCardInvoiceService.GetByCard(card, UserLogged.user, year, limit, offset);
+        var totalCount = creditCardInvoiceService.CountByCard(card, UserLogged.user, year);
+
+        return new ResultApi<InvoiceListResultDto>
+        {
+            Result = new InvoiceListResultDto
+            {
+                Items = invoices.MapTo<List<CreditCardInvoiceDisplayDto>>(),
+                TotalCount = totalCount,
+                HasNextPage = limit > 0 && offset + invoices.Count < totalCount
+            }
+        };
     }
 
     [Authorization()]

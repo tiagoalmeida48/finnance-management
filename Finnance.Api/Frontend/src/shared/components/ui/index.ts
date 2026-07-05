@@ -14,7 +14,7 @@ export { PageHeader } from './PageHeader';
 export { SegmentedControl } from './SegmentedControl';
 export { SortableTh } from './SortableTh';
 export { CountUp } from './CountUp';
-export { EntityIcon, ENTITY_ICON_NAMES } from './EntityIcon';
+export { EntityIcon, ENTITY_ICON_NAMES, entityOptionIcon } from './EntityIcon';
 export {
   Dialog,
   DialogContent,

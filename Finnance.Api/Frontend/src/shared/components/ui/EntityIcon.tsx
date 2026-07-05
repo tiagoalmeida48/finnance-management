@@ -150,3 +150,7 @@ export function EntityIcon({ name, size = 18, className, style, fallback = 'Tag'
   const Fallback = ICON_MAP[fallback] ?? Tag;
   return <Fallback size={size} className={className} style={style} />;
 }
+
+export const entityOptionIcon = (name?: string | null, color?: string | null) => (
+  <EntityIcon name={name} size={16} style={{ color: color || undefined }} />
+);

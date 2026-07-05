@@ -49,6 +49,8 @@ public class CategoryRepository : BaseRepository<CategoryEntity, CategoryMod>, I
         if (active)
             sb.Append("AND active = TRUE ");
 
+        sb.Append("""ORDER BY category_type, LOWER("name") """);
+
         if (quantity > 0)
         {
             param.Add("quantity", quantity);

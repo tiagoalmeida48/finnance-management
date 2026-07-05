@@ -1,10 +1,15 @@
-import { CalendarClock, ReceiptText, RotateCw } from 'lucide-react';
+import { CalendarClock, ChevronLeft, ChevronRight, ReceiptText, RotateCw } from 'lucide-react';
 import { Button, EmptyState, Spinner } from '@/shared/components/ui';
 import { InvoiceRow } from './InvoiceRow';
 import type { CreditCardInvoice } from '../types/cards.types';
 
 interface StatementInvoiceListProps {
   invoices: CreditCardInvoice[];
+  totalCount: number;
+  hasNextPage: boolean;
+  offset: number;
+  onPrevPage: () => void;
+  onNextPage: () => void;
   isLoading: boolean;
   isRecalculating: boolean;
   onRecalculate: (invoiceId: number) => void;
@@ -12,6 +17,11 @@ interface StatementInvoiceListProps {
 
 export function StatementInvoiceList({
   invoices,
+  totalCount,
+  hasNextPage,
+  offset,
+  onPrevPage,
+  onNextPage,
   isLoading,
   isRecalculating,
   onRecalculate,
@@ -38,11 +48,30 @@ export function StatementInvoiceList({
           <Spinner />
         </div>
       ) : invoices.length > 0 ? (
-        <div className="space-y-3">
-          {invoices.map((invoice) => (
-            <InvoiceRow key={invoice.creditCardInvoice} invoice={invoice} />
-          ))}
-        </div>
+        <>
+          <div className="space-y-3">
+            {invoices.map((invoice) => (
+              <InvoiceRow key={invoice.creditCardInvoice} invoice={invoice} />
+            ))}
+          </div>
+          {totalCount > invoices.length || offset > 0 ? (
+            <div className="mt-4 flex items-center justify-between">
+              <span className="font-mono text-xs uppercase tracking-wider text-text-muted">
+                {offset + 1}–{offset + invoices.length} de {totalCount}
+              </span>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" disabled={offset === 0} onClick={onPrevPage}>
+                  <ChevronLeft size={14} />
+                  Anterior
+                </Button>
+                <Button variant="outline" size="sm" disabled={!hasNextPage} onClick={onNextPage}>
+                  Próxima
+                  <ChevronRight size={14} />
+                </Button>
+              </div>
+            </div>
+          ) : null}
+        </>
       ) : (
         <EmptyState
           icon={ReceiptText}

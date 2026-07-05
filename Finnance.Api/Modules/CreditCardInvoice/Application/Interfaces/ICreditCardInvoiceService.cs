@@ -5,7 +5,9 @@ namespace Finnance.Api.Modules.CreditCardInvoice.Application.Interfaces;
 
 public interface ICreditCardInvoiceService : IBaseService<CreditCardInvoiceEntity>
 {
-    List<CreditCardInvoiceEntity> GetByCard(long cardId, long userId, int year = 0);
+    List<CreditCardInvoiceEntity> GetByCard(long cardId, long userId, int year = 0, int limit = 0, int offset = 0);
+
+    int CountByCard(long cardId, long userId, int year = 0);
 
     List<CreditCardInvoiceEntity> ListByYear(int year, long userId);
 

@@ -3,18 +3,24 @@ export interface DashboardStats {
   totalAvailableLimit: number;
   monthlyIncome: number;
   monthlyExpenses: number;
+  netFlowDelta: number;
+  hasNetHistory: boolean;
+  avgMonthlyIncome: number;
+  avgMonthlyExpenses: number;
 }
 
 export interface DashboardChartRow {
   monthKey: string;
   income: number;
   expense: number;
+  cumulativeNet: number | null;
 }
 
 export interface DashboardChartPoint {
   name: string;
   receita: number;
   despesa: number;
+  cumulativeNet: number | null;
 }
 
 export interface DashboardCategoryRow {

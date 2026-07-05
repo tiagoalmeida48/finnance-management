@@ -11,6 +11,7 @@ using Finnance.Api.Modules.Transaction.Application.Dto;
 using Finnance.Api.Modules.Transaction.Application.Interfaces;
 using Finnance.Api.Modules.Transaction.Domain.Entities;
 using Finnance.Api.Modules.Transaction.Domain.Interfaces;
+using Finnance.Api.Shared.Utils;
 using System.Text.RegularExpressions;
 
 namespace Finnance.Api.Modules.Transaction.Application.Services;
@@ -142,14 +143,14 @@ public partial class TransactionService(ITransactionRepository transactionReposi
             PaymentMethod = input.PaymentMethod,
             Amount = input.Amount,
             PaymentDate = input.PaymentDate,
-            PurchaseDate = input.PurchaseDate,
+            PurchaseDate = input.Card is > 0 ? input.PurchaseDate ?? input.PaymentDate : input.PurchaseDate,
             Description = input.Description,
             Account = input.Account,
             ToAccount = input.ToAccount,
             Card = input.Card,
             Category = input.Category,
             Notes = input.Notes,
-            Paid = input.IsPaid,
+            Paid = input.IsPaid || input.PaymentMethod == Constants.PaymentMethodId.DEBIT,
             Fixed = input.IsFixed
         };
     }

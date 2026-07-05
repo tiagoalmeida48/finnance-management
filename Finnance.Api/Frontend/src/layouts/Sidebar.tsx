@@ -5,6 +5,7 @@ import {
   Tags,
   TrendingUp,
   CalendarCheck,
+  MessagesSquare,
   UserRound,
   Users,
   LogOut,
@@ -22,6 +23,7 @@ const navigation = [
   { label: 'Categorias', path: '/categories', icon: Tags, adminOnly: false },
   { label: 'Salário', path: '/salary', icon: TrendingUp, adminOnly: true },
   { label: 'Acompanhamento', path: '/tracking', icon: CalendarCheck, adminOnly: false },
+  { label: 'Comunidade', path: '/community', icon: MessagesSquare, adminOnly: false, disabled: true },
   { label: 'Perfil', path: '/profile', icon: UserRound, adminOnly: false },
   { label: 'Usuários', path: '/users', icon: Users, adminOnly: true },
 ];
@@ -76,6 +78,30 @@ export function Sidebar({ onNavigate, collapsed = false, onToggleCollapse }: Sid
             .filter((item) => !item.adminOnly || user?.isAdmin)
             .map((item) => {
               const Icon = item.icon;
+              if (item.disabled) {
+                return (
+                  <div
+                    key={item.path}
+                    aria-disabled
+                    title="Em breve"
+                    className={cn(
+                      'group relative flex cursor-not-allowed items-center rounded-md py-2 text-text-muted opacity-50',
+                      collapsed ? 'justify-center px-0' : 'gap-3 px-3',
+                    )}
+                  >
+                    <Icon size={17} strokeWidth={1.75} className="shrink-0" />
+                    {!collapsed && (
+                      <span className="flex items-center gap-2 font-mono text-[0.72rem] uppercase tracking-wider">
+                        {item.label}
+                        <span className="rounded-full border border-border-strong px-1.5 py-0.5 text-[0.55rem]">
+                          Em breve
+                        </span>
+                      </span>
+                    )}
+                    {collapsed && <span className={tooltipClass}>{item.label} — Em breve</span>}
+                  </div>
+                );
+              }
               const isActive = location.pathname === item.path;
               return (
                 <Link

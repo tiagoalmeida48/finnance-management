@@ -59,6 +59,7 @@ export function TransactionFormModal({ open, editing, onClose }: TransactionForm
     isFixed,
     installmentPreview,
     isGroupEditing,
+    isRecurringGroup,
     accountOptions,
     cardOptions,
     categoryOptions,
@@ -220,10 +221,10 @@ export function TransactionFormModal({ open, editing, onClose }: TransactionForm
           <div
             className={cn(
               'grid grid-cols-1 gap-3 border-t border-border pt-3',
-              !editing && !isTransfer ? 'sm:grid-cols-3' : '',
+              !isTransfer ? 'sm:grid-cols-3' : '',
             )}
           >
-            {!editing && !isTransfer ? (
+            {!isTransfer ? (
               <>
                 <label className={toggleBoxClass}>
                   <span className="flex items-center gap-2">
@@ -237,7 +238,7 @@ export function TransactionFormModal({ open, editing, onClose }: TransactionForm
                     <Layers size={16} className="text-text-muted" />
                     Parcelar
                   </span>
-                  <Switch {...register('isInstallment')} disabled={isFixed} />
+                  <Switch {...register('isInstallment')} disabled={isFixed || Boolean(editing)} />
                 </label>
               </>
             ) : null}
@@ -276,7 +277,7 @@ export function TransactionFormModal({ open, editing, onClose }: TransactionForm
           {isGroupEditing ? (
             <label className="flex items-center gap-2 text-sm text-text">
               <Checkbox {...register('replicateToGroup')} />
-              Replicar para todas as parcelas
+              {isRecurringGroup ? 'Replicar deste mês em diante' : 'Replicar para todas as parcelas'}
             </label>
           ) : null}
 

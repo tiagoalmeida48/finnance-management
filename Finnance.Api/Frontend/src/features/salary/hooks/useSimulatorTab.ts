@@ -1,13 +1,25 @@
 import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useDebounce } from '@/shared/hooks';
+import { salaryService } from '../services/salaryService';
 import {
   buildSettingKey,
-  calculatePayroll,
   DEFAULT_ADMIN_FEE_PERCENTAGE,
   DEFAULT_INSS_PERCENTAGE,
   formatPercentLabel,
   toNumber,
 } from '../constants';
-import type { SalarySetting } from '../types/salary.types';
+import type { PayrollResult, SalarySetting } from '../types/salary.types';
+
+const ZERO_PAYROLL: PayrollResult = {
+  grossPay: 0,
+  baseSalary: 0,
+  profitAdvance: 0,
+  inssDiscount: 0,
+  adminFeeDiscount: 0,
+  totalDiscounts: 0,
+  netPay: 0,
+};
 
 export function useSimulatorTab(
   currentSetting: SalarySetting | null | undefined,
@@ -53,17 +65,19 @@ export function useSimulatorTab(
     calculationSetting?.adminFeePercentage ?? DEFAULT_ADMIN_FEE_PERCENTAGE,
   );
 
-  const payroll = useMemo(
-    () =>
-      calculatePayroll({
-        totalHours: toNumber(totalHours),
-        hourlyRate: currentHourlyRate,
-        baseSalary: currentBaseSalary,
-        inssPercentage: currentInssPercentage,
-        adminFeePercentage: currentAdminFeePercentage,
-      }),
-    [totalHours, currentHourlyRate, currentBaseSalary, currentInssPercentage, currentAdminFeePercentage],
-  );
+  const hoursValue = Math.max(0, toNumber(totalHours));
+  const debouncedHours = useDebounce(hoursValue, 300);
+  const settingId = calculationSetting?.settingsSalary ?? null;
+
+  const payrollQuery = useQuery({
+    queryKey: ['salary', 'payroll', settingId ?? 0, debouncedHours],
+    queryFn: () =>
+      salaryService.calculatePayroll({ totalHours: debouncedHours, settingsSalary: settingId }),
+    enabled: settingId != null && debouncedHours > 0,
+    placeholderData: (previous: PayrollResult | undefined) => previous,
+  });
+
+  const payroll = debouncedHours > 0 ? (payrollQuery.data ?? ZERO_PAYROLL) : ZERO_PAYROLL;
 
   const inssDisplay = Math.abs(payroll.inssDiscount);
   const adminDisplay = Math.abs(payroll.adminFeeDiscount);

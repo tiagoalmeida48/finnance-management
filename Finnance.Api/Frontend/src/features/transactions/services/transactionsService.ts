@@ -4,6 +4,8 @@ import type {
   BatchPayInput,
   CreateResult,
   DeleteGroupInput,
+  ImportInput,
+  ImportPreviewResult,
   Transaction,
   TransactionCreateInput,
   TransactionFilter,
@@ -88,5 +90,13 @@ export const transactionsService = {
 
   importTemplate: async (): Promise<string> => {
     return apiClient.get<string>('/transaction/import-template');
+  },
+
+  importPreview: async (content: string): Promise<ImportPreviewResult> => {
+    return apiClient.post<ImportPreviewResult>('/transaction/import-preview', { content });
+  },
+
+  import: async (input: ImportInput): Promise<number> => {
+    return apiClient.post<number>('/transaction/import', input);
   },
 };

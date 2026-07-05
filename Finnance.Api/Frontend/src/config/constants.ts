@@ -6,14 +6,6 @@ export const TransactionTypeId = {
   TRANSFER: 3,
 } as const;
 
-export const AccountTypeId = {
-  CHECKING: 1,
-  SAVINGS: 2,
-  INVESTMENT: 3,
-  WALLET: 4,
-  OTHER: 5,
-} as const;
-
 export const CategoryTypeId = {
   INCOME: 1,
   EXPENSE: 2,
@@ -35,9 +27,4 @@ export const InvoiceStatusId = {
   PARTIAL: 3,
   PAID: 4,
   OVERDUE: 5,
-} as const;
-
-export const RoleId = {
-  ADMIN: 1,
-  USER: 2,
 } as const;

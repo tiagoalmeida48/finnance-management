@@ -11,6 +11,7 @@ import {
   Spinner,
 } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
+import { InvoiceStatusId } from '@/config/constants';
 import { TransactionFormModal } from '@/features/transactions';
 import { getInvoiceStatusMeta } from './invoiceStatus';
 import { PayBillModal } from './PayBillModal';
@@ -40,14 +41,29 @@ export function InvoiceRow({ invoice }: InvoiceRowProps) {
   const [payOpen, setPayOpen] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Transaction | null>(null);
+  const [sortField, setSortField] = useState('payment_date');
+  const [sortAsc, setSortAsc] = useState(false);
   const payBill = usePayBill();
   const deleteTransaction = useDeleteInvoiceTransaction();
   const cardsQuery = useCards();
   const defaultAccount = cardsQuery.data?.find((c) => c.creditCard === invoice.card)?.bankAccount;
   const status = getInvoiceStatusMeta(invoice.invoiceStatus);
-  const remaining = invoice.totalAmount - invoice.paidAmount;
-  const transactionsQuery = useInvoiceTransactions(expanded ? invoice.creditCardInvoice : null);
+  const isSettled = invoice.invoiceStatus === InvoiceStatusId.PAID;
+  const transactionsQuery = useInvoiceTransactions(
+    expanded ? invoice.creditCardInvoice : null,
+    sortField,
+    sortAsc,
+  );
   const transactions = transactionsQuery.data ?? [];
+
+  const toggleSort = (field: string) => {
+    if (field === sortField) {
+      setSortAsc((value) => !value);
+      return;
+    }
+    setSortField(field);
+    setSortAsc(true);
+  };
 
   const handlePay = (input: { account: number; paymentDate: string }) => {
     payBill.mutate(
@@ -86,12 +102,12 @@ export function InvoiceRow({ invoice }: InvoiceRowProps) {
         <span className="nums font-semibold whitespace-nowrap text-text">
           {formatCurrency(invoice.totalAmount)}
         </span>
-        {remaining > 0 ? (
+        {isSettled ? (
+          <Badge variant="income">Quitada</Badge>
+        ) : (
           <Button size="sm" onClick={() => setPayOpen(true)}>
             Pagar
           </Button>
-        ) : (
-          <Badge variant="income">Quitada</Badge>
         )}
       </div>
 
@@ -104,6 +120,9 @@ export function InvoiceRow({ invoice }: InvoiceRowProps) {
           ) : transactions.length > 0 ? (
             <InvoiceTransactionList
               transactions={transactions}
+              sortField={sortField}
+              sortAsc={sortAsc}
+              onSort={toggleSort}
               onEdit={setEditing}
               onDelete={setPendingDelete}
             />

@@ -15,13 +15,9 @@ import {
 } from '@/shared/components/ui';
 import { CategoryTypeId } from '@/config/constants';
 import { cn } from '@/shared/utils';
+import { useCategoryTypes } from '../hooks/useCategories';
 import type { Category } from '../types/categories.types';
-import {
-  CATEGORY_COLORS,
-  CATEGORY_ICONS,
-  DEFAULT_CATEGORY_COLOR,
-  DEFAULT_CATEGORY_ICON,
-} from './categoryOptions';
+import { CATEGORY_ICONS, DEFAULT_CATEGORY_COLOR, DEFAULT_CATEGORY_ICON } from './categoryOptions';
 
 const categorySchema = z.object({
   name: z.string().trim().min(1, 'Informe o nome da categoria.'),
@@ -40,10 +36,6 @@ interface CategoryFormModalProps {
   onSubmit: (values: CategoryFormValues) => void;
 }
 
-const TYPE_OPTIONS = [
-  { value: CategoryTypeId.EXPENSE, label: 'Despesa' },
-  { value: CategoryTypeId.INCOME, label: 'Receita' },
-];
 
 const emptyValues: CategoryFormValues = {
   name: '',
@@ -59,6 +51,10 @@ export function CategoryFormModal({
   onClose,
   onSubmit,
 }: CategoryFormModalProps) {
+  const typesQuery = useCategoryTypes();
+  const typeOptions = (typesQuery.data ?? [])
+    .map((type) => ({ value: type.categoryType, label: type.name }))
+    .sort((a, b) => a.value - b.value);
   const {
     register,
     handleSubmit,
@@ -86,7 +82,6 @@ export function CategoryFormModal({
   }, [open, category, reset]);
 
   const selectedType = watch('categoryType');
-  const selectedColor = watch('color');
   const selectedIcon = watch('icon');
 
   return (
@@ -100,6 +95,34 @@ export function CategoryFormModal({
           onSubmit={handleSubmit(onSubmit)}
           className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2"
         >
+          <div className="sm:col-span-2">
+            <Label>Tipo</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {typeOptions.map((option) => {
+                const optionIsIncome = option.value === CategoryTypeId.INCOME;
+                const selected = selectedType === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setValue('categoryType', option.value, { shouldDirty: true })}
+                    className={cn(
+                      'rounded-md border px-3 py-2 text-sm font-medium transition-colors',
+                      selected && optionIsIncome && 'border-income bg-income/10 text-income',
+                      selected && !optionIsIncome && 'border-expense bg-expense/10 text-expense',
+                      !selected && 'border-border bg-surface text-text-muted hover:bg-surface-2',
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+            {errors.categoryType && (
+              <p className="mt-1 text-xs text-expense">{errors.categoryType.message}</p>
+            )}
+          </div>
+
           <div>
             <Label htmlFor="category-name">Nome</Label>
             <Input
@@ -113,46 +136,13 @@ export function CategoryFormModal({
           </div>
 
           <div>
-            <Label>Tipo</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {TYPE_OPTIONS.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setValue('categoryType', option.value, { shouldDirty: true })}
-                  className={cn(
-                    'rounded-md border px-3 py-2 text-sm font-medium transition-colors',
-                    selectedType === option.value
-                      ? 'border-primary bg-primary/10 text-text'
-                      : 'border-border bg-surface text-text-muted hover:bg-surface-2',
-                  )}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-            {errors.categoryType && (
-              <p className="mt-1 text-xs text-expense">{errors.categoryType.message}</p>
-            )}
-          </div>
-
-          <div className="sm:col-span-2">
-            <Label>Cor</Label>
-            <div className="flex flex-wrap gap-2">
-              {CATEGORY_COLORS.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  aria-label={`Selecionar cor ${option}`}
-                  onClick={() => setValue('color', option, { shouldDirty: true })}
-                  className={cn(
-                    'h-7 w-7 rounded-full border-2 transition-transform',
-                    selectedColor === option ? 'border-text scale-110' : 'border-transparent',
-                  )}
-                  style={{ backgroundColor: option }}
-                />
-              ))}
-            </div>
+            <Label htmlFor="category-color">Cor</Label>
+            <input
+              id="category-color"
+              type="color"
+              className="h-9 w-full rounded-lg border border-border bg-bg/60 p-1"
+              {...register('color')}
+            />
           </div>
 
           <div className="sm:col-span-2">

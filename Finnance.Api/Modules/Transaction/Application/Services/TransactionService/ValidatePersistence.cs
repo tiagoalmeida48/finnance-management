@@ -26,10 +26,24 @@ public partial class TransactionService
         if (input.Card is > 0 && (input.Account is null or <= 0))
             throw new ApplicationException(Constants.ErrorMessage.AccountRequiredForCard);
 
+        if (input.Card is > 0 && input.PaymentMethod != Constants.PaymentMethodId.CREDIT)
+            throw new ApplicationException(Constants.ErrorMessage.CardRequiresCreditMethod);
+
         EnsureAccountOwnership(input.Account, userId);
         EnsureAccountOwnership(input.ToAccount, userId);
-        EnsureCardOwnership(input.Card, userId);
+        EnsureCardBelongsToAccount(input.Card, input.Account, userId);
         EnsureCategoryOwnership(input.Category, userId);
+    }
+
+    private void EnsureCardBelongsToAccount(long? card, long? account, long userId)
+    {
+        if (card is not > 0)
+            return;
+
+        var entity = creditCardService.GetCard(card.Value, userId);
+
+        if (account is > 0 && entity.BankAccount != account.Value)
+            throw new ApplicationException(Constants.ErrorMessage.CardAccountMismatch);
     }
 
     private void EnsureAccountOwnership(long? account, long userId)
@@ -42,12 +56,6 @@ public partial class TransactionService
     {
         if (account > 0)
             bankAccountService.Get(account, userId);
-    }
-
-    private void EnsureCardOwnership(long? card, long userId)
-    {
-        if (card is > 0)
-            creditCardService.EnsureOwnership(card.Value, userId);
     }
 
     private void EnsureCategoryOwnership(long? category, long userId)

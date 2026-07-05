@@ -43,4 +43,10 @@ public interface ITransactionService : IBaseService<TransactionEntity>
     TransactionSummaryDto GetSummary(TransactionFilterDto filter, long userId);
 
     string GetImportTemplate();
+
+    ImportPreviewResultDto ParseImport(string content, long userId);
+
+    int ImportTransactions(ImportDto input, long userId);
+
+    List<TrackingMonthDto> GetMonthlyTracking(int year, long userId);
 }

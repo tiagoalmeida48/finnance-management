@@ -43,6 +43,10 @@ public interface ITransactionRepository : IBaseRepository<TransactionEntity>
 
     List<TransactionEntity> SearchByGroup(long groupId, string groupColumn, long user);
 
+    List<TransactionEntity> SearchByGroupFrom(long groupId, string groupColumn, DateTime fromDate, long user);
+
+    List<TransactionEntity> SearchFixedExpensesByYear(int year, long user);
+
     bool DeleteById(long transaction, long user);
 
     int DeleteByGroup(long groupId, string groupColumn, long user);

@@ -34,13 +34,9 @@ export interface SalarySettingCloseInput {
   dateEnd: string;
 }
 
-export interface PayrollInput {
+export interface PayrollCalculateInput {
   totalHours: number;
-  hourlyRate: number;
-  baseSalary: number;
-  inssPercentage: number;
-  adminFeePercentage: number;
-  tetoInss?: number;
+  settingsSalary: number | null;
 }
 
 export interface PayrollResult {

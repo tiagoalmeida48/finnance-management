@@ -9,4 +9,12 @@ public class DashboardStatsDto
     public decimal MonthlyIncome { get; set; }
 
     public decimal MonthlyExpenses { get; set; }
+
+    public decimal NetFlowDelta { get; set; }
+
+    public bool HasNetHistory { get; set; }
+
+    public decimal AvgMonthlyIncome { get; set; }
+
+    public decimal AvgMonthlyExpenses { get; set; }
 }

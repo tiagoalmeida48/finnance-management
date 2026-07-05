@@ -4,7 +4,6 @@ export * from './hooks/useSalary';
 export { useSalarySimulatorPageLogic } from './hooks/useSalarySimulatorPageLogic';
 export type { SalaryTab } from './hooks/useSalarySimulatorPageLogic';
 export {
-  calculatePayroll,
   formatValidity,
   formatDateBR,
   formatPercentLabel,

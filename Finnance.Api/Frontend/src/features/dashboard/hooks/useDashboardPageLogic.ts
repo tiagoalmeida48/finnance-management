@@ -49,6 +49,7 @@ export function useDashboardPageLogic() {
         name,
         receita: Number(row?.income ?? 0),
         despesa: Number(row?.expense ?? 0),
+        cumulativeNet: row?.cumulativeNet ?? null,
       };
     });
   }, [chartsQuery.data, selectedYear]);

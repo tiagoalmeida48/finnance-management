@@ -1,6 +1,7 @@
 import { Pencil, Trash2 } from 'lucide-react';
 import { Badge, Button, EntityIcon } from '@/shared/components/ui';
 import { CategoryTypeId } from '@/config/constants';
+import { useCategoryTypes } from '../hooks/useCategories';
 import type { Category } from '../types/categories.types';
 
 interface CategoryCardProps {
@@ -10,7 +11,11 @@ interface CategoryCardProps {
 }
 
 export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) {
+  const typesQuery = useCategoryTypes();
   const isIncome = category.categoryType === CategoryTypeId.INCOME;
+  const typeName =
+    typesQuery.data?.find((type) => type.categoryType === category.categoryType)?.name ??
+    (isIncome ? 'Receita' : 'Despesa');
 
   return (
     <div className="flex items-center gap-3 rounded-lg border border-border bg-surface-2 p-2.5 transition-colors hover:border-primary/40">
@@ -24,9 +29,7 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
       <div className="min-w-0 flex-1">
         <p className="truncate font-semibold text-text">{category.name}</p>
         <div className="mt-1 flex items-center gap-2">
-          <Badge variant={isIncome ? 'income' : 'expense'}>
-            {isIncome ? 'Receita' : 'Despesa'}
-          </Badge>
+          <Badge variant={isIncome ? 'income' : 'expense'}>{typeName}</Badge>
           {!category.active && <span className="text-xs text-text-muted">Inativa</span>}
         </div>
       </div>

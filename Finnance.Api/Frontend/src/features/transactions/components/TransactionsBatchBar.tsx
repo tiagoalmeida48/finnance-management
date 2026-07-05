@@ -9,6 +9,7 @@ import {
   Input,
   Label,
   SelectMenu,
+  entityOptionIcon,
 } from '@/shared/components/ui';
 import { useAccountsLookup } from '../hooks/useLookups';
 
@@ -40,7 +41,11 @@ export function TransactionsBatchBar({
   const [paymentDate, setPaymentDate] = useState(today());
   const [day, setDay] = useState(1);
 
-  const accountOptions = (accounts.data ?? []).map((a) => ({ value: a.bankAccount, label: a.name }));
+  const accountOptions = (accounts.data ?? []).map((a) => ({
+    value: a.bankAccount,
+    label: a.name,
+    icon: entityOptionIcon(a.icon, a.color),
+  }));
 
   if (selectedCount === 0) return null;
 

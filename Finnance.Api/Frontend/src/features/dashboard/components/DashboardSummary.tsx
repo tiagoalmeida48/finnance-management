@@ -63,15 +63,14 @@ export function DashboardSummary({ stats, chartData, isLoading }: DashboardSumma
   const income = stats?.monthlyIncome ?? 0;
   const expenses = stats?.monthlyExpenses ?? 0;
   const availableLimit = stats?.totalAvailableLimit ?? 0;
+  const delta = stats?.netFlowDelta ?? 0;
+  const hasNetHistory = stats?.hasNetHistory ?? false;
+  const avgIncome = stats?.avgMonthlyIncome ?? 0;
+  const avgExpenses = stats?.avgMonthlyExpenses ?? 0;
 
-  const activeMonths = (chartData ?? []).filter((point) => point.receita > 0 || point.despesa > 0);
-  const nets = activeMonths.map((point) => point.receita - point.despesa);
-  const cumulative = nets.reduce<number[]>(
-    (acc, net) => [...acc, (acc.at(-1) ?? 0) + net],
-    [],
-  );
-  const delta = nets.length > 1 ? nets[nets.length - 1] - nets[nets.length - 2] : 0;
-  const monthCount = Math.max(activeMonths.length, 1);
+  const cumulative = (chartData ?? [])
+    .map((point) => point.cumulativeNet)
+    .filter((value): value is number => value !== null);
   const flowTotal = income + expenses || 1;
 
   return (
@@ -92,7 +91,7 @@ export function DashboardSummary({ stats, chartData, isLoading }: DashboardSumma
               isLoading={isLoading}
               className="text-[2.9rem] leading-none tracking-tight text-text"
             />
-            {!isLoading && nets.length > 1 && (
+            {!isLoading && hasNetHistory && (
               <p className="mt-3.5 flex flex-wrap items-center gap-2 text-xs">
                 <span
                   className={cn(
@@ -126,7 +125,7 @@ export function DashboardSummary({ stats, chartData, isLoading }: DashboardSumma
         <div>
           <SummaryValue value={income} isLoading={isLoading} className="text-2xl text-income" />
           <p className="nums mt-2 text-xs text-text-muted">
-            média mensal {formatCurrency(income / monthCount)}
+            média mensal {formatCurrency(avgIncome)}
           </p>
           <div className="mt-3 h-1 overflow-hidden rounded-full bg-surface-3">
             <div
@@ -147,7 +146,7 @@ export function DashboardSummary({ stats, chartData, isLoading }: DashboardSumma
         <div>
           <SummaryValue value={expenses} isLoading={isLoading} className="text-2xl text-expense" />
           <p className="nums mt-2 text-xs text-text-muted">
-            média mensal {formatCurrency(expenses / monthCount)}
+            média mensal {formatCurrency(avgExpenses)}
           </p>
           <div className="mt-3 h-1 overflow-hidden rounded-full bg-surface-3">
             <div

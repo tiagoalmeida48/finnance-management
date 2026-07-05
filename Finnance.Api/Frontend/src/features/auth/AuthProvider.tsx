@@ -58,7 +58,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         addToast('Bem-vindo!', 'success');
         navigate('/');
       } catch (error) {
-        addToast('Falha ao fazer login', 'error');
+        addToast('Usuário ou senha incorreta', 'error');
         throw error;
       }
     },

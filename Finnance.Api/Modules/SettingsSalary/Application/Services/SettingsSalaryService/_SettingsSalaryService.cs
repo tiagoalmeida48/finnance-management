@@ -2,11 +2,13 @@ using Finnance.Api.Modules.Common.Application.Services;
 using Finnance.Api.Modules.SettingsSalary.Application.Interfaces;
 using Finnance.Api.Modules.SettingsSalary.Domain.Entities;
 using Finnance.Api.Modules.SettingsSalary.Domain.Interfaces;
+using Finnance.Api.Modules.SystemConfig.Application.Interfaces;
 using Finnance.Api.Shared.Utils;
 
 namespace Finnance.Api.Modules.SettingsSalary.Application.Services;
 
-public partial class SettingsSalaryService(ISettingsSalaryRepository settingsSalaryRepository)
+public partial class SettingsSalaryService(ISettingsSalaryRepository settingsSalaryRepository,
+                                           ISystemConfigService systemConfigService)
     : BaseService<SettingsSalaryEntity>(settingsSalaryRepository), ISettingsSalaryService
 {
     public long CreateWithValidity(SettingsSalaryEntity entity, long userId)

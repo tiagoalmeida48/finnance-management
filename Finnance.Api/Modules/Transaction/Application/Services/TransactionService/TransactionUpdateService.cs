@@ -166,6 +166,12 @@ public partial class TransactionService
         if (patch.Notes != null)
             current.Notes = patch.Notes;
 
+        if (current.Card is > 0 && current.PurchaseDate is null && current.PaymentDate.HasValue)
+        {
+            current.PurchaseDate = current.PaymentDate;
+            relinkInvoice = true;
+        }
+
         return relinkInvoice;
     }
 }

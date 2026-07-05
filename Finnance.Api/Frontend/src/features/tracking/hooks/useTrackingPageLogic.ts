@@ -1,38 +1,14 @@
 import { useMemo, useState } from 'react';
-import {
-  addMonths,
-  eachMonthOfInterval,
-  endOfYear,
-  format,
-  startOfYear,
-} from 'date-fns';
+import { addMonths, eachMonthOfInterval, endOfYear, format, startOfYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { InvoiceStatusId, TransactionTypeId } from '@/config/constants';
-import { calculateTrackingSummary } from '../utils/billTracking.utils';
-import type { TrackingItem, TrackingItemType } from '../types/tracking.types';
-import { useTrackingCards, useTrackingInvoices, useTrackingTransactions } from './useTracking';
-import type {
-  TrackingCard,
-  TrackingInvoice,
-  TrackingTransaction,
-} from '../services/trackingService';
+import type { MonthlyTrackingData, TrackingItemType } from '../types/tracking.types';
+import { useTrackingMonthly } from './useTracking';
 
 export function useTrackingPageLogic() {
   const [currentYear, setCurrentYear] = useState(new Date());
-
-  const startDate = format(startOfYear(currentYear), 'yyyy-MM-dd');
-  const endDate = format(endOfYear(currentYear), 'yyyy-MM-dd');
   const year = currentYear.getFullYear();
 
-  const { data: transactions, isLoading } = useTrackingTransactions(startDate, endDate);
-  const { data: invoices } = useTrackingInvoices(year);
-  const { data: cards } = useTrackingCards();
-
-  const cardMap = useMemo(() => {
-    const map = new Map<number, TrackingCard>();
-    (cards ?? []).forEach((card) => map.set(card.creditCard, card));
-    return map;
-  }, [cards]);
+  const { data: monthly, isLoading } = useTrackingMonthly(year);
 
   const months = useMemo(
     () =>
@@ -46,26 +22,28 @@ export function useTrackingPageLogic() {
   const goToPreviousYear = () => setCurrentYear((prev) => addMonths(prev, -12));
   const goToNextYear = () => setCurrentYear((prev) => addMonths(prev, 12));
 
-  const monthlyData = useMemo(() => {
-    return months.map((month) => {
-      const monthStr = format(month, 'yyyy-MM');
-      const items = [
-        ...buildFixedItems(transactions ?? [], monthStr),
-        ...buildCardItems(invoices ?? [], cardMap, monthStr),
-      ];
-      const summary = calculateTrackingSummary(items);
+  const monthlyData = useMemo<MonthlyTrackingData[]>(() => {
+    return months.map((month, index) => {
+      const data = (monthly ?? []).find((entry) => entry.month === index + 1);
 
       return {
         month,
         monthName: format(month, 'MMMM', { locale: ptBR }),
-        items,
-        progress: summary.progress,
-        totalItems: summary.totalItems,
-        paidItems: summary.paidItems,
-        totalAmount: summary.totalAmount,
+        items: (data?.items ?? []).map((item) => ({
+          id: item.id,
+          name: item.name,
+          total: item.total,
+          isPaid: item.isPaid,
+          itemType: item.itemType as TrackingItemType,
+          account: item.account ?? null,
+        })),
+        progress: data?.progress ?? 0,
+        totalItems: data?.totalItems ?? 0,
+        paidItems: data?.paidItems ?? 0,
+        totalAmount: data?.totalAmount ?? 0,
       };
     });
-  }, [months, transactions, invoices, cardMap]);
+  }, [months, monthly]);
 
   return {
     currentYear,
@@ -74,43 +52,4 @@ export function useTrackingPageLogic() {
     isLoading,
     monthlyData,
   };
-}
-
-function buildFixedItems(transactions: TrackingTransaction[], monthStr: string): TrackingItem[] {
-  return transactions
-    .filter(
-      (t) =>
-        t.fixed &&
-        t.paymentDate !== null &&
-        format(new Date(`${t.paymentDate.slice(0, 10)}T12:00:00`), 'yyyy-MM') === monthStr &&
-        t.transactionType === TransactionTypeId.EXPENSE,
-    )
-    .map((t) => ({
-      id: t.transaction,
-      name: t.description,
-      total: Number(t.amount) || 0,
-      isPaid: t.paid,
-      itemType: 'fixed' as TrackingItemType,
-      account: t.account ?? null,
-    }));
-}
-
-function buildCardItems(
-  invoices: TrackingInvoice[],
-  cardMap: Map<number, TrackingCard>,
-  monthStr: string,
-): TrackingItem[] {
-  return invoices
-    .filter((invoice) => invoice.monthKey === monthStr && invoice.totalAmount > 0)
-    .map((invoice) => {
-      const card = cardMap.get(invoice.card);
-      return {
-        id: invoice.creditCardInvoice,
-        name: `Fatura ${card?.name ?? 'Cartão'}`,
-        total: invoice.totalAmount,
-        isPaid: invoice.invoiceStatus === InvoiceStatusId.PAID,
-        itemType: 'card' as TrackingItemType,
-        account: card?.bankAccount ?? null,
-      };
-    });
 }

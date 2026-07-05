@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { PaymentMethodId } from '@/config/constants';
+import { entityOptionIcon } from '@/shared/components/ui';
 import { useToast } from '@/shared/components/feedback';
 import { transactionsService } from '../services/transactionsService';
-import { downloadCsv, parseTransactionsCsv } from '../components/transactionCsv';
+import { downloadCsv } from '../components/transactionCsv';
 import { transactionKeys } from './useTransactions';
 import {
   useAccountsLookup,
@@ -41,7 +42,6 @@ export function useTransactionImportLogic(open: boolean, onClose: () => void) {
   const [accountId, setAccountId] = useState<number>(0);
   const [cardId, setCardId] = useState<number>(0);
   const [importing, setImporting] = useState(false);
-  const [progress, setProgress] = useState(0);
 
   const isCreditMethod = paymentMethodId === PaymentMethodId.CREDIT;
 
@@ -51,21 +51,23 @@ export function useTransactionImportLogic(open: boolean, onClose: () => void) {
     enabled: open,
   });
 
-  const accountOptions = (accounts.data ?? []).map((a) => ({ value: a.bankAccount, label: a.name }));
+  const accountOptions = (accounts.data ?? []).map((a) => ({
+    value: a.bankAccount,
+    label: a.name,
+    icon: entityOptionIcon(a.icon, a.color),
+  }));
   const cardOptions = (cards.data ?? [])
     .filter((c) => !accountId || c.bankAccount === accountId)
-    .map((c) => ({ value: c.creditCard, label: c.name }));
+    .map((c) => ({ value: c.creditCard, label: c.name, icon: entityOptionIcon('CreditCard', c.color) }));
   const paymentMethodOptions = (paymentMethods.data ?? []).map((p) => ({
     value: p.paymentMethod,
     label: p.name,
   }));
-  const categoryOptions = (categories.data ?? []).map((c) => ({ value: c.category, label: c.name }));
-
-  const categoryByName = useMemo(() => {
-    const map = new Map<string, number>();
-    (categories.data ?? []).forEach((c) => map.set(c.name.trim().toLowerCase(), c.category));
-    return map;
-  }, [categories.data]);
+  const categoryOptions = (categories.data ?? []).map((c) => ({
+    value: c.category,
+    label: c.name,
+    icon: entityOptionIcon(c.icon, c.color),
+  }));
 
   const validCount = rows.filter(isRowValid).length;
   const canImport = accountId > 0 && validCount > 0 && !importing;
@@ -74,7 +76,6 @@ export function useTransactionImportLogic(open: boolean, onClose: () => void) {
     setRows([]);
     setErrors([]);
     setFileInfo(null);
-    setProgress(0);
   };
 
   const handleClose = () => {
@@ -86,26 +87,29 @@ export function useTransactionImportLogic(open: boolean, onClose: () => void) {
 
   const handleFile = async (file?: File) => {
     if (!file) return;
-    const text = await file.text();
-    const result = parseTransactionsCsv(text);
-    if (!accountId) {
-      const defaultAccount = accounts.data?.[0]?.bankAccount ?? 0;
-      if (defaultAccount) setAccountId(defaultAccount);
+    try {
+      const text = await file.text();
+      const result = await transactionsService.importPreview(text);
+      if (!accountId) {
+        const defaultAccount = accounts.data?.[0]?.bankAccount ?? 0;
+        if (defaultAccount) setAccountId(defaultAccount);
+      }
+      setRows(
+        result.rows.map((row) => ({
+          date: row.date,
+          description: row.description,
+          amount: row.amount,
+          transactionType: row.transactionType,
+          categoryId: row.category ?? 0,
+          installments: '',
+          notes: row.notes,
+        })),
+      );
+      setErrors(result.errors);
+      setFileInfo({ name: file.name, size: file.size, lines: result.rows.length + result.errors.length });
+    } catch {
+      addToast('Não foi possível ler o arquivo.', 'error');
     }
-    setRows(
-      result.rows.map((row) => ({
-        date: row.date,
-        description: row.description,
-        amount: row.amount,
-        transactionType: row.transactionType,
-        categoryId: row.categoryName ? categoryByName.get(row.categoryName.toLowerCase()) ?? 0 : 0,
-        installments: '',
-        notes: row.notes,
-      })),
-    );
-    setErrors(result.errors);
-    setFileInfo({ name: file.name, size: file.size, lines: result.rows.length + result.errors.length });
-    setProgress(0);
   };
 
   const updatePaymentMethod = (value: number) => {
@@ -128,48 +132,31 @@ export function useTransactionImportLogic(open: boolean, onClose: () => void) {
     const valid = rows.filter(isRowValid);
     const onCard = isCreditMethod && cardId > 0;
     setImporting(true);
-    let ok = 0;
-    let failed = 0;
-    for (let i = 0; i < valid.length; i++) {
-      const row = valid[i];
-      const parcels = parseInt(row.installments, 10);
-      const isInstallment = Number.isFinite(parcels) && parcels >= 2;
-      try {
-        await transactionsService.create({
-          transactionType: row.transactionType,
-          amount: row.amount,
+    try {
+      const imported = await transactionsService.import({
+        rows: valid.map((row) => ({
+          date: row.date,
           description: row.description,
-          paymentDate: row.date,
-          purchaseDate: onCard ? row.date : null,
-          account: accountId,
-          toAccount: null,
-          card: onCard ? cardId : null,
+          amount: row.amount,
+          transactionType: row.transactionType,
           category: row.categoryId || null,
-          paymentMethod: paymentMethodId || null,
+          installments: Number.parseInt(row.installments, 10) || 0,
           notes: row.notes ?? '',
-          isPaid: paymentMethodId === PaymentMethodId.DEBIT,
-          isFixed: false,
-          isInstallment,
-          totalInstallments: isInstallment ? parcels : 1,
-          repeatCount: 1,
-          installmentAmounts: null,
-          recurringGroup: null,
-        });
-        ok++;
-      } catch {
-        failed++;
-      }
-      setProgress(i + 1);
+        })),
+        paymentMethod: paymentMethodId || null,
+        account: accountId,
+        card: onCard ? cardId : null,
+      });
+      queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+      addToast(`${imported} transações importadas.`, 'success');
+      resetState();
+      setCardId(0);
+      onClose();
+    } catch {
+      addToast('Falha na importação. Nenhuma transação foi criada.', 'error');
+    } finally {
+      setImporting(false);
     }
-    queryClient.invalidateQueries({ queryKey: transactionKeys.all });
-    setImporting(false);
-    addToast(
-      failed > 0 ? `${ok} de ${valid.length} importadas · ${failed} com erro.` : `${ok} transações importadas.`,
-      ok > 0 ? 'success' : 'error',
-    );
-    resetState();
-    setCardId(0);
-    onClose();
   };
 
   const downloadTemplate = () => {
@@ -188,7 +175,6 @@ export function useTransactionImportLogic(open: boolean, onClose: () => void) {
     setCardId,
     isCreditMethod,
     importing,
-    progress,
     validCount,
     canImport,
     hasTemplate: Boolean(templateQuery.data),

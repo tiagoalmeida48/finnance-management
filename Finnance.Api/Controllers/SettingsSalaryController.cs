@@ -10,7 +10,7 @@ namespace Finnance.Api.Controllers;
 
 public class SettingsSalaryController(ISettingsSalaryService settingsSalaryService) : ControllerBase
 {
-    [Authorization()]
+    [Authorization(admin: true)]
     [HttpGet]
     public ResultApi<List<SalarySettingDisplayDto>> History()
     {
@@ -18,7 +18,7 @@ public class SettingsSalaryController(ISettingsSalaryService settingsSalaryServi
         return new ResultApi<List<SalarySettingDisplayDto>> { Result = history.MapTo<List<SalarySettingDisplayDto>>() };
     }
 
-    [Authorization()]
+    [Authorization(admin: true)]
     [HttpGet]
     public ResultApi<SalarySettingDisplayDto> Current()
     {
@@ -26,7 +26,7 @@ public class SettingsSalaryController(ISettingsSalaryService settingsSalaryServi
         return new ResultApi<SalarySettingDisplayDto> { Result = current.MapTo<SalarySettingDisplayDto>() };
     }
 
-    [Authorization()]
+    [Authorization(admin: true)]
     [HttpGet]
     public ResultApi<SalarySettingDisplayDto> Open()
     {
@@ -34,7 +34,7 @@ public class SettingsSalaryController(ISettingsSalaryService settingsSalaryServi
         return new ResultApi<SalarySettingDisplayDto> { Result = open.MapTo<SalarySettingDisplayDto>() };
     }
 
-    [Authorization()]
+    [Authorization(admin: true)]
     [HttpPost]
     public ResultApi<long> Create([FromBody] SalarySettingCreateDto dto)
     {
@@ -43,7 +43,7 @@ public class SettingsSalaryController(ISettingsSalaryService settingsSalaryServi
         return new ResultApi<long> { Result = id };
     }
 
-    [Authorization()]
+    [Authorization(admin: true)]
     [HttpPut]
     public ResultApi<bool> Update([FromBody] SalarySettingUpdateDto dto)
     {
@@ -51,17 +51,24 @@ public class SettingsSalaryController(ISettingsSalaryService settingsSalaryServi
         return new ResultApi<bool> { Result = settingsSalaryService.UpdateSetting(entity, UserLogged.user) };
     }
 
-    [Authorization()]
+    [Authorization(admin: true)]
     [HttpPut]
     public ResultApi<bool> Close([FromBody] SalarySettingUpdateDto dto)
     {
         return new ResultApi<bool> { Result = settingsSalaryService.CloseSetting(UserLogged.user, dto.SettingsSalary, dto.DateEnd) };
     }
 
-    [Authorization()]
+    [Authorization(admin: true)]
     [HttpDelete]
     public ResultApi<bool> DeleteCurrent()
     {
         return new ResultApi<bool> { Result = settingsSalaryService.DeleteCurrentAndRestorePrevious(UserLogged.user) };
+    }
+
+    [Authorization(admin: true)]
+    [HttpPost]
+    public ResultApi<PayrollResultDto> Calculate([FromBody] PayrollCalculateDto dto)
+    {
+        return new ResultApi<PayrollResultDto> { Result = settingsSalaryService.CalculatePayroll(dto, UserLogged.user) };
     }
 }

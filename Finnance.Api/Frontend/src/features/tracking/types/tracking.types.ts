@@ -19,13 +19,6 @@ export interface MonthlyTrackingData {
   totalAmount: number;
 }
 
-export interface TrackingSummary {
-  totalItems: number;
-  paidItems: number;
-  progress: number;
-  totalAmount: number;
-}
-
 export interface PayItemInput {
   account: number | null;
 }

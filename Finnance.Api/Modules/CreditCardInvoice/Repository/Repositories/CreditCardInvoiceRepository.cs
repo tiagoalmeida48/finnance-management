@@ -81,7 +81,7 @@ public class CreditCardInvoiceRepository : BaseRepository<CreditCardInvoiceEntit
         return model == null ? null : MapToEntity(model);
     }
 
-    public List<CreditCardInvoiceEntity> SearchByCardYear(long card, long user, int year)
+    public List<CreditCardInvoiceEntity> SearchByCardYear(long card, long user, int year, int limit = 0, int offset = 0)
     {
         var param = new DynamicParameters();
         param.Add("card", card);
@@ -100,11 +100,37 @@ public class CreditCardInvoiceRepository : BaseRepository<CreditCardInvoiceEntit
             sb.Append("AND ci.month_key LIKE @year_prefix ");
         }
 
-        sb.Append("ORDER BY CASE WHEN ci.invoice_status = @paid THEN 1 ELSE 0 END, ci.month_key DESC");
+        sb.Append("ORDER BY CASE WHEN ci.invoice_status = @paid THEN 1 ELSE 0 END, ci.month_key DESC ");
+
+        if (limit > 0)
+        {
+            param.Add("limit", limit);
+            param.Add("offset", offset < 0 ? 0 : offset);
+            sb.Append("LIMIT @limit OFFSET @offset");
+        }
 
         using var con = Conn;
         var model = con.Query<CreditCardInvoiceMod>(sb.ToString(), param).ToList();
         return MapToEntity(model);
+    }
+
+    public int CountByCardYear(long card, long user, int year)
+    {
+        var param = new DynamicParameters();
+        param.Add("card", card);
+        param.Add("user", user);
+
+        var sb = new StringBuilder();
+        sb.Append("""SELECT COUNT(*) FROM credit_card_invoice WHERE card = @card AND "user" = @user """);
+
+        if (year > 0)
+        {
+            param.Add("year_prefix", year.ToString() + "-%");
+            sb.Append("AND month_key LIKE @year_prefix ");
+        }
+
+        using var con = Conn;
+        return con.ExecuteScalar<int>(sb.ToString(), param);
     }
 
     public List<CreditCardInvoiceEntity> SearchByYear(long user, int year)

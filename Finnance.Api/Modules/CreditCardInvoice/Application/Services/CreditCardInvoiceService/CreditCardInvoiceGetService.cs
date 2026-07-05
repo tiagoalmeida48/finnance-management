@@ -6,10 +6,16 @@ namespace Finnance.Api.Modules.CreditCardInvoice.Application.Services;
 
 public partial class CreditCardInvoiceService
 {
-    public List<CreditCardInvoiceEntity> GetByCard(long cardId, long userId, int year = 0)
+    public List<CreditCardInvoiceEntity> GetByCard(long cardId, long userId, int year = 0, int limit = 0, int offset = 0)
     {
         ValidateOwnership(cardId, userId);
-        return creditCardInvoiceRepository.SearchByCardYear(cardId, userId, year);
+        return creditCardInvoiceRepository.SearchByCardYear(cardId, userId, year, limit, offset);
+    }
+
+    public int CountByCard(long cardId, long userId, int year = 0)
+    {
+        ValidateOwnership(cardId, userId);
+        return creditCardInvoiceRepository.CountByCardYear(cardId, userId, year);
     }
 
     public List<CreditCardInvoiceEntity> ListByYear(int year, long userId)

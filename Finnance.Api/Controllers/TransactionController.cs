@@ -49,6 +49,27 @@ public class TransactionController(ITransactionService transactionService) : Con
     }
 
     [Authorization()]
+    [HttpGet]
+    public ResultApi<List<TrackingMonthDto>> TrackingMonthly([FromQuery] int year)
+    {
+        return new ResultApi<List<TrackingMonthDto>> { Result = transactionService.GetMonthlyTracking(year, UserLogged.user) };
+    }
+
+    [Authorization()]
+    [HttpPost]
+    public ResultApi<ImportPreviewResultDto> ImportPreview([FromBody] ImportPreviewDto dto)
+    {
+        return new ResultApi<ImportPreviewResultDto> { Result = transactionService.ParseImport(dto.Content, UserLogged.user) };
+    }
+
+    [Authorization()]
+    [HttpPost]
+    public ResultApi<int> Import([FromBody] ImportDto dto)
+    {
+        return new ResultApi<int> { Result = transactionService.ImportTransactions(dto, UserLogged.user) };
+    }
+
+    [Authorization()]
     [HttpPost]
     public ResultApi<object> Create([FromBody] TransactionCreateDto dto)
     {

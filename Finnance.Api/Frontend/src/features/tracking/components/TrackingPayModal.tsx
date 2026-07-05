@@ -9,6 +9,7 @@ import {
   DialogTitle,
   Label,
   SelectMenu,
+  entityOptionIcon,
 } from '@/shared/components/ui';
 import { formatCurrency } from '../constants';
 import type { PayItemInput, TrackingItem } from '../types/tracking.types';
@@ -71,6 +72,7 @@ export function TrackingPayModal({
                 options={accounts.map((account) => ({
                   value: account.bankAccount,
                   label: account.name,
+                  icon: entityOptionIcon(account.icon, account.color),
                 }))}
               />
             </div>

@@ -10,6 +10,8 @@ public class UpdateGroupDto
 
     public DateTime? PaymentDate { get; set; }
 
+    public DateTime? FromPaymentDate { get; set; }
+
     public DateTime? PurchaseDate { get; set; }
 
     public bool ClearPurchaseDate { get; set; }

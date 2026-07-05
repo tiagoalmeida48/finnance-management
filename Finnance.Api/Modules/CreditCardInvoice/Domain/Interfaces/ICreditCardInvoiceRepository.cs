@@ -14,7 +14,9 @@ public interface ICreditCardInvoiceRepository : IBaseRepository<CreditCardInvoic
 
     CreditCardInvoiceEntity SearchByCardMonth(long card, long user, string monthKey);
 
-    List<CreditCardInvoiceEntity> SearchByCardYear(long card, long user, int year);
+    List<CreditCardInvoiceEntity> SearchByCardYear(long card, long user, int year, int limit = 0, int offset = 0);
+
+    int CountByCardYear(long card, long user, int year);
 
     List<CreditCardInvoiceEntity> SearchByYear(long user, int year);
 

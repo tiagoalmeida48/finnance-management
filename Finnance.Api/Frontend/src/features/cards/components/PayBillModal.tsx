@@ -9,6 +9,7 @@ import {
   Input,
   Label,
   SelectMenu,
+  entityOptionIcon,
 } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import { useBankAccountsLookup } from '../hooks/useCards';
@@ -73,6 +74,7 @@ export function PayBillModal({
               options={(accounts ?? []).map((account) => ({
                 value: account.bankAccount,
                 label: account.name,
+                icon: entityOptionIcon(account.icon, account.color),
               }))}
             />
           </div>

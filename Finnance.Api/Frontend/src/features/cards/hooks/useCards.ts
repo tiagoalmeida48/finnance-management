@@ -19,8 +19,10 @@ export const cardsKeys = {
   allStats: ['cards', 'all-stats'] as const,
   card: (card: number) => ['cards', 'card', card] as const,
   stats: (card: number) => ['cards', 'stats', card] as const,
-  invoices: (card: number, year: number) => ['cards', 'invoices', card, year] as const,
-  invoiceTransactions: (invoice: number) => ['cards', 'invoice-transactions', invoice] as const,
+  invoices: (card: number, year: number, offset: number) =>
+    ['cards', 'invoices', card, year, offset] as const,
+  invoiceTransactions: (invoice: number, sortField: string, sortAsc: boolean) =>
+    ['cards', 'invoice-transactions', invoice, sortField, sortAsc] as const,
   bankAccounts: ['cards', 'bank-accounts'] as const,
 };
 
@@ -62,19 +64,21 @@ export function useBankAccountsLookup() {
   });
 }
 
-export function useCardInvoices(card: number | null, year: number) {
+export function useCardInvoices(card: number | null, year: number, limit: number, offset: number) {
   return useQuery({
-    queryKey: cardsKeys.invoices(card ?? 0, year),
-    queryFn: () => invoicesService.getByCard(card as number, year),
+    queryKey: cardsKeys.invoices(card ?? 0, year, offset),
+    queryFn: () => invoicesService.getByCard(card as number, year, limit, offset),
     enabled: card !== null,
+    placeholderData: (previous) => previous,
   });
 }
 
-export function useInvoiceTransactions(invoice: number | null) {
+export function useInvoiceTransactions(invoice: number | null, sortField: string, sortAsc: boolean) {
   return useQuery({
-    queryKey: cardsKeys.invoiceTransactions(invoice ?? 0),
-    queryFn: () => invoicesService.transactions(invoice as number),
+    queryKey: cardsKeys.invoiceTransactions(invoice ?? 0, sortField, sortAsc),
+    queryFn: () => invoicesService.transactions(invoice as number, sortField, sortAsc),
     enabled: invoice !== null,
+    placeholderData: (previous) => previous,
   });
 }
 

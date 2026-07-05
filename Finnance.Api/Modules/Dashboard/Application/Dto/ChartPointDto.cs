@@ -7,4 +7,6 @@ public class ChartPointDto
     public decimal Income { get; set; }
 
     public decimal Expense { get; set; }
+
+    public decimal? CumulativeNet { get; set; }
 }

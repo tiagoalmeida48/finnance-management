@@ -273,7 +273,9 @@ public partial class TransactionService
     public List<long> UpdateGroup(UpdateGroupDto updates, long userId)
     {
         var groupColumn = ResolveGroupColumn(updates.Type);
-        var items = transactionRepository.SearchByGroup(updates.GroupId, groupColumn, userId);
+        var items = updates.FromPaymentDate.HasValue
+            ? transactionRepository.SearchByGroupFrom(updates.GroupId, groupColumn, updates.FromPaymentDate.Value, userId)
+            : transactionRepository.SearchByGroup(updates.GroupId, groupColumn, userId);
 
         var changedIds = new List<long>();
         var affected = new HashSet<long>();

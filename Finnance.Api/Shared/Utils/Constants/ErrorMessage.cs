@@ -27,6 +27,8 @@ public static partial class Constants
         public const string InvalidPaymentMethod = "Forma de pagamento inválida.";
         public const string PaymentMethodNotFound = "Forma de pagamento não encontrada.";
         public const string AccountRequiredForCard = "Informe a conta vinculada ao cartão.";
+        public const string CardRequiresCreditMethod = "Lançamentos em cartão exigem forma de pagamento crédito.";
+        public const string CardAccountMismatch = "O cartão selecionado não pertence à conta informada.";
         public const string ToAccountOnlyForTransfer = "Conta de destino só é permitida em transferências.";
         public const string ToAccountRequiredForTransfer = "Informe a conta de destino da transferência.";
         public const string InvalidInstallment = "Número da parcela inválido.";
@@ -54,6 +56,8 @@ public static partial class Constants
         public const string AccessDeniedResource = "Você não tem acesso a este recurso.";
         public const string SystemConfigNotFound = "Configuração do sistema não encontrada.";
         public const string CardPaymentViaInvoice = "Lançamentos de cartão são pagos pela fatura, não diretamente.";
+        public const string ImportNoRows = "Nenhuma linha válida para importar.";
+        public const string ImportInvalidDate = "Data inválida na importação.";
         public const string UserInactive = "Usuário inativo.";
         public const string InvalidToken = "Token inválido ou expirado.";
         public const string EmailNotVerified = "Confirme seu e-mail antes de entrar.";

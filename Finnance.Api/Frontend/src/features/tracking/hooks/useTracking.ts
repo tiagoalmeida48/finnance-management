@@ -4,26 +4,16 @@ import { trackingService } from '../services/trackingService';
 
 export const trackingKeys = {
   all: ['tracking'] as const,
-  transactions: (startDate: string, endDate: string) =>
-    ['tracking', 'transactions', startDate, endDate] as const,
-  invoices: (year: number) => ['tracking', 'invoices', year] as const,
+  monthly: (year: number) => ['tracking', 'monthly', year] as const,
   accounts: ['tracking', 'accounts'] as const,
-  cards: ['tracking', 'cards'] as const,
 };
 
 const ACCOUNTS_STALE_TIME = 5 * 60 * 1000;
 
-export function useTrackingTransactions(startDate: string, endDate: string) {
+export function useTrackingMonthly(year: number) {
   return useQuery({
-    queryKey: trackingKeys.transactions(startDate, endDate),
-    queryFn: () => trackingService.listTransactions({ startDate, endDate }),
-  });
-}
-
-export function useTrackingInvoices(year: number) {
-  return useQuery({
-    queryKey: trackingKeys.invoices(year),
-    queryFn: () => trackingService.listInvoices(year),
+    queryKey: trackingKeys.monthly(year),
+    queryFn: () => trackingService.getMonthly(year),
   });
 }
 
@@ -31,14 +21,6 @@ export function useTrackingAccounts() {
   return useQuery({
     queryKey: trackingKeys.accounts,
     queryFn: trackingService.listAccounts,
-    staleTime: ACCOUNTS_STALE_TIME,
-  });
-}
-
-export function useTrackingCards() {
-  return useQuery({
-    queryKey: trackingKeys.cards,
-    queryFn: trackingService.listCards,
     staleTime: ACCOUNTS_STALE_TIME,
   });
 }

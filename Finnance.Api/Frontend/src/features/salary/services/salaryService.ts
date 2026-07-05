@@ -1,5 +1,7 @@
 import { apiClient } from '@/config/http';
 import type {
+  PayrollCalculateInput,
+  PayrollResult,
   SalarySetting,
   SalarySettingCloseInput,
   SalarySettingCreateInput,
@@ -7,6 +9,10 @@ import type {
 } from '../types/salary.types';
 
 export const salaryService = {
+  calculatePayroll: async (input: PayrollCalculateInput): Promise<PayrollResult> => {
+    return apiClient.post<PayrollResult>('/settings-salary/calculate', input);
+  },
+
   history: async (): Promise<SalarySetting[]> => {
     return apiClient.get<SalarySetting[]>('/settings-salary/history');
   },

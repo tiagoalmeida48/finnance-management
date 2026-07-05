@@ -86,7 +86,6 @@ export function AccountFormModal({
     }
   }, [open, account, reset]);
 
-  const selectedColor = watch('color');
   const selectedIcon = watch('icon');
 
   return (
@@ -106,7 +105,7 @@ export function AccountFormModal({
             {errors.name && <p className="text-expense text-xs mt-1">{errors.name.message}</p>}
           </div>
 
-          <div className={isEditing ? 'sm:col-span-2' : ''}>
+          <div>
             <Label htmlFor="account-type">Tipo de conta</Label>
             <Controller
               control={control}
@@ -129,8 +128,18 @@ export function AccountFormModal({
             )}
           </div>
 
+          <div>
+            <Label htmlFor="account-color">Cor</Label>
+            <input
+              id="account-color"
+              type="color"
+              className="h-9 w-full rounded-lg border border-border bg-bg/60 p-1"
+              {...register('color')}
+            />
+          </div>
+
           {!isEditing && (
-            <div>
+            <div className="sm:col-span-2">
               <Label htmlFor="account-balance">Saldo inicial</Label>
               <Controller
                 control={control}
@@ -145,27 +154,6 @@ export function AccountFormModal({
               />
             </div>
           )}
-
-          <div className="sm:col-span-2">
-            <Label>Cor</Label>
-            <div className="flex flex-wrap gap-2">
-              {ACCOUNT_COLORS.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  aria-label={`Selecionar cor ${color}`}
-                  onClick={() => setValue('color', color, { shouldDirty: true })}
-                  className={
-                    'h-8 w-8 rounded-full border-2 transition-transform ' +
-                    (selectedColor === color
-                      ? 'border-text scale-110'
-                      : 'border-transparent hover:scale-105')
-                  }
-                  style={{ backgroundColor: color }}
-                />
-              ))}
-            </div>
-          </div>
 
           <div className="sm:col-span-2">
             <Label>Ícone</Label>

@@ -140,6 +140,7 @@ export interface UpdateGroupInput {
   type: string;
   amount?: number | null;
   paymentDate?: string | null;
+  fromPaymentDate?: string | null;
   purchaseDate?: string | null;
   clearPurchaseDate?: boolean;
   description?: string;
@@ -160,6 +161,28 @@ export interface UpdateGroupInput {
 export interface DeleteGroupInput {
   groupId: number;
   type: string;
+}
+
+export interface ImportRowInput {
+  date: string;
+  description: string;
+  amount: number;
+  transactionType: number;
+  category: number | null;
+  installments: number;
+  notes: string;
+}
+
+export interface ImportPreviewResult {
+  rows: ImportRowInput[];
+  errors: string[];
+}
+
+export interface ImportInput {
+  rows: ImportRowInput[];
+  paymentMethod: number | null;
+  account: number;
+  card: number | null;
 }
 
 export interface BankAccountLookup {

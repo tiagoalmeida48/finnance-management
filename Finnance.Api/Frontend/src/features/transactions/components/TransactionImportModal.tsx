@@ -127,9 +127,7 @@ export function TransactionImportModal({ open, onClose }: TransactionImportModal
               )}
 
               {logic.importing && (
-                <p className="text-center text-sm text-text-muted">
-                  Importando… {logic.progress}/{logic.validCount}
-                </p>
+                <p className="text-center text-sm text-text-muted">Importando…</p>
               )}
             </>
           ) : null}

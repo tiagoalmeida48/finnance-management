@@ -15,6 +15,11 @@ export function CreditCardDetailsPage() {
     stats,
     openCycle,
     invoices,
+    invoicesTotalCount,
+    invoicesHasNextPage,
+    invoicesOffset,
+    prevInvoicesPage,
+    nextInvoicesPage,
     isLoading,
     invoicesLoading,
     isAllTime,
@@ -59,6 +64,11 @@ export function CreditCardDetailsPage() {
 
       <StatementInvoiceList
         invoices={invoices}
+        totalCount={invoicesTotalCount}
+        hasNextPage={invoicesHasNextPage}
+        offset={invoicesOffset}
+        onPrevPage={prevInvoicesPage}
+        onNextPage={nextInvoicesPage}
         isLoading={invoicesLoading}
         isRecalculating={recalculate.isPending}
         onRecalculate={(id) => recalculate.mutate(id)}

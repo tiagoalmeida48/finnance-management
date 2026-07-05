@@ -22,13 +22,10 @@ export function useCategoriesPageLogic() {
   const [pendingDelete, setPendingDelete] = useState<Category | null>(null);
   const [typeFilter, setTypeFilter] = useState<CategoryTypeFilter>('all');
 
-  const allCategories = useMemo<Category[]>(() => {
-    const items = categoriesQuery.data ?? [];
-    return [...items].sort((a, b) => {
-      if (a.categoryType !== b.categoryType) return a.categoryType - b.categoryType;
-      return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
-    });
-  }, [categoriesQuery.data]);
+  const allCategories = useMemo<Category[]>(
+    () => categoriesQuery.data ?? [],
+    [categoriesQuery.data],
+  );
 
   const categories = useMemo<Category[]>(() => {
     if (typeFilter === 'all') return allCategories;

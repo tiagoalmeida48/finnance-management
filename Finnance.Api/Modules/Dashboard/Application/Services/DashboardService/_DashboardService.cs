@@ -13,13 +13,27 @@ public partial class DashboardService(IDashboardRepository dashboardRepository)
     {
         var baseIncome = ResolveBaseIncome(userId, start);
 
-        return new DashboardStatsDto
+        var stats = new DashboardStatsDto
         {
             TotalBalance = dashboardRepository.GetTotalBalance(userId),
             TotalAvailableLimit = dashboardRepository.GetTotalAvailableLimit(userId),
             MonthlyIncome = dashboardRepository.GetMonthlyIncome(userId, start, end) + baseIncome,
             MonthlyExpenses = dashboardRepository.GetMonthlyExpenses(userId, start, end)
         };
+
+        var nets = dashboardRepository.GetChartData(userId, 0, start, end)
+            .Where(point => point.Income > 0 || point.Expense > 0)
+            .Select(point => point.Income - point.Expense)
+            .ToList();
+
+        var monthCount = Math.Max(nets.Count, 1);
+
+        stats.NetFlowDelta = nets.Count > 1 ? nets[^1] - nets[^2] : 0;
+        stats.HasNetHistory = nets.Count > 1;
+        stats.AvgMonthlyIncome = Math.Round(stats.MonthlyIncome / monthCount, 2);
+        stats.AvgMonthlyExpenses = Math.Round(stats.MonthlyExpenses / monthCount, 2);
+
+        return stats;
     }
 
     private decimal ResolveBaseIncome(long userId, DateTime? start)

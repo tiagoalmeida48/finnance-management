@@ -1,7 +1,7 @@
-import { createElement, useEffect, useMemo, useRef, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { EntityIcon } from '@/shared/components/ui';
+import { entityOptionIcon } from '@/shared/components/ui';
 import { CategoryTypeId, PaymentMethodId, TransactionTypeId } from '@/config/constants';
 import { formatCurrency } from '@/shared/utils';
 import {
@@ -29,9 +29,6 @@ interface UseTransactionFormLogicArgs {
 }
 
 const today = () => new Date().toISOString().slice(0, 10);
-
-const optionIcon = (name: string | null | undefined, color: string | null | undefined): ReactNode =>
-  createElement(EntityIcon, { name, size: 16, style: { color: color || undefined } });
 
 function defaultValues(): TransactionFormData {
   return {
@@ -63,7 +60,7 @@ function toFormValues(t: Transaction): TransactionFormData {
     notes: t.notes ?? '',
     isPaid: t.paid,
     isFixed: t.fixed,
-    isInstallment: false,
+    isInstallment: t.installmentGroup != null,
     totalInstallments: 1,
     repeatCount: 1,
     replicateToGroup: false,
@@ -79,6 +76,7 @@ export function useTransactionFormLogic({ open, editing, onClose }: UseTransacti
   const { create, update, updateGroup } = useTransactionMutations();
   const groupId = editing?.installmentGroup ?? editing?.recurringGroup ?? null;
   const isGroupEditing = Boolean(editing && groupId != null);
+  const isRecurringGroup = Boolean(editing && editing.installmentGroup == null && editing.recurringGroup != null);
 
   const {
     register,
@@ -153,7 +151,7 @@ export function useTransactionFormLogic({ open, editing, onClose }: UseTransacti
       (accounts.data ?? []).map((a) => ({
         value: a.bankAccount,
         label: a.name,
-        icon: optionIcon(a.icon, a.color),
+        icon: entityOptionIcon(a.icon, a.color),
       })),
     [accounts.data],
   );
@@ -164,7 +162,7 @@ export function useTransactionFormLogic({ open, editing, onClose }: UseTransacti
         .map((c) => ({
           value: c.creditCard,
           label: c.name,
-          icon: optionIcon('CreditCard', c.color),
+          icon: entityOptionIcon('CreditCard', c.color),
         })),
     [cards.data, account],
   );
@@ -175,7 +173,7 @@ export function useTransactionFormLogic({ open, editing, onClose }: UseTransacti
         .map((c) => ({
           value: c.category,
           label: c.name,
-          icon: optionIcon(c.icon, c.color),
+          icon: entityOptionIcon(c.icon, c.color),
         })),
     [categories.data, categoryType],
   );
@@ -203,6 +201,7 @@ export function useTransactionFormLogic({ open, editing, onClose }: UseTransacti
         amount: Number(data.amount),
         description: data.description.trim(),
         paymentDate: data.paymentDate || null,
+        fromPaymentDate: isRecurringGroup ? (editing.paymentDate?.slice(0, 10) ?? null) : null,
         notes: data.notes ?? '',
       };
       if (data.account) groupPayload.account = Number(data.account);
@@ -288,6 +287,7 @@ export function useTransactionFormLogic({ open, editing, onClose }: UseTransacti
     isFixed,
     installmentPreview,
     isGroupEditing,
+    isRecurringGroup,
     accountOptions,
     cardOptions,
     categoryOptions,

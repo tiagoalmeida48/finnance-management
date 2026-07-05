@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, CreditCard } from 'lucide-react';
-import { Input, SegmentedControl, SelectMenu } from '@/shared/components/ui';
+import { Input, SegmentedControl, SelectMenu, entityOptionIcon } from '@/shared/components/ui';
 import { cn } from '@/shared/utils';
 import { TransactionTypeId } from '@/config/constants';
 import {
@@ -60,15 +60,27 @@ export function TransactionsFilters({
 
   const accountOptions = [
     { value: '', label: 'Todas' },
-    ...(accounts.data ?? []).map((a) => ({ value: a.bankAccount, label: a.name })),
+    ...(accounts.data ?? []).map((a) => ({
+      value: a.bankAccount,
+      label: a.name,
+      icon: entityOptionIcon(a.icon, a.color),
+    })),
   ];
   const categoryOptions = [
     { value: '', label: 'Todas' },
-    ...(categories.data ?? []).map((c) => ({ value: c.category, label: c.name })),
+    ...(categories.data ?? []).map((c) => ({
+      value: c.category,
+      label: c.name,
+      icon: entityOptionIcon(c.icon, c.color),
+    })),
   ];
   const cardOptions = [
     { value: '', label: 'Todos' },
-    ...(cards.data ?? []).map((c) => ({ value: c.creditCard, label: c.name })),
+    ...(cards.data ?? []).map((c) => ({
+      value: c.creditCard,
+      label: c.name,
+      icon: entityOptionIcon('CreditCard', c.color),
+    })),
   ];
   const paymentMethodOptions = [
     { value: '', label: 'Todos' },

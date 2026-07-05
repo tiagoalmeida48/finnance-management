@@ -3,6 +3,7 @@ using Finnance.Api.Modules.Common.Repository;
 using Finnance.Api.Modules.Transaction.Domain.Entities;
 using Finnance.Api.Modules.Transaction.Domain.Interfaces;
 using Finnance.Api.Modules.Transaction.Repository.Models;
+using Finnance.Api.Shared.Utils;
 using System.Text;
 
 namespace Finnance.Api.Modules.Transaction.Repository.Repositories;
@@ -204,6 +205,47 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
             SELECT * FROM "transaction"
             WHERE {groupColumn} = @groupId AND "user" = @user AND active = TRUE
             ORDER BY {orderBy}
+            """;
+
+        using var con = Conn;
+        var model = con.Query<TransactionMod>(sql, param).ToList();
+        return MapToEntity(model);
+    }
+
+    public List<TransactionEntity> SearchByGroupFrom(long groupId, string groupColumn, DateTime fromDate, long user)
+    {
+        var param = new DynamicParameters();
+        param.Add("groupId", groupId);
+        param.Add("fromDate", fromDate.Date);
+        param.Add("user", user);
+
+        var orderBy = groupColumn == "installment_group" ? "installment_number ASC" : "payment_date ASC";
+
+        var sql = $"""
+            SELECT * FROM "transaction"
+            WHERE {groupColumn} = @groupId AND "user" = @user AND active = TRUE AND payment_date >= @fromDate
+            ORDER BY {orderBy}
+            """;
+
+        using var con = Conn;
+        var model = con.Query<TransactionMod>(sql, param).ToList();
+        return MapToEntity(model);
+    }
+
+    public List<TransactionEntity> SearchFixedExpensesByYear(int year, long user)
+    {
+        var param = new DynamicParameters();
+        param.Add("user", user);
+        param.Add("startDate", new DateTime(year, 1, 1));
+        param.Add("endDate", new DateTime(year + 1, 1, 1));
+        param.Add("expenseType", Constants.TransactionTypeId.EXPENSE);
+
+        const string sql = """
+            SELECT * FROM "transaction"
+            WHERE "user" = @user AND active = TRUE AND fixed = TRUE AND card IS NULL
+              AND transaction_type = @expenseType
+              AND payment_date >= @startDate AND payment_date < @endDate
+            ORDER BY payment_date ASC
             """;
 
         using var con = Conn;

@@ -6,6 +6,7 @@ import type {
   CreditCardInvoice,
   CreditCardStats,
   CreditCardUpdateInput,
+  InvoiceListResult,
   PayBillInput,
   StatementCycle,
   StatementCycleCreateInput,
@@ -65,14 +66,14 @@ export const cyclesService = {
 };
 
 export const invoicesService = {
-  getByCard: (card: number, year?: number): Promise<CreditCardInvoice[]> =>
-    apiClient.get<CreditCardInvoice[]>('/credit-card-invoice/get-by-card', { card, year }),
+  getByCard: (card: number, year: number, limit: number, offset: number): Promise<InvoiceListResult> =>
+    apiClient.get<InvoiceListResult>('/credit-card-invoice/get-by-card', { card, year, limit, offset }),
 
   getByMonth: (card: number, monthKey: string): Promise<CreditCardInvoice> =>
     apiClient.get<CreditCardInvoice>('/credit-card-invoice/get-by-month', { card, monthKey }),
 
-  transactions: (invoice: number): Promise<Transaction[]> =>
-    apiClient.post<Transaction[]>('/transaction/list', { invoice, sortAsc: false, limit: 200 }),
+  transactions: (invoice: number, sortField: string, sortAsc: boolean): Promise<Transaction[]> =>
+    apiClient.post<Transaction[]>('/transaction/list', { invoice, sortField, sortAsc, limit: 200 }),
 
   recalculate: (invoice: number): Promise<boolean> =>
     apiClient.post<boolean>('/credit-card-invoice/recalculate', invoice),
