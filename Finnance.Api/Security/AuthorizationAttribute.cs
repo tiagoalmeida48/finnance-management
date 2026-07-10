@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Finnance.Api.Modules.Subscription.Application.Interfaces;
 using Finnance.Api.Shared;
 using Finnance.Api.Shared.Utils;
 using System.Reflection;
@@ -8,7 +9,7 @@ using System.Reflection;
 namespace Finnance.Api.Security;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class AuthorizationAttribute(bool admin = false) : Attribute, IAuthorizationFilter
+public class AuthorizationAttribute(bool admin = false, bool subscription = false) : Attribute, IAuthorizationFilter
 {
     public void OnAuthorization(AuthorizationFilterContext context)
     {
@@ -19,10 +20,14 @@ public class AuthorizationAttribute(bool admin = false) : Attribute, IAuthorizat
         if (user <= 0)
             throw new ApplicationException(Constants.ErrorMessage.ErrorAccess);
 
-        if (!admin) return;
-
-        if (!context.HttpContext.IsAdminLogged())
+        if (admin && !context.HttpContext.IsAdminLogged())
             throw new ApplicationException(Constants.ErrorMessage.ErrorAuthorization);
+
+        if (!subscription || context.HttpContext.IsAdminLogged()) return;
+
+        var subscriptionService = context.HttpContext.RequestServices.GetService<ISubscriptionService>();
+        if (subscriptionService == null || !subscriptionService.HasActiveAccess(user))
+            throw new ApplicationException(Constants.ErrorMessage.SubscriptionRequired);
     }
 }
 

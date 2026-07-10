@@ -10,15 +10,15 @@ namespace Finnance.Api.Controllers;
 
 public class CreditCardController(ICreditCardService creditCardService) : ControllerBase
 {
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
-    public ResultApi<List<CreditCardDisplayDto>> List()
+    public ResultApi<List<CreditCardDisplayDto>> List([FromQuery] bool includeInactive = false)
     {
-        var cards = creditCardService.List(UserLogged.user);
+        var cards = creditCardService.List(UserLogged.user, includeInactive);
         return new ResultApi<List<CreditCardDisplayDto>> { Result = cards.MapTo<List<CreditCardDisplayDto>>() };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<CreditCardDisplayDto> Get([FromQuery] long creditCard)
     {
@@ -26,7 +26,7 @@ public class CreditCardController(ICreditCardService creditCardService) : Contro
         return new ResultApi<CreditCardDisplayDto> { Result = card.MapTo<CreditCardDisplayDto>() };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpPost]
     public ResultApi<long> Create([FromBody] CreditCardCreateDto dto)
     {
@@ -42,7 +42,7 @@ public class CreditCardController(ICreditCardService creditCardService) : Contro
         return new ResultApi<long> { Result = id };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpPut]
     public ResultApi<bool> Update([FromBody] CreditCardUpdateDto dto)
     {
@@ -59,21 +59,28 @@ public class CreditCardController(ICreditCardService creditCardService) : Contro
         return new ResultApi<bool> { Result = creditCardService.UpdateCard(entity, UserLogged.user) };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpDelete]
     public ResultApi<bool> Delete([FromBody] long creditCard)
     {
         return new ResultApi<bool> { Result = creditCardService.DeleteCard(creditCard, UserLogged.user) };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
+    [HttpPut]
+    public ResultApi<bool> ToggleActive([FromBody] long creditCard)
+    {
+        return new ResultApi<bool> { Result = creditCardService.ToggleActive(creditCard, UserLogged.user) };
+    }
+
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<CreditCardStatsDto> Stats([FromQuery] long creditCard)
     {
         return new ResultApi<CreditCardStatsDto> { Result = creditCardService.GetStats(creditCard, UserLogged.user) };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<List<CreditCardStatsDto>> AllStats()
     {

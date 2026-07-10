@@ -18,6 +18,8 @@ public class RecurringGroupRepository : BaseRepository<RecurringGroupEntity, Rec
         var param = new DynamicParameters();
 
         sb.Append("SELECT * FROM recurring_group WHERE 1 = 1 ");
+        sb.Append(GetTenantClause());
+        TenantParams(param);
 
         if (recurringGroup > 0)
         {

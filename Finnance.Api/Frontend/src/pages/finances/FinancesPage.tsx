@@ -50,10 +50,12 @@ export function FinancesPage() {
                 statsByCard={cards.statsByCard}
                 onEditAccount={accounts.openEdit}
                 onDeleteAccount={accounts.setAccountToDelete}
+                onToggleAccountActive={accounts.toggleActive}
                 onAddCard={cards.openCreate}
                 onViewCard={cards.openDetail}
                 onEditCard={cards.openEdit}
                 onDeleteCard={cards.requestDelete}
+                onToggleCardActive={cards.toggleActive}
               />
             ))}
           </div>
@@ -73,6 +75,7 @@ export function FinancesPage() {
                     onView={cards.openDetail}
                     onEdit={cards.openEdit}
                     onDelete={cards.requestDelete}
+                    onToggleActive={cards.toggleActive}
                   />
                 ))}
               </div>

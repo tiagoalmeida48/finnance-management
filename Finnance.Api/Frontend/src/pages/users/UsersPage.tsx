@@ -37,6 +37,7 @@ export function UsersPage() {
     submitPassword,
     requestDelete,
     confirmDelete,
+    toggleActive,
   } = useUsersPageLogic();
 
   return (
@@ -82,6 +83,7 @@ export function UsersPage() {
               onEdit={openEdit}
               onResetPassword={requestPassword}
               onDelete={requestDelete}
+              onToggleActive={toggleActive}
             />
           </CardContent>
         </Card>

@@ -18,8 +18,8 @@ public partial class CategoryService
         return current;
     }
 
-    public List<CategoryEntity> List(long userId)
+    public List<CategoryEntity> List(long userId, bool includeInactive = false)
     {
-        return categoryRepository.Search(user: userId, active: true);
+        return categoryRepository.Search(user: userId, active: !includeInactive);
     }
 }

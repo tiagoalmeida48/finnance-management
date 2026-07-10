@@ -9,7 +9,7 @@ namespace Finnance.Api.Controllers;
 
 public class TransactionTypeController(ITransactionTypeService transactionTypeService) : ControllerBase
 {
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<List<TransactionTypeDisplayDto>> List()
     {
@@ -17,7 +17,7 @@ public class TransactionTypeController(ITransactionTypeService transactionTypeSe
         return new ResultApi<List<TransactionTypeDisplayDto>> { Result = result };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<TransactionTypeDisplayDto> Get([FromQuery] long transactionType)
     {

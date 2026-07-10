@@ -10,15 +10,15 @@ namespace Finnance.Api.Controllers;
 
 public class BankAccountController(IBankAccountService bankAccountService) : ControllerBase
 {
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
-    public ResultApi<List<BankAccountDisplayDto>> List()
+    public ResultApi<List<BankAccountDisplayDto>> List([FromQuery] bool includeInactive = false)
     {
-        var accounts = bankAccountService.List(UserLogged.user);
+        var accounts = bankAccountService.List(UserLogged.user, includeInactive);
         return new ResultApi<List<BankAccountDisplayDto>> { Result = accounts.MapTo<List<BankAccountDisplayDto>>() };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<BankAccountDisplayDto> Get([FromQuery] long bankAccount)
     {
@@ -26,7 +26,7 @@ public class BankAccountController(IBankAccountService bankAccountService) : Con
         return new ResultApi<BankAccountDisplayDto> { Result = account.MapTo<BankAccountDisplayDto>() };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpPost]
     public ResultApi<long> Create([FromBody] BankAccountCreateDto dto)
     {
@@ -43,7 +43,7 @@ public class BankAccountController(IBankAccountService bankAccountService) : Con
         return new ResultApi<long> { Result = id };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpPut]
     public ResultApi<bool> Update([FromBody] BankAccountUpdateDto dto)
     {
@@ -60,14 +60,21 @@ public class BankAccountController(IBankAccountService bankAccountService) : Con
         return new ResultApi<bool> { Result = bankAccountService.UpdateAccount(entity, UserLogged.user) };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpDelete]
     public ResultApi<bool> Delete([FromBody] long bankAccount)
     {
         return new ResultApi<bool> { Result = bankAccountService.DeleteAccount(bankAccount, UserLogged.user) };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
+    [HttpPut]
+    public ResultApi<bool> ToggleActive([FromBody] long bankAccount)
+    {
+        return new ResultApi<bool> { Result = bankAccountService.ToggleActive(bankAccount, UserLogged.user) };
+    }
+
+    [Authorization(subscription: true)]
     [HttpPost]
     public ResultApi<int> Reconcile()
     {

@@ -50,4 +50,18 @@ public partial class CategoryService(ICategoryRepository categoryRepository) : B
 
         return true;
     }
+
+    public bool ToggleActive(long category, long userId)
+    {
+        var current = Get(category, userId);
+        if (!current.Active)
+            ValidateNameUnique(userId, current.CategoryType, current.Name, current.Category);
+        current.Active = !current.Active;
+
+        using var tran = GetTransaction();
+        categoryRepository.Update(current);
+        tran.Complete();
+
+        return true;
+    }
 }

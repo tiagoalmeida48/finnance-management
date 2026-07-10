@@ -11,7 +11,7 @@ namespace Finnance.Api.Controllers;
 public class CreditCardStatementCycleController(ICreditCardStatementCycleService creditCardStatementCycleService,
                                                ICreditCardInvoiceService creditCardInvoiceService) : ControllerBase
 {
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<List<StatementCycleDisplayDto>> GetByCard([FromQuery] long card)
     {
@@ -19,7 +19,7 @@ public class CreditCardStatementCycleController(ICreditCardStatementCycleService
         return new ResultApi<List<StatementCycleDisplayDto>> { Result = cycles.MapTo<List<StatementCycleDisplayDto>>() };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpPost]
     public ResultApi<long> Create([FromBody] StatementCycleCreateDto dto)
     {
@@ -27,7 +27,7 @@ public class CreditCardStatementCycleController(ICreditCardStatementCycleService
         return new ResultApi<long> { Result = id };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpPost]
     public ResultApi<long> InsertCycle([FromBody] StatementCycleCreateDto dto)
     {
@@ -35,28 +35,28 @@ public class CreditCardStatementCycleController(ICreditCardStatementCycleService
         return new ResultApi<long> { Result = id };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpPut]
     public ResultApi<bool> UpdateStart([FromQuery] long cycle, [FromQuery] DateTime dateStart)
     {
         return new ResultApi<bool> { Result = creditCardInvoiceService.UpdateCycleStartAndReprocess(cycle, UserLogged.user, dateStart) };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpPut]
     public ResultApi<bool> UpdateEnd([FromQuery] long cycle, [FromQuery] DateTime dateEnd)
     {
         return new ResultApi<bool> { Result = creditCardInvoiceService.UpdateCycleEndAndReprocess(cycle, UserLogged.user, dateEnd) };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpPut]
     public ResultApi<bool> UpdateCycle([FromBody] StatementCycleUpdateDto dto)
     {
         return new ResultApi<bool> { Result = creditCardInvoiceService.UpdateCycleAndReprocess(dto.CreditCardStatementCycle, UserLogged.user, dto.ClosingDay, dto.DueDay, dto.Notes) };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpDelete]
     public ResultApi<bool> Delete([FromQuery] long cycle)
     {

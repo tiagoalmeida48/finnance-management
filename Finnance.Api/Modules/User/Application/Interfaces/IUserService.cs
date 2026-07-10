@@ -13,9 +13,11 @@ public interface IUserService : IBaseService<UserEntity>
     bool UpdateOwnProfile(long user, string fullName, string avatarUrl);
     bool UpdateUserPassword(long user, string rawPassword);
     bool DeleteUser(long user, long currentUser);
-    List<UserLightDto> ListManaged();
+    bool ToggleActive(long user, long currentUser);
+    List<UserLightDto> ListManaged(bool includeInactive = false);
     void EnsureAdmin(long currentUser);
     long Register(string email, string fullName, string rawPassword);
+    UserEntity ProvisionFromPurchase(string email, string fullName);
     bool VerifyEmail(string token);
     bool ForgotPassword(string email);
     bool ResetPassword(string token, string rawPassword);

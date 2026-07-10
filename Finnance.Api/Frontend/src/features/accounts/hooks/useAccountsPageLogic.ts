@@ -4,17 +4,19 @@ import {
   useAccounts,
   useCreateAccount,
   useDeleteAccount,
+  useToggleAccountActive,
   useUpdateAccount,
 } from './useAccounts';
 import type { AccountFormValues } from '../components/AccountFormModal';
 import type { BankAccount } from '../types/accounts.types';
 
 export function useAccountsPageLogic() {
-  const accountsQuery = useAccounts();
+  const accountsQuery = useAccounts(true);
   const accountTypesQuery = useAccountTypes();
   const createAccount = useCreateAccount();
   const updateAccount = useUpdateAccount();
   const deleteAccount = useDeleteAccount();
+  const toggleAccountActive = useToggleAccountActive();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
@@ -80,6 +82,10 @@ export function useAccountsPageLogic() {
     });
   };
 
+  const toggleActive = (account: BankAccount) => {
+    toggleAccountActive.mutate(account);
+  };
+
   return {
     accounts: accountsQuery.data ?? [],
     isLoading: accountsQuery.isLoading,
@@ -97,5 +103,7 @@ export function useAccountsPageLogic() {
     submitForm,
     setAccountToDelete,
     confirmDelete,
+    toggleActive,
+    toggling: toggleAccountActive.isPending,
   };
 }

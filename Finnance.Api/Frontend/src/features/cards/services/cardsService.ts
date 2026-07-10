@@ -15,7 +15,11 @@ import type {
 } from '../types/cards.types';
 
 export const cardsService = {
-  list: (): Promise<CreditCard[]> => apiClient.get<CreditCard[]>('/credit-card/list'),
+  list: (includeInactive = false): Promise<CreditCard[]> =>
+    apiClient.get<CreditCard[]>(
+      '/credit-card/list',
+      includeInactive ? { includeInactive: true } : undefined,
+    ),
 
   get: (creditCard: number): Promise<CreditCard> =>
     apiClient.get<CreditCard>('/credit-card/get', { creditCard }),
@@ -28,6 +32,9 @@ export const cardsService = {
 
   remove: (creditCard: number): Promise<boolean> =>
     apiClient.delete<boolean>('/credit-card/delete', creditCard),
+
+  toggleActive: (creditCard: number): Promise<boolean> =>
+    apiClient.put<boolean>('/credit-card/toggle-active', creditCard),
 
   stats: (creditCard: number): Promise<CreditCardStats> =>
     apiClient.get<CreditCardStats>('/credit-card/stats', { creditCard }),

@@ -7,8 +7,11 @@ import type {
 } from '../types/categories.types';
 
 export const categoriesService = {
-  list: async (): Promise<Category[]> => {
-    return apiClient.get<Category[]>('/category/list');
+  list: async (includeInactive = false): Promise<Category[]> => {
+    return apiClient.get<Category[]>(
+      '/category/list',
+      includeInactive ? { includeInactive: true } : undefined,
+    );
   },
 
   get: async (category: number): Promise<Category> => {
@@ -25,6 +28,10 @@ export const categoriesService = {
 
   remove: async (category: number): Promise<boolean> => {
     return apiClient.delete<boolean>('/category/delete', category);
+  },
+
+  toggleActive: async (category: number): Promise<boolean> => {
+    return apiClient.put<boolean>('/category/toggle-active', category);
   },
 
   listTypes: async (): Promise<CategoryType[]> => {

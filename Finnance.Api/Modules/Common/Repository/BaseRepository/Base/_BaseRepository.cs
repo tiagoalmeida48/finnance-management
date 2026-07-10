@@ -18,12 +18,28 @@ public partial class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity>
 
     protected static bool IsUserOwned => typeof(IUserOwned).IsAssignableFrom(typeof(TEntity));
 
-    protected string TenantClause => IsUserOwned ? """ AND "user" = @__tenant """ : string.Empty;
+    protected string TenantClause => GetTenantClause();
+
+    protected string GetTenantClause(string alias = null)
+    {
+        if (!IsUserOwned)
+            return string.Empty;
+
+        var prefix = alias.IsEmpty() ? string.Empty : $"{alias}.";
+        return $""" AND {prefix}"user" = @__tenant """;
+    }
 
     protected DynamicParameters TenantParams(TModel model)
     {
         var param = new DynamicParameters(model);
         param.Add("__tenant", ApiContext.User);
+        return param;
+    }
+
+    protected DynamicParameters TenantParams(DynamicParameters param)
+    {
+        if (IsUserOwned)
+            param.Add("__tenant", ApiContext.User);
         return param;
     }
 

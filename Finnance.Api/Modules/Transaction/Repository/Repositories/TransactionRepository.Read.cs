@@ -22,6 +22,8 @@ public partial class TransactionRepository
         var param = new DynamicParameters();
 
         sb.Append("""SELECT * FROM "transaction" WHERE 1 = 1 """);
+        sb.Append(GetTenantClause());
+        TenantParams(param);
 
         if (transaction > 0)
         {
@@ -86,10 +88,11 @@ public partial class TransactionRepository
         var param = new DynamicParameters();
         param.Add("transaction", transaction);
         param.Add("user", user);
+        TenantParams(param);
 
-        const string sql = """
+        var sql = $"""
             SELECT * FROM "transaction"
-            WHERE "transaction" = @transaction AND "user" = @user
+            WHERE "transaction" = @transaction AND "user" = @user{GetTenantClause()}
             LIMIT 1
             """;
 
@@ -103,10 +106,11 @@ public partial class TransactionRepository
         var param = new DynamicParameters();
         param.Add("ids", ids);
         param.Add("user", user);
+        TenantParams(param);
 
-        const string sql = """
+        var sql = $"""
             SELECT * FROM "transaction"
-            WHERE "transaction" = ANY(@ids) AND "user" = @user
+            WHERE "transaction" = ANY(@ids) AND "user" = @user{GetTenantClause()}
             ORDER BY payment_date DESC
             """;
 
@@ -121,7 +125,9 @@ public partial class TransactionRepository
         var param = new DynamicParameters();
 
         param.Add("user", user);
+        TenantParams(param);
         sb.Append("""SELECT * FROM "transaction" WHERE "user" = @user AND active = TRUE """);
+        sb.Append(GetTenantClause());
 
         AppendReadFilters(sb, param, query);
 
@@ -154,6 +160,8 @@ public partial class TransactionRepository
             FROM "transaction"
             WHERE "user" = @user AND active = TRUE
             """);
+        sb.Append(GetTenantClause());
+        TenantParams(param);
         sb.Append(' ');
 
         AppendReadFilters(sb, param, query);
@@ -255,10 +263,11 @@ public partial class TransactionRepository
         var param = new DynamicParameters();
         param.Add("ids", ids);
         param.Add("user", user);
+        TenantParams(param);
 
-        const string sql = """
+        var sql = $"""
             SELECT DISTINCT invoice FROM "transaction"
-            WHERE "transaction" = ANY(@ids) AND "user" = @user AND invoice IS NOT NULL
+            WHERE "transaction" = ANY(@ids) AND "user" = @user AND invoice IS NOT NULL{GetTenantClause()}
             """;
 
         using var con = Conn;
@@ -270,10 +279,11 @@ public partial class TransactionRepository
         var param = new DynamicParameters();
         param.Add("invoice", invoice);
         param.Add("user", user);
+        TenantParams(param);
 
-        const string sql = """
+        var sql = $"""
             SELECT "transaction" FROM "transaction"
-            WHERE invoice = @invoice AND "user" = @user AND active = TRUE AND paid = FALSE
+            WHERE invoice = @invoice AND "user" = @user AND active = TRUE AND paid = FALSE{GetTenantClause()}
             """;
 
         using var con = Conn;

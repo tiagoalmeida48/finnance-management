@@ -4,13 +4,14 @@ import { useToast } from '@/shared/components/feedback/useToast';
 import { usersService } from '../services/usersService';
 import type {
   CreateUserInput,
+  ManagedUser,
   UpdateUserInput,
   UpdateUserPasswordInput,
 } from '../types/users.types';
 
 export const usersKeys = {
   all: ['users'] as const,
-  list: () => [...usersKeys.all, 'list'] as const,
+  list: (includeInactive = false) => [...usersKeys.all, 'list', includeInactive] as const,
 };
 
 function resolveErrorMessage(error: unknown, fallback: string): string {
@@ -19,10 +20,10 @@ function resolveErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
-export function useUsers() {
+export function useUsers(includeInactive = false) {
   return useQuery({
-    queryKey: usersKeys.list(),
-    queryFn: usersService.list,
+    queryKey: usersKeys.list(includeInactive),
+    queryFn: () => usersService.list(includeInactive),
   });
 }
 
@@ -33,7 +34,7 @@ export function useCreateUser() {
   return useMutation({
     mutationFn: (input: CreateUserInput) => usersService.create(input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: usersKeys.list() });
+      queryClient.invalidateQueries({ queryKey: usersKeys.all });
       addToast('Usuário criado com sucesso.', 'success');
     },
     onError: (error: unknown) => {
@@ -49,7 +50,7 @@ export function useUpdateUser() {
   return useMutation({
     mutationFn: (input: UpdateUserInput) => usersService.update(input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: usersKeys.list() });
+      queryClient.invalidateQueries({ queryKey: usersKeys.all });
       addToast('Usuário atualizado com sucesso.', 'success');
     },
     onError: (error: unknown) => {
@@ -72,6 +73,25 @@ export function useUpdateUserPassword() {
   });
 }
 
+export function useToggleUserActive() {
+  const queryClient = useQueryClient();
+  const { addToast } = useToast();
+
+  return useMutation({
+    mutationFn: (user: ManagedUser) => usersService.toggleActive(user.user),
+    onSuccess: (_, user) => {
+      queryClient.invalidateQueries({ queryKey: usersKeys.all });
+      addToast(user.active ? 'Usuário desativado.' : 'Usuário ativado.', 'success');
+    },
+    onError: (error: unknown) => {
+      addToast(
+        resolveErrorMessage(error, 'Não foi possível alterar o status do usuário.'),
+        'error',
+      );
+    },
+  });
+}
+
 export function useDeleteUser() {
   const queryClient = useQueryClient();
   const { addToast } = useToast();
@@ -79,7 +99,7 @@ export function useDeleteUser() {
   return useMutation({
     mutationFn: (user: number) => usersService.remove(user),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: usersKeys.list() });
+      queryClient.invalidateQueries({ queryKey: usersKeys.all });
       addToast('Usuário removido com sucesso.', 'success');
     },
     onError: (error: unknown) => {

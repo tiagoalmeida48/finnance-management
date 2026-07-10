@@ -24,9 +24,9 @@ public partial class UserService
         return current;
     }
 
-    public List<UserLightDto> ListManaged()
+    public List<UserLightDto> ListManaged(bool includeInactive = false)
     {
-        var users = userRepository.Search(active: true);
+        var users = userRepository.Search(active: !includeInactive);
 
         return users.Select(u => new UserLightDto
         {
@@ -34,7 +34,8 @@ public partial class UserService
             Email = u.Email,
             FullName = u.FullName,
             Created = u.Created,
-            IsAdmin = u.IsAdmin
+            IsAdmin = u.IsAdmin,
+            Active = u.Active
         }).ToList();
     }
 }

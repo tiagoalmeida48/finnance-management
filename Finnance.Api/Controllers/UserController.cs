@@ -11,9 +11,9 @@ public class UserController(IUserService userService) : ControllerBase
 {
     [Authorization(admin: true)]
     [HttpGet]
-    public ResultApi<List<UserLightDto>> List()
+    public ResultApi<List<UserLightDto>> List([FromQuery] bool includeInactive = false)
     {
-        return new ResultApi<List<UserLightDto>> { Result = userService.ListManaged() };
+        return new ResultApi<List<UserLightDto>> { Result = userService.ListManaged(includeInactive) };
     }
 
     [Authorization(admin: true)]
@@ -45,6 +45,13 @@ public class UserController(IUserService userService) : ControllerBase
     public ResultApi<bool> Delete([FromBody] long user)
     {
         return new ResultApi<bool> { Result = userService.DeleteUser(user, UserLogged.user) };
+    }
+
+    [Authorization(admin: true)]
+    [HttpPut]
+    public ResultApi<bool> ToggleActive([FromBody] long user)
+    {
+        return new ResultApi<bool> { Result = userService.ToggleActive(user, UserLogged.user) };
     }
 
     [Authorization()]

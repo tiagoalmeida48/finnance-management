@@ -21,6 +21,8 @@ public class CategoryRepository : BaseRepository<CategoryEntity, CategoryMod>, I
         var param = new DynamicParameters();
 
         sb.Append("SELECT * FROM category WHERE 1 = 1 ");
+        sb.Append(GetTenantClause());
+        TenantParams(param);
 
         if (user > 0)
         {

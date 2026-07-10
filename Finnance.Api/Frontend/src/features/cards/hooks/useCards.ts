@@ -8,6 +8,7 @@ import {
   invoicesService,
 } from '../services/cardsService';
 import type {
+  CreditCard,
   CreditCardCreateInput,
   CreditCardUpdateInput,
   PayBillInput,
@@ -15,7 +16,7 @@ import type {
 
 export const cardsKeys = {
   all: ['cards'] as const,
-  list: ['cards', 'list'] as const,
+  list: (includeInactive = false) => ['cards', 'list', includeInactive] as const,
   allStats: ['cards', 'all-stats'] as const,
   card: (card: number) => ['cards', 'card', card] as const,
   stats: (card: number) => ['cards', 'stats', card] as const,
@@ -26,10 +27,10 @@ export const cardsKeys = {
   bankAccounts: ['cards', 'bank-accounts'] as const,
 };
 
-export function useCards() {
+export function useCards(includeInactive = false) {
   return useQuery({
-    queryKey: cardsKeys.list,
-    queryFn: cardsService.list,
+    queryKey: cardsKeys.list(includeInactive),
+    queryFn: () => cardsService.list(includeInactive),
   });
 }
 
@@ -125,6 +126,19 @@ export function useDeleteCard() {
       addToast('Cartão removido.', 'success');
     },
     onError: () => addToast('Não foi possível remover o cartão.', 'error'),
+  });
+}
+
+export function useToggleCardActive() {
+  const { addToast } = useToast();
+  const invalidate = useInvalidateCards();
+  return useMutation({
+    mutationFn: (card: CreditCard) => cardsService.toggleActive(card.creditCard),
+    onSuccess: (_, card) => {
+      invalidate();
+      addToast(card.active ? 'Cartão desativado.' : 'Cartão ativado.', 'success');
+    },
+    onError: () => addToast('Não foi possível alterar o status do cartão.', 'error'),
   });
 }
 

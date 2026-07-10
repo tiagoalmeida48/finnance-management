@@ -18,6 +18,8 @@ public class InstallmentGroupRepository : BaseRepository<InstallmentGroupEntity,
         var param = new DynamicParameters();
 
         sb.Append("SELECT * FROM installment_group WHERE 1 = 1 ");
+        sb.Append(GetTenantClause());
+        TenantParams(param);
 
         if (installmentGroup > 0)
         {

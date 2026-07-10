@@ -18,9 +18,9 @@ public partial class CreditCardService
         return current;
     }
 
-    public List<CreditCardEntity> List(long userId)
+    public List<CreditCardEntity> List(long userId, bool includeInactive = false)
     {
-        return creditCardRepository.Search(user: userId, active: true);
+        return creditCardRepository.Search(user: userId, active: !includeInactive);
     }
 
     public CreditCardStatsDto GetStats(long creditCard, long userId)

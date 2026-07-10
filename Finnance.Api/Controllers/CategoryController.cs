@@ -10,15 +10,15 @@ namespace Finnance.Api.Controllers;
 
 public class CategoryController(ICategoryService categoryService) : ControllerBase
 {
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
-    public ResultApi<List<CategoryDisplayDto>> List()
+    public ResultApi<List<CategoryDisplayDto>> List([FromQuery] bool includeInactive = false)
     {
-        var categories = categoryService.List(UserLogged.user);
+        var categories = categoryService.List(UserLogged.user, includeInactive);
         return new ResultApi<List<CategoryDisplayDto>> { Result = categories.MapTo<List<CategoryDisplayDto>>() };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<CategoryDisplayDto> Get([FromQuery] long category)
     {
@@ -26,7 +26,7 @@ public class CategoryController(ICategoryService categoryService) : ControllerBa
         return new ResultApi<CategoryDisplayDto> { Result = entity.MapTo<CategoryDisplayDto>() };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpPost]
     public ResultApi<long> Create([FromBody] CategoryCreateDto dto)
     {
@@ -41,7 +41,7 @@ public class CategoryController(ICategoryService categoryService) : ControllerBa
         return new ResultApi<long> { Result = id };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpPut]
     public ResultApi<bool> Update([FromBody] CategoryUpdateDto dto)
     {
@@ -57,10 +57,17 @@ public class CategoryController(ICategoryService categoryService) : ControllerBa
         return new ResultApi<bool> { Result = categoryService.UpdateCategory(entity, UserLogged.user) };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpDelete]
     public ResultApi<bool> Delete([FromBody] long category)
     {
         return new ResultApi<bool> { Result = categoryService.DeleteCategory(category, UserLogged.user) };
+    }
+
+    [Authorization(subscription: true)]
+    [HttpPut]
+    public ResultApi<bool> ToggleActive([FromBody] long category)
+    {
+        return new ResultApi<bool> { Result = categoryService.ToggleActive(category, UserLogged.user) };
     }
 }

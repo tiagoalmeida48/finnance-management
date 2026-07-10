@@ -9,7 +9,7 @@ namespace Finnance.Api.Controllers;
 
 public class InvoiceStatusController(IInvoiceStatusService invoiceStatusService) : ControllerBase
 {
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<List<InvoiceStatusDisplayDto>> List()
     {
@@ -17,7 +17,7 @@ public class InvoiceStatusController(IInvoiceStatusService invoiceStatusService)
         return new ResultApi<List<InvoiceStatusDisplayDto>> { Result = result };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<InvoiceStatusDisplayDto> Get([FromQuery] long invoiceStatus)
     {

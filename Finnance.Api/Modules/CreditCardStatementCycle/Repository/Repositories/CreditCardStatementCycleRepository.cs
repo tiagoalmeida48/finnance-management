@@ -19,6 +19,8 @@ public class CreditCardStatementCycleRepository : BaseRepository<CreditCardState
         var param = new DynamicParameters();
 
         sb.Append("SELECT * FROM credit_card_statement_cycle WHERE 1 = 1 ");
+        sb.Append(GetTenantClause());
+        TenantParams(param);
 
         if (creditCardStatementCycle > 0)
         {
@@ -64,13 +66,14 @@ public class CreditCardStatementCycleRepository : BaseRepository<CreditCardState
         var param = new DynamicParameters();
         param.Add("card", card);
         param.Add("user", user);
+        TenantParams(param);
 
-        const string sql = """
-                           SELECT * FROM credit_card_statement_cycle
-                           WHERE card = @card AND "user" = @user AND date_end = DATE '9999-12-31'
-                           ORDER BY date_start DESC
-                           LIMIT 1
-                           """;
+        var sql = $"""
+                   SELECT * FROM credit_card_statement_cycle
+                   WHERE card = @card AND "user" = @user AND date_end = DATE '9999-12-31'{GetTenantClause()}
+                   ORDER BY date_start DESC
+                   LIMIT 1
+                   """;
 
         using var con = Conn;
         var model = con.Query<CreditCardStatementCycleMod>(sql, param).FirstOrDefault();
@@ -82,8 +85,9 @@ public class CreditCardStatementCycleRepository : BaseRepository<CreditCardState
         var param = new DynamicParameters();
         param.Add("creditCardStatementCycle", creditCardStatementCycle);
         param.Add("user", user);
+        TenantParams(param);
 
-        const string sql = """DELETE FROM credit_card_statement_cycle WHERE credit_card_statement_cycle = @creditCardStatementCycle AND "user" = @user""";
+        var sql = $"""DELETE FROM credit_card_statement_cycle WHERE credit_card_statement_cycle = @creditCardStatementCycle AND "user" = @user{GetTenantClause()}""";
 
         using var con = Conn;
         return con.Execute(sql, param) > 0;
@@ -95,13 +99,14 @@ public class CreditCardStatementCycleRepository : BaseRepository<CreditCardState
         param.Add("card", card);
         param.Add("user", user);
         param.Add("date", date.Date);
+        TenantParams(param);
 
-        const string sql = """
-                           SELECT * FROM credit_card_statement_cycle
-                           WHERE card = @card AND "user" = @user AND date_start <= @date AND date_end >= @date
-                           ORDER BY date_start DESC
-                           LIMIT 1
-                           """;
+        var sql = $"""
+                   SELECT * FROM credit_card_statement_cycle
+                   WHERE card = @card AND "user" = @user AND date_start <= @date AND date_end >= @date{GetTenantClause()}
+                   ORDER BY date_start DESC
+                   LIMIT 1
+                   """;
 
         using var con = Conn;
         var model = con.Query<CreditCardStatementCycleMod>(sql, param).FirstOrDefault();

@@ -1,4 +1,4 @@
-import { Pencil, KeyRound, Trash2 } from 'lucide-react';
+import { Pencil, KeyRound, Power, Trash2 } from 'lucide-react';
 import { Badge, SortableTh } from '@/shared/components/ui';
 import { useSortableData, type SortAccessors } from '@/shared/hooks';
 import type { ManagedUser } from '../types/users.types';
@@ -8,15 +8,23 @@ interface UsersTableProps {
   onEdit: (user: ManagedUser) => void;
   onResetPassword: (user: ManagedUser) => void;
   onDelete: (user: ManagedUser) => void;
+  onToggleActive: (user: ManagedUser) => void;
 }
 
 const accessors: SortAccessors<ManagedUser> = {
   fullName: (u) => u.fullName,
   email: (u) => u.email,
   isAdmin: (u) => u.isAdmin,
+  active: (u) => u.active,
 };
 
-export function UsersTable({ users, onEdit, onResetPassword, onDelete }: UsersTableProps) {
+export function UsersTable({
+  users,
+  onEdit,
+  onResetPassword,
+  onDelete,
+  onToggleActive,
+}: UsersTableProps) {
   const { sorted, sortKey, direction, toggleSort } = useSortableData(users, accessors, 'fullName');
 
   return (
@@ -27,6 +35,7 @@ export function UsersTable({ users, onEdit, onResetPassword, onDelete }: UsersTa
             <SortableTh label="Nome" sortKey="fullName" activeKey={sortKey} direction={direction} onSort={toggleSort} />
             <SortableTh label="E-mail" sortKey="email" activeKey={sortKey} direction={direction} onSort={toggleSort} />
             <SortableTh label="Administrador" sortKey="isAdmin" activeKey={sortKey} direction={direction} onSort={toggleSort} />
+            <SortableTh label="Status" sortKey="active" activeKey={sortKey} direction={direction} onSort={toggleSort} />
             <th className="px-3 py-2.5 font-medium text-right">Ações</th>
           </tr>
         </thead>
@@ -41,7 +50,21 @@ export function UsersTable({ users, onEdit, onResetPassword, onDelete }: UsersTa
                 </Badge>
               </td>
               <td className="px-3 py-2">
+                <Badge variant={user.active ? 'income' : 'expense'}>
+                  {user.active ? 'Ativo' : 'Inativo'}
+                </Badge>
+              </td>
+              <td className="px-3 py-2">
                 <div className="flex justify-end gap-1">
+                  <button
+                    type="button"
+                    aria-label={user.active ? 'Desativar usuário' : 'Ativar usuário'}
+                    title={user.active ? 'Desativar' : 'Ativar'}
+                    onClick={() => onToggleActive(user)}
+                    className="rounded-md p-1.5 text-text-muted hover:bg-surface-2 hover:text-text transition-colors"
+                  >
+                    <Power size={16} />
+                  </button>
                   <button
                     type="button"
                     aria-label="Editar usuário"

@@ -17,8 +17,8 @@ public partial class BankAccountService
         return current;
     }
 
-    public List<BankAccountEntity> List(long userId)
+    public List<BankAccountEntity> List(long userId, bool includeInactive = false)
     {
-        return bankAccountRepository.Search(user: userId, active: true);
+        return bankAccountRepository.Search(user: userId, active: !includeInactive);
     }
 }

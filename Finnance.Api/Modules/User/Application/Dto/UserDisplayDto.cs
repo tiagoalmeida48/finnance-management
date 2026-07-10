@@ -7,6 +7,4 @@ public class UserDisplayDto : UserLightDto
     public string Currency { get; set; }
 
     public string Locale { get; set; }
-
-    public bool Active { get; set; }
 }

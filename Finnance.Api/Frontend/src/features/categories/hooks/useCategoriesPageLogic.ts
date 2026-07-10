@@ -4,6 +4,7 @@ import {
   useCategories,
   useCreateCategory,
   useDeleteCategory,
+  useToggleCategoryActive,
   useUpdateCategory,
 } from './useCategories';
 import type { CategoryFormValues } from '../components/CategoryFormModal';
@@ -12,10 +13,11 @@ import type { Category } from '../types/categories.types';
 export type CategoryTypeFilter = 'all' | 'income' | 'expense';
 
 export function useCategoriesPageLogic() {
-  const categoriesQuery = useCategories();
+  const categoriesQuery = useCategories(true);
   const createCategory = useCreateCategory();
   const updateCategory = useUpdateCategory();
   const deleteCategory = useDeleteCategory();
+  const toggleCategoryActive = useToggleCategoryActive();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
@@ -68,6 +70,10 @@ export function useCategoriesPageLogic() {
     });
   };
 
+  const toggleActive = (category: Category) => {
+    toggleCategoryActive.mutate(category);
+  };
+
   return {
     categories,
     hasCategories: allCategories.length > 0,
@@ -88,5 +94,7 @@ export function useCategoriesPageLogic() {
     requestDelete: setPendingDelete,
     cancelDelete: () => setPendingDelete(null),
     confirmDelete,
+    toggleActive,
+    toggling: toggleCategoryActive.isPending,
   };
 }

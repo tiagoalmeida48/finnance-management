@@ -7,7 +7,11 @@ import type {
 } from '../types/accounts.types';
 
 export const accountsService = {
-  list: (): Promise<BankAccount[]> => apiClient.get<BankAccount[]>('/bank-account/list'),
+  list: (includeInactive = false): Promise<BankAccount[]> =>
+    apiClient.get<BankAccount[]>(
+      '/bank-account/list',
+      includeInactive ? { includeInactive: true } : undefined,
+    ),
 
   get: (bankAccount: number): Promise<BankAccount> =>
     apiClient.get<BankAccount>('/bank-account/get', { bankAccount }),
@@ -20,6 +24,9 @@ export const accountsService = {
 
   remove: (bankAccount: number): Promise<boolean> =>
     apiClient.delete<boolean>('/bank-account/delete', bankAccount),
+
+  toggleActive: (bankAccount: number): Promise<boolean> =>
+    apiClient.put<boolean>('/bank-account/toggle-active', bankAccount),
 
   listAccountTypes: (): Promise<AccountType[]> =>
     apiClient.get<AccountType[]>('/account-type/list'),

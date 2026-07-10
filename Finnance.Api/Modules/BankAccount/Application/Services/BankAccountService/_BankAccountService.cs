@@ -48,6 +48,17 @@ public partial class BankAccountService(IBankAccountRepository bankAccountReposi
         return true;
     }
 
+    public bool ToggleActive(long bankAccount, long userId)
+    {
+        var current = Get(bankAccount, userId);
+        current.Active = !current.Active;
+
+        using var tran = GetTransaction();
+        bankAccountRepository.Update(current);
+        tran.Complete();
+        return true;
+    }
+
     public bool IncrementBalance(long bankAccount, decimal delta, long userId)
     {
         EnsureOwnership(bankAccount, userId);

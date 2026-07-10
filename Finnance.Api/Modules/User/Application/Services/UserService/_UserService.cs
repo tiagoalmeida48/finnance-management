@@ -35,6 +35,26 @@ public partial class UserService(IUserRepository userRepository, IEmailService e
         return id;
     }
 
+    public UserEntity ProvisionFromPurchase(string email, string fullName)
+    {
+        var entity = new UserEntity { Email = email, FullName = fullName.IsEmpty() ? email : fullName };
+        entity.ValidateCreate();
+        ValidateEmailUnique(entity.Email, 0);
+
+        entity.PasswordHash = Argon2Helper.GenerateHashPassword(NewToken());
+        entity.IsAdmin = false;
+        entity.EmailVerified = true;
+        entity.ResetToken = NewToken();
+        entity.ResetTokenExpires = DateTime.UtcNow.AddHours(72);
+
+        using var tran = GetTransaction();
+        entity.User = userRepository.Create(entity);
+        tran.Complete();
+
+        emailService.SendPurchaseWelcome(entity.Email, entity.ResetToken);
+        return entity;
+    }
+
     public bool VerifyEmail(string token)
     {
         if (token.IsEmpty())
@@ -168,6 +188,21 @@ public partial class UserService(IUserRepository userRepository, IEmailService e
 
         var current = Get(user);
         current.Active = false;
+
+        using var tran = GetTransaction();
+        userRepository.Update(current);
+        tran.Complete();
+
+        return true;
+    }
+
+    public bool ToggleActive(long user, long currentUser)
+    {
+        var current = Get(user);
+        if (current.Active && user == currentUser)
+            throw new ApplicationException(Constants.ErrorMessage.CannotDeleteSelf);
+
+        current.Active = !current.Active;
 
         using var tran = GetTransaction();
         userRepository.Update(current);

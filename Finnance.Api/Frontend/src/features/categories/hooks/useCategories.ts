@@ -1,17 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/shared/components/feedback';
 import { categoriesService } from '../services/categoriesService';
-import type { CreateCategoryInput, UpdateCategoryInput } from '../types/categories.types';
+import type {
+  Category,
+  CreateCategoryInput,
+  UpdateCategoryInput,
+} from '../types/categories.types';
 
 export const categoriesKeys = {
   all: ['categories'] as const,
+  list: (includeInactive: boolean) => [...categoriesKeys.all, 'list', includeInactive] as const,
   types: ['category-types'] as const,
 };
 
-export function useCategories() {
+export function useCategories(includeInactive = false) {
   return useQuery({
-    queryKey: categoriesKeys.all,
-    queryFn: categoriesService.list,
+    queryKey: categoriesKeys.list(includeInactive),
+    queryFn: () => categoriesService.list(includeInactive),
   });
 }
 
@@ -51,6 +56,22 @@ export function useUpdateCategory() {
     },
     onError: () => {
       addToast('Não foi possível atualizar a categoria.', 'error');
+    },
+  });
+}
+
+export function useToggleCategoryActive() {
+  const queryClient = useQueryClient();
+  const { addToast } = useToast();
+
+  return useMutation({
+    mutationFn: (category: Category) => categoriesService.toggleActive(category.category),
+    onSuccess: (_, category) => {
+      queryClient.invalidateQueries({ queryKey: categoriesKeys.all });
+      addToast(category.active ? 'Categoria desativada.' : 'Categoria ativada.', 'success');
+    },
+    onError: () => {
+      addToast('Não foi possível alterar o status da categoria.', 'error');
     },
   });
 }

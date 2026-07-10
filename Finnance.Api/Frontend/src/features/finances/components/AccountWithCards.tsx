@@ -1,4 +1,4 @@
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Power, Trash2 } from 'lucide-react';
 import { Badge, Button, Card, EntityIcon } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import { CardRow } from '@/features/cards';
@@ -12,10 +12,12 @@ interface AccountWithCardsProps {
   statsByCard: Map<number, CreditCardStats>;
   onEditAccount: (account: BankAccount) => void;
   onDeleteAccount: (account: BankAccount) => void;
+  onToggleAccountActive: (account: BankAccount) => void;
   onAddCard: (bankAccount: number) => void;
   onViewCard: (card: CreditCard) => void;
   onEditCard: (card: CreditCard) => void;
   onDeleteCard: (card: CreditCard) => void;
+  onToggleCardActive: (card: CreditCard) => void;
 }
 
 export function AccountWithCards({
@@ -25,10 +27,12 @@ export function AccountWithCards({
   statsByCard,
   onEditAccount,
   onDeleteAccount,
+  onToggleAccountActive,
   onAddCard,
   onViewCard,
   onEditCard,
   onDeleteCard,
+  onToggleCardActive,
 }: AccountWithCardsProps) {
   return (
     <Card className="flex h-full flex-col gap-4">
@@ -43,7 +47,9 @@ export function AccountWithCards({
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <p className="truncate font-semibold text-text">{account.name}</p>
-              {!account.active && <Badge variant="expense">Inativa</Badge>}
+              <Badge variant={account.active ? 'income' : 'expense'}>
+                {account.active ? 'Ativa' : 'Inativa'}
+              </Badge>
             </div>
             {accountTypeName && <p className="text-sm text-text-muted truncate">{accountTypeName}</p>}
           </div>
@@ -66,6 +72,7 @@ export function AccountWithCards({
               onView={onViewCard}
               onEdit={onEditCard}
               onDelete={onDeleteCard}
+              onToggleActive={onToggleCardActive}
             />
           ))
         )}
@@ -80,6 +87,15 @@ export function AccountWithCards({
           variant="ghost"
           size="sm"
           className="ml-auto"
+          aria-label={account.active ? 'Desativar conta' : 'Ativar conta'}
+          title={account.active ? 'Desativar' : 'Ativar'}
+          onClick={() => onToggleAccountActive(account)}
+        >
+          <Power className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => onEditAccount(account)}
         >
           <Pencil className="h-4 w-4" />

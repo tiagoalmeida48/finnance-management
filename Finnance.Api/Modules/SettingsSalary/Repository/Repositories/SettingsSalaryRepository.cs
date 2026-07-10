@@ -20,6 +20,8 @@ public class SettingsSalaryRepository : BaseRepository<SettingsSalaryEntity, Set
         var param = new DynamicParameters();
 
         sb.Append("SELECT * FROM settings_salary WHERE 1 = 1 ");
+        sb.Append(GetTenantClause());
+        TenantParams(param);
 
         if (user > 0)
         {
@@ -66,8 +68,9 @@ public class SettingsSalaryRepository : BaseRepository<SettingsSalaryEntity, Set
         var param = new DynamicParameters();
         param.Add("settingsSalary", settingsSalary);
         param.Add("user", user);
+        TenantParams(param);
 
-        const string sql = """DELETE FROM settings_salary WHERE settings_salary = @settingsSalary AND "user" = @user""";
+        var sql = $"""DELETE FROM settings_salary WHERE settings_salary = @settingsSalary AND "user" = @user{GetTenantClause()}""";
 
         using var con = Conn;
         return con.Execute(sql, param) > 0;

@@ -44,6 +44,26 @@ public static partial class Constants
         public const long OVERDUE = 5;
     }
 
+    public static class SubscriptionStatusId
+    {
+        public const long ACTIVE = 1;
+        public const long LATE = 2;
+        public const long CANCELED = 3;
+        public const long REFUNDED = 4;
+        public const long CHARGEBACK = 5;
+    }
+
+    public static class KiwifyEvent
+    {
+        public const string OrderApproved = "order_approved";
+        public const string OrderRefunded = "order_refunded";
+        public const string Chargeback = "chargedback";
+        public const string ChargebackAlt = "chargeback";
+        public const string SubscriptionRenewed = "subscription_renewed";
+        public const string SubscriptionLate = "subscription_late";
+        public const string SubscriptionCanceled = "subscription_canceled";
+    }
+
     public static class AuditActionId
     {
         public const long INSERT = 1;

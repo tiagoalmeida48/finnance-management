@@ -14,11 +14,12 @@ public partial class TransactionRepository
         var param = new DynamicParameters();
 
         param.Add("user", user);
-        sb.Append("""
+        TenantParams(param);
+        sb.Append($"""
             SELECT t.*,
-                   (SELECT ig.total_installments FROM installment_group ig WHERE ig.installment_group = t.installment_group) AS total_installments
+                   (SELECT ig.total_installments FROM installment_group ig WHERE ig.installment_group = t.installment_group{GetTenantClause("ig")}) AS total_installments
             FROM "transaction" t
-            WHERE t."user" = @user AND t.active = TRUE
+            WHERE t."user" = @user AND t.active = TRUE{GetTenantClause("t")}
             """);
         sb.Append(' ');
 
@@ -37,12 +38,13 @@ public partial class TransactionRepository
         param.Add("user", user);
         param.Add("installmentGroups", installmentGroups ?? []);
         param.Add("recurringGroups", recurringGroups ?? []);
+        TenantParams(param);
 
-        const string sql = """
+        var sql = $"""
             SELECT t.*,
-                   (SELECT ig.total_installments FROM installment_group ig WHERE ig.installment_group = t.installment_group) AS total_installments
+                   (SELECT ig.total_installments FROM installment_group ig WHERE ig.installment_group = t.installment_group{GetTenantClause("ig")}) AS total_installments
             FROM "transaction" t
-            WHERE t."user" = @user AND t.active = TRUE
+            WHERE t."user" = @user AND t.active = TRUE{GetTenantClause("t")}
               AND (t.installment_group = ANY(@installmentGroups) OR t.recurring_group = ANY(@recurringGroups))
             ORDER BY t.installment_number NULLS LAST, t.payment_date
             """;

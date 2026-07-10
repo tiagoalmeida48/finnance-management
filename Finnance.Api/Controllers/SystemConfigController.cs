@@ -9,21 +9,21 @@ namespace Finnance.Api.Controllers;
 
 public class SystemConfigController(ISystemConfigService systemConfigService) : ControllerBase
 {
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<List<SystemConfigDisplayDto>> List()
     {
         return new ResultApi<List<SystemConfigDisplayDto>> { Result = systemConfigService.List().MapTo<List<SystemConfigDisplayDto>>() };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<SystemConfigDisplayDto> Get([FromQuery] long systemConfig)
     {
         return new ResultApi<SystemConfigDisplayDto> { Result = systemConfigService.Get(systemConfig).MapTo<SystemConfigDisplayDto>() };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<SystemConfigDisplayDto> GetByKey([FromQuery] string key)
     {

@@ -21,6 +21,8 @@ public class CreditCardRepository : BaseRepository<CreditCardEntity, CreditCardM
         var param = new DynamicParameters();
 
         sb.Append("SELECT * FROM credit_card WHERE 1 = 1 ");
+        sb.Append(GetTenantClause());
+        TenantParams(param);
 
         if (user > 0)
         {
@@ -56,7 +58,7 @@ public class CreditCardRepository : BaseRepository<CreditCardEntity, CreditCardM
 
     public CreditCardStatsDto GetStats(long creditCard, long user)
     {
-        const string sql = """
+        var sql = $"""
             SELECT
                 cc.credit_card AS CreditCard,
                 cc.credit_limit AS CreditLimit,
@@ -64,23 +66,24 @@ public class CreditCardRepository : BaseRepository<CreditCardEntity, CreditCardM
                     SELECT SUM(COALESCE(i.total_amount, 0) - COALESCE(i.paid_amount, 0))
                     FROM credit_card_invoice i
                     WHERE i.card = cc.credit_card
-                      AND i.invoice_status <> @paidStatus
+                      AND i.invoice_status <> @paidStatus{GetTenantClause("i")}
                 ), 0) AS Usage,
                 COALESCE((
                     SELECT COALESCE(i.total_amount, 0) - COALESCE(i.paid_amount, 0)
                     FROM credit_card_invoice i
                     WHERE i.card = cc.credit_card
-                      AND i.month_key = to_char(CURRENT_DATE, 'YYYY-MM')
+                      AND i.month_key = to_char(CURRENT_DATE, 'YYYY-MM'){GetTenantClause("i")}
                     LIMIT 1
                 ), 0) AS CurrentInvoice
             FROM credit_card cc
-            WHERE cc.credit_card = @creditCard AND cc."user" = @user
+            WHERE cc.credit_card = @creditCard AND cc."user" = @user{GetTenantClause("cc")}
             """;
 
         var param = new DynamicParameters();
         param.Add("creditCard", creditCard);
         param.Add("user", user);
         param.Add("paidStatus", Constants.InvoiceStatusId.PAID);
+        TenantParams(param);
 
         using var con = Conn;
         var stats = con.QueryFirstOrDefault<CreditCardStatsDto>(sql, param);
@@ -93,7 +96,7 @@ public class CreditCardRepository : BaseRepository<CreditCardEntity, CreditCardM
 
     public List<CreditCardStatsDto> GetAllStats(long user)
     {
-        const string sql = """
+        var sql = $"""
             SELECT
                 cc.credit_card AS CreditCard,
                 cc.credit_limit AS CreditLimit,
@@ -101,22 +104,23 @@ public class CreditCardRepository : BaseRepository<CreditCardEntity, CreditCardM
                     SELECT SUM(COALESCE(i.total_amount, 0) - COALESCE(i.paid_amount, 0))
                     FROM credit_card_invoice i
                     WHERE i.card = cc.credit_card
-                      AND i.invoice_status <> @paidStatus
+                      AND i.invoice_status <> @paidStatus{GetTenantClause("i")}
                 ), 0) AS Usage,
                 COALESCE((
                     SELECT COALESCE(i.total_amount, 0) - COALESCE(i.paid_amount, 0)
                     FROM credit_card_invoice i
                     WHERE i.card = cc.credit_card
-                      AND i.month_key = to_char(CURRENT_DATE, 'YYYY-MM')
+                      AND i.month_key = to_char(CURRENT_DATE, 'YYYY-MM'){GetTenantClause("i")}
                     LIMIT 1
                 ), 0) AS CurrentInvoice
             FROM credit_card cc
-            WHERE cc."user" = @user AND cc.active = TRUE
+            WHERE cc."user" = @user AND cc.active = TRUE{GetTenantClause("cc")}
             """;
 
         var param = new DynamicParameters();
         param.Add("user", user);
         param.Add("paidStatus", Constants.InvoiceStatusId.PAID);
+        TenantParams(param);
 
         using var con = Conn;
         var stats = con.Query<CreditCardStatsDto>(sql, param).ToList();

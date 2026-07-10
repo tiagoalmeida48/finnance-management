@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Power, Trash2 } from 'lucide-react';
 import { Badge, Button, Card, EntityIcon } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import type { AccountType, BankAccount } from '../types/accounts.types';
@@ -8,9 +8,16 @@ interface AccountCardProps {
   accountTypeName?: AccountType['name'];
   onEdit: (account: BankAccount) => void;
   onDelete: (account: BankAccount) => void;
+  onToggleActive: (account: BankAccount) => void;
 }
 
-export function AccountCard({ account, accountTypeName, onEdit, onDelete }: AccountCardProps) {
+export function AccountCard({
+  account,
+  accountTypeName,
+  onEdit,
+  onDelete,
+  onToggleActive,
+}: AccountCardProps) {
   return (
     <Card className="flex flex-col gap-3 transition-colors hover:border-primary/40">
       <div className="flex items-start justify-between gap-3">
@@ -26,7 +33,9 @@ export function AccountCard({ account, accountTypeName, onEdit, onDelete }: Acco
             {accountTypeName && <p className="text-sm text-text-muted truncate">{accountTypeName}</p>}
           </div>
         </div>
-        {!account.active && <Badge variant="expense">Inativa</Badge>}
+        <Badge variant={account.active ? 'income' : 'expense'}>
+          {account.active ? 'Ativa' : 'Inativa'}
+        </Badge>
       </div>
 
       <div>
@@ -39,6 +48,15 @@ export function AccountCard({ account, accountTypeName, onEdit, onDelete }: Acco
       {account.notes && <p className="text-sm text-text-muted line-clamp-2">{account.notes}</p>}
 
       <div className="flex gap-2 justify-end mt-auto pt-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label={account.active ? 'Desativar conta' : 'Ativar conta'}
+          title={account.active ? 'Desativar' : 'Ativar'}
+          onClick={() => onToggleActive(account)}
+        >
+          <Power className="h-4 w-4" />
+        </Button>
         <Button
           variant="ghost"
           size="sm"

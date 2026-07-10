@@ -9,7 +9,7 @@ namespace Finnance.Api.Controllers;
 
 public class CreditCardInvoiceController(ICreditCardInvoiceService creditCardInvoiceService) : ControllerBase
 {
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<InvoiceListResultDto> GetByCard([FromQuery] long card, [FromQuery] int year = 0, [FromQuery] int limit = 0, [FromQuery] int offset = 0)
     {
@@ -27,7 +27,7 @@ public class CreditCardInvoiceController(ICreditCardInvoiceService creditCardInv
         };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<List<CreditCardInvoiceDisplayDto>> List([FromQuery] int year = 0)
     {
@@ -35,7 +35,7 @@ public class CreditCardInvoiceController(ICreditCardInvoiceService creditCardInv
         return new ResultApi<List<CreditCardInvoiceDisplayDto>> { Result = invoices.MapTo<List<CreditCardInvoiceDisplayDto>>() };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<CreditCardInvoiceDisplayDto> GetByMonth([FromQuery] long card, [FromQuery] string monthKey)
     {
@@ -43,7 +43,7 @@ public class CreditCardInvoiceController(ICreditCardInvoiceService creditCardInv
         return new ResultApi<CreditCardInvoiceDisplayDto> { Result = invoice.MapTo<CreditCardInvoiceDisplayDto>() };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpPost]
     public ResultApi<bool> Recalculate([FromBody] long invoice)
     {
@@ -51,7 +51,7 @@ public class CreditCardInvoiceController(ICreditCardInvoiceService creditCardInv
         return new ResultApi<bool> { Result = true };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpPost]
     public ResultApi<bool> Reprocess([FromQuery] long card, [FromQuery] DateTime fromDate)
     {
@@ -59,7 +59,7 @@ public class CreditCardInvoiceController(ICreditCardInvoiceService creditCardInv
         return new ResultApi<bool> { Result = true };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpPost]
     public ResultApi<int> MarkOverdue()
     {

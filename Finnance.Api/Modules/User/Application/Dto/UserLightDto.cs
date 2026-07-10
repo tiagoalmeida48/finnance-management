@@ -10,5 +10,7 @@ public class UserLightDto
 
     public bool IsAdmin { get; set; }
 
+    public bool Active { get; set; }
+
     public DateTime Created { get; set; }
 }

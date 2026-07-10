@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Power, Trash2 } from 'lucide-react';
 import { Badge, Button, Card } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import { UsageBar } from './UsageBar';
@@ -10,9 +10,10 @@ interface CardItemProps {
   onView: (card: CreditCard) => void;
   onEdit: (card: CreditCard) => void;
   onDelete: (card: CreditCard) => void;
+  onToggleActive: (card: CreditCard) => void;
 }
 
-export function CardItem({ card, stats, onView, onEdit, onDelete }: CardItemProps) {
+export function CardItem({ card, stats, onView, onEdit, onDelete, onToggleActive }: CardItemProps) {
   const usage = stats?.usage ?? 0;
   const limit = stats?.creditLimit ?? card.creditLimit;
   const available = stats?.availableLimit ?? Math.max(limit - usage, 0);
@@ -34,7 +35,9 @@ export function CardItem({ card, stats, onView, onEdit, onDelete }: CardItemProp
             </p>
           </div>
         </div>
-        {!card.active ? <Badge variant="expense">Inativo</Badge> : null}
+        <Badge variant={card.active ? 'income' : 'expense'}>
+          {card.active ? 'Ativo' : 'Inativo'}
+        </Badge>
       </div>
 
       <UsageBar usage={usage} creditLimit={limit} />
@@ -53,6 +56,15 @@ export function CardItem({ card, stats, onView, onEdit, onDelete }: CardItemProp
       <div className="mt-auto flex items-center gap-2 pt-2">
         <Button variant="secondary" size="sm" className="flex-1" onClick={() => onView(card)}>
           Faturas
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label={card.active ? 'Desativar cartão' : 'Ativar cartão'}
+          title={card.active ? 'Desativar' : 'Ativar'}
+          onClick={() => onToggleActive(card)}
+        >
+          <Power className="h-4 w-4" />
         </Button>
         <Button
           variant="ghost"

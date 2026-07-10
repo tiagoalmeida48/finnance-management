@@ -1,4 +1,4 @@
-import { CreditCard as CreditCardIcon, Pencil, Trash2 } from 'lucide-react';
+import { CreditCard as CreditCardIcon, Pencil, Power, Trash2 } from 'lucide-react';
 import { Badge, Button } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/utils';
 import type { CreditCard, CreditCardStats } from '../types/cards.types';
@@ -9,9 +9,10 @@ interface CardRowProps {
   onView: (card: CreditCard) => void;
   onEdit: (card: CreditCard) => void;
   onDelete: (card: CreditCard) => void;
+  onToggleActive: (card: CreditCard) => void;
 }
 
-export function CardRow({ card, stats, onView, onEdit, onDelete }: CardRowProps) {
+export function CardRow({ card, stats, onView, onEdit, onDelete, onToggleActive }: CardRowProps) {
   const usage = stats?.usage ?? 0;
   const limit = stats?.creditLimit ?? card.creditLimit;
   const available = stats?.availableLimit ?? Math.max(limit - usage, 0);
@@ -30,7 +31,9 @@ export function CardRow({ card, stats, onView, onEdit, onDelete }: CardRowProps)
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="truncate font-medium text-text">{card.name}</p>
-            {!card.active && <Badge variant="expense">Inativo</Badge>}
+            <Badge variant={card.active ? 'income' : 'expense'}>
+              {card.active ? 'Ativo' : 'Inativo'}
+            </Badge>
           </div>
           <div className="mt-1 grid grid-cols-3 gap-2 text-xs text-text-muted">
             <span>
@@ -55,6 +58,15 @@ export function CardRow({ card, stats, onView, onEdit, onDelete }: CardRowProps)
       <div className="flex items-center gap-2 border-t border-border pt-2">
         <Button variant="secondary" size="sm" className="mr-auto" onClick={() => onView(card)}>
           Faturas
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label={card.active ? 'Desativar cartão' : 'Ativar cartão'}
+          title={card.active ? 'Desativar' : 'Ativar'}
+          onClick={() => onToggleActive(card)}
+        >
+          <Power className="h-4 w-4" />
         </Button>
         <Button variant="ghost" size="sm" aria-label="Editar cartão" onClick={() => onEdit(card)}>
           <Pencil className="h-4 w-4" />

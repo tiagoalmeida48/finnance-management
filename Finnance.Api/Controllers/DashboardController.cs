@@ -8,7 +8,7 @@ namespace Finnance.Api.Controllers;
 
 public class DashboardController(IDashboardService dashboardService) : ControllerBase
 {
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<DashboardStatsDto> Stats([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
     {
@@ -16,7 +16,7 @@ public class DashboardController(IDashboardService dashboardService) : Controlle
         return new ResultApi<DashboardStatsDto> { Result = stats };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<List<ChartPointDto>> ChartData([FromQuery] long card, [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
     {
@@ -24,7 +24,7 @@ public class DashboardController(IDashboardService dashboardService) : Controlle
         return new ResultApi<List<ChartPointDto>> { Result = chart };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<List<CategoryDistributionDto>> CategoryDistribution([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
     {
@@ -32,7 +32,7 @@ public class DashboardController(IDashboardService dashboardService) : Controlle
         return new ResultApi<List<CategoryDistributionDto>> { Result = distribution };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<DateTime?> FirstTransactionDate()
     {

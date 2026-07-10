@@ -36,6 +36,7 @@ export function CategoriesPage() {
     requestDelete,
     cancelDelete,
     confirmDelete,
+    toggleActive,
   } = useCategoriesPageLogic();
 
   return (
@@ -95,6 +96,7 @@ export function CategoriesPage() {
                   category={category}
                   onEdit={openEdit}
                   onDelete={requestDelete}
+                  onToggleActive={toggleActive}
                 />
               ))}
             </div>

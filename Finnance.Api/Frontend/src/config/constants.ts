@@ -28,3 +28,11 @@ export const InvoiceStatusId = {
   PAID: 4,
   OVERDUE: 5,
 } as const;
+
+export const SubscriptionStatusId = {
+  ACTIVE: 1,
+  LATE: 2,
+  CANCELED: 3,
+  REFUNDED: 4,
+  CHARGEBACK: 5,
+} as const;

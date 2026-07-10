@@ -7,7 +7,11 @@ import type {
 } from '../types/users.types';
 
 export const usersService = {
-  list: (): Promise<ManagedUser[]> => apiClient.get<ManagedUser[]>('/user/list'),
+  list: (includeInactive = false): Promise<ManagedUser[]> =>
+    apiClient.get<ManagedUser[]>(
+      '/user/list',
+      includeInactive ? { includeInactive: true } : undefined,
+    ),
 
   create: (input: CreateUserInput): Promise<number> =>
     apiClient.post<number>('/user/create', input),
@@ -19,4 +23,7 @@ export const usersService = {
     apiClient.put<boolean>('/user/update-password', input),
 
   remove: (user: number): Promise<boolean> => apiClient.delete<boolean>('/user/delete', user),
+
+  toggleActive: (user: number): Promise<boolean> =>
+    apiClient.put<boolean>('/user/toggle-active', user),
 };

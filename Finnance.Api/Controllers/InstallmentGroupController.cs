@@ -10,7 +10,7 @@ namespace Finnance.Api.Controllers;
 
 public class InstallmentGroupController(IInstallmentGroupService installmentGroupService) : ControllerBase
 {
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<List<InstallmentGroupDisplayDto>> List()
     {
@@ -18,7 +18,7 @@ public class InstallmentGroupController(IInstallmentGroupService installmentGrou
         return new ResultApi<List<InstallmentGroupDisplayDto>> { Result = groups.MapTo<List<InstallmentGroupDisplayDto>>() };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<InstallmentGroupDisplayDto> Get([FromQuery] long installmentGroup)
     {
@@ -26,7 +26,7 @@ public class InstallmentGroupController(IInstallmentGroupService installmentGrou
         return new ResultApi<InstallmentGroupDisplayDto> { Result = group.MapTo<InstallmentGroupDisplayDto>() };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpPost]
     public ResultApi<long> Create([FromBody] InstallmentGroupCreateDto dto)
     {
@@ -35,7 +35,7 @@ public class InstallmentGroupController(IInstallmentGroupService installmentGrou
         return new ResultApi<long> { Result = id };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpDelete]
     public ResultApi<bool> Delete([FromBody] long installmentGroup)
     {

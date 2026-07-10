@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   useCreateUser,
   useDeleteUser,
+  useToggleUserActive,
   useUpdateUser,
   useUpdateUserPassword,
   useUsers,
@@ -11,11 +12,12 @@ import type { UserPasswordValues } from '../components/UserPasswordModal';
 import type { ManagedUser } from '../types/users.types';
 
 export function useUsersPageLogic() {
-  const usersQuery = useUsers();
+  const usersQuery = useUsers(true);
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
   const updatePassword = useUpdateUserPassword();
   const deleteUser = useDeleteUser();
+  const toggleUserActive = useToggleUserActive();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ManagedUser | null>(null);
@@ -86,6 +88,10 @@ export function useUsersPageLogic() {
     });
   };
 
+  const toggleActive = (user: ManagedUser) => {
+    toggleUserActive.mutate(user);
+  };
+
   return {
     users,
     isEmpty,
@@ -106,5 +112,7 @@ export function useUsersPageLogic() {
     submitPassword,
     requestDelete: setPendingDelete,
     confirmDelete,
+    toggleActive,
+    toggling: toggleUserActive.isPending,
   };
 }

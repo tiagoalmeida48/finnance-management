@@ -54,4 +54,15 @@ public partial class CreditCardService(ICreditCardRepository creditCardRepositor
         tran.Complete();
         return true;
     }
+
+    public bool ToggleActive(long creditCard, long userId)
+    {
+        var current = GetCard(creditCard, userId);
+        current.Active = !current.Active;
+
+        using var tran = GetTransaction();
+        creditCardRepository.Update(current);
+        tran.Complete();
+        return true;
+    }
 }

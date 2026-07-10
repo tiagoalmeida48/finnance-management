@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Finnance.Api.Modules.Subscription.Application.Interfaces;
 using Finnance.Api.Modules.User.Application.Dto;
 using Finnance.Api.Modules.User.Application.Interfaces;
 using Finnance.Api.Security;
@@ -9,12 +10,14 @@ using Finnance.Api.Shared.Utils;
 namespace Finnance.Api.Controllers;
 
 [AllowAnonymous]
-public class AuthController(IAuthService authService, IUserService userService) : ControllerBase
+public class AuthController(IAuthService authService, IUserService userService, IKiwifyWebhookService kiwifyWebhookService) : ControllerBase
 {
     [HttpPost]
     public ResultApi<long> Register([FromBody] RegisterDto dto)
     {
-        return new ResultApi<long> { Result = userService.Register(dto?.Email, dto?.FullName, dto?.Password) };
+        var id = userService.Register(dto?.Email, dto?.FullName, dto?.Password);
+        kiwifyWebhookService.ReprocessPendingByEmail(dto?.Email);
+        return new ResultApi<long> { Result = id };
     }
 
     [HttpGet]

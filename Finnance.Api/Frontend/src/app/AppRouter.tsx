@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Spinner } from '@/shared/components/ui';
 import { ProtectedRoute } from './ProtectedRoute';
 import { AdminRoute } from './AdminRoute';
+import { PaywallGuard } from '@/features/subscription';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
@@ -59,7 +60,9 @@ export function AppRouter() {
       <Route
         element={
           <ProtectedRoute>
-            <MainLayout />
+            <PaywallGuard>
+              <MainLayout />
+            </PaywallGuard>
           </ProtectedRoute>
         }
       >

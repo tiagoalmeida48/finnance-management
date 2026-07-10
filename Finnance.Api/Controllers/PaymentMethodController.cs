@@ -9,14 +9,14 @@ namespace Finnance.Api.Controllers;
 
 public class PaymentMethodController(IPaymentMethodService paymentMethodService) : ControllerBase
 {
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<List<PaymentMethodDisplayDto>> List()
     {
         return new ResultApi<List<PaymentMethodDisplayDto>> { Result = paymentMethodService.List().MapTo<List<PaymentMethodDisplayDto>>() };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<PaymentMethodDisplayDto> Get([FromQuery] long paymentMethod)
     {

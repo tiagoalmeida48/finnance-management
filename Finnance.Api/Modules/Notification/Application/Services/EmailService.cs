@@ -18,6 +18,12 @@ public class EmailService(IConfiguration configuration, ILogger<EmailService> lo
         Send(email, "Redefinição de senha", $"Para redefinir sua senha, acesse: {link}");
     }
 
+    public void SendPurchaseWelcome(string email, string token)
+    {
+        var link = $"{BaseUrl}/reset-password?token={token}";
+        Send(email, "Seu acesso ao Finnance está liberado", $"Sua compra foi aprovada. Defina sua senha para acessar: {link}");
+    }
+
     private string BaseUrl => configuration["App:BaseUrl"] ?? "http://localhost:5173";
 
     private void Send(string to, string subject, string body)

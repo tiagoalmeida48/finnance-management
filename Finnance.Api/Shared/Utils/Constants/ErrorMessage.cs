@@ -61,5 +61,10 @@ public static partial class Constants
         public const string UserInactive = "Usuário inativo.";
         public const string InvalidToken = "Token inválido ou expirado.";
         public const string EmailNotVerified = "Confirme seu e-mail antes de entrar.";
+        public const string InvalidWebhookSignature = "Assinatura do webhook inválida.";
+        public const string WebhookTokenNotConfigured = "Token do webhook Kiwify não configurado.";
+        public const string InvalidWebhookPayload = "Payload do webhook inválido.";
+        public const string WebhookEventNotFound = "Evento de webhook não encontrado.";
+        public const string SubscriptionRequired = "É necessária uma assinatura ativa para acessar este recurso.";
     }
 }

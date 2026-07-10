@@ -3,6 +3,7 @@ export interface ManagedUser {
   email: string;
   fullName: string;
   isAdmin: boolean;
+  active: boolean;
   created: string;
 }
 

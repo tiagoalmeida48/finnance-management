@@ -1,16 +1,24 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCards, useCardsStats, useCreateCard, useDeleteCard, useUpdateCard } from './useCards';
+import {
+  useCards,
+  useCardsStats,
+  useCreateCard,
+  useDeleteCard,
+  useToggleCardActive,
+  useUpdateCard,
+} from './useCards';
 import type { CardFormValues } from '../components/CardFormModal';
 import type { CreditCard, CreditCardStats } from '../types/cards.types';
 
 export function useCardsPageLogic() {
   const navigate = useNavigate();
-  const cardsQuery = useCards();
+  const cardsQuery = useCards(true);
   const statsQuery = useCardsStats();
   const createCard = useCreateCard();
   const updateCard = useUpdateCard();
   const deleteCard = useDeleteCard();
+  const toggleCardActive = useToggleCardActive();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<CreditCard | null>(null);
@@ -69,6 +77,13 @@ export function useCardsPageLogic() {
     });
   }, [pendingDelete, deleteCard]);
 
+  const toggleActive = useCallback(
+    (card: CreditCard) => {
+      toggleCardActive.mutate(card);
+    },
+    [toggleCardActive],
+  );
+
   return {
     cards: cardsQuery.data ?? [],
     isLoading: cardsQuery.isLoading,
@@ -88,6 +103,8 @@ export function useCardsPageLogic() {
     requestDelete: setPendingDelete,
     cancelDelete: () => setPendingDelete(null),
     confirmDelete,
+    toggleActive,
+    toggling: toggleCardActive.isPending,
     openDetail: (card: CreditCard) => navigate(`/cards/${card.creditCard}`),
   };
 }

@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Power, Trash2 } from 'lucide-react';
 import { Badge, Button, EntityIcon } from '@/shared/components/ui';
 import { CategoryTypeId } from '@/config/constants';
 import { useCategoryTypes } from '../hooks/useCategories';
@@ -8,9 +8,10 @@ interface CategoryCardProps {
   category: Category;
   onEdit: (category: Category) => void;
   onDelete: (category: Category) => void;
+  onToggleActive: (category: Category) => void;
 }
 
-export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) {
+export function CategoryCard({ category, onEdit, onDelete, onToggleActive }: CategoryCardProps) {
   const typesQuery = useCategoryTypes();
   const isIncome = category.categoryType === CategoryTypeId.INCOME;
   const typeName =
@@ -30,11 +31,22 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
         <p className="truncate font-semibold text-text">{category.name}</p>
         <div className="mt-1 flex items-center gap-2">
           <Badge variant={isIncome ? 'income' : 'expense'}>{typeName}</Badge>
-          {!category.active && <span className="text-xs text-text-muted">Inativa</span>}
+          <Badge variant={category.active ? 'income' : 'expense'}>
+            {category.active ? 'Ativa' : 'Inativa'}
+          </Badge>
         </div>
       </div>
 
       <div className="flex shrink-0 gap-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onToggleActive(category)}
+          aria-label={`${category.active ? 'Desativar' : 'Ativar'} categoria ${category.name}`}
+          title={category.active ? 'Desativar' : 'Ativar'}
+        >
+          <Power className="h-4 w-4" />
+        </Button>
         <Button
           variant="ghost"
           size="sm"

@@ -81,7 +81,7 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
 
     public bool UpdateTransaction(TransactionEntity entity)
     {
-        const string sql = """
+        var sql = $"""
             UPDATE "transaction" SET
                 transaction_type = @transactionType,
                 payment_method = @paymentMethod,
@@ -102,11 +102,12 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
                 notes = @notes,
                 active = @active,
                 updated = NOW()
-            WHERE "transaction" = @transaction AND "user" = @user
+            WHERE "transaction" = @transaction AND "user" = @user{GetTenantClause()}
             """;
 
         var param = BuildWriteParams(entity);
         param.Add("transaction", entity.Transaction);
+        TenantParams(param);
 
         using var con = Conn;
         return con.Execute(sql, param) > 0;
@@ -143,11 +144,12 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
         param.Add("transaction", transaction);
         param.Add("invoice", invoice);
         param.Add("user", user);
+        TenantParams(param);
 
-        const string sql = """
+        var sql = $"""
             UPDATE "transaction"
             SET invoice = @invoice, updated = NOW()
-            WHERE "transaction" = @transaction AND "user" = @user
+            WHERE "transaction" = @transaction AND "user" = @user{GetTenantClause()}
             """;
 
         using var con = Conn;
@@ -159,8 +161,9 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
         var param = new DynamicParameters();
         param.Add("transaction", transaction);
         param.Add("user", user);
+        TenantParams(param);
 
-        const string sql = """DELETE FROM "transaction" WHERE "transaction" = @transaction AND "user" = @user""";
+        var sql = $"""DELETE FROM "transaction" WHERE "transaction" = @transaction AND "user" = @user{GetTenantClause()}""";
 
         using var con = Conn;
         return con.Execute(sql, param) > 0;
@@ -171,8 +174,9 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
         var param = new DynamicParameters();
         param.Add("groupId", groupId);
         param.Add("user", user);
+        TenantParams(param);
 
-        var sql = $"""DELETE FROM "transaction" WHERE {groupColumn} = @groupId AND "user" = @user""";
+        var sql = $"""DELETE FROM "transaction" WHERE {groupColumn} = @groupId AND "user" = @user{GetTenantClause()}""";
 
         using var con = Conn;
         return con.Execute(sql, param);
@@ -183,10 +187,11 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
         var param = new DynamicParameters();
         param.Add("groupId", groupId);
         param.Add("user", user);
+        TenantParams(param);
 
         var sql = $"""
             SELECT DISTINCT invoice FROM "transaction"
-            WHERE {groupColumn} = @groupId AND "user" = @user AND invoice IS NOT NULL
+            WHERE {groupColumn} = @groupId AND "user" = @user AND invoice IS NOT NULL{GetTenantClause()}
             """;
 
         using var con = Conn;
@@ -198,12 +203,13 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
         var param = new DynamicParameters();
         param.Add("groupId", groupId);
         param.Add("user", user);
+        TenantParams(param);
 
         var orderBy = groupColumn == "installment_group" ? "installment_number ASC" : "payment_date ASC";
 
         var sql = $"""
             SELECT * FROM "transaction"
-            WHERE {groupColumn} = @groupId AND "user" = @user AND active = TRUE
+            WHERE {groupColumn} = @groupId AND "user" = @user AND active = TRUE{GetTenantClause()}
             ORDER BY {orderBy}
             """;
 
@@ -218,12 +224,13 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
         param.Add("groupId", groupId);
         param.Add("fromDate", fromDate.Date);
         param.Add("user", user);
+        TenantParams(param);
 
         var orderBy = groupColumn == "installment_group" ? "installment_number ASC" : "payment_date ASC";
 
         var sql = $"""
             SELECT * FROM "transaction"
-            WHERE {groupColumn} = @groupId AND "user" = @user AND active = TRUE AND payment_date >= @fromDate
+            WHERE {groupColumn} = @groupId AND "user" = @user AND active = TRUE AND payment_date >= @fromDate{GetTenantClause()}
             ORDER BY {orderBy}
             """;
 
@@ -239,10 +246,11 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
         param.Add("startDate", new DateTime(year, 1, 1));
         param.Add("endDate", new DateTime(year + 1, 1, 1));
         param.Add("expenseType", Constants.TransactionTypeId.EXPENSE);
+        TenantParams(param);
 
-        const string sql = """
+        var sql = $"""
             SELECT * FROM "transaction"
-            WHERE "user" = @user AND active = TRUE AND fixed = TRUE AND card IS NULL
+            WHERE "user" = @user AND active = TRUE AND fixed = TRUE AND card IS NULL{GetTenantClause()}
               AND transaction_type = @expenseType
               AND payment_date >= @startDate AND payment_date < @endDate
             ORDER BY payment_date ASC
@@ -258,12 +266,13 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
         var param = new DynamicParameters();
         param.Add("installmentGroup", installmentGroup);
         param.Add("user", user);
+        TenantParams(param);
 
-        const string sql = """
+        var sql = $"""
             SELECT MAX(GREATEST(COALESCE(t.installment_number, 0), COALESCE(g.total_installments, 0)))
             FROM "transaction" t
-            JOIN installment_group g ON g.installment_group = t.installment_group
-            WHERE t.installment_group = @installmentGroup AND t."user" = @user AND t.active = TRUE
+            JOIN installment_group g ON g.installment_group = t.installment_group{GetTenantClause("g")}
+            WHERE t.installment_group = @installmentGroup AND t."user" = @user AND t.active = TRUE{GetTenantClause("t")}
             """;
 
         using var con = Conn;
@@ -276,11 +285,12 @@ public partial class TransactionRepository : BaseRepository<TransactionEntity, T
         param.Add("installmentGroup", installmentGroup);
         param.Add("totalInstallments", totalInstallments);
         param.Add("user", user);
+        TenantParams(param);
 
-        const string sql = """
+        var sql = $"""
             UPDATE installment_group
             SET total_installments = @totalInstallments, updated = NOW()
-            WHERE installment_group = @installmentGroup AND "user" = @user
+            WHERE installment_group = @installmentGroup AND "user" = @user{GetTenantClause()}
             """;
 
         using var con = Conn;

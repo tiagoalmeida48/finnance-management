@@ -9,14 +9,14 @@ namespace Finnance.Api.Controllers;
 
 public class AccountTypeController(IAccountTypeService accountTypeService) : ControllerBase
 {
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<List<AccountTypeDisplayDto>> List()
     {
         return new ResultApi<List<AccountTypeDisplayDto>> { Result = accountTypeService.List().MapTo<List<AccountTypeDisplayDto>>() };
     }
 
-    [Authorization()]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<AccountTypeDisplayDto> Get(long id)
     {
