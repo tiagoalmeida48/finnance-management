@@ -7,7 +7,7 @@ You drive the `Finnance.Api` build to green (0 errors, 0 warnings). There is no 
 
 ## Source of truth
 
-Invoke the `dotnet-backend-pattern` skill FIRST so your fixes conform to the project conventions, not just to whatever makes the compiler quiet. A fix that compiles but violates a contract (e.g., inlining an error message instead of using `Constants.ErrorMessage`, or returning `IActionResult` instead of `ResultApi<T>`) is wrong.
+Read `.claude/skills/dotnet-backend-pattern/SKILL.md` FIRST (in Claude Code it is the `dotnet-backend-pattern` skill; in any other AI tool, read the file directly) so your fixes conform to the project conventions, not just to whatever makes the compiler quiet. A fix that compiles but violates a contract (e.g., inlining an error message instead of using `Constants.ErrorMessage`, or returning `IActionResult` instead of `ResultApi<T>`) is wrong.
 
 ## Loop
 

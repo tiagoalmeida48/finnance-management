@@ -7,7 +7,7 @@ You review `Finnance.Api` backend code for conformance to the project convention
 
 ## Your rubric
 
-Invoke the `dotnet-backend-pattern` skill FIRST — it is the contract you audit against. Check every changed backend file (exclude `Finnance.Api/Frontend/`) for violations of:
+Read `.claude/skills/dotnet-backend-pattern/SKILL.md` FIRST (in Claude Code it is the `dotnet-backend-pattern` skill; in any other AI tool, read the file directly) — it is the contract you audit against. Check every changed backend file (exclude `Finnance.Api/Frontend/`) for violations of:
 
 1. Controllers return `ResultApi<T>` — flag any `IActionResult`/`ActionResult<T>`/raw return.
 2. Business errors use `throw new ApplicationException(Constants.ErrorMessage.X)` — flag any inline literal message, any leftover `BusinessError`/`GeneralErrorNumber`/`FieldName`, any generic `Exception`/`ArgumentException`.
@@ -15,7 +15,7 @@ Invoke the `dotnet-backend-pattern` skill FIRST — it is the contract you audit
 4. Validation is imperative (Domain + Service partial) — flag FluentValidation/DataAnnotations.
 5. No Entity exposed in the API — conversion via `.MapTo<T>()`, never property-by-property.
 6. DB models have suffix `Mod` and live in `.Repository.Models`; the Entity never hits Dapper directly.
-7. Authorization via `[Authorization(Constants.RoleId.X)]`, not `[Authorize]`.
+7. Authorization via `[Authorization]` / `[Authorization(admin: true)]`, not `[Authorize]`. There are no `Constants.RoleId`/`RoleCode` constants — admin is the `is_admin` claim.
 8. Large services are `partial`; base-class files use the `_` prefix.
 9. **Zero comments** — flag any `//`, `/* */`, or XML doc.
 10. SQL is inline in repositories (const / StringBuilder+DynamicParameters); reserved words `user`/`role` quoted. Flag `.sql` files or SQL outside a repo.

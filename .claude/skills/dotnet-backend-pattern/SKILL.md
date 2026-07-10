@@ -5,11 +5,11 @@ description: Enforces the finnance-management backend (.NET 9 / Finnance.Api) co
 
 # .NET Backend Pattern (Finnance.Api)
 
-Single source of truth for the `Finnance.Api` backend conventions. The backend is a **single consolidated assembly** following Clean Architecture **organized by modules**. This skill is canonical for the .NET agents (`dotnet-module-builder`, `dotnet-code-reviewer`, `spec-to-module-porter`, `dotnet-build-fixer`).
+Single source of truth for the `Finnance.Api` backend conventions. The backend is a **single consolidated assembly** following Clean Architecture **organized by modules**. This document is canonical for the .NET agents (`.claude/agents/`: `dotnet-module-builder`, `dotnet-code-reviewer`, `spec-to-module-porter`, `dotnet-build-fixer`) and for **any AI tool** working on the backend — outside Claude Code, read this file directly before editing.
 
 ## When to Use
 
-Any work under `Finnance.Api/` — **except** `Finnance.Api/Frontend/` (that is React + Supabase; use the React skills instead). Creating a feature module, an endpoint, a repository, porting a `docs/specs/` business rule, or reviewing backend code.
+Any work under `Finnance.Api/` — **except** `Finnance.Api/Frontend/` (that is the React SPA over the .NET API; use `Finnance.Api/Frontend/AGENTS.md` and the React playbooks instead). Creating a feature module, an endpoint, a repository, porting a business rule from `docs/sql/finnance_dev_backend_rules.md`, or reviewing backend code.
 
 ## Non-Negotiable Contracts
 
@@ -101,7 +101,7 @@ public List<UserEntity> Search(long user = 0, string email = null, bool active =
 
 ## Workflow: Add a Feature Module
 
-1. Read the relevant `docs/specs/` (00–10) for the business rule and the DDL (`docs/sql/finnance_dev_schema.sql`) for table/column names and PK type (`int8` identity, not UUID).
+1. Read `docs/sql/finnance_dev_backend_rules.md` for the business rule (the old `docs/specs/` 00–10 were removed; history in git) and the DDL (`docs/sql/finnance_dev_schema.sql`) for table/column names and PK type (`int8` identity, not UUID).
 2. Create the Entity (`Domain/Entities`) with imperative validation; the Mod (`Repository/Models`) with `[Table]`/`[Column]` (quote reserved names); the repo interface (`Domain/Interfaces`) and repo (`Repository/Repositories`) inheriting `BaseRepository`.
 3. Create the service interface (`Application/Interfaces`, `: IBaseService<...Entity>`) and the `partial` service (`Application/Services/<Feature>Service/`).
 4. Create DTOs (`Application/Dto`) and the Controller (`Controllers/`) returning `ResultApi<T>`, converting via `.MapTo<T>()`, guarded by `[Authorization(...)]`.
@@ -112,5 +112,5 @@ public List<UserEntity> Search(long user = 0, string email = null, bool active =
 
 - `JwtConstants.SecretKey`/`ExpirationHours` are hard-coded constants (project pattern) — swap for env in production.
 - The connection string in `appsettings.json` is **encrypted**; decrypted at runtime by `HashHelper.DecryptConnectionString`. Never paste a plaintext connection string.
-- `README.md` describes a generic template (multi-project, GraphQL, Hangfire) — **not** this app. This skill and the project `CLAUDE.md` prevail.
+- `README.md` describes a generic template (multi-project, GraphQL, Hangfire) — **not** this app. This document and the project `AGENTS.md` prevail.
 - The frontend build is served from `wwwroot/` with `MapFallbackToFile("index.html")`.

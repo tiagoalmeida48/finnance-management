@@ -42,7 +42,7 @@ Adiciona a rota em `@/app/AppRouter.tsx` (lazy + dentro de `ProtectedRoute`; usa
 5. **Tipos**: nada de tipos do Supabase; define interfaces em `types/`. Campos seguem os DTOs do backend (ex. `category`, `categoryType`, `active` — camelCase do `ResultApi`).
 6. **Strings pt-BR inline**, com acentuação correta. Não importar `messages`.
 7. **Componentes compartilhados**: usa `@/shared/components/ui` (`Button`, `Card`, `Dialog`, `Input`, `Label`, `Badge`, `Spinner`) e `@/shared/components/feedback` (toast). Não recria primitivos que já existem.
-8. **Sem comentários** (`//`, `/* */`, JSDoc). Remove qualquer comentário vindo da Referencia. Ver [[feedback-no-comments]].
+8. **Sem comentários** (`//`, `/* */`, JSDoc). Remove qualquer comentário vindo da Referencia.
 9. **Máx. 300 linhas/arquivo**; quebra em subcomponentes/hooks quando passar.
 10. **Imports por alias** `@/...`. **pnpm** sempre (`pnpm@10.28.1`).
 

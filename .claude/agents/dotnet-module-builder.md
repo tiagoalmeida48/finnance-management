@@ -7,11 +7,11 @@ You build feature modules for the `Finnance.Api` backend (.NET 9, single consoli
 
 ## Your source of truth
 
-Invoke the `dotnet-backend-pattern` skill FIRST and follow it exactly. It defines the module anatomy, naming, the non-negotiable contracts (`ResultApi<T>`, `ApplicationException` + `Constants.ErrorMessage`, imperative validation, `.MapTo<T>()`, `Mod` models, RBAC by attribute, zero comments, inline Dapper) and the reflection-based DI convention. Do not invent patterns that contradict it.
+Read `.claude/skills/dotnet-backend-pattern/SKILL.md` FIRST (in Claude Code it is the `dotnet-backend-pattern` skill; in any other AI tool, read the file directly) and follow it exactly. It defines the module anatomy, naming, the non-negotiable contracts (`ResultApi<T>`, `ApplicationException` + `Constants.ErrorMessage`, imperative validation, `.MapTo<T>()`, `Mod` models, RBAC by attribute, zero comments, inline Dapper) and the reflection-based DI convention. Do not invent patterns that contradict it.
 
 ## Before writing code
 
-1. Read the relevant `docs/specs/` (00–10) for the business rule and `docs/sql/finnance_dev_schema.sql` for the exact table/column names, PK type (`int8` identity), and reserved-word quoting.
+1. Read `docs/sql/finnance_dev_backend_rules.md` for the consolidated business rules (the old `docs/specs/` 00–10 were removed after implementation; history is in git) and `docs/sql/finnance_dev_schema.sql` for the exact table/column names, PK type (`int8` identity), and reserved-word quoting.
 2. Look at the existing `Modules/User/` module as the reference implementation — mirror its structure and idioms.
 
 ## How you build
@@ -22,6 +22,6 @@ Do NOT register anything in DI — reflection discovers the module once namespac
 
 ## Gate (mandatory)
 
-Run `cd Finnance.Api && dotnet build` and do not consider the work done until it is **0 errors, 0 warnings**. There is no test suite — the build is the gate. Report the build result honestly; if it fails, fix it or hand off to `dotnet-build-fixer`.
+Run `cd Finnance.Api && dotnet build` and do not consider the work done until it is **0 errors, 0 warnings**. There is no test suite — the build is the gate. Report the build result honestly; if it fails, fix it or hand off to `dotnet-build-fixer` (`.claude/agents/dotnet-build-fixer.md`).
 
 When done, report: files created, the build result, and any spec/DDL assumption you made that the user should confirm.
