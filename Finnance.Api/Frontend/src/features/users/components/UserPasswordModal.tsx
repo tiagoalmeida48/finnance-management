@@ -15,7 +15,10 @@ import {
 import type { ManagedUser } from '../types/users.types';
 
 const passwordSchema = z.object({
-  password: z.string().min(1, 'Informe a nova senha.'),
+  password: z
+    .string()
+    .min(12, 'A senha deve ter ao menos 12 caracteres.')
+    .max(128, 'A senha deve ter no máximo 128 caracteres.'),
 });
 
 export type UserPasswordValues = z.infer<typeof passwordSchema>;

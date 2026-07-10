@@ -75,10 +75,18 @@ CREATE TABLE "user" (
                         password_hash text NULL,
                         full_name text NULL,
                         avatar_url text NULL,
+                        phone text NULL,
+                        marketing_consent bool DEFAULT false NOT NULL,
+                        marketing_consent_at timestamptz NULL,
+                        marketing_consent_source text NULL,
+                        marketing_consent_version text NULL,
+                        marketing_opt_out_at timestamptz NULL,
                         currency text NULL,
                         locale text NULL,
                         active bool NOT NULL,
+                        subscription_blocked bool DEFAULT false NOT NULL,
                         is_admin bool DEFAULT false NOT NULL,
+                        token_version int4 DEFAULT 0 NOT NULL,
                         created timestamptz NULL,
                         updated timestamptz NULL,
                         email_verified bool DEFAULT false NOT NULL,
@@ -87,10 +95,14 @@ CREATE TABLE "user" (
                         reset_token text NULL,
                         reset_token_expires timestamptz NULL,
                         CONSTRAINT pk_user PRIMARY KEY ("user"),
-                        CONSTRAINT uq_user_email UNIQUE (email)
+                        CONSTRAINT ck_user_phone_format CHECK (phone IS NULL OR phone ~ '^\+[0-9]{10,15}$'),
+                        CONSTRAINT ck_user_marketing_consent_phone CHECK (marketing_consent = false OR phone IS NOT NULL),
+                        CONSTRAINT ck_user_token_version CHECK (token_version >= 0)
 );
+CREATE UNIQUE INDEX uq_user_email_normalized ON public."user" (LOWER(BTRIM(email)));
 CREATE INDEX idx_user_reset_token ON public."user" USING btree (reset_token) WHERE (reset_token IS NOT NULL);
 CREATE INDEX idx_user_verify_token ON public."user" USING btree (verify_token) WHERE (verify_token IS NOT NULL);
+CREATE INDEX idx_user_marketing_consent ON public."user" USING btree (marketing_consent) WHERE marketing_consent = true;
 
 CREATE TABLE audit_log (
                            audit_log int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,

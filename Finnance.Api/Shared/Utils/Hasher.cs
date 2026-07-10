@@ -5,111 +5,97 @@ namespace Finnance.Api.Shared.Utils;
 
 public static class HashHelper
 {
-    public const string KeyConnectionString = "PlphxBSeRe766jNPux65rmBKoIj2a8NXXfj9dJQK0eo=";
+    private const int NonceSize = 12;
+    private const int TagSize = 16;
+    private const int KeySize = 32;
 
     public static string ToBase64SHA384(this string openText)
     {
         var dataTxt = Encoding.ASCII.GetBytes(openText);
-        var result = Convert.ToBase64String(SHA384.HashData(dataTxt));
-        return result;
+        return Convert.ToBase64String(SHA384.HashData(dataTxt));
     }
 
     public static string ToSHA384Hex(string hash)
     {
         var dataTxt = Encoding.ASCII.GetBytes(hash);
         using var memoryStream = new MemoryStream(dataTxt);
-        var ms = memoryStream.ToSHA384().Result;
-        return ms;
+        return memoryStream.ToSHA384().Result;
     }
 
     public static async Task<string> ToSHA384(this Stream openByte)
     {
-        var shaM = SHA384.Create();
+        using var shaM = SHA384.Create();
         var checksum = await shaM.ComputeHashAsync(openByte);
         return Convert.ToHexString(checksum);
     }
 
-    public static string DecryptConnectionString(string connectionString)
+    public static string DecryptConnectionString(string encryptedConnectionString, string encryptionKey)
     {
-        var keyBytes = Convert.FromBase64String(KeyConnectionString);
-        var ret = Decrypt2(Convert.FromBase64String(connectionString), keyBytes);
-        return ret;
-    }
+        var key = ReadKey(encryptionKey);
+        var payload = ReadPayload(encryptedConnectionString);
+        var nonce = payload[..NonceSize];
+        var tag = payload[NonceSize..(NonceSize + TagSize)];
+        var ciphertext = payload[(NonceSize + TagSize)..];
+        var plaintext = new byte[ciphertext.Length];
 
-    public static string EncryptConnectionString(string connectionString)
-    {
-        var keyBytes = Convert.FromBase64String(KeyConnectionString);
-        var ret = Encrypt2(connectionString, keyBytes);
-        return Convert.ToBase64String(ret);
-    }
-
-    public static string Encrypt(string plainText, byte[] key)
-    {
-        var enc = Encrypt2(plainText, key);
-        var hexTxt = enc.ToStringHex();
-        return hexTxt;
-    }
-
-    public static string Decrypt(string hexString, byte[] key)
-    {
-        var bytes = hexString.ToBytesFromHex();
-        return Decrypt2(bytes, key);
-    }
-
-
-    public static byte[] Encrypt2(string plainText, byte[] key)
-    {
-        using var aes = Aes.Create();
-        aes.GenerateIV();
-        var maxKey = CreateSpecialByteArray(aes.Key.Length);
-        Array.Copy(key, maxKey, aes.Key.Length);
-
-        var encryptor = aes.CreateEncryptor(maxKey, aes.IV);
-        using var ms = new MemoryStream();
-        using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+        try
         {
-            using var sw = new StreamWriter(cs);
-            sw.Write(plainText);
+            using var aes = new AesGcm(key, TagSize);
+            aes.Decrypt(nonce, ciphertext, tag, plaintext);
+            return Encoding.UTF8.GetString(plaintext);
+        }
+        catch (AuthenticationTagMismatchException)
+        {
+            throw new InvalidOperationException(Constants.ErrorMessage.ConnectionStringConfigurationInvalid);
+        }
+    }
+
+    public static string EncryptConnectionString(string connectionString, string encryptionKey)
+    {
+        if (connectionString.IsEmpty())
+            throw new InvalidOperationException(Constants.ErrorMessage.ConnectionStringConfigurationInvalid);
+
+        var key = ReadKey(encryptionKey);
+        var nonce = RandomNumberGenerator.GetBytes(NonceSize);
+        var plaintext = Encoding.UTF8.GetBytes(connectionString);
+        var ciphertext = new byte[plaintext.Length];
+        var tag = new byte[TagSize];
+
+        using var aes = new AesGcm(key, TagSize);
+        aes.Encrypt(nonce, plaintext, ciphertext, tag);
+
+        var payload = new byte[nonce.Length + tag.Length + ciphertext.Length];
+        Buffer.BlockCopy(nonce, 0, payload, 0, nonce.Length);
+        Buffer.BlockCopy(tag, 0, payload, nonce.Length, tag.Length);
+        Buffer.BlockCopy(ciphertext, 0, payload, nonce.Length + tag.Length, ciphertext.Length);
+        return Convert.ToBase64String(payload);
+    }
+
+    private static byte[] ReadKey(string encryptionKey)
+    {
+        try
+        {
+            var key = Convert.FromBase64String(encryptionKey ?? string.Empty);
+            if (key.Length == KeySize) return key;
+        }
+        catch (FormatException)
+        {
         }
 
-        var enc = ms.ToArray();
-        var encrypted = new byte[enc.Length + aes.IV.Length];
-
-        Array.Copy(aes.IV, encrypted, aes.IV.Length);
-        Array.Copy(enc, 0, encrypted, aes.IV.Length, enc.Length);
-        return encrypted;
+        throw new InvalidOperationException(Constants.ErrorMessage.ConnectionStringConfigurationInvalid);
     }
 
-    public static string Decrypt2(byte[] cipherText, byte[] key)
+    private static byte[] ReadPayload(string encryptedConnectionString)
     {
-        using var aes = Aes.Create();
-        var maxKey = CreateSpecialByteArray(aes.Key.Length);
-        Array.Copy(key, maxKey, aes.Key.Length);
+        try
+        {
+            var payload = Convert.FromBase64String(encryptedConnectionString ?? string.Empty);
+            if (payload.Length > NonceSize + TagSize) return payload;
+        }
+        catch (FormatException)
+        {
+        }
 
-        var iv = new byte[16];
-        Array.Copy(cipherText, 0, iv, 0, iv.Length);
-
-        var decrypt = aes.CreateDecryptor(maxKey, iv);
-
-        var finalSize = Math.Abs(cipherText.Length - iv.Length);
-
-        var finalText = new byte[finalSize];
-
-        Array.Copy(cipherText, iv.Length, finalText, 0, finalSize);
-
-        using var ms = new MemoryStream(finalText);
-        using var cs = new CryptoStream(ms, decrypt, CryptoStreamMode.Read);
-        using var reader = new StreamReader(cs);
-        var plaintext = reader.ReadToEnd();
-        return plaintext;
-    }
-
-    public static byte[] CreateSpecialByteArray(int length)
-    {
-        var arr = new byte[length];
-        for (var i = 0; i < arr.Length; i++)
-            arr[i] = 0x42;
-
-        return arr;
+        throw new InvalidOperationException(Constants.ErrorMessage.ConnectionStringConfigurationInvalid);
     }
 }

@@ -11,6 +11,9 @@ export interface Me {
   email: string;
   fullName: string;
   avatarUrl: string;
+  phone: string | null;
+  marketingConsent: boolean;
+  marketingConsentAt: string | null;
   currency: string;
   locale: string;
   isAdmin: boolean;

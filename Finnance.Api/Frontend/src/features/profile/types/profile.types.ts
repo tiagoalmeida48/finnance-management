@@ -3,6 +3,9 @@ export interface ProfileInfo {
   fullName: string;
   email: string;
   isAdmin: boolean;
+  phone: string | null;
+  marketingConsent: boolean;
+  marketingConsentAt: string | null;
 }
 
 export interface UpdateProfileInput {
@@ -10,5 +13,11 @@ export interface UpdateProfileInput {
 }
 
 export interface UpdatePasswordInput {
+  currentPassword: string;
   password: string;
+}
+
+export interface UpdateMarketingPreferencesInput {
+  phone: string;
+  marketingConsent: boolean;
 }

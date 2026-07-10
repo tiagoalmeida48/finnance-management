@@ -9,14 +9,14 @@ namespace Finnance.Api.Controllers;
 
 public class CategoryTypeController(ICategoryTypeService categoryTypeService) : ControllerBase
 {
-    [Authorization]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<List<CategoryTypeDisplayDto>> List()
     {
         return new ResultApi<List<CategoryTypeDisplayDto>> { Result = categoryTypeService.List().MapTo<List<CategoryTypeDisplayDto>>() };
     }
 
-    [Authorization]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<CategoryTypeDisplayDto> Get([FromQuery] long id)
     {

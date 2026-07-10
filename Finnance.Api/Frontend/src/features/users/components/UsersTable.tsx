@@ -50,8 +50,8 @@ export function UsersTable({
                 </Badge>
               </td>
               <td className="px-3 py-2">
-                <Badge variant={user.active ? 'income' : 'expense'}>
-                  {user.active ? 'Ativo' : 'Inativo'}
+                <Badge variant={user.active && !user.subscriptionBlocked ? 'income' : 'expense'}>
+                  {!user.active ? 'Inativo' : user.subscriptionBlocked ? 'Assinatura bloqueada' : 'Ativo'}
                 </Badge>
               </td>
               <td className="px-3 py-2">

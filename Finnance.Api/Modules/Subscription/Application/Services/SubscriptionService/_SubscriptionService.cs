@@ -2,6 +2,7 @@ using Finnance.Api.Modules.Common.Application.Services;
 using Finnance.Api.Modules.Subscription.Application.Interfaces;
 using Finnance.Api.Modules.Subscription.Domain.Entities;
 using Finnance.Api.Modules.Subscription.Domain.Interfaces;
+using Finnance.Api.Shared.Utils;
 
 namespace Finnance.Api.Modules.Subscription.Application.Services;
 
@@ -25,11 +26,11 @@ public partial class SubscriptionService(ISubscriptionRepository subscriptionRep
 
     public string GetCheckoutUrl()
     {
-        return configuration["Kiwify:CheckoutUrl"] ?? string.Empty;
+        return KiwifySettings.From(configuration).CheckoutUrl;
     }
 
     private int GraceDays()
     {
-        return int.TryParse(configuration["Kiwify:GraceDays"], out var days) ? days : 3;
+        return KiwifySettings.From(configuration).GraceDays;
     }
 }

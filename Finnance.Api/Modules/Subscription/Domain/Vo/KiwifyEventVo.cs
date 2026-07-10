@@ -18,6 +18,8 @@ public class KiwifyEventVo
 
     public string CustomerName { get; set; }
 
+    public string CustomerPhone { get; set; }
+
     public string PlanName { get; set; }
 
     public string PlanFrequency { get; set; }
@@ -27,4 +29,6 @@ public class KiwifyEventVo
     public DateTime? StartDate { get; set; }
 
     public DateTime? NextPayment { get; set; }
+
+    public DateTime SourceEventAt { get; set; }
 }

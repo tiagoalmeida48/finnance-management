@@ -2,6 +2,7 @@ import { UserRound } from 'lucide-react';
 import { PageHeader, Spinner } from '@/shared/components/ui';
 import {
   PersonalInfoForm,
+  MarketingPreferencesForm,
   SecurityForm,
   useProfilePageLogic,
 } from '@/features/profile';
@@ -12,10 +13,13 @@ export function ProfilePage() {
     isReady,
     personalForm,
     passwordForm,
+    marketingForm,
     submitPersonal,
     submitPassword,
+    submitMarketing,
     savingPersonal,
     savingPassword,
+    savingMarketing,
   } = useProfilePageLogic();
 
   if (!isReady) {
@@ -32,7 +36,7 @@ export function ProfilePage() {
         icon={UserRound}
         eyebrow="Sua conta"
         title="Meu perfil"
-        description="Atualize seus dados pessoais e a sua senha de acesso."
+        description="Atualize seus dados pessoais, preferências de comunicação e senha."
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -46,6 +50,11 @@ export function ProfilePage() {
           form={passwordForm}
           saving={savingPassword}
           onSubmit={submitPassword}
+        />
+        <MarketingPreferencesForm
+          form={marketingForm}
+          saving={savingMarketing}
+          onSubmit={submitMarketing}
         />
       </div>
     </div>

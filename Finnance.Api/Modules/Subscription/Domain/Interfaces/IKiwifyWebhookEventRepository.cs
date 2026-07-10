@@ -9,4 +9,9 @@ public interface IKiwifyWebhookEventRepository : IBaseRepository<KiwifyWebhookEv
                                           bool onlyUnprocessed = false,
                                           string customerEmail = null,
                                           int quantity = 0);
+
+    long CreateIfAbsent(KiwifyWebhookEventEntity entity);
+    List<KiwifyWebhookEventEntity> ClaimPending(int quantity);
+    bool Schedule(long kiwifyWebhookEvent);
+    int PurgeProcessed(int retentionDays);
 }

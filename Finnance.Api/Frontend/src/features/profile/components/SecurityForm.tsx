@@ -27,6 +27,26 @@ export function SecurityForm({ form, saving, onSubmit }: SecurityFormProps) {
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
+            <Label htmlFor="profile-current-password">Senha atual</Label>
+            <div className="relative">
+              <Lock
+                size={17}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
+              />
+              <Input
+                id="profile-current-password"
+                type={show ? 'text' : 'password'}
+                autoComplete="current-password"
+                className="w-full pl-9"
+                {...register('currentPassword')}
+              />
+            </div>
+            {errors.currentPassword && (
+              <p className="text-expense text-sm mt-1">{errors.currentPassword.message}</p>
+            )}
+          </div>
+
+          <div>
             <Label htmlFor="profile-password">Nova senha</Label>
             <div className="relative">
               <Lock
@@ -36,6 +56,7 @@ export function SecurityForm({ form, saving, onSubmit }: SecurityFormProps) {
               <Input
                 id="profile-password"
                 type={show ? 'text' : 'password'}
+                autoComplete="new-password"
                 className="w-full pl-9 pr-10"
                 {...register('password')}
               />
@@ -63,6 +84,7 @@ export function SecurityForm({ form, saving, onSubmit }: SecurityFormProps) {
               <Input
                 id="profile-password-confirm"
                 type={show ? 'text' : 'password'}
+                autoComplete="new-password"
                 className="w-full pl-9"
                 {...register('confirmPassword')}
               />

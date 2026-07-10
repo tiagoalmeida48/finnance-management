@@ -148,9 +148,12 @@ public partial class BaseRepository<TEntity, TModel>
 
     public long Count()
     {
-        var qr = $"SELECT COUNT(*) FROM {EntityHelper.GetTableName<TModel>(Schema)}";
+        var table = EntityHelper.GetTableName<TModel>(Schema);
+        var qr = IsUserOwned
+            ? $"""SELECT COUNT(*) FROM {table} WHERE "user" = @__tenant"""
+            : $"SELECT COUNT(*) FROM {table}";
         using var con = Conn;
-        return con.ExecuteScalar<long>(qr);
+        return con.ExecuteScalar<long>(qr, IsUserOwned ? new { __tenant = ApiContext.User } : null);
     }
 
     public string GetTableName<Y>() where Y : BaseModel

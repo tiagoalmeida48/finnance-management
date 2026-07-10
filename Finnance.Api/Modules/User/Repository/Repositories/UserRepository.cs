@@ -4,6 +4,7 @@ using Finnance.Api.Modules.User.Domain.Entities;
 using Finnance.Api.Modules.User.Domain.Interfaces;
 using Finnance.Api.Modules.User.Repository.Models;
 using Finnance.Api.Shared;
+using Finnance.Api.Shared.Utils;
 using System.Text;
 
 namespace Finnance.Api.Modules.User.Repository.Repositories;
@@ -46,12 +47,12 @@ public class UserRepository : BaseRepository<UserEntity, UserMod>, IUserReposito
         return MapToEntity(model);
     }
 
-    public UserEntity SearchByToken(string column, string token)
+    public UserEntity SearchByResetTokenForUpdate(string tokenHash)
     {
-        var sql = $"""SELECT * FROM "user" WHERE {column} = @token LIMIT 1""";
+        const string sql = """SELECT * FROM "user" WHERE reset_token = @tokenHash LIMIT 1 FOR UPDATE""";
 
         using var con = Conn;
-        var model = con.Query<UserMod>(sql, new { token }).FirstOrDefault();
+        var model = con.Query<UserMod>(sql, new { tokenHash }).FirstOrDefault();
         return model == null ? null : MapToEntity(model);
     }
 
@@ -71,5 +72,38 @@ public class UserRepository : BaseRepository<UserEntity, UserMod>, IUserReposito
 
         using var con = Conn;
         return con.ExecuteScalar<string>(sql, new { user });
+    }
+
+    public int SyncSubscriptionBlocks(int graceDays)
+    {
+        const string sql = """
+            UPDATE "user" user_account
+            SET subscription_blocked = NOT EXISTS (
+                    SELECT 1
+                    FROM subscription subscription_access
+                    WHERE subscription_access."user" = user_account."user"
+                      AND subscription_access.active = TRUE
+                      AND subscription_access.entitled_until IS NOT NULL
+                      AND (
+                          subscription_access.subscription_status = @active
+                          AND now() <= subscription_access.entitled_until
+                          OR subscription_access.subscription_status = @late
+                          AND now() <= subscription_access.entitled_until + make_interval(days => @graceDays)
+                          OR subscription_access.subscription_status = @canceled
+                          AND now() <= subscription_access.entitled_until
+                      )
+                ),
+                updated = now()
+            WHERE user_account.is_admin = FALSE
+              AND EXISTS (
+                  SELECT 1 FROM subscription owned_subscription
+                  WHERE owned_subscription."user" = user_account."user"
+              )
+            """;
+
+        using var con = Conn;
+        return con.Execute(sql, new { graceDays, active = Constants.SubscriptionStatusId.ACTIVE,
+                                     late = Constants.SubscriptionStatusId.LATE,
+                                     canceled = Constants.SubscriptionStatusId.CANCELED });
     }
 }

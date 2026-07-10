@@ -15,13 +15,12 @@ public partial class UserService
         return current;
     }
 
-    public UserEntity GetByEmail(string email)
+    public UserEntity FindByEmail(string email)
     {
-        var current = userRepository.Search(email: email, quantity: 1).FirstOrDefault();
-        if (current == null)
-            throw new ApplicationException(Constants.ErrorMessage.UserNotFound);
+        if (string.IsNullOrWhiteSpace(email) || email.Length > 254)
+            return null;
 
-        return current;
+        return userRepository.Search(email: email.Trim().ToLowerInvariant(), quantity: 1).FirstOrDefault();
     }
 
     public List<UserLightDto> ListManaged(bool includeInactive = false)
@@ -35,7 +34,8 @@ public partial class UserService
             FullName = u.FullName,
             Created = u.Created,
             IsAdmin = u.IsAdmin,
-            Active = u.Active
+            Active = u.Active,
+            SubscriptionBlocked = u.SubscriptionBlocked
         }).ToList();
     }
 }

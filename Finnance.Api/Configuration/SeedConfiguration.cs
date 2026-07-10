@@ -8,7 +8,8 @@ public static partial class Configuration
     public static void SeedConfiguration(this IConfiguration configuration)
     {
         var strCon = configuration.GetConnectionString("DefaultConnection");
-        var connStr = HashHelper.DecryptConnectionString(strCon);
+        var encryptionKey = configuration["ConnectionStrings:EncryptionKey"];
+        var connStr = HashHelper.DecryptConnectionString(strCon, encryptionKey);
 
         using var con = new NpgsqlConnection(connStr);
         con.Open();
@@ -21,11 +22,19 @@ public static partial class Configuration
         SeedLookup(con, "audit_action", ["Inserção", "Alteração", "Exclusão", "Erro"]);
         SeedLookup(con, "subscription_status", ["Ativa", "Atrasada", "Cancelada", "Reembolsada", "Chargeback"]);
         SeedSystemConfig(con, Constants.SystemConfigKey.TetoInss, Constants.DefaultTetoInss);
-        SeedAdminUser(con, "admin@finnance.com", "admin123", "Administrador");
+        SeedAdminUser(con, configuration);
     }
 
-    private static void SeedAdminUser(NpgsqlConnection con, string email, string password, string fullName)
+    private static void SeedAdminUser(NpgsqlConnection con, IConfiguration configuration)
     {
+        var email = configuration["BootstrapAdmin:Email"];
+        var password = configuration["BootstrapAdmin:Password"];
+        var fullName = configuration["BootstrapAdmin:FullName"];
+        if (string.IsNullOrWhiteSpace(email) && string.IsNullOrWhiteSpace(password)) return;
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@')
+            || string.IsNullOrWhiteSpace(password) || password.Length < 12)
+            throw new InvalidOperationException(Constants.ErrorMessage.BootstrapAdminConfigurationInvalid);
+
         const string sql =
             "INSERT INTO \"user\" (email, password_hash, full_name, currency, locale, active, is_admin, email_verified, created, updated) " +
             "SELECT @email, @hash, @fullName, 'BRL', 'pt-BR', TRUE, TRUE, TRUE, now(), now() " +

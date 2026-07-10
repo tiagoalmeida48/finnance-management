@@ -70,8 +70,21 @@ public class UserController(IUserService userService) : ControllerBase
 
     [Authorization()]
     [HttpPut]
+    public ResultApi<bool> UpdateMarketingPreferences([FromBody] UserUpdateMarketingPreferencesDto dto)
+    {
+        return new ResultApi<bool>
+        {
+            Result = userService.UpdateMarketingPreferences(UserLogged.user, dto?.Phone, dto?.MarketingConsent ?? false)
+        };
+    }
+
+    [Authorization()]
+    [HttpPut]
     public ResultApi<bool> UpdateMyPassword([FromBody] UserUpdateOwnPasswordDto dto)
     {
-        return new ResultApi<bool> { Result = userService.UpdateUserPassword(UserLogged.user, dto?.Password) };
+        return new ResultApi<bool>
+        {
+            Result = userService.UpdateOwnPassword(UserLogged.user, dto?.CurrentPassword, dto?.Password)
+        };
     }
 }

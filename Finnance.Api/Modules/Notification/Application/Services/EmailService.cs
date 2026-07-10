@@ -28,6 +28,6 @@ public class EmailService(IConfiguration configuration, ILogger<EmailService> lo
 
     private void Send(string to, string subject, string body)
     {
-        logger.LogInformation("EMAIL -> {To} | {Subject} | {Body}", to, subject, body);
+        logger.LogInformation("E-mail preparado: {Subject}", subject);
     }
 }

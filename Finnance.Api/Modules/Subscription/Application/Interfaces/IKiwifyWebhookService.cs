@@ -7,6 +7,7 @@ public interface IKiwifyWebhookService : IBaseService<KiwifyWebhookEventEntity>
 {
     long ProcessWebhook(string rawBody, string signature);
     bool Reprocess(long kiwifyWebhookEvent);
-    int ReprocessPendingByEmail(string email);
+    int ProcessPending(int quantity = 20);
+    void RunMaintenance();
     List<KiwifyWebhookEventEntity> ListEvents(bool onlyUnprocessed = false, int quantity = 0);
 }

@@ -35,6 +35,10 @@ public class SubscriptionEntity : BaseEntity
 
     public DateTime? LastEventAt { get; set; }
 
+    public DateTime? SourceEventAt { get; set; }
+
+    public DateTime? EntitledUntil { get; set; }
+
     public bool Active { get; set; }
 
     public override void ValidateCreate()

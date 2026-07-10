@@ -10,7 +10,9 @@ public interface IUserRepository : IBaseRepository<UserEntity>
                             bool active = false,
                             int quantity = 0);
 
-    UserEntity SearchByToken(string column, string token);
+    UserEntity SearchByResetTokenForUpdate(string tokenHash);
 
     string ExportData(long user);
+
+    int SyncSubscriptionBlocks(int graceDays);
 }

@@ -59,6 +59,9 @@ Validação **imperativa** na Entity (`ValidateCreate`/`ValidateUpdate`) e no se
 ### Formato / coerência (na aplicação)
 - `"user".email`: formato + **unicidade case-insensitive** (normalizar lowercase; a
   UNIQUE do banco é case-sensitive).
+- `"user".phone`: formato internacional E.164; o webhook da Kiwify preenche somente
+  quando o telefone atual estiver vazio. O consentimento de marketing é explícito,
+  independente da compra, e registra data, origem, versão do texto e opt-out.
 - Cores hex `#RRGGBB[AA]`; `credit_card_invoice.month_key` = `yyyy-MM`;
   `"user".currency` ISO 4217; `"user".locale` ex. `pt-BR`.
 
@@ -189,7 +192,7 @@ exceto controllers `Auth`/`User`/`AuditLog`) grava em `audit_log` via
 - `audit_log` append-only para a role da aplicação.
 - Senha: hash **Argon2** (`Argon2Helper`), verificação na aplicação. JWT próprio
   (`JwtHelper`, HMAC-SHA256) — **não** usa ASP.NET Identity nem o pipeline padrão de auth.
-- Segredos hoje hardcoded (chave do JWT em `JwtConstants`, chave AES da connection string
-  em `HashHelper`) — mover para configuração/secret store.
+- A chave JWT vem da seção `Jwt` da configuração e deve ser sobrescrita por secret store no deploy.
+  A connection string usa AES-GCM e a chave Base64 de 32 bytes é fornecida externamente por `ConnectionStrings__EncryptionKey`.
 - PK `int8` sequencial: avaliar id alternativo/slug em URLs públicas se enumeração for
   preocupação.

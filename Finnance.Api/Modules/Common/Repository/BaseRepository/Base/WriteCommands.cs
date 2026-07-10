@@ -67,7 +67,11 @@ public partial class BaseRepository<TEntity, TModel>
     {
         if (entities.IsEmpty()) return false;
 
-        var models = MapToModel(entities.ToList());
+        var entityList = entities.ToList();
+        if (IsUserOwned)
+            foreach (var entity in entityList.Cast<IUserOwned>()) entity.User = ApiContext.User;
+
+        var models = MapToModel(entityList);
         var (inserts, parameters) = models.GenerateInserts(Schema);
 
         using var con = Conn;
@@ -90,8 +94,12 @@ public partial class BaseRepository<TEntity, TModel>
     {
         if (entities.IsEmpty()) return false;
 
-        var models = MapToModel(entities.ToList());
-        var (updates, parameters) = models.GenerateUpdates(Schema);
+        var entityList = entities.ToList();
+        if (IsUserOwned)
+            foreach (var entity in entityList.Cast<IUserOwned>()) entity.User = ApiContext.User;
+
+        var models = MapToModel(entityList);
+        var (updates, parameters) = models.GenerateUpdates(Schema, IsUserOwned ? ApiContext.User : null);
 
         using var con = Conn;
         using var tran = con.BeginTransaction();
@@ -125,7 +133,7 @@ public partial class BaseRepository<TEntity, TModel>
                 throw new ApplicationException(Constants.ErrorMessage.PendingRegistrationAnotherTable);
         });
 
-        var (deletes, parameters) = models.GenerateDeletes(Schema);
+        var (deletes, parameters) = models.GenerateDeletes(Schema, IsUserOwned ? ApiContext.User : null);
 
         using var con = Conn;
         using var tran = con.BeginTransaction();

@@ -18,7 +18,11 @@ public class KiwifyWebhookEventDisplayDto
 
     public long? User { get; set; }
 
-    public string Payload { get; set; }
+    public string ProductId { get; set; }
+
+    public DateTime SourceEventAt { get; set; }
+
+    public int ProcessAttempts { get; set; }
 
     public DateTime Created { get; set; }
 }

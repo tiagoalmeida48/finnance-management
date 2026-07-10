@@ -11,15 +11,18 @@ public class JwtHelper
     public const string ClaimTimeZone = "utc";
     public const string ClaimMfa = "mfa";
     public const string ClaimIsAdmin = "is_admin";
+    public const string ClaimTokenVersion = "token_version";
     public const string ClaimPlatform = "WEB";
 
-    public static string GeraToken(List<Claim> claims, DateTime expiration, string key)
+    public static string GenerateToken(List<Claim> claims, DateTime expiration, JwtSettings settings)
     {
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
             Expires = expiration.ToUniversalTime(),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key.GetBytesFromText()),
+            Issuer = settings.Issuer,
+            Audience = settings.Audience,
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(settings.SecretKey.GetBytesFromText()),
                                                         SecurityAlgorithms.HmacSha256Signature)
         };
 
@@ -28,7 +31,7 @@ public class JwtHelper
         return tokenHandler.WriteToken(token);
     }
 
-    public static ClaimsPrincipal ValidateToken(string token, string key)
+    public static ClaimsPrincipal ValidateToken(string token, JwtSettings settings)
     {
         if (token.IsEmpty())
             throw new ApplicationException(Constants.ErrorMessage.ErrorAccess);
@@ -36,9 +39,17 @@ public class JwtHelper
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(key.GetBytesFromText()),
-            ValidateIssuer = false,
-            ValidateAudience = false
+            IssuerSigningKey = new SymmetricSecurityKey(settings.SecretKey.GetBytesFromText()),
+            ValidateIssuer = true,
+            ValidIssuer = settings.Issuer,
+            ValidateAudience = true,
+            ValidAudience = settings.Audience,
+            ValidateLifetime = true,
+            RequireExpirationTime = true,
+            RequireSignedTokens = true,
+            ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
+            ValidTypes = ["JWT"],
+            ClockSkew = TimeSpan.FromMinutes(1)
         };
 
         var tokenHandler = new JwtSecurityTokenHandler { MapInboundClaims = false };

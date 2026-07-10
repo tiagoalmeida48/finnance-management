@@ -10,7 +10,7 @@ namespace Finnance.Api.Controllers;
 
 public class RecurringGroupController(IRecurringGroupService recurringGroupService) : ControllerBase
 {
-    [Authorization]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<List<RecurringGroupDisplayDto>> List()
     {
@@ -18,7 +18,7 @@ public class RecurringGroupController(IRecurringGroupService recurringGroupServi
         return new ResultApi<List<RecurringGroupDisplayDto>> { Result = result.MapTo<List<RecurringGroupDisplayDto>>() };
     }
 
-    [Authorization]
+    [Authorization(subscription: true)]
     [HttpGet]
     public ResultApi<RecurringGroupDisplayDto> Get([FromQuery] long recurringGroup)
     {
@@ -26,7 +26,7 @@ public class RecurringGroupController(IRecurringGroupService recurringGroupServi
         return new ResultApi<RecurringGroupDisplayDto> { Result = result.MapTo<RecurringGroupDisplayDto>() };
     }
 
-    [Authorization]
+    [Authorization(subscription: true)]
     [HttpPost]
     public ResultApi<long> Create([FromBody] RecurringGroupCreateDto dto)
     {
@@ -35,7 +35,7 @@ public class RecurringGroupController(IRecurringGroupService recurringGroupServi
         return new ResultApi<long> { Result = id };
     }
 
-    [Authorization]
+    [Authorization(subscription: true)]
     [HttpDelete]
     public ResultApi<bool> Delete([FromBody] long recurringGroup)
     {

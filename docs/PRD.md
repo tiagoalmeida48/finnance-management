@@ -47,7 +47,7 @@ Necessidades:
 - Sessao persistente.
 - Rotas protegidas para usuario autenticado.
 - Rota admin protegida por `is_admin`.
-- `/auth/register` redireciona para login; nao ha pagina dedicada de cadastro neste estado do codigo.
+- Não há cadastro público; o usuário é provisionado pelo webhook de compra aprovada da Kiwify.
 
 ### 4.2 Dashboard
 

@@ -52,6 +52,12 @@ public class SubscriptionMod : BaseModel
     [Column("last_event_at")]
     public DateTime? LastEventAt { get; set; }
 
+    [Column("source_event_at")]
+    public DateTime? SourceEventAt { get; set; }
+
+    [Column("entitled_until")]
+    public DateTime? EntitledUntil { get; set; }
+
     [Column("active")]
     public bool Active { get; set; }
 }

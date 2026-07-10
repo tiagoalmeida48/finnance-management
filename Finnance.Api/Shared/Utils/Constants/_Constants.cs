@@ -15,7 +15,6 @@ public static partial class Constants
     public const int Size1Gb = BytesInMB * 1000;
     public const int None = 0;
     public const string TimeZoneDefault = "America/Sao_Paulo";
-    public const string CookieName = "CookieAuth";
     public const string UrlOpenApi = "/openapi";
     public const string UrlSwagger = "/swagger";
     public const string ProjectName = "Finnance";

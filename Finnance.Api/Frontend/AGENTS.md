@@ -43,7 +43,7 @@ src/
 ## 3. Comunicação com a API .NET
 
 - `config/http.ts` expõe `apiClient.{get,post,put,delete}`: desembrulha `ResultApi<T>.result` e lança `ApiError` quando `success === false`. Services retornam o tipo puro.
-- **Auth por Bearer**: token em `localStorage` (`AUTH_TOKEN_KEY`), injetado no header `Authorization` pelo interceptor; 401 limpa o token e redireciona para `/login`.
+- **Auth por Bearer**: token em `sessionStorage` (`AUTH_TOKEN_KEY`), injetado no header `Authorization` pelo interceptor; 401 limpa o token e redireciona para `/login`.
 - Rotas seguem o backend kebab-case (`/category/list`, `/bank-account/create`). Confirme a rota real no controller em `Finnance.Api/Modules/<X>/`.
 - `config/constants.ts` tem os IDs de lookup (`TransactionTypeId`, `CategoryTypeId`, `AccountTypeId`, `InvoiceStatusId`, `RoleId`).
 
@@ -61,7 +61,7 @@ src/
 ## 5. Estado
 
 - **Servidor**: React Query (queryKeys estáveis por feature, `invalidateQueries` no sucesso).
-- **Auth**: `@/features/auth` (`AuthProvider`, `useAuth`) sobre o Bearer/localStorage.
+- **Auth**: `@/features/auth` (`AuthProvider`, `useAuth`) sobre o Bearer/sessionStorage.
 - **UI**: Zustand (mínimo).
 - **Notificações**: toast em `@/shared/components/feedback`.
 

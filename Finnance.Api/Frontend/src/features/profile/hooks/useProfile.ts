@@ -1,7 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/shared/components/feedback';
 import { profileService } from '../services/profileService';
-import type { UpdatePasswordInput, UpdateProfileInput } from '../types/profile.types';
+import type {
+  UpdateMarketingPreferencesInput,
+  UpdatePasswordInput,
+  UpdateProfileInput,
+} from '../types/profile.types';
 
 export const profileKeys = {
   me: ['profile', 'me'] as const,
@@ -33,6 +37,23 @@ export function useUpdatePassword() {
     },
     onError: () => {
       addToast('Não foi possível atualizar a senha.', 'error');
+    },
+  });
+}
+
+export function useUpdateMarketingPreferences() {
+  const queryClient = useQueryClient();
+  const { addToast } = useToast();
+
+  return useMutation({
+    mutationFn: (input: UpdateMarketingPreferencesInput) =>
+      profileService.updateMarketingPreferences(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: profileKeys.me });
+      addToast('Preferências de comunicação atualizadas.', 'success');
+    },
+    onError: () => {
+      addToast('Não foi possível atualizar as preferências.', 'error');
     },
   });
 }

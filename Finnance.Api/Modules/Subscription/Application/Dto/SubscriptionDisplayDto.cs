@@ -32,6 +32,10 @@ public class SubscriptionDisplayDto
 
     public DateTime? LastEventAt { get; set; }
 
+    public DateTime? SourceEventAt { get; set; }
+
+    public DateTime? EntitledUntil { get; set; }
+
     public bool Active { get; set; }
 
     public DateTime Created { get; set; }

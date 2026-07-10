@@ -9,7 +9,7 @@ import { Button, Input, Label } from '@/shared/components/ui';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
+  password: z.string().min(1, 'Informe a senha.').max(128, 'Senha inválida.'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -111,13 +111,11 @@ export function LoginPage() {
               Entrar
             </Button>
 
-            <div className="flex items-center justify-between text-sm text-text-muted">
+            <div className="flex flex-col items-center justify-between gap-2 text-center text-sm text-text-muted sm:flex-row sm:text-left">
               <Link to="/forgot-password" className="hover:text-text">
                 Esqueci minha senha
               </Link>
-              <Link to="/register" className="text-primary hover:underline">
-                Criar conta
-              </Link>
+              <span>O acesso é criado após a confirmação da assinatura.</span>
             </div>
           </form>
         </div>

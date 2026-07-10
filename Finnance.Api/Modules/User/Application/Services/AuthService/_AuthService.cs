@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 using Finnance.Api.Modules.Common.Domain.Vo;
 using Finnance.Api.Modules.User.Application.Dto;
 using Finnance.Api.Modules.User.Application.Interfaces;
@@ -7,15 +8,21 @@ using Finnance.Api.Shared.Utils;
 
 namespace Finnance.Api.Modules.User.Application.Services;
 
-public class AuthService(IUserService userSrv) : IAuthService
+public class AuthService(IUserService userSrv, IConfiguration configuration) : IAuthService
 {
+    private static readonly string DummyPasswordHash = Argon2Helper.GenerateHashPassword("invalid-password-placeholder");
+
     public SessionVo Login(string email, string password)
     {
-        var user = userSrv.GetByEmail(email);
-        if (!Argon2Helper.VerifyPassword(password, user.PasswordHash))
+        if (password.IsEmpty() || password.Length > 128)
             throw new ApplicationException(Constants.ErrorMessage.UserInvalidPassword);
 
-        if (!user.Active)
+        var user = userSrv.FindByEmail(email);
+        var passwordHash = user?.PasswordHash ?? DummyPasswordHash;
+        if (!Argon2Helper.VerifyPassword(password, passwordHash) || user == null)
+            throw new ApplicationException(Constants.ErrorMessage.UserInvalidPassword);
+
+        if (!user.Active || user.SubscriptionBlocked)
             throw new ApplicationException(Constants.ErrorMessage.UserInactive);
 
         if (!user.EmailVerified)
@@ -28,9 +35,12 @@ public class AuthService(IUserService userSrv) : IAuthService
             new(JwtHelper.ClaimLang, language),
             new(JwtHelper.ClaimTimeZone, Constants.TimeZoneDefault),
             new(JwtHelper.ClaimIsAdmin, user.IsAdmin.ToString()),
+            new(JwtHelper.ClaimTokenVersion, user.TokenVersion.ToString()),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
         };
 
-        var token = JwtHelper.GeraToken(claims, DateTime.UtcNow.AddHours(JwtConstants.ExpirationHours), JwtConstants.SecretKey);
+        var settings = JwtSettings.From(configuration);
+        var token = JwtHelper.GenerateToken(claims, DateTime.UtcNow.AddHours(settings.ExpirationHours), settings);
 
         return new SessionVo
         {
@@ -54,6 +64,9 @@ public class AuthService(IUserService userSrv) : IAuthService
             Email = entity.Email,
             FullName = entity.FullName,
             AvatarUrl = entity.AvatarUrl,
+            Phone = entity.Phone,
+            MarketingConsent = entity.MarketingConsent,
+            MarketingConsentAt = entity.MarketingConsentAt,
             Currency = entity.Currency,
             Locale = entity.Locale,
             IsAdmin = entity.IsAdmin

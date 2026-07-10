@@ -10,7 +10,7 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (input: LoginInput) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
 
@@ -65,10 +65,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     [navigate, addToast],
   );
 
-  const logout = useCallback(() => {
-    tokenStorage.clear();
-    setUser(null);
-    navigate('/login');
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout();
+    } finally {
+      tokenStorage.clear();
+      setUser(null);
+      navigate('/login');
+    }
   }, [navigate]);
 
   const refresh = useCallback(async () => {

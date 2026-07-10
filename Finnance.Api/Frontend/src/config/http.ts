@@ -4,9 +4,9 @@ import { AUTH_TOKEN_KEY } from './constants';
 import { ApiError, type ResultApi } from '@/shared/types/api.types';
 
 export const tokenStorage = {
-  get: () => localStorage.getItem(AUTH_TOKEN_KEY),
-  set: (token: string) => localStorage.setItem(AUTH_TOKEN_KEY, token),
-  clear: () => localStorage.removeItem(AUTH_TOKEN_KEY),
+  get: () => sessionStorage.getItem(AUTH_TOKEN_KEY),
+  set: (token: string) => sessionStorage.setItem(AUTH_TOKEN_KEY, token),
+  clear: () => sessionStorage.removeItem(AUTH_TOKEN_KEY),
 };
 
 export const http = axios.create({

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,7 +8,12 @@ import { useToast } from '@/shared/components/feedback';
 import { Button, Input, Label } from '@/shared/components/ui';
 import { AuthShell } from './AuthShell';
 
-const schema = z.object({ password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres') });
+const schema = z.object({
+  password: z
+    .string()
+    .min(12, 'A senha deve ter ao menos 12 caracteres.')
+    .max(128, 'A senha deve ter no máximo 128 caracteres.'),
+});
 type FormData = z.infer<typeof schema>;
 
 export function ResetPasswordPage() {
@@ -22,6 +27,10 @@ export function ResetPasswordPage() {
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
+
+  useEffect(() => {
+    if (token) window.history.replaceState({}, document.title, '/reset-password');
+  }, [token]);
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);

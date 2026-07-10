@@ -46,7 +46,10 @@ public class SubscriptionRepository : BaseRepository<SubscriptionEntity, Subscri
             sb.Append("AND subscription_status = @subscriptionStatus ");
         }
 
-        sb.Append("ORDER BY subscription DESC ");
+        if (user > 0)
+            sb.Append("ORDER BY (entitled_until IS NOT NULL AND entitled_until >= now()) DESC, source_event_at DESC NULLS LAST, subscription DESC ");
+        else
+            sb.Append("ORDER BY subscription DESC ");
 
         if (quantity > 0)
         {
@@ -67,13 +70,12 @@ public class SubscriptionRepository : BaseRepository<SubscriptionEntity, Subscri
                 FROM subscription s
                 WHERE s."user" = @user
                   AND s.active = TRUE
+                  AND s.entitled_until IS NOT NULL
                   AND (
-                      s.subscription_status = @active
+                      (s.subscription_status = @active AND now() <= s.entitled_until)
                       OR (s.subscription_status = @late
-                          AND now() <= COALESCE(s.next_payment, s.last_event_at, s.updated) + make_interval(days => @graceDays))
-                      OR (s.subscription_status = @canceled
-                          AND s.next_payment IS NOT NULL
-                          AND now() <= s.next_payment)
+                          AND now() <= s.entitled_until + make_interval(days => @graceDays))
+                      OR (s.subscription_status = @canceled AND now() <= s.entitled_until)
                   )
             )
             """;

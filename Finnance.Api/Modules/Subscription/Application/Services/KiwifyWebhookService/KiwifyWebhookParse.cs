@@ -22,7 +22,11 @@ public partial class KiwifyWebhookService
                 EventType = GetString(root, "webhook_event_type"),
                 OrderId = GetString(root, "order_id"),
                 OrderStatus = GetString(root, "order_status"),
-                SubscriptionId = GetString(root, "subscription_id")
+                SubscriptionId = GetString(root, "subscription_id"),
+                SourceEventAt = GetDate(root, "updated_at")
+                                ?? GetDate(root, "created_at")
+                                ?? GetDate(root, "approved_date")
+                                ?? DateTime.UtcNow
             };
 
             if (root.TryGetProperty("Product", out var product))
@@ -35,6 +39,7 @@ public partial class KiwifyWebhookService
             {
                 vo.CustomerEmail = GetString(customer, "email");
                 vo.CustomerName = GetString(customer, "full_name");
+                vo.CustomerPhone = GetString(customer, "mobile");
             }
 
             if (root.TryGetProperty("Commissions", out var commissions))

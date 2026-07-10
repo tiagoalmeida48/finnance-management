@@ -4,6 +4,7 @@ export interface ManagedUser {
   fullName: string;
   isAdmin: boolean;
   active: boolean;
+  subscriptionBlocked: boolean;
   created: string;
 }
 

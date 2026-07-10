@@ -46,7 +46,6 @@ src/
 |---|---|---|
 | `/` | redireciona para dashboard ou login | publica |
 | `/auth/login` | login | publica |
-| `/auth/register` | redireciona para login | publica |
 | `/dashboard` | dashboard financeiro | autenticada |
 | `/accounts` | contas bancarias | autenticada |
 | `/transactions` | transacoes e importacao CSV/Pluggy | autenticada |

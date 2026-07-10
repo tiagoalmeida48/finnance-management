@@ -12,5 +12,7 @@ public class UserLightDto
 
     public bool Active { get; set; }
 
+    public bool SubscriptionBlocked { get; set; }
+
     public DateTime Created { get; set; }
 }

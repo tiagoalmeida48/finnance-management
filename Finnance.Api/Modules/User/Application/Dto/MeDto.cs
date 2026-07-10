@@ -10,6 +10,12 @@ public class MeDto
 
     public string AvatarUrl { get; set; }
 
+    public string Phone { get; set; }
+
+    public bool MarketingConsent { get; set; }
+
+    public DateTime? MarketingConsentAt { get; set; }
+
     public string Currency { get; set; }
 
     public string Locale { get; set; }

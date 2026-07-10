@@ -9,8 +9,12 @@ public class KiwifyWebhookController(IKiwifyWebhookService kiwifyWebhookService)
 {
     [AllowAnonymous]
     [HttpPost]
+    [RequestSizeLimit(262144)]
     public async Task<ResultApi<long>> Receive([FromQuery] string signature)
     {
+        if (!Request.HasJsonContentType())
+            throw new ApplicationException(Constants.ErrorMessage.InvalidWebhookContentType);
+
         using var reader = new StreamReader(Request.Body);
         var rawBody = await reader.ReadToEndAsync();
         var id = kiwifyWebhookService.ProcessWebhook(rawBody, signature);

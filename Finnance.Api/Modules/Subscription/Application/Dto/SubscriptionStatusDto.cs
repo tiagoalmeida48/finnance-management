@@ -14,5 +14,7 @@ public class SubscriptionStatusDto
 
     public DateTime? NextPayment { get; set; }
 
+    public DateTime? EntitledUntil { get; set; }
+
     public string CheckoutUrl { get; set; }
 }

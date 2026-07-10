@@ -2,6 +2,7 @@ import { apiClient } from '@/config/http';
 import type {
   ProfileInfo,
   UpdatePasswordInput,
+  UpdateMarketingPreferencesInput,
   UpdateProfileInput,
 } from '../types/profile.types';
 
@@ -13,4 +14,9 @@ export const profileService = {
 
   updatePassword: (input: UpdatePasswordInput): Promise<boolean> =>
     apiClient.put<boolean>('/user/update-my-password', input),
+
+  updateMarketingPreferences: (
+    input: UpdateMarketingPreferencesInput,
+  ): Promise<boolean> =>
+    apiClient.put<boolean>('/user/update-marketing-preferences', input),
 };

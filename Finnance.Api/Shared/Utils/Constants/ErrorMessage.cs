@@ -6,7 +6,8 @@ public static partial class Constants
     {
         public const string RequiredField = "Campo obrigatório não informado.";
         public const string EmptyPassword = "Senha é obrigatória.";
-        public const string NumberMinCharactersPassword = "A senha deve ter ao menos 6 caracteres.";
+        public const string NumberMinCharactersPassword = "A senha deve ter ao menos 12 caracteres.";
+        public const string NumberMaxCharactersPassword = "A senha deve ter no máximo 128 caracteres.";
         public const string FieldAlreadyExists = "E-mail já existe.";
         public const string UserNotFound = "Usuário não encontrado.";
         public const string UserInvalidPassword = "E-mail ou senha inválidos.";
@@ -66,5 +67,25 @@ public static partial class Constants
         public const string InvalidWebhookPayload = "Payload do webhook inválido.";
         public const string WebhookEventNotFound = "Evento de webhook não encontrado.";
         public const string SubscriptionRequired = "É necessária uma assinatura ativa para acessar este recurso.";
+        public const string JwtConfigurationInvalid = "A configuração JWT é inválida.";
+        public const string InvalidWebhookContentType = "O webhook deve usar o formato JSON.";
+        public const string InvalidWebhookProduct = "O produto informado pelo webhook não é permitido.";
+        public const string InvalidWebhookOrderStatus = "O pagamento informado pelo webhook não está aprovado.";
+        public const string KiwifyConfigurationInvalid = "A configuração da Kiwify é inválida.";
+        public const string KiwifyIntegrationDisabled = "A integração com a Kiwify está desabilitada.";
+        public const string WebhookCustomerRequired = "O webhook não informou o e-mail do cliente.";
+        public const string WebhookSubscriptionRequired = "O webhook não informou o identificador da assinatura.";
+        public const string WebhookEntitlementRequired = "O webhook não informou a próxima data de pagamento.";
+        public const string WebhookProcessingFailed = "Falha transitória ao processar o webhook.";
+        public const string BootstrapAdminConfigurationInvalid = "A configuração do administrador inicial é inválida.";
+        public const string InvalidPhone = "Informe um telefone válido com DDD.";
+        public const string PhoneRequiredForMarketing = "Informe um telefone para autorizar comunicações de marketing.";
+        public const string ConnectionStringConfigurationInvalid = "A configuração segura da conexão com o banco de dados é inválida.";
+        public const string InvalidEmail = "Informe um e-mail válido.";
+        public const string InvalidFullName = "O nome deve ter no máximo 200 caracteres.";
+        public const string InvalidAvatarUrl = "A URL do avatar deve ser HTTPS e válida.";
+        public const string TooManyRequests = "Muitas tentativas. Aguarde alguns minutos e tente novamente.";
+        public const string WebhookUserNotFound = "O webhook não corresponde a um usuário existente.";
+        public const string CorsConfigurationInvalid = "A configuração de origens permitidas é inválida.";
     }
 }

@@ -7,6 +7,7 @@ using Finnance.Api.Modules.Common.Repository;
 using Finnance.Api.Shared;
 using Finnance.Api.Shared.Utils;
 using Finnance.Api.Security;
+using Finnance.Api.Modules.Subscription.Application.Workers;
 using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 
@@ -21,13 +22,15 @@ public static partial class Configuration
         TypeMapper.Initialize([".Repository.Models"], []);
 
         var strCon = configuration.GetConnectionString("DefaultConnection");
-        var newStrCon = HashHelper.DecryptConnectionString(strCon);
+        var encryptionKey = configuration["ConnectionStrings:EncryptionKey"];
+        var newStrCon = HashHelper.DecryptConnectionString(strCon, encryptionKey);
 
         var services = applicationBuilder.Services;
 
         services.AddControllersWithViews(options =>
             {
                 options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer()));
+                options.Filters.Add<AuthorizationRequiredFilter>();
                 options.Filters.Add<AuditActionFilter>();
             })
             .AddNewtonsoftJson(options =>
@@ -42,17 +45,51 @@ public static partial class Configuration
 
         services.AddCors();
 
+        services.AddHsts(options =>
+        {
+            options.MaxAge = TimeSpan.FromDays(365);
+            options.IncludeSubDomains = true;
+            options.Preload = true;
+        });
+
+        services.AddHttpsRedirection(options =>
+        {
+            options.RedirectStatusCode = StatusCodes.Status308PermanentRedirect;
+        });
+
         services.AddRateLimiter(options =>
         {
+            options.AddPolicy("authentication", context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0
+                    }));
+
+            options.AddPolicy("account-recovery", context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 3,
+                        Window = TimeSpan.FromMinutes(5),
+                        QueueLimit = 0
+                    }));
+
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx =>
             {
                 if (!ctx.Request.Path.StartsWithSegments("/api"))
-                    return RateLimitPartition.GetNoLimiter("bypass");
+                    return RateLimitPartition.GetNoLimiter("static");
 
-                return RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.ToString() ?? "anon",
+                var isWebhook = ctx.Request.Path.StartsWithSegments("/api/kiwify-webhook");
+                var partition = $"{ctx.Connection.RemoteIpAddress?.ToString() ?? "anon"}:{isWebhook}";
+                return RateLimitPartition.GetFixedWindowLimiter(partition,
                                                                 _ => new FixedWindowRateLimiterOptions
                                                                 {
-                                                                    PermitLimit = 100,
+                                                                    PermitLimit = isWebhook ? 30 : 100,
                                                                     Window = TimeSpan.FromMinutes(1),
                                                                     QueueLimit = 0
                                                                 });
@@ -62,15 +99,19 @@ public static partial class Configuration
             options.OnRejected = async (context, token) =>
             {
                 context.HttpContext.Response.StatusCode = 429;
-                await context.HttpContext.Response.WriteAsync("Too Many Requests", token);
+                await context.HttpContext.Response.WriteAsJsonAsync(new ResultApi<object>
+                {
+                    Success = false,
+                    Message = Constants.ErrorMessage.TooManyRequests
+                }, token);
             };
         });
 
         services.Configure<FormOptions>(x =>
         {
-            x.ValueLengthLimit = int.MaxValue;
-            x.MultipartBodyLengthLimit = long.MaxValue;
-            x.BufferBodyLengthLimit = long.MaxValue;
+            x.ValueLengthLimit = 1048576;
+            x.MultipartBodyLengthLimit = 1048576;
+            x.BufferBodyLengthLimit = 1048576;
         });
 
         services.AddHttpContextAccessor();
@@ -91,6 +132,8 @@ public static partial class Configuration
         });
 
         services.DependencyInjectionConfiguration();
+        if (KiwifySettings.From(configuration).Enabled)
+            services.AddHostedService<KiwifyWebhookWorker>();
     }
 }
 
@@ -101,11 +144,4 @@ public class SlugifyParameterTransformer : IOutboundParameterTransformer
         return value == null ? null : Regex.Replace(value.ToString() ?? string.Empty, "([a-z])([A-Z])", "$1-$2").ToLower();
     }
 
-    public class CustomHttpClientHandler : HttpClientHandler
-    {
-        public CustomHttpClientHandler()
-        {
-            ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true;
-        }
-    }
 }

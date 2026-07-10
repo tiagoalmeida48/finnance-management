@@ -25,7 +25,7 @@ finnance-management/
 └── README.md                     # Descreve o template .NET genérico, NÃO este app (ver §6)
 ```
 
-**A aplicação real, hoje, é o frontend React em `Finnance.Api/Frontend/`**, sobre a **API .NET** local (axios + Bearer/localStorage; folder-by-type `features/<feat>/`). O `Finnance.Api/Frontend/AGENTS.md` é a fonte de verdade — não duplico aqui. Comandos (`pnpm dev/build/lint/check:ci`, sempre **pnpm**) estão lá. O frontend **Supabase** original está congelado em `docs/Referencia/` e serve só como fonte de funcionalidade/UX para a migração (ver o playbook `.claude/skills/frontend-reference-port/SKILL.md` e `docs/MIGRACAO_FRONTEND.md`).
+**A aplicação real, hoje, é o frontend React em `Finnance.Api/Frontend/`**, sobre a **API .NET** local (axios + Bearer/sessionStorage; folder-by-type `features/<feat>/`). O `Finnance.Api/Frontend/AGENTS.md` é a fonte de verdade — não duplico aqui. Comandos (`pnpm dev/build/lint/check:ci`, sempre **pnpm**) estão lá. O frontend **Supabase** original está congelado em `docs/Referencia/` e serve só como fonte de funcionalidade/UX para a migração (ver o playbook `.claude/skills/frontend-reference-port/SKILL.md` e `docs/MIGRACAO_FRONTEND.md`).
 
 **O backend `Finnance.Api/` substitui o Supabase por uma API .NET Core local** e já saiu do scaffolding: além de `Common`/`Shared`, há módulos de negócio reais em `Modules/` (`User`/auth, `BankAccount`, `Category`/`CategoryType`, `Transaction`/`TransactionType`, `CreditCard`, `CreditCardInvoice`, `CreditCardStatementCycle`, `PaymentMethod`, `AccountType`, `InvoiceStatus`, `InstallmentGroup`, `RecurringGroup`, `SettingsSalary`, `Dashboard`, `Notification`, `Subscription` (Kiwify), `Engagement`, `SystemConfig`, `AuditLog`/`AuditAction`…), expostos no Swagger. As regras de negócio de domínio (transação→fatura, recálculo de fatura, sync de saldo, recorrência, folha/salário) já foram portadas e vivem no código (`Modules/`). O contrato consolidado do que o backend deve garantir está em `docs/sql/finnance_dev_backend_rules.md`.
 
@@ -41,7 +41,7 @@ dotnet run                        # sobe a Web API (Kestrel)
 
 - Projeto **único consolidado**: `Finnance.Api.csproj` (não é multi-projeto). `net9.0`, `Nullable=disable`, `LangVersion=13.0`, `ImplicitUsings=enable`.
 - **Não há suíte de testes** em nenhuma das metades. O gate do frontend é `pnpm check:ci`; o do backend é compilar (`dotnet build`). Verifique mudanças rodando.
-- Banco: **PostgreSQL** (`finnance_dev`) via Npgsql + Dapper. A connection string em `appsettings.json` está **criptografada** e é descriptografada em runtime por `HashHelper.DecryptConnectionString`. Não cole connection string em claro no arquivo.
+- Banco: **PostgreSQL** (`finnance_dev`) via Npgsql + Dapper. A connection string em `appsettings.json` usa **AES-GCM** e é descriptografada em runtime por `HashHelper.DecryptConnectionString`; a chave Base64 de 32 bytes vem de `ConnectionStrings__EncryptionKey` e nunca é versionada. Não cole connection string nem chave em claro no arquivo.
 - O frontend é compilado para `wwwroot/`; o backend serve a SPA com `app.MapFallbackToFile("index.html")`.
 
 ---
@@ -121,7 +121,7 @@ React 19 + TypeScript estrito + Vite, Tailwind v4, React Query, Zustand, React R
 
 ## 7. Branches
 
-`main` = produção, `dev` = desenvolvimento ativo. O frontend faz deploy na Vercel como SPA.
+`main` = produção, `dev` = desenvolvimento ativo. Em produção na VPS, o frontend é buildado para `Finnance.Api/wwwroot/` e servido diretamente pelo backend .NET/Kestrel como SPA, sem Vercel ou reverse proxy.
 
 ---
 

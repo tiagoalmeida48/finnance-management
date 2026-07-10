@@ -71,8 +71,6 @@ public static partial class Configuration
         {
             c.SwaggerEndpoint("/openapi/v1.json", "WebApi v1");
             c.DocExpansion(DocExpansion.None);
-            c.InjectJavascript("/auth/js/auth-manager.js?v=8");
-            c.InjectStylesheet("/auth/css/styles.css?v=8");
         });
 
         var supportedCultures = new[] { new CultureInfo("pt-BR"), new CultureInfo("en-US") };

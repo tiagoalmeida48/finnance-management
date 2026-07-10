@@ -6,7 +6,11 @@ export const personalInfoSchema = z.object({
 
 export const passwordSchema = z
   .object({
-    password: z.string().min(6, 'A senha deve ter ao menos 6 caracteres.'),
+    currentPassword: z.string().min(1, 'Informe a senha atual.').max(128, 'Senha inválida.'),
+    password: z
+      .string()
+      .min(12, 'A senha deve ter ao menos 12 caracteres.')
+      .max(128, 'A senha deve ter no máximo 128 caracteres.'),
     confirmPassword: z.string().min(1, 'Confirme a nova senha.'),
   })
   .superRefine((data, ctx) => {
@@ -19,5 +23,30 @@ export const passwordSchema = z
     }
   });
 
+export const marketingPreferencesSchema = z
+  .object({
+    phone: z.string().trim(),
+    marketingConsent: z.boolean(),
+  })
+  .superRefine((data, ctx) => {
+    const digitCount = data.phone.replace(/\D/g, '').length;
+    if (data.phone && (digitCount < 10 || digitCount > 15)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['phone'],
+        message: 'Informe um telefone válido com DDD.',
+      });
+    }
+
+    if (data.marketingConsent && !data.phone) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['phone'],
+        message: 'Informe um telefone para autorizar as comunicações.',
+      });
+    }
+  });
+
 export type PersonalInfoFormValues = z.infer<typeof personalInfoSchema>;
 export type PasswordFormValues = z.infer<typeof passwordSchema>;
+export type MarketingPreferencesFormValues = z.infer<typeof marketingPreferencesSchema>;

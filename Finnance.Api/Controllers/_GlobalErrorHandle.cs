@@ -10,10 +10,12 @@ using Finnance.Api.Shared.Utils;
 using Refit;
 using System.Net;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Finnance.Api.Controllers;
 
 [ApiExplorerSettings(IgnoreApi = true)]
+[AllowAnonymous]
 public class GlobalErrorHandle(IAuditLogService auditLogService) : ControllerBase
 {
     private const int InternalErrorStatus = 500;
@@ -74,7 +76,7 @@ public class GlobalErrorHandle(IAuditLogService auditLogService) : ControllerBas
                 Success = false
             };
 
-            return StatusCode(BusinessErrorStatus, ret);
+            return StatusCode(GetApplicationStatus(businessError.Message), ret);
         }
 
         if (IsInvalidRequestBody(ctx.Error))
@@ -110,6 +112,19 @@ public class GlobalErrorHandle(IAuditLogService auditLogService) : ControllerBas
         }
 
         return false;
+    }
+
+    private static int GetApplicationStatus(string message)
+    {
+        if (message is Constants.ErrorMessage.ErrorAccess
+            or Constants.ErrorMessage.ExpiredToken
+            or Constants.ErrorMessage.UserInvalidPassword)
+            return StatusCodes.Status401Unauthorized;
+
+        if (message is Constants.ErrorMessage.ErrorAuthorization or Constants.ErrorMessage.SubscriptionRequired)
+            return StatusCodes.Status403Forbidden;
+
+        return BusinessErrorStatus;
     }
 
     private static bool IsDatabaseTimeout(Exception exception)

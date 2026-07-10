@@ -56,7 +56,9 @@ public static partial class EntityHelper
         return (inserts, parametersList);
     }
 
-    public static (StringBuilder updates, DynamicParameters parameters) GenerateUpdates<T>(this IEnumerable<T> dataList, string schema) where T : BaseModel
+    public static (StringBuilder updates, DynamicParameters parameters) GenerateUpdates<T>(this IEnumerable<T> dataList,
+                                                                                            string schema,
+                                                                                            long? tenant = null) where T : BaseModel
     {
         var updates = new StringBuilder();
         var parametersList = new DynamicParameters();
@@ -99,6 +101,14 @@ public static partial class EntityHelper
 
             if (setClause.Length == 0 || whereClause.Length == 0)
                 continue;
+
+            if (tenant.HasValue)
+            {
+                var tenantParam = $"@tenant_{Guid.NewGuid():N}";
+                whereClause.Append($"\"user\" = {tenantParam} AND ");
+                parametersList.Add(tenantParam, tenant.Value);
+            }
+
             var updateCommand = $"UPDATE {tbName} SET {setClause.Remove(setClause.Length - 2, 2)} WHERE {whereClause.Remove(whereClause.Length - 5, 5)};";
             updates.Append(updateCommand);
         }
@@ -106,7 +116,9 @@ public static partial class EntityHelper
         return (updates, parametersList);
     }
 
-    public static (StringBuilder deletes, DynamicParameters parameters) GenerateDeletes<T>(this IEnumerable<T> dataList, string schema) where T : BaseModel
+    public static (StringBuilder deletes, DynamicParameters parameters) GenerateDeletes<T>(this IEnumerable<T> dataList,
+                                                                                            string schema,
+                                                                                            long? tenant = null) where T : BaseModel
     {
         var deletes = new StringBuilder();
         var parametersList = new DynamicParameters();
@@ -133,6 +145,13 @@ public static partial class EntityHelper
             }
 
             if (whereClause.Length == 0) continue;
+
+            if (tenant.HasValue)
+            {
+                var tenantParam = $"@tenant_{Guid.NewGuid():N}";
+                whereClause.Append($"\"user\" = {tenantParam} AND ");
+                parametersList.Add(tenantParam, tenant.Value);
+            }
 
             var deleteCommand = $"DELETE FROM {tbName} WHERE {whereClause.Remove(whereClause.Length - 5, 5)};";
             deletes.Append(deleteCommand);

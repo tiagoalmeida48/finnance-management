@@ -49,7 +49,12 @@ export function UserFormModal({
   const isEditing = Boolean(user);
   const schema = isEditing
     ? baseSchema
-    : baseSchema.extend({ password: z.string().min(1, 'Informe a senha inicial.') });
+    : baseSchema.extend({
+        password: z
+          .string()
+          .min(12, 'A senha deve ter ao menos 12 caracteres.')
+          .max(128, 'A senha deve ter no máximo 128 caracteres.'),
+      });
 
   const {
     register,
