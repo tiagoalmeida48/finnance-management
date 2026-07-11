@@ -2,7 +2,7 @@
 
 Instruções para qualquer agente de IA. Este arquivo é a **fonte canônica** do frontend (o `CLAUDE.md` ao lado apenas o importa). SPA React 19 + TypeScript estrito do `finnance-management`. **Esta é a aplicação em produção** e o destino da migração do frontend de referência. UI em **pt-BR**; comunique-se em pt-BR.
 
-> Antes deste app, o frontend vivia em `docs/Referencia` (React + **Supabase**). Este `Finnance.Api/Frontend` é a reescrita sobre a **API .NET** local. Ao portar features da Referencia, siga o playbook `.claude/skills/frontend-reference-port/SKILL.md` (skill no Claude Code; documento a seguir em outras ferramentas) — nunca copie literalmente (a Referencia é acoplada ao Supabase).
+> Antes deste app, o frontend era um legado React + **Supabase** (vivia em `docs/Referencia`, removido do repositório em 2026-07-10 após a migração ser concluída). Este `Finnance.Api/Frontend` é a reescrita sobre a **API .NET** local e é a única fonte de verdade do frontend.
 
 ---
 
@@ -52,7 +52,7 @@ src/
 1. **Separação estrita de lógica**: toda página/feature tem um `use<Feature>PageLogic`; a UI só recebe dados e funções. Zero lógica de negócio no JSX.
 2. **Zero comentários** (`//`, `/* */`, JSDoc). Remova qualquer comentário ao editar.
 3. **Máx. 300 linhas/arquivo** — quebre em subcomponentes/hooks.
-4. **Strings pt-BR inline** com acentuação correta. **Não** há i18n/`messages` (diferente da Referencia).
+4. **Strings pt-BR inline** com acentuação correta. **Não** há i18n/`messages`.
 5. **Forms**: React Hook Form + Zod (`zodResolver`), schema junto da feature.
 6. **Componentes compartilhados**: use `@/shared/components/ui` (`Button`, `Card`, `Dialog`, `Input`, `Label`, `Badge`, `Spinner`) e `@/shared/components/feedback` (toast). Não recrie primitivos.
 7. **Imports por alias** `@/...`.
@@ -65,6 +65,6 @@ src/
 - **UI**: Zustand (mínimo).
 - **Notificações**: toast em `@/shared/components/feedback`.
 
-## 6. Migração da Referencia
+## 6. Histórico da migração
 
-`docs/Referencia` é o app legado (Supabase) usado como **fonte de funcionalidade/UX**. Features ainda não portadas (ver `docs/MIGRACAO_FRONTEND.md`): `profile`, `tracking`, `users`, `salary-simulator` completo, e fluxos faltantes em `dashboard` (charts), `transactions` (import CSV, pay bill) e `cards` (detalhes/statement). Porte seguindo `.claude/skills/frontend-reference-port/SKILL.md`; no Claude Code há também os agentes `frontend-reference-auditor`/`frontend-feature-porter` (em outras ferramentas, faça a auditoria/port manualmente seguindo o playbook). Uma feature só existe no destino se houver endpoint .NET que a sirva — senão é **pendência de backend**, não port.
+A migração do legado Supabase foi **concluída** e o app de referência foi removido do repositório (2026-07-10). Só **Pluggy/Open Finance** não foi portado (decisão de produto). Regra que permanece: uma feature só existe no frontend se houver endpoint .NET que a sirva — senão é **pendência de backend**, não se inventa endpoint nem se reintroduz Supabase.

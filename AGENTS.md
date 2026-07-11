@@ -19,15 +19,14 @@ finnance-management/
 │   └── Frontend/                 # SPA React 19 sobre a API .NET — a aplicação em produção hoje
 │       └── AGENTS.md             # ← guia COMPLETO do frontend; leia-o ao mexer em Frontend/
 ├── docs/
-│   ├── Referencia/               # frontend LEGADO (React + Supabase) — fonte de UX p/ migração, não buildar
-│   └── ...                       # PRD, arquitetura, sql/ (schema + backend_rules), MIGRACAO_FRONTEND.md
+│   └── ...                       # PRD, sql/ (schema + backend_rules)
 ├── Finnance.Api.slnx             # Solution (referencia só Finnance.Api.csproj)
 └── README.md                     # Descreve o template .NET genérico, NÃO este app (ver §6)
 ```
 
-**A aplicação real, hoje, é o frontend React em `Finnance.Api/Frontend/`**, sobre a **API .NET** local (axios + Bearer/sessionStorage; folder-by-type `features/<feat>/`). O `Finnance.Api/Frontend/AGENTS.md` é a fonte de verdade — não duplico aqui. Comandos (`pnpm dev/build/lint/check:ci`, sempre **pnpm**) estão lá. O frontend **Supabase** original está congelado em `docs/Referencia/` e serve só como fonte de funcionalidade/UX para a migração (ver o playbook `.claude/skills/frontend-reference-port/SKILL.md` e `docs/MIGRACAO_FRONTEND.md`).
+**A aplicação real, hoje, é o frontend React em `Finnance.Api/Frontend/`**, sobre a **API .NET** local (axios + Bearer/sessionStorage; folder-by-type `features/<feat>/`). O `Finnance.Api/Frontend/AGENTS.md` é a fonte de verdade — não duplico aqui. Comandos (`pnpm dev/build/lint/check:ci`, sempre **pnpm**) estão lá. A migração do frontend legado (React + Supabase, antigo `docs/Referencia/`) foi **concluída** e o legado foi removido do repositório (2026-07-10); só **Pluggy/Open Finance** não foi portado (decisão de produto).
 
-**O backend `Finnance.Api/` substitui o Supabase por uma API .NET Core local** e já saiu do scaffolding: além de `Common`/`Shared`, há módulos de negócio reais em `Modules/` (`User`/auth, `BankAccount`, `Category`/`CategoryType`, `Transaction`/`TransactionType`, `CreditCard`, `CreditCardInvoice`, `CreditCardStatementCycle`, `PaymentMethod`, `AccountType`, `InvoiceStatus`, `InstallmentGroup`, `RecurringGroup`, `SettingsSalary`, `Dashboard`, `Notification`, `Subscription` (Kiwify), `Engagement`, `SystemConfig`, `AuditLog`/`AuditAction`…), expostos no Swagger. As regras de negócio de domínio (transação→fatura, recálculo de fatura, sync de saldo, recorrência, folha/salário) já foram portadas e vivem no código (`Modules/`). O contrato consolidado do que o backend deve garantir está em `docs/sql/finnance_dev_backend_rules.md`.
+**O backend `Finnance.Api/` substitui o Supabase por uma API .NET Core local** e já saiu do scaffolding: além de `Common`/`Shared`, há módulos de negócio reais em `Modules/` (`User`/auth, `BankAccount`, `Category`/`CategoryType`, `Transaction`/`TransactionType`, `CreditCard`, `CreditCardInvoice`, `CreditCardStatementCycle`, `PaymentMethod`, `AccountType`, `InvoiceStatus`, `InstallmentGroup`, `RecurringGroup`, `SettingsSalary`, `Dashboard`, `Notification`, `Subscription` (Kiwify), `SystemConfig`, `AuditLog`/`AuditAction`…), expostos no Swagger. As regras de negócio de domínio (transação→fatura, recálculo de fatura, sync de saldo, recorrência, folha/salário) já foram portadas e vivem no código (`Modules/`). O contrato consolidado do que o backend deve garantir está em `docs/sql/finnance_dev_backend_rules.md`.
 
 ---
 
@@ -115,7 +114,7 @@ React 19 + TypeScript estrito + Vite, Tailwind v4, React Query, Zustand, React R
 ## 6. ⚠️ README.md e contrato de regras
 
 - O **`README.md` da raiz descreve o template genérico `base-project-api-clean`** (estrutura multi-projeto `ProjectBase.*`, GraphQL/HotChocolate, Hangfire) — **não reflete este app**. O backend real é o assembly único consolidado de §3, **sem GraphQL e sem Hangfire**. Não tome o README como verdade arquitetural deste repositório; este AGENTS.md prevalece.
-- As `docs/specs/00–10` (referência verificada da migração Supabase→.NET) foram **removidas após implementação/validação**; as regras de negócio vivem no código (`Modules/`) e o contrato consolidado em `docs/sql/finnance_dev_backend_rules.md`. O schema está em `docs/sql/finnance_dev_schema.sql` (+ migração `docs/sql/2026-06-25_dba_roadmap_migration.sql`). Histórico das specs no git. Pluggy/import CSV continuam **não portados**.
+- As `docs/specs/00–10` (referência verificada da migração Supabase→.NET) foram **removidas após implementação/validação**; as regras de negócio vivem no código (`Modules/`) e o contrato consolidado em `docs/sql/finnance_dev_backend_rules.md`. O schema completo está em `docs/sql/finnance_dev_schema.sql` (regenerado do banco em 2026-07-10; inclui Subscription/Kiwify e os hardenings de segurança — as migrações datadas foram aplicadas e removidas). Histórico das specs no git. Import CSV já foi portado; **Pluggy continua não portado**.
 
 ---
 
@@ -135,7 +134,6 @@ Os diretórios `.claude/skills/` e `.claude/agents/` contêm **documentos markdo
 |---|---|
 | Backend `Finnance.Api/` (exceto `Frontend/`) | `.claude/skills/dotnet-backend-pattern/SKILL.md` |
 | Frontend — features/páginas React | `.claude/skills/react-feature-pattern/SKILL.md` |
-| Portar feature de `docs/Referencia` → `Finnance.Api/Frontend` | `.claude/skills/frontend-reference-port/SKILL.md` |
 | Clean code do repositório (300 linhas, sem comentários, duplicação) | `.claude/skills/project-clean-code-enforcer/SKILL.md` |
 | Performance (profiling, gargalos) | `.claude/skills/code-performance-optimizer/SKILL.md` |
 

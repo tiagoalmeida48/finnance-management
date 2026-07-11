@@ -49,7 +49,6 @@ artifacts/
 .claude/scheduled_tasks.lock
 .claude/launch.json
 
-docs/Referencia/
 
 # Build do frontend publicado em wwwroot (preserva wwwroot/auth)
 Finnance.Api/wwwroot/assets/

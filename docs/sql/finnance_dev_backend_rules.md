@@ -3,7 +3,9 @@
 Este schema é deliberadamente "enxuto": a maior parte do comportamento que antes vivia no
 banco (Supabase: triggers, functions, views, RLS) é responsabilidade da camada de
 aplicação. Este documento é o contrato do que o backend garante e **reflete o que está
-de fato implementado** no `Finnance.Api`. Referência cruzada: `docs/specs/`.
+de fato implementado** no `Finnance.Api`. As specs originais (`docs/specs/00–10`) foram
+removidas após implementação; histórico no git. DDL atual: `finnance_dev_schema.sql`
+(regenerado do banco em 2026-07-10).
 
 Stack real: **.NET 9 + Dapper** (sem EF Core), SQL **inline** nos repositórios, validação
 **imperativa** no domínio (sem FluentValidation/DataAnnotations), `ResultApi<T>` +
@@ -15,6 +17,9 @@ timestamps `created`/`updated`; soft-delete por `active`. `profiles` foi **fundi
 > Nota (2026-06-26): após o roadmap DBA, parte das regras abaixo passou a ter **reforço
 > no banco** (CHECKs, índice único parcial do ciclo aberto, FK de auditoria). Está
 > marcado em cada seção. O banco continua sem trigger/function/view/RLS.
+>
+> Nota (2026-07-10): hardenings de segurança aplicados — `"user".token_version` (§9),
+> unicidade de email normalizada no banco (§2), módulo de assinatura Kiwify (§10).
 
 ---
 
@@ -57,8 +62,9 @@ Validação **imperativa** na Entity (`ValidateCreate`/`ValidateUpdate`) e no se
   `date_start <= date_end`.
 
 ### Formato / coerência (na aplicação)
-- `"user".email`: formato + **unicidade case-insensitive** (normalizar lowercase; a
-  UNIQUE do banco é case-sensitive).
+- `"user".email`: formato + **unicidade case-insensitive** — **reforçada no banco**
+  (2026-07-10) pelo índice único `uq_user_email_normalized` sobre `LOWER(BTRIM(email))`
+  (substituiu a UNIQUE case-sensitive); a aplicação continua normalizando na escrita.
 - `"user".phone`: formato internacional E.164; o webhook da Kiwify preenche somente
   quando o telefone atual estiver vazio. O consentimento de marketing é explícito,
   independente da compra, e registra data, origem, versão do texto e opt-out.
@@ -104,7 +110,7 @@ current_balance = initial_balance
     − Σ(transfer pagas saindo de account) + Σ(transfer pagas entrando em to_account)
 ```
 Índices de suporte: `idx_transaction_account_paid`, `idx_transaction_to_account_paid`.
-Ref.: `docs/specs/04-rules-accounts-balance.md`.
+(Spec original 04-rules-accounts-balance; histórico no git.)
 
 **Tabela extra?** Não. É cálculo sobre `"transaction"`.
 
@@ -116,7 +122,7 @@ Ref.: `docs/specs/04-rules-accounts-balance.md`.
 `TransactionService`: deriva `month_key` do ciclo aberto (lookup direto via
 `uq_card_open_cycle`), localiza/cria a `credit_card_invoice` (`card` + `month_key`,
 UNIQUE), seta `"transaction".invoice` e dispara `RecalculateInvoiceTotal`.
-Ref.: `docs/specs/03-rules-cards-invoices.md`.
+(Spec original 03-rules-cards-invoices; histórico no git.)
 
 **Tabela extra?** Não.
 
@@ -192,7 +198,37 @@ exceto controllers `Auth`/`User`/`AuditLog`) grava em `audit_log` via
 - `audit_log` append-only para a role da aplicação.
 - Senha: hash **Argon2** (`Argon2Helper`), verificação na aplicação. JWT próprio
   (`JwtHelper`, HMAC-SHA256) — **não** usa ASP.NET Identity nem o pipeline padrão de auth.
+- **Revogação de sessão por `token_version`** (2026-07-10): a coluna `"user".token_version`
+  (CHECK `>= 0`) entra como claim no JWT (`JwtHelper.ClaimTokenVersion`); o
+  `AuthorizationAttribute` compara o claim com a coluna a cada request e rejeita token
+  divergente. Operações sensíveis (troca/reset de senha, alterações de conta no
+  `UserService`) incrementam `TokenVersion`, invalidando todos os tokens antigos.
 - A chave JWT vem da seção `Jwt` da configuração e deve ser sobrescrita por secret store no deploy.
   A connection string usa AES-GCM e a chave Base64 de 32 bytes é fornecida externamente por `ConnectionStrings__EncryptionKey`.
 - PK `int8` sequencial: avaliar id alternativo/slug em URLs públicas se enumeração for
   preocupação.
+
+---
+
+## 10. Assinatura Kiwify (`subscription`)
+
+Módulo `Modules/Subscription` (2026-07-05, hardening 2026-07-10). Tabelas:
+`subscription_status` (catálogo), `subscription`, `kiwify_webhook_event`. São entidades
+de **propósito** (billing), **não** implementam `IUserOwned` — o vínculo com `"user"` é
+resolvido pelo serviço (email normalizado / ids Kiwify), não pelo filtro de tenant.
+
+- **Webhook** (`KiwifyWebhookController`): assinatura validada por **HMAC-SHA1** com o
+  segredo da seção `Kiwify:*` da configuração; evento inválido é rejeitado antes de
+  qualquer escrita.
+- **Idempotência**: `kiwify_webhook_event.event_fingerprint` (NOT NULL, índice único
+  `uq_kiwify_webhook_event_fingerprint`) — evento repetido não reprocessa.
+- **Retry**: `process_attempts` / `next_attempt_at` / `processing_at` + índice parcial
+  `idx_kiwify_webhook_event_pending` (`WHERE processed = false`). Os campos do evento são
+  extraídos para colunas tipadas; o `payload` bruto é **opcional** e descartado após o
+  processamento (minimização de dados).
+- **Entitlement**: `subscription.entitled_until` (+ `source_event_at`) define o acesso;
+  índice parcial `idx_subscription_entitlement` (`("user", entitled_until) WHERE active`).
+  `"user".subscription_blocked` (default `false`) bloqueia o acesso independentemente da
+  assinatura; o mapeamento evento→status vive no `KiwifyWebhookService`.
+
+**Tabela extra?** As três acima; `subscription_status` é catálogo seedado.
