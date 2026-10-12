@@ -30,7 +30,8 @@ public static partial class Configuration
 
             if (allowedOrigins.IsEmpty() || allowedHeaders.IsEmpty() || allowedMethods.IsEmpty()
                 || allowedOrigins.Any(origin => !Uri.TryCreate(origin, UriKind.Absolute, out var uri)
-                                                || uri.Scheme != Uri.UriSchemeHttps))
+                                                || (uri.Scheme != Uri.UriSchemeHttps
+                                                    && !(uri.Scheme == Uri.UriSchemeHttp && uri.IsLoopback))))
                 throw new InvalidOperationException(Constants.ErrorMessage.CorsConfigurationInvalid);
 
             options.WithOrigins(allowedOrigins).WithHeaders(allowedHeaders).WithMethods(allowedMethods);

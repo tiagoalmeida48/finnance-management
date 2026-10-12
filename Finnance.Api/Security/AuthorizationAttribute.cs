@@ -10,7 +10,7 @@ using System.Reflection;
 namespace Finnance.Api.Security;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class AuthorizationAttribute(bool admin = false, bool subscription = false) : Attribute, IAuthorizationFilter
+public class AuthorizationAttribute(bool admin = false, bool subscription = false, bool allowBlocked = false) : Attribute, IAuthorizationFilter
 {
     public void OnAuthorization(AuthorizationFilterContext context)
     {
@@ -23,14 +23,17 @@ public class AuthorizationAttribute(bool admin = false, bool subscription = fals
 
         var userRepository = context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
         var account = userRepository.Search(user: user, quantity: 1).FirstOrDefault();
-        if (account == null || !account.Active || account.SubscriptionBlocked
-            || account.TokenVersion != context.HttpContext.GetTokenVersion())
+        if (account == null || account.TokenVersion != context.HttpContext.GetTokenVersion())
             throw new ApplicationException(Constants.ErrorMessage.ErrorAccess);
+
+        var blocked = !account.Active || account.SubscriptionBlocked;
+        if (blocked && !allowBlocked)
+            throw new ApplicationException(Constants.ErrorMessage.UserInactive);
 
         if (admin && (!account.IsAdmin || !context.HttpContext.IsAdminLogged()))
             throw new ApplicationException(Constants.ErrorMessage.ErrorAuthorization);
 
-        if (!subscription || account.IsAdmin) return;
+        if (!subscription || account.IsAdmin || blocked) return;
 
         var subscriptionService = context.HttpContext.RequestServices.GetService<ISubscriptionService>();
         if (subscriptionService == null || !subscriptionService.HasActiveAccess(user))

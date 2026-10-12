@@ -35,14 +35,14 @@ public class AuthController(IAuthService authService, IUserService userService) 
         return new ResultApi<SessionDto> { Result = session.MapTo<SessionDto>() };
     }
 
-    [Authorization()]
+    [Authorization(allowBlocked: true)]
     [HttpPost]
     public ResultApi<bool> Logout()
     {
         return new ResultApi<bool> { Result = userService.RevokeSessions(UserLogged.user) };
     }
 
-    [Authorization()]
+    [Authorization(allowBlocked: true)]
     [HttpGet]
     public ResultApi<MeDto> Me()
     {

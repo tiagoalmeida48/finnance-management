@@ -1,5 +1,6 @@
 export interface SubscriptionStatus {
   hasActiveAccess: boolean;
+  accountActive: boolean;
   subscriptionStatus: number;
   planName: string | null;
   planFrequency: string | null;

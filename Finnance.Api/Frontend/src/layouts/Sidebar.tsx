@@ -5,8 +5,6 @@ import {
   Tags,
   TrendingUp,
   CalendarCheck,
-  MessagesSquare,
-  UserRound,
   Users,
   LogOut,
   Gem,
@@ -21,10 +19,8 @@ const navigation = [
   { label: 'Transações', path: '/transactions', icon: Wallet, adminOnly: false },
   { label: 'Contas e Cartões', path: '/finances', icon: Wallet, adminOnly: false },
   { label: 'Categorias', path: '/categories', icon: Tags, adminOnly: false },
-  { label: 'Salário', path: '/salary', icon: TrendingUp, adminOnly: true },
   { label: 'Acompanhamento', path: '/tracking', icon: CalendarCheck, adminOnly: false },
-  { label: 'Comunidade', path: '/community', icon: MessagesSquare, adminOnly: false, disabled: true },
-  { label: 'Perfil', path: '/profile', icon: UserRound, adminOnly: false },
+  { label: 'Salário', path: '/salary', icon: TrendingUp, adminOnly: true },
   { label: 'Usuários', path: '/users', icon: Users, adminOnly: true },
 ];
 
@@ -40,6 +36,7 @@ interface SidebarProps {
 export function Sidebar({ onNavigate, collapsed = false, onToggleCollapse }: SidebarProps) {
   const location = useLocation();
   const { logout, user } = useAuth();
+  const isProfileActive = location.pathname === '/profile';
 
   return (
     <div
@@ -78,30 +75,6 @@ export function Sidebar({ onNavigate, collapsed = false, onToggleCollapse }: Sid
             .filter((item) => !item.adminOnly || user?.isAdmin)
             .map((item) => {
               const Icon = item.icon;
-              if (item.disabled) {
-                return (
-                  <div
-                    key={item.path}
-                    aria-disabled
-                    title="Em breve"
-                    className={cn(
-                      'group relative flex cursor-not-allowed items-center rounded-md py-2 text-text-muted opacity-50',
-                      collapsed ? 'justify-center px-0' : 'gap-3 px-3',
-                    )}
-                  >
-                    <Icon size={17} strokeWidth={1.75} className="shrink-0" />
-                    {!collapsed && (
-                      <span className="flex items-center gap-2 font-mono text-[0.72rem] uppercase tracking-wider">
-                        {item.label}
-                        <span className="rounded-full border border-border-strong px-1.5 py-0.5 text-[0.55rem]">
-                          Em breve
-                        </span>
-                      </span>
-                    )}
-                    {collapsed && <span className={tooltipClass}>{item.label} — Em breve</span>}
-                  </div>
-                );
-              }
               const isActive = location.pathname === item.path;
               return (
                 <Link
@@ -138,14 +111,36 @@ export function Sidebar({ onNavigate, collapsed = false, onToggleCollapse }: Sid
 
       <div className={cn('space-y-2 border-t border-border', collapsed ? 'p-2' : 'p-3')}>
         {collapsed ? (
-          <div className="group relative flex justify-center py-1">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary-soft to-primary text-sm font-bold text-bg">
+          <Link
+            to="/profile"
+            onClick={onNavigate}
+            aria-label="Perfil"
+            className={cn(
+              'group relative flex justify-center rounded-xl py-1 transition-colors',
+              isProfileActive ? 'text-primary' : 'text-text-muted hover:text-text',
+            )}
+          >
+            <div
+              className={cn(
+                'flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary-soft to-primary text-sm font-bold text-bg transition-shadow',
+                isProfileActive ? 'shadow-glow' : 'group-hover:shadow-glow',
+              )}
+            >
               {(user?.fullName ?? '?').trim().charAt(0).toUpperCase()}
             </div>
-            <span className={tooltipClass}>{user?.fullName}</span>
-          </div>
+            <span className={tooltipClass}>{user?.fullName} — Perfil</span>
+          </Link>
         ) : (
-          <div className="flex items-center gap-3 rounded-xl border border-border bg-surface-2/60 px-3 py-2.5">
+          <Link
+            to="/profile"
+            onClick={onNavigate}
+            className={cn(
+              'flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors',
+              isProfileActive
+                ? 'border-primary/40 bg-primary/10'
+                : 'border-border bg-surface-2/60 hover:border-border-strong hover:bg-surface-2',
+            )}
+          >
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-soft to-primary text-sm font-bold text-bg">
               {(user?.fullName ?? '?').trim().charAt(0).toUpperCase()}
             </div>
@@ -155,7 +150,7 @@ export function Sidebar({ onNavigate, collapsed = false, onToggleCollapse }: Sid
                 {user?.isAdmin ? 'Admin' : 'Usuário'}
               </p>
             </div>
-          </div>
+          </Link>
         )}
         <button
           onClick={logout}

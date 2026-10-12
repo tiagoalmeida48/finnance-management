@@ -9,13 +9,14 @@ namespace Finnance.Api.Controllers;
 
 public class SubscriptionController(ISubscriptionService subscriptionService, IKiwifyWebhookService kiwifyWebhookService) : ControllerBase
 {
-    [Authorization()]
+    [Authorization(allowBlocked: true)]
     [HttpGet]
     public ResultApi<SubscriptionStatusDto> Me()
     {
         var current = subscriptionService.GetByUser(UserLogged.user);
         var dto = current == null ? new SubscriptionStatusDto() : current.MapTo<SubscriptionStatusDto>();
         dto.HasActiveAccess = subscriptionService.HasActiveAccess(UserLogged.user);
+        dto.AccountActive = subscriptionService.IsAccountActive(UserLogged.user);
         dto.CheckoutUrl = subscriptionService.GetCheckoutUrl();
         return new ResultApi<SubscriptionStatusDto> { Result = dto };
     }

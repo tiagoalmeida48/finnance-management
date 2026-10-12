@@ -4,6 +4,8 @@ public class SubscriptionStatusDto
 {
     public bool HasActiveAccess { get; set; }
 
+    public bool AccountActive { get; set; }
+
     public long SubscriptionStatus { get; set; }
 
     public string PlanName { get; set; }

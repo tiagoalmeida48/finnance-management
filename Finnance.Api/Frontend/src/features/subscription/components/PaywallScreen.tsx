@@ -17,6 +17,13 @@ const highlights = [
 ];
 
 function headline(status: SubscriptionStatus | null) {
+  if (status && !status.accountActive)
+    return {
+      title: 'Conta desativada',
+      text: 'Sua conta foi desativada por um administrador. Fale com o suporte para reativá-la.',
+      cta: '',
+    };
+
   switch (status?.subscriptionStatus) {
     case SubscriptionStatusId.LATE:
       return {
@@ -89,12 +96,13 @@ export function PaywallScreen({ status, isRechecking, onRecheck }: PaywallScreen
         </ul>
 
         <div className="mt-10 space-y-3">
-          {checkoutUrl ? (
+          {content.cta && checkoutUrl && (
             <Button size="lg" className="w-full" onClick={openCheckout}>
               <CreditCard size={16} />
               {content.cta}
             </Button>
-          ) : (
+          )}
+          {content.cta && !checkoutUrl && (
             <p className="rounded-md border border-border bg-surface-2 p-3 text-center text-sm text-text-muted">
               Link de assinatura indisponível no momento. Fale com o suporte.
             </p>

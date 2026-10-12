@@ -7,6 +7,7 @@ public interface ISubscriptionService : IBaseService<SubscriptionEntity>
 {
     SubscriptionEntity GetByUser(long userId);
     bool HasActiveAccess(long userId);
+    bool IsAccountActive(long userId);
     List<SubscriptionEntity> ListAll(long subscriptionStatus = 0);
     string GetCheckoutUrl();
 }

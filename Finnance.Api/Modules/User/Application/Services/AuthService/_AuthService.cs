@@ -22,9 +22,6 @@ public class AuthService(IUserService userSrv, IConfiguration configuration) : I
         if (!Argon2Helper.VerifyPassword(password, passwordHash) || user == null)
             throw new ApplicationException(Constants.ErrorMessage.UserInvalidPassword);
 
-        if (!user.Active || user.SubscriptionBlocked)
-            throw new ApplicationException(Constants.ErrorMessage.UserInactive);
-
         if (!user.EmailVerified)
             throw new ApplicationException(Constants.ErrorMessage.EmailNotVerified);
 
